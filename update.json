@@ -1,9 +1,9 @@
 {
-  "versionCode": 8,
-  "versionName": "1.7",
+  "versionCode": 9,
+  "versionName": "1.8",
   "nativeLevel": 2,
-  "notes": "Nieuw: kies de afbeelding op de voor- en achterkant van de kaarten (Opties)",
+  "notes": "Nieuw spel: Klaverjassen (Rotterdams of Amsterdams)",
   "web": "web/index.html",
-  "webSha256": "c5b856cff715e2851d5478621693247c97f9ea107b91cb876bd4d35ca010f72c",
+  "webSha256": "a30a2a4cc3a3c65c05729aab56c34f8d25e1facf467e1a4d62a33eea80348fa3",
   "apk": "apk/Renes-spelletjes.apk"
 }
