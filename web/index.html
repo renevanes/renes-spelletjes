@@ -1,0 +1,1568 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f3d2a">
+<title>Rene's spelletjes</title>
+<style>
+:root{
+  --felt1:#1d6b45; --felt2:#0f3d2a; --ink:#f4f1e8; --muted:#b9cdbf;
+  --card:#fffdf8; --red:#c8252c; --black:#1b1d22; --accent:#f2c14e;
+  --back1:#2c5aa0; --back2:#1b3a6b;
+  --cw:48px; --ch:68px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--felt2);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;user-select:none;-webkit-user-select:none;overscroll-behavior:none}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.screen{position:fixed;inset:0;display:none;flex-direction:column;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+.screen.active{display:flex}
+
+/* ---------- Menu ---------- */
+#menu{background:radial-gradient(120% 70% at 50% 35%,#23704b 0%,#123f2c 60%,#0a2619 100%);overflow-y:auto}
+#menu header{padding:40px 24px 12px}
+#menu h1{margin:0;font-size:34px;letter-spacing:-.5px}
+#menu header p{margin:6px 0 0;color:var(--muted);font-size:16px}
+.games{display:grid;gap:14px;padding:16px 20px 32px}
+.tile{display:flex;align-items:center;gap:16px;padding:16px;border-radius:18px;text-align:left;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);min-height:96px}
+.tile:active{transform:scale(.98);background:rgba(255,255,255,.14)}
+.tile h2{margin:0 0 4px;font-size:20px}
+.tile p{margin:0;color:var(--muted);font-size:14px}
+.tile .art{flex:0 0 64px;height:64px;position:relative}
+.mini{position:absolute;width:38px;height:54px;border-radius:6px;background:var(--card);box-shadow:0 2px 6px rgba(0,0,0,.35);
+  display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700}
+.mini.r{color:var(--red)} .mini.b{color:var(--black)}
+.tile .badge{margin-left:auto;background:var(--accent);color:#2b2100;font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;display:none}
+.tile.has-save .badge{display:block}
+.tile.soon{opacity:.5}
+.tile.soon .art{display:flex;align-items:center;justify-content:center;font-size:36px}
+.section-title{padding:8px 24px 0;color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:1px}
+.upd{margin:4px 20px 0;padding:14px 16px;border-radius:16px;background:rgba(242,193,78,.14);border:1px solid rgba(242,193,78,.5);display:flex;gap:12px;align-items:center}
+.upd[hidden]{display:none}
+.upd-txt{flex:1;min-width:0}
+.upd-txt b{display:block;font-size:16px}
+.upd-txt p{margin:3px 0 0;color:var(--muted);font-size:13px;line-height:1.35}
+.upd .btn{flex:0 0 auto;padding:10px 14px}
+.version button{color:rgba(255,255,255,.6);text-decoration:underline;font-size:12px;padding:6px 0}
+#menuToast{position:fixed;left:50%;bottom:calc(60px + env(safe-area-inset-bottom));transform:translateX(-50%);background:rgba(0,0,0,.82);color:#fff;padding:10px 16px;border-radius:12px;
+  font-size:14px;opacity:0;transition:opacity .25s;pointer-events:none;max-width:86%;text-align:center;z-index:6000}
+#menuToast.show{opacity:1}
+.version{margin-top:auto;padding:16px 24px 24px;color:rgba(255,255,255,.35);font-size:12px;text-align:center}
+
+/* ---------- Game ---------- */
+#patience{background:radial-gradient(130% 90% at 50% 25%,var(--felt1) 0%,var(--felt2) 75%)}
+.topbar{display:flex;align-items:center;gap:8px;padding:8px 10px;min-height:52px}
+.iconbtn{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.iconbtn:active{background:rgba(255,255,255,.12)}
+.info{flex:1;display:flex;justify-content:center;gap:18px;font-variant-numeric:tabular-nums;font-size:15px;color:var(--muted)}
+.info b{color:var(--ink);font-weight:600}
+.info .hide{display:none}
+#board{position:relative;flex:1;touch-action:none;overflow:hidden}
+.bottombar{display:flex;justify-content:space-around;padding:6px 4px 10px;border-top:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.14)}
+.bbtn{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:58px;padding:6px 6px;border-radius:12px;font-size:12px;color:var(--muted)}
+.bbtn span{font-size:22px;line-height:1;color:var(--ink)}
+.bbtn:active{background:rgba(255,255,255,.1)}
+.bbtn:disabled{opacity:.35}
+.bbtn .count{position:absolute;top:0;right:6px;background:var(--accent);color:#2b2100;font-size:11px;font-weight:800;font-style:normal;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+#btnJoker.off{display:none}
+
+.slot{position:absolute;width:var(--cw);height:var(--ch);border-radius:calc(var(--cw)*.12);
+  border:2px solid rgba(255,255,255,.18);background:rgba(0,0,0,.1);
+  display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.3);font-size:calc(var(--cw)*.42);font-weight:700}
+.slot.hint{border-color:var(--accent);box-shadow:0 0 0 3px rgba(242,193,78,.5)}
+
+.card{position:absolute;left:0;top:0;width:var(--cw);height:var(--ch);border-radius:calc(var(--cw)*.08);
+  transition:transform .2s cubic-bezier(.2,.8,.3,1);will-change:transform}
+.card .face{position:absolute;inset:0;border-radius:inherit;background:var(--card);overflow:hidden;
+  box-shadow:0 1px 2px rgba(0,0,0,.35),0 0 0 .5px rgba(0,0,0,.25)}
+.card .face svg{display:block;width:100%;height:100%}
+.card .back{position:absolute;inset:0;border-radius:inherit;display:none;
+  background:
+    repeating-linear-gradient(45deg,rgba(255,255,255,.14) 0 3px,transparent 3px 8px),
+    repeating-linear-gradient(-45deg,rgba(255,255,255,.14) 0 3px,transparent 3px 8px),
+    linear-gradient(160deg,var(--back1),var(--back2));
+  border:calc(var(--cw)*.06) solid #fff;box-shadow:0 1px 2px rgba(0,0,0,.4)}
+.card.down .back{display:block} .card.down .face{display:none}
+.card.gone{display:none}
+.card.dragging{transition:none}
+.card.dragging .face{box-shadow:0 8px 18px rgba(0,0,0,.4)}
+.card.hint .face{box-shadow:0 0 0 3px var(--accent),0 0 14px rgba(242,193,78,.8)}
+.card.shake{animation:shake .3s}
+@keyframes shake{0%,100%{margin-left:0}25%{margin-left:-5px}75%{margin-left:5px}}
+.card.celebrate{transition:transform 1.4s cubic-bezier(.3,1.3,.5,1)}
+
+#autoBtn{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);display:none;z-index:2000;
+  background:var(--accent);color:#2b2100;font-weight:700;padding:12px 22px;border-radius:99px;box-shadow:0 4px 14px rgba(0,0,0,.35);font-size:16px}
+#autoBtn.show{display:block}
+#toast{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);background:rgba(0,0,0,.78);padding:10px 18px;border-radius:12px;
+  font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:3000;text-align:center;max-width:80%}
+#toast.show{opacity:1}
+
+/* ---------- Modals ---------- */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center;z-index:5000}
+.modal.show{display:flex}
+.sheet{width:100%;max-width:520px;background:#16322a;border-radius:22px 22px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom));
+  box-shadow:0 -6px 24px rgba(0,0,0,.4);max-height:88vh;overflow-y:auto}
+.modal.center{align-items:center}
+.modal.center .sheet{border-radius:22px;margin:20px;text-align:center}
+.sheet h3{margin:0 0 14px;font-size:20px}
+.sheet p{color:var(--muted);margin:0 0 16px;line-height:1.4}
+.opt-section{font-size:13px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin:18px 0 10px;font-weight:700}
+.opt-section small{color:var(--muted);text-transform:none;letter-spacing:0;font-weight:400;margin-left:6px}
+.opt{margin-bottom:12px}
+.opt-label{font-size:14px;margin:0 0 6px}
+.seg{display:flex;background:rgba(0,0,0,.25);border-radius:12px;padding:4px;gap:2px}
+.seg button{flex:1;padding:9px 4px;border-radius:9px;color:var(--muted);font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px}
+.seg button.on{background:var(--accent);color:#2b2100}
+.swatch{width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,.7);flex:0 0 20px}
+.note{font-size:13px;color:var(--accent);margin:0 0 8px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
+.stat{background:rgba(0,0,0,.2);border-radius:12px;padding:10px 6px;text-align:center}
+.stat b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
+.stat small{color:var(--muted);font-size:12px}
+.row{display:flex;gap:10px}
+.col{display:flex;flex-direction:column;gap:10px}
+.btn{flex:1;padding:14px;border-radius:14px;font-weight:700;font-size:16px;background:rgba(255,255,255,.1)}
+.btn.primary{background:var(--accent);color:#2b2100}
+.btn.small{padding:10px;font-size:14px;font-weight:600}
+.btn:disabled{opacity:.4}
+.btn:active{filter:brightness(1.1)}
+.sticky-actions{position:sticky;bottom:-24px;background:#16322a;padding:12px 0 4px;margin-top:8px}
+.big-emoji{font-size:54px;margin-bottom:6px}
+
+/* ---------- Airhockey ---------- */
+.ah-art{position:absolute;inset:4px;border-radius:12px;background:#e9f3fb;border:3px solid #2a3b55;overflow:hidden}
+.ah-art:before{content:"";position:absolute;left:0;right:0;top:50%;height:2px;background:#d33}
+.ah-art i{position:absolute;border-radius:50%}
+.ah-art .m1{width:20px;height:20px;background:#d33;left:8px;bottom:6px;box-shadow:inset 0 0 0 5px #b11}
+.ah-art .m2{width:20px;height:20px;background:#2a6fd6;right:8px;top:6px;box-shadow:inset 0 0 0 5px #1b4fa0}
+.ah-art .pk{width:12px;height:12px;background:#222;left:26px;top:22px}
+#airhockey{background:#14202e}
+#airhockey .topbar{background:#14202e}
+.names{display:grid;gap:8px}
+.names label{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.25);border-radius:12px;padding:6px 12px}
+.names i{width:18px;height:18px;border-radius:50%;flex:0 0 18px}
+.names input{flex:1;min-width:0;background:none;border:0;color:var(--ink);font:inherit;font-size:16px;padding:8px 0;outline:none}
+.names small{color:var(--muted)}
+.ah-score{flex:1;display:flex;justify-content:center;align-items:center;gap:14px;font-size:15px;color:#aab7c8}
+.ah-score b{font-size:26px;color:#fff;font-variant-numeric:tabular-nums;min-width:28px;text-align:center}
+.ah-score .me b{color:#ff6b6b} .ah-score .them b{color:#6aa5ff}
+#ahWrap{position:relative;flex:1;touch-action:none;overflow:hidden}
+#ahCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#ahMsg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:34px;font-weight:900;color:#fff;
+  text-shadow:0 3px 12px rgba(0,0,0,.6);pointer-events:none;opacity:0;transition:opacity .2s;text-align:center;white-space:nowrap}
+#ahMsg.show{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- Suit symbols, reused by every card -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="s0" viewBox="0 0 100 100"><path d="M50 2C66 20 98 38 98 62C98 78 86 88 72 88C62 88 56 82 53 76C55 88 60 95 68 99H32C40 95 45 88 47 76C44 82 38 88 28 88C14 88 2 78 2 62C2 38 34 20 50 2Z"/></symbol>
+    <symbol id="s1" viewBox="0 0 100 100"><path d="M50 94C22 72 2 54 2 30C2 13 14 3 28 3C39 3 47 10 50 19C53 10 61 3 72 3C86 3 98 13 98 30C98 54 78 72 50 94Z"/></symbol>
+    <symbol id="s2" viewBox="0 0 100 100"><path d="M50 1L88 50L50 99L12 50Z"/></symbol>
+    <symbol id="s3" viewBox="0 0 100 100"><circle cx="50" cy="27" r="22"/><circle cx="25" cy="58" r="22"/><circle cx="75" cy="58" r="22"/><circle cx="50" cy="52" r="12"/><path d="M50 52C52 76 57 91 68 99H32C43 91 48 76 50 52Z"/></symbol>
+  </defs>
+</svg>
+
+<!-- ============ MENU ============ -->
+<section id="menu" class="screen active">
+  <header>
+    <h1>Rene's spelletjes</h1>
+    <p>Kies een spel om te spelen</p>
+  </header>
+  <div id="updBanner" class="upd" hidden>
+    <div class="upd-txt"><b id="updTitle">Nieuwe versie</b><p id="updText"></p></div>
+    <button class="btn primary small" id="updBtn">Installeren</button>
+  </div>
+  <div class="games">
+    <button class="tile" id="tilePatience">
+      <div class="art">
+        <div class="mini b" style="left:0;top:6px;transform:rotate(-10deg)">♠&#xFE0E;</div>
+        <div class="mini r" style="left:13px;top:3px">♥&#xFE0E;</div>
+        <div class="mini b" style="left:26px;top:6px;transform:rotate(10deg)">A</div>
+      </div>
+      <div>
+        <h2>Patience</h2>
+        <p>Klondike · het klassieke kaartspel</p>
+      </div>
+      <span class="badge">Doorgaan</span>
+    </button>
+    <button class="tile" id="tileAir">
+      <div class="art">
+        <div class="ah-art"><i class="m1"></i><i class="pk"></i><i class="m2"></i></div>
+      </div>
+      <div>
+        <h2>Airhockey</h2>
+        <p>Tegen de computer of met z'n tweeën</p>
+      </div>
+    </button>
+  </div>
+  <div class="version">Versie 1.6 · <button id="checkUpd">Controleren op updates</button></div>
+  <div id="menuToast"></div>
+</section>
+
+<!-- ============ PATIENCE ============ -->
+<section id="patience" class="screen">
+  <div class="topbar">
+    <button class="iconbtn" id="btnBack" aria-label="Terug">‹</button>
+    <div class="info"><div id="timeBox">Tijd <b id="time">0:00</b></div><div>Zetten <b id="moves">0</b></div></div>
+    <button class="iconbtn" id="btnOptions" aria-label="Opties">⚙&#xFE0E;</button>
+  </div>
+  <div id="board">
+    <button id="autoBtn">Automatisch afmaken ✓</button>
+    <div id="toast"></div>
+  </div>
+  <div class="bottombar">
+    <button class="bbtn" id="btnNew"><span>＋</span>Nieuw</button>
+    <button class="bbtn" id="btnUndo"><span>↶</span>Ongedaan</button>
+    <button class="bbtn" id="btnHint"><span>💡</span>Hint</button>
+    <button class="bbtn" id="btnJoker"><span>🃏</span>Joker<i class="count" id="jokerCount">1</i></button>
+    <button class="bbtn" id="btnOptions2"><span>⚙&#xFE0E;</span>Opties</button>
+  </div>
+</section>
+
+<!-- ============ AIRHOCKEY ============ -->
+<section id="airhockey" class="screen">
+  <div class="topbar">
+    <button class="iconbtn" id="ahBack" aria-label="Terug">‹</button>
+    <div class="ah-score"><div class="me" id="ahMeLbl">Jij <b id="ahMe">0</b></div><div>–</div><div class="them"><b id="ahThem">0</b> <span id="ahThemLbl">Computer</span></div></div>
+    <button class="iconbtn" id="ahOptBtn" aria-label="Opties">⚙&#xFE0E;</button>
+  </div>
+  <div id="ahWrap"><canvas id="ahCanvas"></canvas><div id="ahMsg"></div></div>
+</section>
+
+<!-- ============ MODALS ============ -->
+<div class="modal" id="optModal">
+  <div class="sheet">
+    <h3>Opties</h3>
+    <div id="optList"></div>
+    <div class="opt-section">Statistieken</div>
+    <div class="stats" id="statsGrid"></div>
+    <button class="btn small" id="resetStats" style="width:100%;margin-bottom:6px">Statistieken wissen</button>
+    <div class="row sticky-actions">
+      <button class="btn" data-close>Sluiten</button>
+      <button class="btn primary" id="optNew">Nieuw spel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal center" id="confirmModal">
+  <div class="sheet">
+    <h3 id="confirmTitle">Nieuw spel?</h3>
+    <p id="confirmText">Het huidige spel telt dan als verloren.</p>
+    <div class="row">
+      <button class="btn" data-close>Annuleren</button>
+      <button class="btn primary" id="confirmOk">Ja</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal center" id="stuckModal">
+  <div class="sheet">
+    <div class="big-emoji">🤔</div>
+    <h3>Geen zetten meer</h3>
+    <p id="stuckText">Er zijn geen zinvolle zetten meer mogelijk, ook niet met de kaarten uit de stapel.</p>
+    <div class="col">
+      <button class="btn primary" id="stuckJoker">🃏 Joker inzetten</button>
+      <button class="btn" id="stuckUndo">↶ Zet ongedaan maken</button>
+      <button class="btn" id="stuckNew">＋ Nieuw spel</button>
+      <button class="btn small" data-close>Verder kijken</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal center" id="winModal">
+  <div class="sheet">
+    <div class="big-emoji">🏆</div>
+    <h3>Gewonnen!</h3>
+    <p id="winText"></p>
+    <div class="row">
+      <button class="btn" id="winMenu">Menu</button>
+      <button class="btn primary" id="winNew">Nog een keer</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="ahOptModal">
+  <div class="sheet">
+    <h3>Airhockey</h3>
+    <div id="ahOptList"></div>
+    <div class="opt-section">Statistieken</div>
+    <div class="stats" id="ahStats"></div>
+    <div class="row sticky-actions">
+      <button class="btn" data-close>Verder spelen</button>
+      <button class="btn primary" id="ahNew">Nieuw potje</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="ahStartModal">
+  <div class="sheet">
+    <h3>🏒 Airhockey</h3>
+    <div id="ahStartList"></div>
+    <div class="row sticky-actions">
+      <button class="btn" id="ahStartBack">Menu</button>
+      <button class="btn primary" id="ahStartGo">Start ▶</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal center" id="ahWinModal">
+  <div class="sheet">
+    <div class="big-emoji" id="ahWinEmoji">🏆</div>
+    <h3 id="ahWinTitle">Jij wint!</h3>
+    <p id="ahWinText"></p>
+    <div class="row">
+      <button class="btn" id="ahWinMenu">Menu</button>
+      <button class="btn primary" id="ahWinNew">Nog een potje</button>
+    </div>
+    <button class="btn small" id="ahWinOther" style="width:100%;margin-top:10px">Andere spelers of instellingen</button>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+const native = (fn, ...a) => { try { if (window.Android && Android[fn]) { Android[fn](...a); return true; } } catch (e) {} return false; };
+
+/* ---------------- Settings ---------------- */
+const DEFAULTS = {
+  draw: 1, rounds: 0, jokers: 1,
+  faces: 'groot', letters: 'nl', stockSide: 'links', table: 'groen', back: 'blauw', timer: true,
+  tapMove: true, autoPlay: true, stuckAlert: true, vibrate: true
+};
+const settings = Object.assign({}, DEFAULTS, store.get('patience.settings', {}));
+if (!store.get('patience.v14', false)) { if (settings.faces === 'plaatjes') settings.faces = 'groot'; store.set('patience.v14', true); store.set('patience.settings', settings); }
+const saveSettings = () => store.set('patience.settings', settings);
+const TABLES = { groen: ['#1d6b45', '#0f3d2a'], blauw: ['#22558f', '#0f2a4d'], rood: ['#8a2533', '#48101a'], paars: ['#5b3d8c', '#2b1c49'], grijs: ['#4b525b', '#23272c'] };
+const BACKS = { blauw: ['#2c5aa0', '#1b3a6b'], rood: ['#b3262e', '#6e1419'], groen: ['#2e7d4f', '#17482c'], zwart: ['#3a3d44', '#15161a'] };
+
+const vibrate = ms => { if (!settings.vibrate) return; if (!native('vibrate', ms)) { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} } };
+
+/* ---------------- Navigation ---------------- */
+let current = 'menu';
+let pendingReload = false;
+function show(id) {
+  if (id === 'menu' && pendingReload && native('reloadContent')) return;
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+  current = id;
+  native('setBarColor', id === 'menu' ? '#123f2c' : id === 'airhockey' ? '#14202e' : (TABLES[settings.table] || TABLES.groen)[1]);
+}
+function openModal(id) { $('#' + id).classList.add('show'); }
+function closeModals() { document.querySelectorAll('.modal.show').forEach(m => m.classList.remove('show')); }
+function anyModal() { return !!document.querySelector('.modal.show'); }
+document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeModals));
+document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', e => { if (e.target === m && !['winModal', 'ahWinModal', 'ahStartModal'].includes(m.id)) closeModals(); }));
+
+window.appBack = () => {
+  if ($('#ahStartModal').classList.contains('show')) { closeModals(); AirHockey.leave(); return true; }
+  if (anyModal()) { closeModals(); return true; }
+  if (current === 'patience') { Patience.leave(); return true; }
+  if (current === 'airhockey') { AirHockey.leave(); return true; }
+  return false;
+};
+
+/* ================================================================
+   CARD ARTWORK (SVG, 100 x 142 units)
+   ================================================================ */
+const Art = (() => {
+  const COLORS = ['#111216', '#d4151f', '#d4151f', '#111216'];
+  const ROBE = ['#27427a', '#b3262e', '#d0582a', '#23613f'];
+  const ROBE_DARK = ['#182a52', '#7c1319', '#8f3212', '#143f27'];
+  const GOLD = '#e2b23a', SKIN = '#f3d2b3', HAIR = ['#3b2a1e', '#7a4a22', '#b07a3a', '#2c2c2c'];
+  const LET = { nl: [null, 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'B', 'V', 'H'], en: [null, 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'] };
+  const L = 28, C = 50, R = 72;
+  const PIPS = {
+    2: [[C, 0], [C, 1]],
+    3: [[C, 0], [C, .5], [C, 1]],
+    4: [[L, 0], [R, 0], [L, 1], [R, 1]],
+    5: [[L, 0], [R, 0], [C, .5], [L, 1], [R, 1]],
+    6: [[L, 0], [R, 0], [L, .5], [R, .5], [L, 1], [R, 1]],
+    7: [[L, 0], [R, 0], [C, .25], [L, .5], [R, .5], [L, 1], [R, 1]],
+    8: [[L, 0], [R, 0], [C, .25], [L, .5], [R, .5], [C, .75], [L, 1], [R, 1]],
+    9: [[L, 0], [R, 0], [L, 1 / 3], [R, 1 / 3], [C, .5], [L, 2 / 3], [R, 2 / 3], [L, 1], [R, 1]],
+    10: [[L, 0], [R, 0], [C, 1 / 6], [L, 1 / 3], [R, 1 / 3], [L, 2 / 3], [R, 2 / 3], [C, 5 / 6], [L, 1], [R, 1]]
+  };
+  const use = (s, x, y, size, fill, rot) =>
+    `<use href="#s${s}" x="${x - size / 2}" y="${y - size / 2}" width="${size}" height="${size}" fill="${fill}"${rot ? ` transform="rotate(180 ${x} ${y})"` : ''}/>`;
+  const FONT = 'font-family="system-ui,Roboto,sans-serif" font-weight="800"';
+
+  function corner(s, r, letters) {
+    const t = LET[letters][r], col = COLORS[s];
+    // big value top-left, suit top-right: readable even when cards overlap
+    return `<text x="5" y="34" font-size="${t.length > 1 ? 34 : 38}" ${FONT} fill="${col}" letter-spacing="${t.length > 1 ? -3 : 0}">${t}</text>` + use(s, 81, 19, 27, col);
+  }
+
+  function court(s, r) {
+    const robe = ROBE[s], dark = ROBE_DARK[s], hair = HAIR[s], col = COLORS[s];
+    let g = `<rect x="13" y="37" width="74" height="98" rx="5" fill="${s === 1 || s === 2 ? '#fbeee6' : '#eef1f6'}" stroke="${col}" stroke-width="1.5"/>`;
+    if (r === 12) g += `<path d="M36 76Q34 57 50 56Q66 57 64 76L67 100L33 100Z" fill="${hair}"/>`;           // queen's hair
+    g += `<path d="M22 134L27 100Q50 88 73 100L78 134Z" fill="${robe}"/>`;                                     // robe
+    g += `<path d="M22 134L27 100Q34 96 40 94L44 134Z" fill="${dark}" opacity=".55"/>`;
+    g += `<path d="M39 94L50 112L61 94" fill="none" stroke="${GOLD}" stroke-width="3.5" stroke-linejoin="round"/>`;
+    g += `<path d="M50 112V134" stroke="${GOLD}" stroke-width="2.5"/>`;
+    g += use(s, 50, 123, 13, '#fff');
+    g += `<rect x="45.5" y="82" width="9" height="9" fill="${SKIN}"/>`;
+    g += `<circle cx="50" cy="73" r="12" fill="${SKIN}"/>`;
+    g += `<circle cx="45.5" cy="72" r="1.5" fill="#222"/><circle cx="54.5" cy="72" r="1.5" fill="#222"/>`;
+    g += `<path d="M46 79Q50 82 54 79" fill="none" stroke="#9b4a3a" stroke-width="1.4" stroke-linecap="round"/>`;
+    g += `<circle cx="42.5" cy="77" r="2.2" fill="#f0a39a" opacity=".6"/><circle cx="57.5" cy="77" r="2.2" fill="#f0a39a" opacity=".6"/>`;
+    if (r === 13) {          // King: beard, crown, sceptre
+      g += `<path d="M38.5 75Q40 93 50 94Q60 93 61.5 75Q58 84 50 84Q42 84 38.5 75Z" fill="${hair}"/>`;
+      g += `<path d="M44 80Q50 78 56 80" fill="none" stroke="${hair}" stroke-width="2.5" stroke-linecap="round"/>`;
+      g += `<path d="M37 64V49L43.5 56L50 45L56.5 56L63 49V64Z" fill="${GOLD}" stroke="#a8841f" stroke-width="1"/>`;
+      g += `<circle cx="50" cy="59" r="2.2" fill="${robe}"/><circle cx="42" cy="60" r="1.6" fill="#fff"/><circle cx="58" cy="60" r="1.6" fill="#fff"/>`;
+      g += `<path d="M72 132L77 84" stroke="${GOLD}" stroke-width="3.2" stroke-linecap="round"/>`;
+      g += use(s, 77.5, 80, 11, GOLD);
+    } else if (r === 12) {   // Queen: tiara, flower
+      g += `<path d="M38.5 67Q39 60 50 60Q61 60 61.5 67Q56 62 50 62Q44 62 38.5 67Z" fill="${hair}"/>`;
+      g += `<path d="M40 61Q50 52 60 61L58 63Q50 57 42 63Z" fill="${GOLD}"/>`;
+      g += `<circle cx="50" cy="54.5" r="2.4" fill="${GOLD}"/><circle cx="44" cy="57" r="1.6" fill="${GOLD}"/><circle cx="56" cy="57" r="1.6" fill="${GOLD}"/>`;
+      g += `<path d="M27 132Q30 116 27 104" fill="none" stroke="#3f7a3a" stroke-width="2"/>`;
+      for (let a = 0; a < 5; a++) { const x = 27 + Math.cos(a * 1.2566) * 4.5, y = 101 + Math.sin(a * 1.2566) * 4.5; g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.8" fill="#e46c8a"/>`; }
+      g += `<circle cx="27" cy="101" r="2.4" fill="${GOLD}"/>`;
+    } else {                 // Jack: cap with feather, halberd
+      g += `<path d="M38 70Q37 62 41 60L40 72Z" fill="${hair}"/><path d="M62 70Q63 62 59 60L60 72Z" fill="${hair}"/>`;
+      g += `<path d="M36.5 66Q37 52 50 52Q63 52 63.5 66Z" fill="${dark}"/>`;
+      g += `<rect x="36.5" y="63" width="27" height="4" rx="1.5" fill="${GOLD}"/>`;
+      g += `<path d="M59 58Q73 50 73 40Q66 49 57 55Z" fill="${GOLD}" stroke="#a8841f" stroke-width=".8"/>`;
+      g += `<path d="M26 132L22 84" stroke="#8a8f98" stroke-width="2.6" stroke-linecap="round"/>`;
+      g += `<path d="M22 84L16 90L20 78L27 84Z" fill="#b8bec7"/>`;
+    }
+    return g;
+  }
+
+  function jokerFace() {
+    return `<svg viewBox="0 0 100 142" preserveAspectRatio="none">
+      <text x="6" y="26" font-size="22" ${FONT} fill="#7a2fb0">★</text>
+      <text x="27" y="24" font-size="15" ${FONT} fill="#7a2fb0">JOKER</text>
+      <rect x="13" y="37" width="74" height="98" rx="5" fill="#f4ecfb" stroke="#7a2fb0" stroke-width="1.5"/>
+      <path d="M28 134L32 104Q50 94 68 104L72 134Z" fill="#7a2fb0"/>
+      <path d="M50 99V134" stroke="${GOLD}" stroke-width="2.5" stroke-dasharray="4 4"/>
+      <path d="M36 101L42 110L50 101L58 110L64 101" fill="none" stroke="${GOLD}" stroke-width="3"/>
+      <circle cx="50" cy="82" r="12" fill="${SKIN}"/>
+      <circle cx="45.5" cy="81" r="1.5" fill="#222"/><circle cx="54.5" cy="81" r="1.5" fill="#222"/>
+      <path d="M44 86Q50 92 56 86" fill="none" stroke="#b43a3a" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M38 74Q30 58 20 60Q30 50 42 66Z" fill="#c8252c"/>
+      <path d="M62 74Q70 58 80 60Q70 50 58 66Z" fill="#2c7a4b"/>
+      <path d="M40 72Q42 50 50 44Q58 50 60 72Z" fill="${GOLD}"/>
+      <circle cx="20" cy="60" r="3.5" fill="${GOLD}"/><circle cx="80" cy="60" r="3.5" fill="${GOLD}"/><circle cx="50" cy="44" r="3.5" fill="#c8252c"/>
+    </svg>`;
+  }
+
+  function face(c, mode, letters) {
+    if (c >= 52) return jokerFace();
+    const s = Math.floor(c / 13), r = (c % 13) + 1, col = COLORS[s];
+    let body;
+    if (mode === 'eenvoudig' || (mode === 'groot' && r <= 10)) body = use(s, 50, 92, 62, col);      // one big suit in the middle
+    else if (r === 1) body = use(s, 50, 88, s === 0 ? 50 : 44, col) + (s === 0 ? `<circle cx="50" cy="88" r="32" fill="none" stroke="${col}" stroke-width="1.2" opacity=".35"/>` : '');
+    else if (r <= 10) { const size = r >= 9 ? 16 : 18; body = PIPS[r].map(([x, f]) => use(s, x, 50 + f * 78, size, col, f > .5)).join(''); }
+    else body = `<g transform="translate(0 4)">${court(s, r)}</g>`;
+    return `<svg viewBox="0 0 100 142" preserveAspectRatio="none">${corner(s, r, letters)}${body}</svg>`;
+  }
+  return { face };
+})();
+
+/* ================================================================
+   PATIENCE (Klondike)
+   ================================================================ */
+const Patience = (() => {
+  const NCARDS = 55;                        // 52 cards + up to 3 jokers (ids 52..54)
+  const isJoker = c => c >= 52;
+  const suitOf = c => Math.floor(c / 13);
+  const rankOf = c => isJoker(c) ? 0 : (c % 13) + 1;
+  const isRed = c => { const s = suitOf(c); return s === 1 || s === 2; };
+  const FND = ['f0', 'f1', 'f2', 'f3'];
+
+  const board = $('#board');
+  let S = null;
+  let moves = 0, elapsed = 0, runningSince = null, timerId = null;
+  let history = [];
+  let won = false, counted = false, busy = false, stuckShownAt = -1, autoFailed = false;
+  const NEWSTATS = () => ({ played: 0, won: 0, best: null, bestMoves: null, streak: 0, bestStreak: 0 });
+  let stats = Object.assign(NEWSTATS(), store.get('patience.stats', {}));
+
+  /* ---------- DOM ---------- */
+  const cardEl = [], slotEl = {}, pos = [];
+  let G = {};
+  function mkSlot(name, label) {
+    const d = document.createElement('div');
+    d.className = 'slot'; d.dataset.pile = name; d.textContent = label || '';
+    board.appendChild(d); slotEl[name] = d;
+  }
+  mkSlot('stock'); mkSlot('waste');
+  for (let i = 0; i < 4; i++) mkSlot('f' + i, 'A');
+  for (let i = 0; i < 7; i++) mkSlot('t' + i, '');
+  slotEl.waste.style.visibility = 'hidden';
+  for (let c = 0; c < NCARDS; c++) {
+    const d = document.createElement('div');
+    d.className = 'card down gone';
+    d.dataset.id = c;
+    d.innerHTML = `<div class="face"></div><div class="back"></div>`;
+    board.appendChild(d); cardEl.push(d);
+  }
+  function paintFaces() {
+    for (let c = 0; c < NCARDS; c++) cardEl[c].firstChild.innerHTML = Art.face(c, settings.faces, settings.letters);
+    const k = settings.letters === 'nl' ? 'H' : 'K';
+    for (let i = 0; i < 7; i++) slotEl['t' + i].textContent = k;
+  }
+  function applyTheme() {
+    const t = TABLES[settings.table] || TABLES.groen, b = BACKS[settings.back] || BACKS.blauw;
+    const r = document.documentElement.style;
+    r.setProperty('--felt1', t[0]); r.setProperty('--felt2', t[1]);
+    r.setProperty('--back1', b[0]); r.setProperty('--back2', b[1]);
+    $('#timeBox').classList.toggle('hide', !settings.timer);
+    if (current === 'patience') native('setBarColor', t[1]);
+  }
+  paintFaces(); applyTheme();
+
+  /* ---------- State helpers ---------- */
+  function pile(n) {
+    if (n === 'stock') return S.stock;
+    if (n === 'waste') return S.waste;
+    return (n[0] === 'f' ? S.f : S.t)[+n.slice(1)];
+  }
+  const PILES = ['stock', 'waste', 'f0', 'f1', 'f2', 'f3', 't0', 't1', 't2', 't3', 't4', 't5', 't6'];
+  function locate(c) {
+    for (const n of PILES) { const i = pile(n).indexOf(c); if (i >= 0) return { pile: n, idx: i }; }
+    return null;
+  }
+  const top = p => p[p.length - 1];
+
+  function shuffle(a) {
+    const r = new Uint32Array(a.length);
+    if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(r); else r.forEach((_, i) => r[i] = Math.random() * 4294967296);
+    for (let i = a.length - 1; i > 0; i--) { const j = r[i] % (i + 1); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
+
+  function deal() {
+    const deck = shuffle([...Array(52).keys()]);
+    S = { stock: [], waste: [], f: [[], [], [], []], t: [[], [], [], [], [], [], []], out: [], up: Array(NCARDS).fill(false),
+      draw: settings.draw, rounds: settings.rounds, passes: 0, jokersTotal: settings.jokers, jokersLeft: settings.jokers };
+    let k = 0;
+    for (let i = 0; i < 7; i++) for (let j = i; j < 7; j++) S.t[j].push(deck[k++]);
+    S.t.forEach(col => S.up[top(col)] = true);
+    while (k < 52) S.stock.push(deck[k++]);
+    moves = 0; elapsed = 0; runningSince = null; history = []; won = false; counted = false; busy = false; stuckShownAt = -1; autoFailed = false;
+  }
+  function migrate(s) { // saves from older versions
+    s.out = s.out || []; s.passes = s.passes || 0; s.rounds = s.rounds || 0;
+    if (s.jokersTotal == null) { s.jokersTotal = 0; s.jokersLeft = 0; }
+    while (s.up.length < NCARDS) s.up.push(false);
+    return s;
+  }
+
+  function fitsFoundation(c, f) {
+    if (isJoker(c)) return false;
+    const p = pile(f);
+    if (!p.length) return rankOf(c) === 1;
+    const t = top(p);
+    return suitOf(t) === suitOf(c) && rankOf(c) === rankOf(t) + 1;
+  }
+  const toFoundation = c => FND.find(f => fitsFoundation(c, f));
+  function canDrop(cards, target) {
+    const c = cards[0], p = pile(target);
+    if (target[0] === 'f') return cards.length === 1 && fitsFoundation(c, target);
+    if (target[0] === 't') {
+      if (!p.length) return rankOf(c) === 13 || isJoker(c);
+      const t = top(p);
+      if (!S.up[t]) return false;
+      if (isJoker(t) || isJoker(c)) return true;          // jokers are wild
+      return isRed(t) !== isRed(c) && rankOf(c) === rankOf(t) - 1;
+    }
+    return false;
+  }
+  function movable(n, i) {
+    const p = pile(n);
+    if (n === 'stock') return false;
+    if (n === 'waste' || n[0] === 'f') return i === p.length - 1;
+    return S.up[p[i]];
+  }
+  const canRecycle = () => !S.rounds || S.passes < S.rounds - 1;
+
+  /* ---------- Timer ---------- */
+  function startTimer() {
+    if (runningSince == null && !won && current === 'patience' && moves > 0) {
+      runningSince = Date.now();
+      timerId = setInterval(updateInfo, 500);
+    }
+  }
+  function stopTimer() {
+    if (runningSince != null) { elapsed += Date.now() - runningSince; runningSince = null; }
+    clearInterval(timerId); timerId = null;
+  }
+  const curTime = () => elapsed + (runningSince != null ? Date.now() - runningSince : 0);
+  const fmt = ms => { const s = Math.floor(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+
+  /* ---------- Actions ---------- */
+  const snapshot = () => JSON.stringify({ S, moves });
+  function pushHistory() { history.push(snapshot()); if (history.length > 400) history.shift(); }
+  function flipTop(n) { if (n[0] !== 't') return; const p = pile(n); if (p.length && !S.up[top(p)]) S.up[top(p)] = true; }
+
+  function autoPlaySafe() { // aces and twos go up by themselves
+    let moved = true;
+    while (moved) {
+      moved = false;
+      for (const n of ['waste', 't0', 't1', 't2', 't3', 't4', 't5', 't6']) {
+        const p = pile(n); if (!p.length) continue;
+        const c = top(p); if (!S.up[c] || isJoker(c) || rankOf(c) > 2) continue;
+        const f = toFoundation(c);
+        if (f) { p.pop(); pile(f).push(c); flipTop(n); moved = true; }
+      }
+    }
+  }
+
+  function afterAction(skipAuto) {
+    moves++;
+    autoFailed = false;
+    if (!counted) { counted = true; stats.played++; store.set('patience.stats', stats); }
+    if (settings.autoPlay && !skipAuto) autoPlaySafe();
+    startTimer();
+    render();
+    save();
+    if (!checkWin()) checkStuck();
+  }
+
+  function moveCards(from, idx, to) {
+    pushHistory();
+    const cards = pile(from).splice(idx);
+    pile(to).push(...cards);
+    flipTop(from);
+    afterAction();
+  }
+
+  function drawStock() {
+    if (busy || won) return;
+    if (!S.stock.length && !S.waste.length) return;
+    if (!S.stock.length && !canRecycle()) { toast('Je hebt alle rondes door de stapel gebruikt'); return; }
+    pushHistory();
+    if (S.stock.length) {
+      for (let i = 0; i < S.draw && S.stock.length; i++) { const c = S.stock.pop(); S.up[c] = true; S.waste.push(c); }
+    } else {
+      S.stock = S.waste.reverse(); S.waste = []; S.passes++;
+      S.stock.forEach(c => S.up[c] = false);
+    }
+    afterAction();
+  }
+
+  function useJoker() {
+    if (busy || won || !S || S.jokersLeft <= 0) return;
+    closeModals();
+    const id = 52 + (S.jokersTotal - S.jokersLeft);
+    pushHistory();
+    S.jokersLeft--; S.up[id] = true; S.waste.push(id);
+    afterAction(true);
+    toast('Sleep de joker naar een stapel.<br>Elke kaart past op een joker.');
+  }
+
+  function undo() {
+    if (busy || won || !history.length) return;
+    const h = JSON.parse(history.pop());
+    S = migrate(h.S); moves = h.moves; stuckShownAt = -1; autoFailed = false;
+    closeModals();
+    render(); save();
+  }
+
+  function bestTarget(from, idx) {
+    const cards = pile(from).slice(idx);
+    if (cards.length === 1 && from[0] !== 'f') { const f = toFoundation(cards[0]); if (f) return f; }
+    let empty = null, onJoker = null;
+    for (let i = 0; i < 7; i++) {
+      const t = 't' + i;
+      if (t === from || !canDrop(cards, t)) continue;
+      const p = pile(t);
+      if (!p.length) { if (empty == null) empty = t; continue; }
+      if (isJoker(top(p)) || isJoker(cards[0])) { if (onJoker == null) onJoker = t; continue; }
+      return t;                                   // normal fit by the rules
+    }
+    if (onJoker && !isJoker(cards[0])) return onJoker;
+    if (empty && !(from[0] === 't' && idx === 0)) return empty;
+    return null;
+  }
+
+  function tap(from, idx) {
+    const c = pile(from)[idx];
+    if (isJoker(c) && from === 'waste') { toast('Sleep de joker naar een stapel'); return; }
+    if (!settings.tapMove) return;
+    const t = bestTarget(from, idx);
+    if (t) { moveCards(from, idx, t); vibrate(8); }
+    else pile(from).slice(idx).forEach(x => { const e = cardEl[x]; e.classList.remove('shake'); void e.offsetWidth; e.classList.add('shake'); });
+  }
+
+  /* ---------- Move analysis (hint + "no moves" detection) ---------- */
+  // All cards that can become the top of the waste just by drawing
+  function stockReachable() {
+    const set = new Set();
+    let st = S.stock.slice(), w = S.waste.slice(), passes = S.passes, recycles = 0;
+    if (w.length) set.add(top(w));
+    for (let guard = 0; guard < 400; guard++) {
+      if (st.length) { for (let i = 0; i < S.draw && st.length; i++) w.push(st.pop()); set.add(top(w)); }
+      else {
+        if (!w.length || recycles >= 2) break;
+        if (S.rounds && passes >= S.rounds - 1) break;
+        st = w.reverse(); w = []; passes++; recycles++;
+      }
+    }
+    return set;
+  }
+
+  // Useful moves. withStock = also count cards that are still in the stock.
+  function usefulMoves(withStock) {
+    const out = [];
+    const wasteNow = S.waste.length ? top(S.waste) : null;
+    const wasteCards = withStock ? [...stockReachable()] : (wasteNow != null ? [wasteNow] : []);
+    const src = c => (c === wasteNow ? { pile: 'waste', idx: S.waste.length - 1 } : { pile: 'stock' });
+    // 1. anything to a foundation
+    for (let i = 0; i < 7; i++) {
+      const col = S.t[i]; if (!col.length) continue;
+      const f = toFoundation(top(col)); if (f) out.push({ pile: 't' + i, idx: col.length - 1, to: f, why: 'foundation' });
+    }
+    for (const c of wasteCards) { const f = toFoundation(c); if (f) out.push({ ...src(c), to: f, why: 'foundation' }); }
+    // 2. move a stack to uncover a face-down card (or free a column for a waiting king)
+    const kingWaiting = wasteCards.some(c => rankOf(c) === 13 || isJoker(c)) ||
+      S.t.some(col => col.some((c, i) => i > 0 && S.up[c] && (rankOf(c) === 13 || isJoker(c))));
+    for (let i = 0; i < 7; i++) {
+      const col = S.t[i]; const f0 = col.findIndex(c => S.up[c]);
+      if (f0 < 0) continue;
+      for (let j = 0; j < 7; j++) {
+        if (j === i || !canDrop(col.slice(f0), 't' + j)) continue;
+        if (f0 > 0) { out.push({ pile: 't' + i, idx: f0, to: 't' + j, why: 'reveal' }); break; }
+        if (S.t[j].length && kingWaiting) { out.push({ pile: 't' + i, idx: f0, to: 't' + j, why: 'empty' }); break; }
+      }
+      // 3. split a stack so the card underneath can go to a foundation
+      for (let k = f0 + 1; k < col.length; k++) {
+        if (!toFoundation(col[k - 1])) continue;
+        for (let j = 0; j < 7; j++) if (j !== i && S.t[j].length && canDrop(col.slice(k), 't' + j)) { out.push({ pile: 't' + i, idx: k, to: 't' + j, why: 'split' }); break; }
+      }
+    }
+    // 4. a waste card onto the tableau
+    for (const c of wasteCards) {
+      if (isJoker(c)) { out.push({ ...src(c), to: null, why: 'joker' }); continue; }
+      for (let j = 0; j < 7; j++) if (canDrop([c], 't' + j)) { out.push({ ...src(c), to: 't' + j, why: 'waste' }); break; }
+    }
+    return out;
+  }
+  const isStuck = () => !won && !canAuto() && usefulMoves(true).length === 0;
+
+  function checkStuck() {
+    if (!settings.stuckAlert || busy || won || stuckShownAt === moves) return;
+    if (isStuck()) {
+      stuckShownAt = moves;
+      setTimeout(() => { if (!won && current === 'patience' && !anyModal()) showStuck(); }, 450);
+    }
+  }
+  function showStuck() {
+    const j = $('#stuckJoker');
+    j.style.display = S.jokersLeft > 0 ? '' : 'none';
+    j.textContent = `🃏 Joker inzetten (${S.jokersLeft} over)`;
+    $('#stuckUndo').disabled = !history.length;
+    $('#stuckText').textContent = 'Er zijn geen zinvolle zetten meer mogelijk, ook niet met de kaarten uit de stapel.' +
+      (S.jokersLeft > 0 ? ' Zet een joker in om verder te kunnen.' : '');
+    openModal('stuckModal');
+    vibrate(30);
+  }
+
+  function hint() {
+    if (busy || won) return;
+    clearHints();
+    const h = usefulMoves(false)[0];
+    if (h) {
+      if (h.why === 'joker') { cardEl[top(S.waste)].classList.add('hint'); toast('Sleep de joker naar een stapel'); }
+      else {
+        pile(h.pile).slice(h.idx).forEach(c => cardEl[c].classList.add('hint'));
+        const tp = pile(h.to);
+        (tp.length ? cardEl[top(tp)] : slotEl[h.to]).classList.add('hint');
+      }
+    } else if (usefulMoves(true).length) {
+      const c = top(S.stock);
+      (c != null ? cardEl[c] : slotEl.stock).classList.add('hint');
+      toast(S.stock.length ? 'Trek een kaart van de stapel' : 'Draai de stapel om');
+    } else if (canAuto()) {
+      toast('Tik op "Automatisch afmaken"');
+    } else { showStuck(); return; }
+    setTimeout(clearHints, 1600);
+  }
+  function clearHints() { board.querySelectorAll('.hint').forEach(e => e.classList.remove('hint')); }
+
+  let toastT;
+  function toast(html) {
+    const t = $('#toast'); t.innerHTML = html; t.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  /* ---------- Auto-complete & win ---------- */
+  const canAuto = () => !won && !autoFailed && S.stock.every(isJoker) && S.waste.every(isJoker) && S.t.every(col => col.every(c => S.up[c]));
+  function autoComplete() {
+    if (busy) return;
+    busy = true; $('#autoBtn').classList.remove('show');
+    pushHistory();
+    const setAsideJokers = () => {
+      for (const n of ['stock', 'waste', 't0', 't1', 't2', 't3', 't4', 't5', 't6']) {
+        const p = pile(n);
+        for (let i = p.length - 1; i >= 0; i--) if (isJoker(p[i]) && (n[0] !== 't' || i === p.length - 1)) S.out.push(p.splice(i, 1)[0]);
+      }
+    };
+    const step = () => {
+      setAsideJokers();
+      let best = null;
+      for (let i = 0; i < 7; i++) {
+        const col = S.t[i]; if (!col.length) continue;
+        const c = top(col), f = toFoundation(c);
+        if (f && (!best || rankOf(c) < best.r)) best = { i, f, r: rankOf(c) };
+      }
+      if (!best) { busy = false; autoFailed = true; render(); save(); return; }
+      pile(best.f).push(S.t[best.i].pop());
+      moves++;
+      render();
+      if (checkWin()) { busy = false; return; }
+      setTimeout(step, 70);
+    };
+    step();
+  }
+
+  function checkWin() {
+    if (!S.f.every(p => p.length === 13)) return false;
+    won = true; stopTimer();
+    const t = curTime();
+    stats.won++; stats.streak++; stats.bestStreak = Math.max(stats.bestStreak, stats.streak);
+    const newBest = stats.best == null || t < stats.best;
+    if (newBest) stats.best = t;
+    if (stats.bestMoves == null || moves < stats.bestMoves) stats.bestMoves = moves;
+    store.set('patience.stats', stats);
+    store.del('patience.save');
+    $('#autoBtn').classList.remove('show');
+    vibrate(60);
+    celebrate();
+    const usedJ = S.jokersTotal - S.jokersLeft;
+    setTimeout(() => {
+      $('#winText').innerHTML = `Tijd <b>${fmt(t)}</b> · ${moves} zetten` + (usedJ ? ` · ${usedJ} joker${usedJ > 1 ? 's' : ''}` : '') + (newBest ? '<br>🎉 Nieuwe beste tijd!' : '');
+      openModal('winModal');
+    }, 1500);
+    return true;
+  }
+  function celebrate() {
+    const W = board.clientWidth, H = board.clientHeight;
+    for (let c = 0; c < 52; c++) {
+      const e = cardEl[c];
+      e.classList.add('celebrate');
+      const x = Math.random() * (W - G.cw), y = Math.random() * (H - G.ch), r = (Math.random() - .5) * 60;
+      setTimeout(() => { e.style.transform = `translate(${x}px,${y}px) rotate(${r}deg)`; }, c * 15);
+    }
+  }
+
+  /* ---------- Layout & render ---------- */
+  function layout() {
+    const W = board.clientWidth, H = board.clientHeight;
+    const gap = Math.max(3, Math.min(8, W * 0.008));
+    let cw = (W - gap * 8) / 7, ch = cw * 1.42;
+    const maxCh = H * 0.24;
+    if (ch > maxCh) { ch = maxCh; cw = ch / 1.42; }
+    const ox = (W - (cw * 7 + gap * 6)) / 2;
+    const right = settings.stockSide === 'rechts';
+    const colX = i => ox + i * (cw + gap);
+    G = { W, H, gap, cw, ch, ox, topY: gap, tabY: gap * 2.5 + ch, colX, right,
+      stockX: colX(right ? 6 : 0), wasteX: colX(right ? 5 : 1), fX: f => colX(right ? f : 3 + f) };
+    board.style.setProperty('--cw', cw + 'px');
+    board.style.setProperty('--ch', ch + 'px');
+    const place = (n, x, y) => { slotEl[n].style.left = x + 'px'; slotEl[n].style.top = y + 'px'; };
+    place('stock', G.stockX, G.topY); place('waste', G.wasteX, G.topY);
+    for (let i = 0; i < 4; i++) place('f' + i, G.fX(i), G.topY);
+    for (let i = 0; i < 7; i++) place('t' + i, colX(i), G.tabY);
+  }
+
+  function computePositions() {
+    const { cw, ch, topY, tabY, colX, H } = G;
+    S.stock.forEach((c, i) => pos[c] = { x: G.stockX, y: topY, z: 10 + i });
+    const n = S.waste.length, fan = S.draw === 3 ? Math.min(3, n) : 1, dir = G.right ? -1 : 1;
+    S.waste.forEach((c, i) => {
+      const k = i - (n - fan);
+      pos[c] = { x: G.wasteX + (k > 0 ? dir * k * cw * 0.34 : 0), y: topY, z: 100 + i };
+    });
+    S.f.forEach((p, f) => p.forEach((c, i) => pos[c] = { x: G.fX(f), y: topY, z: 200 + i }));
+    const avail = H - tabY - ch - G.gap;
+    S.t.forEach((col, j) => {
+      let down = ch * 0.11, up = ch * 0.31, need = 0;
+      for (let i = 0; i < col.length - 1; i++) need += S.up[col[i]] ? up : down;
+      if (need > avail && need > 0) { const k = avail / need; down *= k; up *= k; }
+      let y = tabY;
+      col.forEach((c, i) => { pos[c] = { x: colX(j), y, z: 300 + i }; y += S.up[c] ? up : down; });
+    });
+  }
+
+  function render(noAnim) {
+    computePositions();
+    const inGame = new Set([...S.stock, ...S.waste, ...S.f.flat(), ...S.t.flat()]);
+    for (let c = 0; c < NCARDS; c++) {
+      const e = cardEl[c], p = pos[c];
+      e.classList.remove('celebrate');
+      if (!inGame.has(c)) { e.classList.add('gone'); continue; }
+      if (e.classList.contains('gone')) {         // (re)appearing card: start from below / from the stock
+        e.style.transition = 'none';
+        e.style.transform = isJoker(c) ? `translate(${G.W / 2 - G.cw / 2}px,${G.H}px)` : `translate(${G.stockX}px,${G.topY}px)`;
+        e.classList.remove('gone');
+        void e.offsetWidth; e.style.transition = '';
+      }
+      if (noAnim) e.style.transition = 'none';
+      e.classList.toggle('down', !S.up[c]);
+      e.style.transform = `translate(${p.x}px,${p.y}px)`;
+      e.style.zIndex = p.z;
+      if (noAnim) { void e.offsetWidth; e.style.transition = ''; }
+    }
+    slotEl.stock.textContent = S.stock.length ? '' : (S.waste.length ? (canRecycle() ? '↻' : '✕') : '');
+    updateInfo();
+    $('#btnUndo').disabled = !history.length || won;
+    const jb = $('#btnJoker');
+    jb.classList.toggle('off', !S.jokersTotal);
+    jb.disabled = S.jokersLeft <= 0 || won;
+    $('#jokerCount').textContent = S.jokersLeft;
+    $('#autoBtn').classList.toggle('show', canAuto() && !busy);
+  }
+  function updateInfo() {
+    $('#time').textContent = fmt(curTime());
+    $('#moves').textContent = moves;
+  }
+
+  /* ---------- Pointer input ---------- */
+  let drag = null;
+  board.addEventListener('pointerdown', e => {
+    if (busy || won || drag) return;
+    if (e.target.closest('#autoBtn')) return;
+    clearHints();
+    const cardE = e.target.closest('.card'), slotE = e.target.closest('.slot');
+    if (!cardE) { if (slotE && slotE.dataset.pile === 'stock') drawStock(); return; }
+    const id = +cardE.dataset.id, loc = locate(id);
+    if (!loc) return;
+    if (loc.pile === 'stock') { drawStock(); return; }
+    if (!movable(loc.pile, loc.idx)) return;
+    drag = { from: loc.pile, idx: loc.idx, ids: pile(loc.pile).slice(loc.idx), x0: e.clientX, y0: e.clientY, dx: 0, dy: 0, started: false, pid: e.pointerId };
+    try { board.setPointerCapture(e.pointerId); } catch (_) {}
+  });
+  board.addEventListener('pointermove', e => {
+    if (!drag || e.pointerId !== drag.pid) return;
+    drag.dx = e.clientX - drag.x0; drag.dy = e.clientY - drag.y0;
+    if (!drag.started) {
+      if (Math.hypot(drag.dx, drag.dy) < 8) return;
+      drag.started = true;
+      drag.ids.forEach(c => cardEl[c].classList.add('dragging'));
+    }
+    drag.ids.forEach((c, i) => {
+      const p = pos[c], el = cardEl[c];
+      el.style.transform = `translate(${p.x + drag.dx}px,${p.y + drag.dy}px)`;
+      el.style.zIndex = 1000 + i;
+    });
+  });
+  function endDrag(e, cancel) {
+    if (!drag || e.pointerId !== drag.pid) return;
+    const d = drag; drag = null;
+    d.ids.forEach(c => cardEl[c].classList.remove('dragging'));
+    if (cancel) { render(); return; }
+    if (!d.started) { tap(d.from, d.idx); return; }
+    const target = dropTarget(d);
+    if (target) { moveCards(d.from, d.idx, target); vibrate(8); }
+    else render();
+  }
+  board.addEventListener('pointerup', e => endDrag(e, false));
+  board.addEventListener('pointercancel', e => endDrag(e, true));
+
+  function dropTarget(d) {
+    const p0 = pos[d.ids[0]];
+    const r = { x: p0.x + d.dx, y: p0.y + d.dy, w: G.cw, h: G.ch };
+    const cands = [];
+    if (d.ids.length === 1) cands.push(...FND);
+    for (let i = 0; i < 7; i++) cands.push('t' + i);
+    let best = null, bestA = 0;
+    for (const t of cands) {
+      if (t === d.from || !canDrop(d.ids, t)) continue;
+      const p = pile(t);
+      let tr;
+      if (t[0] === 't') {
+        const y = p.length ? pos[top(p)].y : G.tabY;
+        tr = { x: G.colX(+t.slice(1)), y: G.tabY - G.gap, w: G.cw, h: y + G.ch - G.tabY + G.ch * 0.6 };
+      } else tr = { x: G.fX(+t.slice(1)), y: G.topY, w: G.cw, h: G.ch };
+      const ox = Math.min(r.x + r.w, tr.x + tr.w) - Math.max(r.x, tr.x);
+      const oy = Math.min(r.y + r.h, tr.y + tr.h) - Math.max(r.y, tr.y);
+      const a = ox > 0 && oy > 0 ? ox * oy : 0;
+      if (a > bestA) { bestA = a; best = t; }
+    }
+    return best;
+  }
+
+  /* ---------- Persistence ---------- */
+  function save() {
+    if (!S || won) return;
+    store.set('patience.save', { S, moves, elapsed: curTime(), history: history.slice(-150), counted });
+  }
+  function load() {
+    const d = store.get('patience.save', null);
+    if (!d || !d.S) return false;
+    S = migrate(d.S); moves = d.moves; elapsed = d.elapsed || 0; counted = !!d.counted;
+    history = d.history || [];
+    runningSince = null; won = false; busy = false; stuckShownAt = -1; autoFailed = false;
+    return true;
+  }
+  const hasSave = () => { const d = store.get('patience.save', null); return !!(d && d.S && d.moves > 0); };
+
+  /* ---------- New game ---------- */
+  function newGame() {
+    if (counted && !won) { stats.streak = 0; store.set('patience.stats', stats); }
+    stopTimer();
+    deal();
+    closeModals();
+    layout();
+    for (let c = 0; c < NCARDS; c++) {
+      const e = cardEl[c]; e.classList.remove('celebrate'); e.style.transition = 'none';
+      e.classList.toggle('gone', isJoker(c));
+      e.classList.add('down'); e.style.transform = `translate(${G.stockX}px,${G.topY}px)`; e.style.zIndex = 10;
+      void e.offsetWidth; e.style.transition = '';
+    }
+    requestAnimationFrame(() => { render(); checkStuck(); });
+    save();
+  }
+  let confirmAction = null;
+  function confirmBox(title, text, ok, action) {
+    $('#confirmTitle').textContent = title; $('#confirmText').textContent = text; $('#confirmOk').textContent = ok;
+    confirmAction = action; closeModals(); openModal('confirmModal');
+  }
+  $('#confirmOk').addEventListener('click', () => { const a = confirmAction; confirmAction = null; closeModals(); if (a) a(); });
+  function askNewGame() {
+    if (moves > 0 && !won) confirmBox('Nieuw spel?', 'Het huidige spel telt dan als verloren.', 'Ja, nieuw spel', newGame);
+    else newGame();
+  }
+
+  /* ---------- Options ---------- */
+  const ONOFF = [[true, 'Aan'], [false, 'Uit']];
+  const OPTIONS = [
+    { section: 'Spel', note: 'geldt vanaf het volgende spel' },
+    { key: 'draw', label: 'Kaarten trekken', choices: [[1, '1 kaart'], [3, '3 kaarten']] },
+    { key: 'rounds', label: 'Rondes door de stapel', choices: [[0, 'Onbeperkt'], [3, '3 rondes'], [1, '1 ronde']] },
+    { key: 'jokers', label: 'Jokers per spel', choices: [[0, 'Geen'], [1, '1'], [2, '2'], [3, '3']] },
+    { section: 'Weergave' },
+    { key: 'faces', label: 'Kaartopdruk', choices: [['groot', 'Groot'], ['plaatjes', 'Klassiek'], ['eenvoudig', 'Zonder plaatjes']] },
+    { key: 'letters', label: 'Letters op de kaarten', choices: [['nl', 'H · V · B'], ['en', 'K · Q · J']] },
+    { key: 'stockSide', label: 'Trekstapel', choices: [['links', 'Links'], ['rechts', 'Rechts']] },
+    { key: 'table', label: 'Tafelkleur', swatch: TABLES },
+    { key: 'back', label: 'Achterkant kaarten', swatch: BACKS },
+    { key: 'timer', label: 'Tijd tonen', choices: ONOFF },
+    { section: 'Bediening' },
+    { key: 'tapMove', label: 'Tik op een kaart om te verplaatsen', choices: ONOFF },
+    { key: 'autoPlay', label: 'Azen en tweeën automatisch afleggen', choices: ONOFF },
+    { key: 'stuckAlert', label: 'Melding als er geen zetten meer zijn', choices: ONOFF },
+    { key: 'vibrate', label: 'Trillen', choices: ONOFF }
+  ];
+  const cap = s => s[0].toUpperCase() + s.slice(1);
+  function renderOptions() {
+    const pending = S && (settings.draw !== S.draw || settings.rounds !== S.rounds || settings.jokers !== S.jokersTotal);
+    let h = '';
+    for (const o of OPTIONS) {
+      if (o.section) {
+        h += `<div class="opt-section">${o.section}${o.note ? `<small>(${o.note})</small>` : ''}</div>`;
+        if (o.note && pending) h += `<div class="note">Gewijzigd — start een nieuw spel om dit te gebruiken.</div>`;
+        continue;
+      }
+      const choices = o.swatch ? Object.keys(o.swatch).map(k => [k, `<span class="swatch" style="background:${o.swatch[k][0]}"></span>`, cap(k)]) : o.choices;
+      h += `<div class="opt"><div class="opt-label">${o.label}</div><div class="seg">` +
+        choices.map(([v, l, title]) => `<button data-key="${o.key}" data-val='${JSON.stringify(v)}' class="${settings[o.key] === v ? 'on' : ''}"${title ? ` aria-label="${title}" title="${title}"` : ''}>${l}</button>`).join('') +
+        `</div></div>`;
+    }
+    $('#optList').innerHTML = h;
+    const pct = stats.played ? Math.round(stats.won / stats.played * 100) : 0;
+    const cells = [
+      ['Gespeeld', stats.played], ['Gewonnen', stats.won], ['Winst %', pct + '%'],
+      ['Beste tijd', stats.best == null ? '–' : fmt(stats.best)], ['Minste zetten', stats.bestMoves ?? '–'], ['Beste reeks', stats.bestStreak]
+    ];
+    $('#statsGrid').innerHTML = cells.map(([l, v]) => `<div class="stat"><b>${v}</b><small>${l}</small></div>`).join('');
+  }
+  $('#optList').addEventListener('click', e => {
+    const b = e.target.closest('button[data-key]'); if (!b) return;
+    const k = b.dataset.key, v = JSON.parse(b.dataset.val);
+    settings[k] = v; saveSettings();
+    if (k === 'faces' || k === 'letters') paintFaces();
+    if (k === 'table' || k === 'back' || k === 'timer') applyTheme();
+    if (k === 'stockSide' && S && !won) { layout(); render(); }
+    if (k === 'stuckAlert') stuckShownAt = -1;
+    renderOptions();
+  });
+  $('#resetStats').addEventListener('click', () => confirmBox('Statistieken wissen?', 'Alle gespeelde en gewonnen spellen worden op nul gezet.', 'Wissen', () => {
+    stats = NEWSTATS(); store.set('patience.stats', stats); renderOptions(); openModal('optModal');
+  }));
+  const openOptions = () => { renderOptions(); openModal('optModal'); };
+
+  $('#btnNew').addEventListener('click', askNewGame);
+  $('#optNew').addEventListener('click', askNewGame);
+  $('#btnUndo').addEventListener('click', undo);
+  $('#btnHint').addEventListener('click', hint);
+  $('#btnJoker').addEventListener('click', useJoker);
+  $('#btnOptions').addEventListener('click', openOptions);
+  $('#btnOptions2').addEventListener('click', openOptions);
+  $('#btnBack').addEventListener('click', () => leave());
+  $('#autoBtn').addEventListener('click', autoComplete);
+  $('#winNew').addEventListener('click', newGame);
+  $('#winMenu').addEventListener('click', () => { closeModals(); leave(); });
+  $('#stuckJoker').addEventListener('click', useJoker);
+  $('#stuckUndo').addEventListener('click', undo);
+  $('#stuckNew').addEventListener('click', () => { closeModals(); newGame(); });
+
+  let resizeT;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeT);
+    resizeT = setTimeout(() => { if (current === 'patience' && S && !won) { layout(); render(true); } }, 60);
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (current !== 'patience') return;
+    if (document.hidden) { stopTimer(); save(); } else startTimer();
+  });
+
+  function enter() {
+    show('patience');
+    applyTheme();
+    if (!load()) { newGame(); return; }
+    layout(); render(true); startTimer();
+    checkStuck();
+  }
+  function leave() {
+    stopTimer(); save();
+    show('menu'); refreshMenu();
+  }
+  // test hook
+  window.__patience = { get S() { return S; }, set S(v) { S = migrate(v); history = []; moves = 1; won = false; stuckShownAt = -1; layout(); render(true); checkStuck(); }, usefulMoves, isStuck };
+  return { enter, leave, hasSave, save };
+})();
+
+/* ================================================================
+   AIRHOCKEY
+   ================================================================ */
+const AirHockey = (() => {
+  const AD = { mode: 'cpu', level: 'normaal', target: 7, speed: 'normaal', sound: true, goalSize: 'normaal', name1: 'Speler 1', name2: 'Speler 2' };
+  const GOALS = { klein: 0.30, normaal: 0.38, groot: 0.46 };
+  const opt = Object.assign({}, AD, store.get('air.settings', {}));
+  const saveOpt = () => store.set('air.settings', opt);
+  let stats = Object.assign({ played: 0, won: 0, goalsFor: 0, goalsAgainst: 0 }, store.get('air.stats', {}));
+  const LEVEL = { makkelijk: { speed: 0.9, err: 0.35, react: 0.35 }, normaal: { speed: 1.5, err: 0.15, react: 0.18 }, moeilijk: { speed: 2.3, err: 0.04, react: 0.06 } };
+  const SPEED = { rustig: 1.9, normaal: 2.6, snel: 3.4 };
+
+  const wrap = $('#ahWrap'), cv = $('#ahCanvas'), ctx = cv.getContext('2d');
+  let T = null;                        // table geometry
+  let puck, mal, score, state = 'idle', freezeUntil = 0, raf = 0, lastT = 0, aiNext = 0, aiTarget = null, running = false;
+  const pointers = new Map();          // pointerId -> mallet index
+
+  /* ---------- sound ---------- */
+  let ac = null;
+  function beep(freq, dur, vol) {
+    if (!opt.sound) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'triangle'; o.frequency.value = freq;
+      g.gain.setValueAtTime(vol || 0.15, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + dur);
+      o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + dur);
+    } catch (e) {}
+  }
+
+  /* ---------- geometry ---------- */
+  function layout() {
+    const dpr = window.devicePixelRatio || 1;
+    const W = wrap.clientWidth, H = wrap.clientHeight;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const m = 10, rail = Math.max(8, Math.min(W, H) * 0.025);
+    let w = W - 2 * m, h = H - 2 * m;
+    if (h / w > 2.1) h = w * 2.1;               // don't get silly tall
+    if (h / w < 1.3) w = h / 1.3;               // landscape: keep a portrait table
+    const x0 = (W - w) / 2, y0 = (H - h) / 2;
+    const old = T;
+    T = { W, H, rail, x0, y0, w, h, L: x0 + rail, R: x0 + w - rail, Tp: y0 + rail, B: y0 + h - rail };
+    T.cx = (T.L + T.R) / 2; T.cy = (T.Tp + T.B) / 2; T.iw = T.R - T.L; T.ih = T.B - T.Tp;
+    T.goal = T.iw * (GOALS[opt.goalSize] || 0.38); T.pr = T.iw * 0.045; T.mr = T.iw * 0.075;
+    if (old && puck) {                           // keep positions when the screen size changes
+      const map = o => { o.x = T.L + (o.x - old.L) / old.iw * T.iw; o.y = T.Tp + (o.y - old.Tp) / old.ih * T.ih; o.r = o === puck ? T.pr : T.mr; };
+      map(puck); mal.forEach(map);
+      mal.forEach(m => { m.tx = m.x; m.ty = m.y; });
+    }
+  }
+
+  function resetPositions(servingSide) { // servingSide 0 = bottom player gets the puck
+    puck = { x: T.cx, y: servingSide === 1 ? T.Tp + T.ih * 0.3 : T.B - T.ih * 0.3, vx: 0, vy: 0, r: T.pr };
+    mal = [
+      { x: T.cx, y: T.B - T.ih * 0.1, vx: 0, vy: 0, r: T.mr, tx: T.cx, ty: T.B - T.ih * 0.1, col: '#e03a3a', dark: '#a51e1e' },
+      { x: T.cx, y: T.Tp + T.ih * 0.1, vx: 0, vy: 0, r: T.mr, tx: T.cx, ty: T.Tp + T.ih * 0.1, col: '#2f78e0', dark: '#1b4fa0' }
+    ];
+  }
+
+  const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const nm = i => opt.mode === 'cpu' ? (i === 0 ? 'Jij' : 'Computer') : ((i === 0 ? opt.name1 : opt.name2).trim() || (i === 0 ? 'Speler 1' : 'Speler 2'));
+
+  function newMatch(keepModal) {
+    if (keepModal !== true) closeModals();
+    score = [0, 0];
+    layout();
+    resetPositions(0);
+    state = 'play'; freezeUntil = performance.now() + 600;
+    updateScore();
+    msg('Speel!', 800);
+  }
+
+  function updateScore() {
+    $('#ahMe').textContent = score[0]; $('#ahThem').textContent = score[1];
+    $('#ahMeLbl').firstChild.textContent = nm(0) + ' ';
+    $('#ahThemLbl').textContent = nm(1);
+  }
+  let msgText = '', msgUntil = 0;
+  function msg(t, ms) { msgText = t; msgUntil = performance.now() + (ms || 1000); }
+
+  /* ---------- input ---------- */
+  function toTable(e) { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+  function setTarget(i, p) {
+    const m = mal[i];
+    m.tx = p.x; m.ty = p.y - (i === 0 ? m.r * 0.6 : -m.r * 0.6);  // keep the mallet just above/below the finger
+  }
+  cv.addEventListener('pointerdown', e => {
+    if (!puck) return;
+    const p = toTable(e);
+    const i = opt.mode === 'cpu' ? 0 : (p.y > T.cy ? 0 : 1);
+    if ([...pointers.values()].includes(i)) return;
+    pointers.set(e.pointerId, i);
+    try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+    setTarget(i, p);
+    if (ac && ac.state === 'suspended') ac.resume();
+  });
+  cv.addEventListener('pointermove', e => { if (pointers.has(e.pointerId)) setTarget(pointers.get(e.pointerId), toTable(e)); });
+  const up = e => pointers.delete(e.pointerId);
+  cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+
+  /* ---------- AI ---------- */
+  function ai(now, dt) {
+    const m = mal[1], L = LEVEL[opt.level];
+    if (now >= aiNext || !aiTarget) {
+      aiNext = now + L.react * 1000 * (0.6 + Math.random() * 0.8);
+      const home = { x: T.cx, y: T.Tp + T.ih * 0.1 };
+      const inMyHalf = puck.y < T.cy + puck.r;
+      if (inMyHalf) {
+        // aim at the opponent's goal, with some error
+        const gx = T.cx + (Math.random() - .5) * T.goal * (1 + L.err * 4);
+        let dx = gx - puck.x, dy = T.B - puck.y; const d = Math.hypot(dx, dy) || 1; dx /= d; dy /= d;
+        if (m.y > puck.y - puck.r * 0.5) {
+          // we're on the wrong side of the puck: go around it
+          const side = m.x < puck.x ? -1 : 1;
+          aiTarget = { x: puck.x + side * (m.r + puck.r) * 1.3, y: puck.y - (m.r + puck.r) * 1.2, strike: false };
+        } else {
+          aiTarget = { x: puck.x + dx * T.mr * 0.8, y: puck.y + dy * T.mr * 0.8, strike: true };   // run through the puck
+        }
+      } else {
+        // defend: stay between the puck and our goal
+        const f = 0.45 + (1 - L.err) * 0.2;
+        aiTarget = { x: T.cx + (puck.x - T.cx) * f + (Math.random() - .5) * T.iw * L.err, y: home.y + (puck.vy < 0 ? 0 : T.ih * 0.05), strike: false };
+      }
+    }
+    const maxV = L.speed * T.ih * (aiTarget.strike ? 1.15 : 1);
+    let dx = aiTarget.x - m.x, dy = aiTarget.y - m.y; const d = Math.hypot(dx, dy);
+    const step = Math.min(d, maxV * dt);
+    m.tx = m.x + (d ? dx / d * step : 0); m.ty = m.y + (d ? dy / d * step : 0);
+  }
+
+  /* ---------- physics ---------- */
+  function clampMallet(i, m) {
+    const lo = i === 0 ? T.cy + m.r : T.Tp + m.r, hi = i === 0 ? T.B - m.r : T.cy - m.r;
+    m.tx = Math.max(T.L + m.r, Math.min(T.R - m.r, m.tx));
+    m.ty = Math.max(lo, Math.min(hi, m.ty));
+  }
+  function collideMallet(m, sub) {
+    const dx = puck.x - m.x, dy = puck.y - m.y, d = Math.hypot(dx, dy), min = puck.r + m.r;
+    if (d >= min || d === 0) return;
+    const nx = dx / d, ny = dy / d;
+    puck.x = m.x + nx * min; puck.y = m.y + ny * min;
+    const rvx = puck.vx - m.vx, rvy = puck.vy - m.vy, dot = rvx * nx + rvy * ny;
+    if (dot < 0) {
+      puck.vx -= 1.9 * dot * nx; puck.vy -= 1.9 * dot * ny;
+      const hit = Math.min(1, -dot / (T.ih * 2));
+      if (hit > 0.05) { beep(420 + hit * 300, 0.06, 0.08 + hit * 0.2); if (hit > 0.3) vibrate(10); }
+    }
+  }
+  function collidePost(px, py) {
+    const dx = puck.x - px, dy = puck.y - py, d = Math.hypot(dx, dy);
+    if (d >= puck.r || d === 0) return;
+    const nx = dx / d, ny = dy / d;
+    puck.x = px + nx * puck.r; puck.y = py + ny * puck.r;
+    const dot = puck.vx * nx + puck.vy * ny;
+    if (dot < 0) { puck.vx -= 1.8 * dot * nx; puck.vy -= 1.8 * dot * ny; }
+  }
+  function step(dt, now) {
+    if (opt.mode === 'cpu') ai(now, dt);
+    mal.forEach((m, i) => clampMallet(i, m));
+    const N = 6, h = dt / N;
+    const start = mal.map(m => ({ x: m.x, y: m.y }));
+    mal.forEach(m => { m.vx = (m.tx - m.x) / dt; m.vy = (m.ty - m.y) / dt; });
+    const maxV = SPEED[opt.speed] * T.ih;
+    for (let k = 1; k <= N; k++) {
+      mal.forEach((m, i) => { m.x = start[i].x + (m.tx - start[i].x) * k / N; m.y = start[i].y + (m.ty - start[i].y) * k / N; });
+      puck.x += puck.vx * h; puck.y += puck.vy * h;
+      mal.forEach(m => collideMallet(m, h));
+      const inGoalX = Math.abs(puck.x - T.cx) < T.goal / 2;
+      if (puck.x - puck.r < T.L) { puck.x = T.L + puck.r; puck.vx = Math.abs(puck.vx) * 0.9; beep(220, 0.04, 0.06); }
+      if (puck.x + puck.r > T.R) { puck.x = T.R - puck.r; puck.vx = -Math.abs(puck.vx) * 0.9; beep(220, 0.04, 0.06); }
+      if (!inGoalX) {
+        if (puck.y - puck.r < T.Tp) { puck.y = T.Tp + puck.r; puck.vy = Math.abs(puck.vy) * 0.9; beep(220, 0.04, 0.06); }
+        if (puck.y + puck.r > T.B) { puck.y = T.B - puck.r; puck.vy = -Math.abs(puck.vy) * 0.9; beep(220, 0.04, 0.06); }
+      }
+      [[T.cx - T.goal / 2, T.Tp], [T.cx + T.goal / 2, T.Tp], [T.cx - T.goal / 2, T.B], [T.cx + T.goal / 2, T.B]].forEach(p => collidePost(p[0], p[1]));
+      const sp = Math.hypot(puck.vx, puck.vy);
+      if (sp > maxV) { puck.vx *= maxV / sp; puck.vy *= maxV / sp; }
+      if (puck.y < T.Tp - puck.r) return goal(0);
+      if (puck.y > T.B + puck.r) return goal(1);
+    }
+    const fr = Math.pow(0.62, dt);
+    puck.vx *= fr; puck.vy *= fr;
+    // puck resting exactly on the centre line would be unreachable: nudge it
+    if (Math.hypot(puck.vx, puck.vy) < T.ih * 0.02 && Math.abs(puck.y - T.cy) < puck.r) puck.vy += (puck.y < T.cy ? -1 : 1) * T.ih * 0.05;
+  }
+
+  function goal(side) { // side 0 = bottom (red) scored
+    score[side]++;
+    updateScore();
+    beep(side === 0 ? 660 : 300, 0.35, 0.25); beep(side === 0 ? 880 : 200, 0.5, 0.15);
+    vibrate(side === 0 ? 40 : 80);
+    const me = opt.mode === 'cpu';
+    msg(me ? (side === 0 ? 'GOAL! 🎉' : 'Tegendoelpunt') : 'Goal voor ' + nm(side) + '!', 1300);
+    if (score[side] >= opt.target) return endMatch(side);
+    resetPositions(side === 0 ? 1 : 0);
+    pointers.clear();
+    freezeUntil = performance.now() + 1200;
+  }
+
+  function endMatch(side) {
+    state = 'over';
+    if (opt.mode === 'cpu') {
+      stats.played++; if (side === 0) stats.won++;
+      stats.goalsFor += score[0]; stats.goalsAgainst += score[1];
+      store.set('air.stats', stats);
+    }
+    const cpu = opt.mode === 'cpu';
+    $('#ahWinEmoji').textContent = cpu && side === 1 ? '🤖' : '🏆';
+    $('#ahWinTitle').textContent = cpu ? (side === 0 ? 'Jij wint!' : 'De computer wint') : nm(side) + ' wint!';
+    $('#ahWinText').innerHTML = cpu ? `Eindstand <b>${score[0]} – ${score[1]}</b> · niveau ${opt.level}`
+      : `${esc(nm(0))} <b>${score[0]} – ${score[1]}</b> ${esc(nm(1))}`;
+    if (!cpu) msg(nm(side) + ' wint! 🏆', 2500);
+    setTimeout(() => openModal('ahWinModal'), 900);
+  }
+
+  /* ---------- drawing ---------- */
+  function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
+  function draw() {
+    const { W, H } = T;
+    ctx.clearRect(0, 0, W, H);
+    // rails
+    rr(T.x0, T.y0, T.w, T.h, T.rail * 2.2); ctx.fillStyle = '#2a3b55'; ctx.fill();
+    // surface
+    const g = ctx.createLinearGradient(0, T.Tp, 0, T.B);
+    g.addColorStop(0, '#dcebf7'); g.addColorStop(.5, '#f2f8fd'); g.addColorStop(1, '#dcebf7');
+    rr(T.L, T.Tp, T.iw, T.ih, T.rail * 1.4); ctx.fillStyle = g; ctx.fill();
+    ctx.save(); rr(T.L, T.Tp, T.iw, T.ih, T.rail * 1.4); ctx.clip();
+    // air holes
+    ctx.fillStyle = 'rgba(40,70,110,.08)';
+    const sp = T.iw / 14;
+    for (let y = T.Tp + sp / 2; y < T.B; y += sp) for (let x = T.L + sp / 2; x < T.R; x += sp) { ctx.beginPath(); ctx.arc(x, y, 1.2, 0, 7); ctx.fill(); }
+    // markings
+    ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(214,51,51,.75)';
+    ctx.beginPath(); ctx.moveTo(T.L, T.cy); ctx.lineTo(T.R, T.cy); ctx.stroke();
+    ctx.beginPath(); ctx.arc(T.cx, T.cy, T.iw * 0.16, 0, 7); ctx.stroke();
+    ctx.strokeStyle = 'rgba(47,120,224,.5)'; ctx.lineWidth = 2;
+    [T.Tp + T.ih * 0.25, T.B - T.ih * 0.25].forEach(y => { ctx.beginPath(); ctx.moveTo(T.L, y); ctx.lineTo(T.R, y); ctx.stroke(); });
+    ctx.strokeStyle = 'rgba(214,51,51,.6)'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(T.cx, T.Tp, T.goal * 0.62, 0, Math.PI); ctx.stroke();
+    ctx.beginPath(); ctx.arc(T.cx, T.B, T.goal * 0.62, Math.PI, 0); ctx.stroke();
+    ctx.restore();
+    // goals
+    ctx.fillStyle = '#0b121b';
+    rr(T.cx - T.goal / 2, T.y0 - 2, T.goal, T.rail + 4, 4); ctx.fill();
+    rr(T.cx - T.goal / 2, T.B - 2, T.goal, T.rail + 4, 4); ctx.fill();
+    // puck
+    if (puck) {
+      const drawDisc = (x, y, r, fill, ring) => {
+        ctx.beginPath(); ctx.arc(x + 2, y + 3, r, 0, 7); ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.fill();
+        ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fillStyle = fill; ctx.fill();
+        if (ring) { ctx.beginPath(); ctx.arc(x, y, r * 0.7, 0, 7); ctx.strokeStyle = ring; ctx.lineWidth = r * 0.12; ctx.stroke(); }
+      };
+      drawDisc(puck.x, puck.y, puck.r, '#1d1f24', '#4a4f58');
+      mal.forEach(m => {
+        drawDisc(m.x, m.y, m.r, m.col, m.dark);
+        ctx.beginPath(); ctx.arc(m.x, m.y, m.r * 0.38, 0, 7); ctx.fillStyle = m.dark; ctx.fill();
+        ctx.beginPath(); ctx.arc(m.x - m.r * 0.1, m.y - m.r * 0.12, m.r * 0.22, 0, 7); ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fill();
+      });
+    }
+  }
+
+  function drawText(t, x, y, size, color, rot, stroke) {
+    ctx.save(); ctx.translate(x, y); if (rot) ctx.rotate(Math.PI);
+    ctx.font = `900 ${size}px system-ui,Roboto,sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.lineJoin = 'round'; ctx.lineWidth = size * 0.18; ctx.strokeStyle = stroke || 'rgba(10,20,35,.55)'; ctx.strokeText(t, 0, 0);
+    ctx.fillStyle = color; ctx.fillText(t, 0, 0); ctx.restore();
+  }
+  function drawOverlay(now) {
+    if (!T || !score) return;
+    const two = opt.mode === '2p';
+    if (two) {
+      // each player sees their own score (own score first) and name, facing them
+      ctx.globalAlpha = 0.22;
+      drawText(`${score[0]} – ${score[1]}`, T.cx, T.cy + T.ih * 0.25, T.iw * 0.16, '#123', false);
+      drawText(`${score[1]} – ${score[0]}`, T.cx, T.cy - T.ih * 0.25, T.iw * 0.16, '#123', true);
+      ctx.globalAlpha = 0.45;
+      drawText(nm(0), T.cx, T.cy + T.ih * 0.34, T.iw * 0.055, '#c22', false);
+      drawText(nm(1), T.cx, T.cy - T.ih * 0.34, T.iw * 0.055, '#1b4fa0', true);
+      ctx.globalAlpha = 1;
+    }
+    if (now < msgUntil && msgText) {
+      const size = Math.min(T.iw * 0.09, 38);
+      if (two) {
+        drawText(msgText, T.cx, T.cy + T.ih * 0.12, size, '#1d2b44', false, '#fff');
+        drawText(msgText, T.cx, T.cy - T.ih * 0.12, size, '#1d2b44', true, '#fff');
+      } else drawText(msgText, T.cx, T.cy + T.ih * 0.12, size, '#1d2b44', false, '#fff');
+    }
+  }
+
+  /* ---------- loop ---------- */
+  function frame(now) {
+    raf = requestAnimationFrame(frame);
+    const dt = Math.min(1 / 30, Math.max(0.001, (now - lastT) / 1000)); lastT = now;
+    const paused = current !== 'airhockey' || anyModal() || document.hidden;
+    if (!paused && state === 'play' && now >= freezeUntil) step(dt, now);
+    else if (puck) mal.forEach(m => { m.vx = m.vy = 0; });
+    draw();
+    drawOverlay(now);
+  }
+
+  /* ---------- options ---------- */
+  const OPTS = {
+    mode: { label: 'Spelers', choices: [['cpu', '🤖 Tegen computer'], ['2p', '👥 Met z\'n tweeën']] },
+    level: { label: 'Niveau computer', choices: [['makkelijk', 'Makkelijk'], ['normaal', 'Normaal'], ['moeilijk', 'Moeilijk']], only: 'cpu' },
+    names: { label: 'Namen', only: '2p' },
+    target: { label: 'Spelen tot', choices: [[5, '5'], [7, '7'], [10, '10']] },
+    goalSize: { label: 'Grootte van de goals', choices: [['klein', 'Klein'], ['normaal', 'Normaal'], ['groot', 'Groot']] },
+    speed: { label: 'Snelheid puck', choices: [['rustig', 'Rustig'], ['normaal', 'Normaal'], ['snel', 'Snel']] },
+    sound: { label: 'Geluid', choices: [[true, 'Aan'], [false, 'Uit']] }
+  };
+  function optHtml(keys) {
+    return keys.map(k => {
+      const o = OPTS[k];
+      if (o.only && o.only !== opt.mode) return '';
+      if (k === 'names') return `<div class="opt"><div class="opt-label">${o.label}</div><div class="names">
+        <label><i style="background:#e03a3a"></i><input data-name="name1" maxlength="12" value="${esc(opt.name1)}" placeholder="Speler 1"><small>onder</small></label>
+        <label><i style="background:#2f78e0"></i><input data-name="name2" maxlength="12" value="${esc(opt.name2)}" placeholder="Speler 2"><small>boven</small></label></div></div>`;
+      return `<div class="opt"><div class="opt-label">${o.label}</div><div class="seg">` +
+        o.choices.map(([v, l]) => `<button data-key="${k}" data-val='${JSON.stringify(v)}' class="${opt[k] === v ? 'on' : ''}">${l}</button>`).join('') + `</div></div>`;
+    }).join('');
+  }
+  function renderStart() {
+    $('#ahStartList').innerHTML = optHtml(['mode', 'level', 'names', 'target']) +
+      (opt.mode === '2p' ? `<div class="note" style="color:var(--muted)">Leg de telefoon plat tussen jullie in. Ieder bestuurt zijn eigen helft van het scherm.</div>` : '');
+  }
+  function renderOpts() {
+    $('#ahOptList').innerHTML = optHtml(['mode', 'level', 'names', 'target', 'goalSize', 'speed', 'sound']) +
+      `<div class="note" style="color:var(--muted)">Andere spelers of instellingen voor het potje? Kies "Nieuw potje".</div>`;
+    const pct = stats.played ? Math.round(stats.won / stats.played * 100) : 0;
+    $('#ahStats').innerHTML = [['Gespeeld', stats.played], ['Gewonnen', stats.won], ['Winst %', pct + '%'], ['Goals voor', stats.goalsFor], ['Goals tegen', stats.goalsAgainst], ['Stand nu', score ? score[0] + '–' + score[1] : '–']]
+      .map(([l, v]) => `<div class="stat"><b>${v}</b><small>${l}</small></div>`).join('');
+  }
+  function onOptClick(e, rerender) {
+    const b = e.target.closest('button[data-key]'); if (!b) return;
+    const k = b.dataset.key, v = JSON.parse(b.dataset.val), changed = opt[k] !== v;
+    opt[k] = v; saveOpt();
+    if (k === 'mode' && changed && rerender === renderOpts && state === 'play') { newMatch(true); msg('Nieuw potje', 900); }
+    if (k === 'goalSize') layout();
+    updateScore(); pointers.clear();
+    rerender();
+  }
+  function onNameInput(e) {
+    const i = e.target.closest('input[data-name]'); if (!i) return;
+    opt[i.dataset.name] = i.value; saveOpt(); updateScore();
+  }
+  $('#ahOptList').addEventListener('click', e => onOptClick(e, renderOpts));
+  $('#ahStartList').addEventListener('click', e => onOptClick(e, renderStart));
+  $('#ahOptList').addEventListener('input', onNameInput);
+  $('#ahStartList').addEventListener('input', onNameInput);
+  function openStart() { renderStart(); closeModals(); openModal('ahStartModal'); }
+  $('#ahStartGo').addEventListener('click', () => newMatch());
+  $('#ahOptBtn').addEventListener('click', () => { renderOpts(); openModal('ahOptModal'); });
+  $('#ahNew').addEventListener('click', openStart);
+  $('#ahWinNew').addEventListener('click', () => newMatch());
+  $('#ahWinOther').addEventListener('click', openStart);
+  $('#ahWinMenu').addEventListener('click', () => { closeModals(); leave(); });
+  $('#ahBack').addEventListener('click', () => leave());
+  $('#ahStartBack').addEventListener('click', () => { closeModals(); leave(); });
+  window.addEventListener('resize', () => { if (current === 'airhockey') layout(); });
+
+  function enter() {
+    show('airhockey');
+    if (!running) { running = true; lastT = performance.now(); raf = requestAnimationFrame(frame); }
+    layout();
+    if (!puck || state === 'over') { if (!puck) { score = [0, 0]; resetPositions(0); state = 'idle'; updateScore(); } openStart(); }
+    else freezeUntil = performance.now() + 500;
+  }
+  function leave() {
+    pointers.clear();
+    running = false; cancelAnimationFrame(raf);
+    show('menu'); refreshMenu();
+  }
+  window.__air = { get puck() { return puck; }, get mal() { return mal; }, get score() { return score; }, get T() { return T; }, opt };
+  return { enter, leave };
+})();
+$('#tileAir').addEventListener('click', () => AirHockey.enter());
+
+/* ================================================================
+   UPDATES (online)
+   ================================================================ */
+const APP_VERSION = '1.6';
+let menuToastT;
+function menuToast(t, ms) {
+  const e = $('#menuToast'); e.textContent = t; e.classList.add('show');
+  clearTimeout(menuToastT); menuToastT = setTimeout(() => e.classList.remove('show'), ms || 2600);
+}
+window.onUpdate = info => {
+  if (info.type === 'none') menuToast(`Je hebt de nieuwste versie (${APP_VERSION}) ✓`);
+  else if (info.type === 'error') menuToast('Kon niet controleren op updates. Is er internet?');
+  else if (info.type === 'web') {
+    store.set('app.updatedTo', { name: info.name, notes: info.notes });
+    if (current === 'menu' && !anyModal()) native('reloadContent'); else pendingReload = true;
+  } else if (info.type === 'apk') {
+    $('#updTitle').textContent = `Nieuwe versie ${info.name} beschikbaar`;
+    $('#updText').textContent = info.notes || 'Tik op Installeren om bij te werken.';
+    $('#updBtn').textContent = 'Installeren'; $('#updBtn').disabled = false;
+    $('#updBanner').hidden = false;
+  }
+};
+window.onUpdateProgress = pct => {
+  const b = $('#updBtn');
+  if (pct === -2) { b.disabled = false; b.textContent = 'Opnieuw'; $('#updText').textContent = "Zet 'Toestaan uit deze bron' aan voor Rene's spelletjes, ga terug en tik op Opnieuw."; }
+  else if (pct === -1) { b.disabled = false; b.textContent = 'Opnieuw'; $('#updText').textContent = 'Bijwerken is niet gelukt. Probeer het nog eens.'; }
+  else if (pct >= 100) { b.textContent = 'Installeren…'; }
+  else { b.disabled = true; b.textContent = `Downloaden ${pct}%`; }
+};
+$('#updBtn').addEventListener('click', () => { $('#updBtn').disabled = true; $('#updBtn').textContent = 'Downloaden…'; native('installUpdate'); });
+$('#checkUpd').addEventListener('click', () => {
+  if (native('checkUpdates')) menuToast('Controleren op updates…', 1500);
+  else menuToast('Updates controleren kan alleen in de app');
+});
+(() => {
+  const u = store.get('app.updatedTo', null);
+  if (u) { store.del('app.updatedTo'); setTimeout(() => menuToast(`Bijgewerkt naar versie ${u.name} ✓` + (u.notes ? ` — ${u.notes}` : ''), 4000), 400); }
+})();
+
+function refreshMenu() { $('#tilePatience').classList.toggle('has-save', Patience.hasSave()); }
+$('#tilePatience').addEventListener('click', () => Patience.enter());
+window.addEventListener('pagehide', () => Patience.save());
+refreshMenu();
+})();
+</script>
+</body>
+</html>

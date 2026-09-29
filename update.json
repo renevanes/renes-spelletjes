@@ -1,0 +1,9 @@
+{
+  "versionCode": 7,
+  "versionName": "1.6",
+  "nativeLevel": 2,
+  "notes": "Automatische updates",
+  "web": "web/index.html",
+  "webSha256": "ba2280334acef3606d40a3edeb4dbd6fa4609555a364a7130a6954609ac9b2c3",
+  "apk": "apk/Renes-spelletjes.apk"
+}
