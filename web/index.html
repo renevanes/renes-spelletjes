@@ -162,7 +162,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
   .kj-mid{flex-direction:row;gap:8px}
 }
 #kjBoard{position:relative;flex:1;overflow:hidden;touch-action:manipulation}
-.card.kj{transition:transform .35s cubic-bezier(.2,.8,.3,1),filter .2s}
+.card.kj{transition:transform var(--kjAnim,.26s) cubic-bezier(.2,.8,.3,1),filter .2s}
 .card.kj .back{border-width:calc(var(--cw)*.05)}
 .card.kj-dim{filter:brightness(.6)}
 .card.kj-sel .face{box-shadow:0 0 0 3px #fff,0 6px 16px rgba(0,0,0,.45)}
@@ -280,7 +280,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
       </div>
     </button>
   </div>
-  <div class="version">Versie 1.13 · <button id="checkUpd">Controleren op updates</button></div>
+  <div class="version">Versie 1.14 · <button id="checkUpd">Controleren op updates</button></div>
   <div id="menuToast"></div>
 </section>
 
@@ -1442,6 +1442,7 @@ const AirHockey = (() => {
   }
 
   function resetPositions(servingSide) { // servingSide 0 = bottom player gets the puck
+    if (typeof aiV !== 'undefined') { aiV = { x: 0, y: 0 }; aiSeen = null; }
     puck = { x: T.cx, y: servingSide === 1 ? T.Tp + T.ih * 0.3 : T.B - T.ih * 0.3, vx: 0, vy: 0, r: T.pr };
     mal = [
       { x: T.cx, y: T.B - T.ih * 0.1, vx: 0, vy: 0, r: T.mr, tx: T.cx, ty: T.B - T.ih * 0.1, col: '#e03a3a', dark: '#a51e1e' },
@@ -1491,33 +1492,51 @@ const AirHockey = (() => {
   cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
 
   /* ---------- AI ---------- */
+  // Smooth, human-like computer player: it "sees" the puck with a small delay, steers with limited
+  // acceleration and slows down when it arrives, instead of jumping between targets.
+  let aiV = { x: 0, y: 0 }, aiSeen = null, aiBias = 0, aiHalf = false, slowT = 0;
   function ai(now, dt) {
     const m = mal[1], L = LEVEL[opt.level];
-    if (now >= aiNext || !aiTarget) {
-      aiNext = now + L.react * 1000 * (0.6 + Math.random() * 0.8);
-      const home = { x: T.cx, y: T.Tp + T.ih * 0.1 };
-      const inMyHalf = puck.y < T.cy + puck.r;
-      if (inMyHalf) {
-        // aim at the opponent's goal, with some error
-        const gx = T.cx + (Math.random() - .5) * T.goal * (1 + L.err * 4);
-        let dx = gx - puck.x, dy = T.B - puck.y; const d = Math.hypot(dx, dy) || 1; dx /= d; dy /= d;
-        if (m.y > puck.y - puck.r * 0.5) {
-          // we're on the wrong side of the puck: go around it
-          const side = m.x < puck.x ? -1 : 1;
-          aiTarget = { x: puck.x + side * (m.r + puck.r) * 1.3, y: puck.y - (m.r + puck.r) * 1.2, strike: false };
-        } else {
-          aiTarget = { x: puck.x + dx * T.mr * 0.8, y: puck.y + dy * T.mr * 0.8, strike: true };   // run through the puck
-        }
-      } else {
-        // defend: stay between the puck and our goal
-        const f = 0.45 + (1 - L.err) * 0.2;
-        aiTarget = { x: T.cx + (puck.x - T.cx) * f + (Math.random() - .5) * T.iw * L.err, y: home.y + (puck.vy < 0 ? 0 : T.ih * 0.05), strike: false };
-      }
+    if (!aiSeen) aiSeen = { x: puck.x, y: puck.y, vx: 0, vy: 0 };
+    const k = Math.min(1, dt / L.react);                      // perception lag
+    aiSeen.x += (puck.x - aiSeen.x) * k; aiSeen.y += (puck.y - aiSeen.y) * k;
+    aiSeen.vx += (puck.vx - aiSeen.vx) * k; aiSeen.vy += (puck.vy - aiSeen.vy) * k;
+    const P = aiSeen, R = m.r + puck.r;
+    const homeY = T.Tp + T.ih * 0.12;
+    const inHalf = P.y < T.cy;
+    if (inHalf && !aiHalf) aiBias = (Math.random() - .5) * T.goal * (0.4 + L.err * 3);   // new aim each time the puck comes over
+    aiHalf = inHalf;
+    let tx, ty, strike = false;
+    if (inHalf && P.y < T.Tp + R * 1.05 && Math.hypot(P.vx, P.vy) < T.ih * 0.5) {
+      // puck against our back wall: we can't get behind it, so knock it out from the side
+      const outer = P.x < T.cx ? -1 : 1;
+      if ((m.x - P.x) * outer > R * 0.55) { tx = P.x - outer * R * 0.9; ty = P.y + R * 0.6; strike = true; }
+      else { tx = P.x + outer * R * 1.25; ty = P.y + R * 0.35; }
+    } else if (inHalf && P.vy > -T.ih * 0.6) {
+      // puck on our side and not racing towards our goal: go and hit it
+      let dx = T.cx + aiBias - P.x, dy = T.B - P.y; const d = Math.hypot(dx, dy) || 1; dx /= d; dy /= d;
+      if (m.y < P.y - puck.r * 0.3) { tx = P.x + dx * R * 0.7; ty = P.y + dy * R * 0.7; strike = true; }
+      else { const side = m.x < P.x ? -1 : 1; tx = P.x + side * R * 1.25; ty = P.y - R * 1.15; }   // get behind the puck first
+    } else if (P.vy < 0) {
+      // puck coming at us: move into its path in front of the goal
+      const tHit = Math.max(0, (P.y - homeY) / Math.max(1, -P.vy));
+      let px = P.x + P.vx * tHit;
+      const w = T.iw - 2 * puck.r; let u = (px - T.L - puck.r) % (2 * w); if (u < 0) u += 2 * w;
+      px = T.L + puck.r + (u > w ? 2 * w - u : u);            // bounce off the side walls
+      tx = T.cx + (px - T.cx) * 0.85; ty = homeY;
+    } else {
+      // puck on the other side: calm defensive position
+      tx = T.cx + (P.x - T.cx) * 0.35; ty = homeY + T.ih * 0.03;
     }
-    const maxV = L.speed * T.ih * (aiTarget.strike ? 1.15 : 1);
-    let dx = aiTarget.x - m.x, dy = aiTarget.y - m.y; const d = Math.hypot(dx, dy);
-    const step = Math.min(d, maxV * dt);
-    m.tx = m.x + (d ? dx / d * step : 0); m.ty = m.y + (d ? dy / d * step : 0);
+    tx = Math.max(T.L + m.r, Math.min(T.R - m.r, tx)); ty = Math.max(T.Tp + m.r, Math.min(T.cy - m.r, ty));
+    const maxV = L.speed * T.ih * (strike ? 1.15 : 1), acc = maxV * (opt.level === 'moeilijk' ? 7 : opt.level === 'normaal' ? 5 : 3.5);
+    const dx = tx - m.x, dy = ty - m.y, d = Math.hypot(dx, dy);
+    const want = strike ? maxV : Math.min(maxV, d * 5);          // slow down when arriving (no jitter)
+    const wx = d ? dx / d * want : 0, wy = d ? dy / d * want : 0;
+    let ax = wx - aiV.x, ay = wy - aiV.y; const a = Math.hypot(ax, ay), am = acc * dt;
+    if (a > am) { ax *= am / a; ay *= am / a; }
+    aiV.x += ax; aiV.y += ay;
+    m.tx = m.x + aiV.x * dt; m.ty = m.y + aiV.y * dt;
   }
 
   /* ---------- physics ---------- */
@@ -1576,6 +1595,16 @@ const AirHockey = (() => {
     }
     const fr = Math.pow(0.5, dt);                          // air-cushion friction: slows down gradually
     puck.vx *= fr; puck.vy *= fr;
+    // safety net: a puck that lies still for a while starts gliding towards the middle again
+    if (Math.hypot(puck.vx, puck.vy) < T.ih * 0.04) slowT += dt; else slowT = 0;
+    if (slowT > 2.5) { let dx = T.cx - puck.x, dy = T.cy - puck.y; const d = Math.hypot(dx, dy) || 1; puck.vx += dx / d * T.ih * 0.25; puck.vy += dy / d * T.ih * 0.25; slowT = 0; }
+    // a slow puck in a corner can't be reached properly: let it slide out towards the middle
+    const sp2 = Math.hypot(puck.vx, puck.vy), cornerD = T.mr * 1.3;
+    const nearX = puck.x - T.L < cornerD || T.R - puck.x < cornerD, nearY = puck.y - T.Tp < cornerD || T.B - puck.y < cornerD;
+    if (nearX && nearY && sp2 < T.ih * 0.25) {
+      let dx = T.cx - puck.x, dy = T.cy - puck.y; const d = Math.hypot(dx, dy) || 1;
+      puck.vx += dx / d * T.ih * 0.9 * dt; puck.vy += dy / d * T.ih * 0.9 * dt;
+    }
     // puck resting exactly on the centre line would be unreachable: nudge it
     if (Math.hypot(puck.vx, puck.vy) < T.ih * 0.02 && Math.abs(puck.y - T.cy) < puck.r) puck.vy += (puck.y < T.cy ? -1 : 1) * T.ih * 0.05;
   }
@@ -1588,8 +1617,7 @@ const AirHockey = (() => {
     const me = opt.mode === 'cpu';
     msg(me ? (side === 0 ? 'GOAL! 🎉' : 'Tegendoelpunt') : 'Goal voor ' + nm(side) + '!', 1300);
     if (score[side] >= opt.target) return endMatch(side);
-    resetPositions(side === 0 ? 1 : 0);
-    pointers.clear();
+    resetPositions(side === 0 ? 1 : 0);   // fingers that stay on the screen keep control of their stick
     freezeUntil = performance.now() + 1200;
   }
 
@@ -1776,12 +1804,13 @@ $('#tileAir').addEventListener('click', () => AirHockey.enter());
    ================================================================ */
 const Klaverjas = (() => {
   const KD = { variant: 'rotterdams', rounds: 16, speed: 'normaal', bidding: 'vrij', roem: true, level: 'normaal',
-    tap2: false, protect: true, mark: true, tips: false, collect: 'auto', sort: 'troefLinks', sortDir: 'laag',
+    anim: 'normaal', tap2: false, protect: true, mark: true, tips: false, collect: 'auto', sort: 'troefLinks', sortDir: 'laag',
     names: ['Jij', 'Links', 'Maat', 'Rechts'] };
   const opt = Object.assign({}, KD, store.get('kj.settings', {}));
   const saveOpt = () => store.set('kj.settings', opt);
   let stats = Object.assign({ played: 0, won: 0 }, store.get('kj.stats', {}));
-  const DELAY = { rustig: 1100, normaal: 700, snel: 380 };
+  const DELAY = { rustig: 850, normaal: 500, snel: 260, turbo: 120 };
+  const ANIM = { rustig: 0.45, normaal: 0.26, snel: 0.15 };
 
   const SUITN = ['Schoppen', 'Harten', 'Ruiten', 'Klaveren'];
   const SUITS = ['♠︎', '♥︎', '♦︎', '♣︎'];
@@ -2000,7 +2029,7 @@ const Klaverjas = (() => {
     busy = true; render(w.p);
     if (r) toast(`${r} roem voor ${tm === 0 ? 'wij' : 'zij'}!`, 1400);
     if (opt.collect === 'tik') setTimeout(() => { waitTap = true; toast('Tik op de tafel om verder te spelen', 2500); }, 350);
-    else setTimeout(finishTrick, DELAY[opt.speed] + 650);
+    else setTimeout(finishTrick, DELAY[opt.speed] + 450);
   }
   function finishTrick() {
     if (!G || G.trick.length < 4) return;
@@ -2069,6 +2098,7 @@ const Klaverjas = (() => {
 
   let geo = {};
   function layout() {
+    board.style.setProperty('--kjAnim', (ANIM[opt.anim] || 0.26) + 's');
     const W = board.clientWidth, H = board.clientHeight, land = W > H * 1.2;
     const cw = land ? Math.min(W * 0.1, (H * 0.27) / 1.42) : Math.min(W * 0.2, (H * 0.19) / 1.42), ch = cw * 1.42;
     board.style.setProperty('--cw', cw + 'px'); board.style.setProperty('--ch', ch + 'px');
@@ -2254,7 +2284,8 @@ const Klaverjas = (() => {
     { key: 'rounds', label: 'Rondes per potje', choices: [[4, '4'], [8, '8'], [12, '12'], [16, '16']], note: () => 'Het aantal rondes geldt vanaf een nieuw potje.' },
     { section: 'Computerspelers' },
     { key: 'level', label: 'Niveau', choices: [['makkelijk', 'Makkelijk'], ['normaal', 'Normaal']] },
-    { key: 'speed', label: 'Tempo', choices: [['rustig', 'Rustig'], ['normaal', 'Normaal'], ['snel', 'Snel']] },
+    { key: 'speed', label: 'Tempo computerspelers', choices: [['rustig', 'Rustig'], ['normaal', 'Normaal'], ['snel', 'Snel'], ['turbo', 'Turbo']] },
+    { key: 'anim', label: 'Snelheid opgooien (kaart naar tafel)', choices: [['rustig', 'Rustig'], ['normaal', 'Normaal'], ['snel', 'Snel']] },
     { key: 'names', label: 'Namen' },
     { section: 'Kaarten spelen' },
     { key: 'tap2', label: 'Kaart opgooien', choices: [[false, 'Eén tik'], [true, 'Twee tikken']], note: () => opt.tap2 ? 'Eerste tik kiest de kaart, tweede tik speelt hem. Zo gooi je nooit per ongeluk een verkeerde kaart op.' : '' },
@@ -2355,7 +2386,7 @@ $('#tileKj').addEventListener('click', () => Klaverjas.enter());
 /* ================================================================
    UPDATES (online)
    ================================================================ */
-const APP_VERSION = '1.13';
+const APP_VERSION = '1.14';
 let menuToastT;
 function menuToast(t, ms) {
   const e = $('#menuToast'); e.textContent = t; e.classList.add('show');
