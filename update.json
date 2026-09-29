@@ -1,9 +1,9 @@
 {
-  "versionCode": 9,
-  "versionName": "1.8",
+  "versionCode": 10,
+  "versionName": "1.9",
   "nativeLevel": 2,
-  "notes": "Nieuw spel: Klaverjassen (Rotterdams of Amsterdams)",
+  "notes": "Klaverjassen: meer opties (sortering, bescherming tegen verkeerde kaart, twee tikken, troef bepalen, namen, speeltip) en alle slagen terugkijken",
   "web": "web/index.html",
-  "webSha256": "a30a2a4cc3a3c65c05729aab56c34f8d25e1facf467e1a4d62a33eea80348fa3",
+  "webSha256": "5f5c75075a14b7add25c247cb21515742cfa6dfa33c9c966a254630478adefd6",
   "apk": "apk/Renes-spelletjes.apk"
 }

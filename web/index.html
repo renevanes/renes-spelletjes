@@ -146,6 +146,19 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .card.kj{transition:transform .35s cubic-bezier(.2,.8,.3,1),filter .2s}
 .card.kj .back{border-width:calc(var(--cw)*.05)}
 .card.kj-dim{filter:brightness(.6)}
+.card.kj-sel .face{box-shadow:0 0 0 3px #fff,0 6px 16px rgba(0,0,0,.45)}
+.card.kj-tip .face{box-shadow:0 0 0 3px #49d17d,0 0 14px rgba(73,209,125,.9)}
+.kj-trick{background:rgba(0,0,0,.22);border-radius:14px;padding:10px 12px;margin-bottom:10px}
+.kj-trick-h{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted);margin-bottom:8px}
+.kj-trick-h b{color:var(--ink)} .kj-trick-h em{color:var(--accent);font-style:normal;font-weight:700}
+.kj-trick-c{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mcw{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.mcw small{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.mc{width:100%;max-width:62px;aspect-ratio:100/142;border-radius:6px;background:var(--card);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.mc svg{display:block;width:100%;height:100%}
+.mc.win{box-shadow:0 0 0 3px var(--accent)}
+#kjTricksBtn{position:absolute;right:8px;top:6px;z-index:950;background:rgba(0,0,0,.35);color:var(--ink);border-radius:99px;padding:6px 12px;font-size:13px;font-weight:700}
+.kj-suits.one{grid-template-columns:1fr}
 .card.kj-win .face{box-shadow:0 0 0 3px var(--accent),0 0 16px rgba(242,193,78,.9)}
 .kj-seat{position:absolute;z-index:400;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:13px;pointer-events:none;white-space:nowrap}
 .kj-seat b{background:rgba(0,0,0,.35);padding:3px 10px;border-radius:99px;font-weight:700}
@@ -248,7 +261,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
       </div>
     </button>
   </div>
-  <div class="version">Versie 1.8 · <button id="checkUpd">Controleren op updates</button></div>
+  <div class="version">Versie 1.9 · <button id="checkUpd">Controleren op updates</button></div>
   <div id="menuToast"></div>
 </section>
 
@@ -281,6 +294,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
   </div>
   <div class="kj-info" id="kjInfo"></div>
   <div id="kjBoard">
+    <button id="kjTricksBtn">🂠 Slagen</button>
     <div id="kjBid"></div>
     <div id="kjToast"></div>
   </div>
@@ -354,7 +368,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
     <div id="kjOptList"></div>
     <div class="opt-section">Statistieken</div>
     <div class="stats" id="kjStats"></div>
-    <div class="row" style="margin-bottom:10px"><button class="btn small" id="kjLast">Vorige slag</button><button class="btn small" id="kjNew">Nieuw potje</button></div>
+    <div class="row" style="margin-bottom:10px"><button class="btn small" id="kjLast">Slagen</button><button class="btn small" id="kjScores">Scorelijst</button><button class="btn small" id="kjNew">Nieuw potje</button></div>
     <div class="row sticky-actions"><button class="btn primary" data-close>Verder spelen</button></div>
   </div>
 </div>
@@ -362,6 +376,21 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
   <div class="sheet">
     <h3>Nieuw potje?</h3><p>Het huidige potje telt dan als verloren.</p>
     <div class="row"><button class="btn" data-close>Annuleren</button><button class="btn primary" id="kjConfirmOk">Ja, nieuw potje</button></div>
+  </div>
+</div>
+<div class="modal" id="kjTricksModal">
+  <div class="sheet">
+    <h3 id="kjTricksTitle">Slagen</h3>
+    <p id="kjTricksSub" style="margin-top:-8px"></p>
+    <div id="kjTricksList"></div>
+    <div class="row sticky-actions"><button class="btn primary" data-close>Verder spelen</button></div>
+  </div>
+</div>
+<div class="modal center" id="kjLogModal">
+  <div class="sheet">
+    <h3>Scorelijst</h3>
+    <div style="max-height:60vh;overflow-y:auto"><table class="kj-table" id="kjLogTable"></table></div>
+    <button class="btn primary" data-close style="width:100%;margin-top:14px">Sluiten</button>
   </div>
 </div>
 <div class="modal center" id="kjResModal">
@@ -1712,7 +1741,9 @@ $('#tileAir').addEventListener('click', () => AirHockey.enter());
    KLAVERJASSEN
    ================================================================ */
 const Klaverjas = (() => {
-  const KD = { variant: 'rotterdams', rounds: 16, speed: 'normaal' };
+  const KD = { variant: 'rotterdams', rounds: 16, speed: 'normaal', bidding: 'vrij', roem: true, level: 'normaal',
+    tap2: false, protect: true, mark: true, tips: false, collect: 'auto', sort: 'troefLinks', sortDir: 'laag',
+    names: ['Jij', 'Links', 'Maat', 'Rechts'] };
   const opt = Object.assign({}, KD, store.get('kj.settings', {}));
   const saveOpt = () => store.set('kj.settings', opt);
   let stats = Object.assign({ played: 0, won: 0 }, store.get('kj.stats', {}));
@@ -1722,6 +1753,7 @@ const Klaverjas = (() => {
   const SUITS = ['♠︎', '♥︎', '♦︎', '♣︎'];
   const NAMES = ['Jij', 'Links', 'Maat', 'Rechts'];
   const RANKS = [7, 8, 9, 10, 11, 12, 13, 1];
+  const nm = p => (opt.names && opt.names[p] && opt.names[p].trim()) || NAMES[p];
   const suit = c => Math.floor(c / 13), rank = c => (c % 13) + 1;
   const team = p => p % 2;                                    // 0 = wij (jij + maat), 1 = zij
   const TORDER = { 7: 0, 8: 1, 12: 2, 13: 3, 10: 4, 1: 5, 9: 6, 11: 7 };
@@ -1732,7 +1764,7 @@ const Klaverjas = (() => {
   const DECK = []; for (let s = 0; s < 4; s++) for (const r of RANKS) DECK.push(s * 13 + r - 1);
 
   let G = null;                 // game state (saved)
-  let timer = null, busy = false;
+  let timer = null, busy = false, sel = null, waitTap = false;
 
   const isTrump = c => suit(c) === G.trump;
   const points = c => isTrump(c) ? TPTS[rank(c)] : NPTS[rank(c)];
@@ -1795,10 +1827,12 @@ const Klaverjas = (() => {
     }
     return v + (n >= 4 ? 10 : 0) + (hand.some(c => suit(c) === s && rank(c) === 11) ? 8 : 0);
   }
-  function aiBid(p, forced) {
+  function aiBid(p, forced, only) {
+    const need = opt.level === 'makkelijk' ? 55 + Math.random() * 25 : 62;
+    if (only != null && !forced) return suitStrength(G.hands[p], only) >= need - 4 ? only : -1;
     let best = 0, bv = -1;
     for (let s = 0; s < 4; s++) { const v = suitStrength(G.hands[p], s); if (v > bv) { bv = v; best = s; } }
-    return forced || bv >= 62 ? best : -1;
+    return forced || bv >= need ? best : -1;
   }
   const seen = c => G.played.includes(c);
   function isMaster(c, hand) {  // no unseen card of the same kind can beat it
@@ -1859,7 +1893,10 @@ const Klaverjas = (() => {
     const d = shuffleArr(DECK.slice());
     G.round++; G.dealer = (G.dealer + 1) % 4;
     G.hands = [0, 1, 2, 3].map(i => d.slice(i * 8, i * 8 + 8));
+    G.dealt = G.hands.map(h => h.slice());
+    G.prevTricks = G.tricksLog && G.tricksLog.length ? G.tricksLog : (G.prevTricks || []); G.tricksLog = [];
     G.trump = null; G.hands.forEach(h => sortHand(h));
+    G.bidding = opt.bidding; G.proposed = G.bidding === 'gedraaid' ? Math.floor(Math.random() * 4) : null; G.verzaakt = null;
     G.trump = null; G.chooser = null; G.trick = []; G.played = []; G.lastTrick = null;
     G.pts = [0, 0]; G.roem = [0, 0]; G.tricks = [0, 0];
     G.phase = 'bid'; G.bidTurn = (G.dealer + 1) % 4; G.passes = 0;
@@ -1879,48 +1916,64 @@ const Klaverjas = (() => {
     render();
     if (G.phase === 'done') { showDealResult(); return; }
     if (G.phase === 'bid') {
-      const forced = G.passes >= 4;
+      const forced = G.bidding === 'verplicht' || G.passes >= 4;
       if (G.bidTurn === 0) { showBid(forced); return; }
       hideBid();
       timer = setTimeout(() => {
-        const s = aiBid(G.bidTurn, forced);
-        if (s >= 0) chooseTrump(G.bidTurn, s); else { toast(`${NAMES[G.bidTurn]} past`); G.passes++; G.bidTurn = (G.bidTurn + 1) % 4; save(); step(); }
+        const s = aiBid(G.bidTurn, forced, G.bidding === 'gedraaid' ? G.proposed : null);
+        if (s >= 0) chooseTrump(G.bidTurn, s); else { toast(`${nm(G.bidTurn)} past`); G.passes++; G.bidTurn = (G.bidTurn + 1) % 4; save(); step(); }
       }, DELAY[opt.speed]);
       return;
     }
     hideBid();
-    if (G.phase === 'play' && G.turn !== 0) timer = setTimeout(() => play(G.turn, aiPlay(G.turn)), DELAY[opt.speed]);
+    if (G.phase === 'play' && G.turn !== 0) timer = setTimeout(() => {
+      const L = legal(G.turn);
+      play(G.turn, opt.level === 'makkelijk' && Math.random() < 0.4 ? L[Math.floor(Math.random() * L.length)] : aiPlay(G.turn));
+    }, DELAY[opt.speed]);
   }
 
   function chooseTrump(p, s) {
     G.trump = s; G.chooser = p; G.phase = 'play';
     G.hands.forEach(h => sortHand(h));
-    toast(`${NAMES[p]} ${p === 0 ? 'speelt' : 'speelt'} ${SUITN[s].toLowerCase()} ${SUITS[s]}`, 1600);
+    toast(`${nm(p)} ${p === 0 ? 'speelt' : 'speelt'} ${SUITN[s].toLowerCase()} ${SUITS[s]}`, 1600);
     save(); render(); setTimeout(step, 600);
   }
 
   function play(p, c) {
     if (G.phase !== 'play' || G.turn !== p || busy) return;
-    if (!legal(p).includes(c)) return;
+    let verzaakt = null;
+    if (!legal(p).includes(c)) { if (p !== 0 || opt.protect) return; verzaakt = ruleHint(); }
+    sel = null;
     G.hands[p].splice(G.hands[p].indexOf(c), 1);
     G.trick.push({ p, c });
     G.played.push(c);
     if (p === 0) vibrate(8);
+    if (verzaakt) {
+      G.verzaakt = team(p); busy = true; render(); vibrate(80);
+      toast(`Verzaakt! ${verzaakt.replace('Je moet', 'Je moest')}. Deze ronde gaat naar de tegenpartij.`, 3200);
+      setTimeout(() => { busy = false; endDeal(); }, 2600);
+      return;
+    }
     if (G.trick.length < 4) { G.turn = (p + 1) % 4; save(); render(); step(); return; }
     // trick complete
     const w = winnerOf(G.trick), tm = team(w.p);
-    const r = roemOf(G.trick);
+    const r = opt.roem ? roemOf(G.trick) : 0;
     G.pts[tm] += G.trick.reduce((a, t) => a + points(t.c), 0);
     G.roem[tm] += r; G.tricks[tm]++;
     const lastTrick = G.hands.every(h => !h.length);
     if (lastTrick) G.pts[tm] += 10;
+    (G.tricksLog = G.tricksLog || []).push({ t: G.trick.slice(), w: w.p, pts: G.trick.reduce((a, x) => a + points(x.c), 0) + (lastTrick ? 10 : 0), roem: r });
     busy = true; render(w.p);
     if (r) toast(`${r} roem voor ${tm === 0 ? 'wij' : 'zij'}!`, 1400);
-    setTimeout(() => {
-      G.lastTrick = G.trick; G.trick = []; G.leader = w.p; G.turn = w.p; busy = false;
-      collectAnim(w.p);
-      if (lastTrick) endDeal(); else { save(); step(); }
-    }, DELAY[opt.speed] + 650);
+    if (opt.collect === 'tik') setTimeout(() => { waitTap = true; toast('Tik op de tafel om verder te spelen', 2500); }, 350);
+    else setTimeout(finishTrick, DELAY[opt.speed] + 650);
+  }
+  function finishTrick() {
+    if (!G || G.trick.length < 4) return;
+    const w = winnerOf(G.trick);
+    G.lastTrick = G.trick; G.trick = []; G.leader = w.p; G.turn = w.p; busy = false; waitTap = false;
+    collectAnim(w.p);
+    if (G.hands.every(h => !h.length)) endDeal(); else { save(); step(); }
   }
 
   function endDeal() {
@@ -1931,7 +1984,11 @@ const Klaverjas = (() => {
     if (G.tricks[op] === 8) { roem[op] += 100; note = `Pit voor ${op === 0 ? 'wij' : 'zij'}! (+100)`; }
     const tot = t => pts[t] + roem[t];
     let score = [tot(0), tot(1)];
-    if (tot(pl) <= tot(op)) {                          // nat: all points go to the other team
+    if (G.verzaakt != null) {
+      const v = G.verzaakt;
+      score[1 - v] = 162 + roem[0] + roem[1]; score[v] = 0;
+      note = `${v === 0 ? 'Wij hebben' : 'Zij hebben'} verzaakt: alle punten naar ${v === 0 ? 'zij' : 'wij'}.`;
+    } else if (tot(pl) <= tot(op)) {                          // nat: all points go to the other team
       score[op] = 162 + roem[0] + roem[1]; score[pl] = 0;
       note = (pl === 0 ? 'Wij' : 'Zij') + ' gaan nat!' + (note ? ' ' + note : '');
     }
@@ -1956,9 +2013,12 @@ const Klaverjas = (() => {
   const meEl = document.createElement('div'); meEl.className = 'kj-seat s0'; board.appendChild(meEl);
 
   function sortHand(h) {
+    if (opt.sort === 'geen' && G.dealt) { const d = G.dealt.find(x => h.every(c => x.includes(c))) || []; h.sort((a, b) => d.indexOf(a) - d.indexOf(b)); return; }
     const pref = [0, 1, 3, 2];                          // alternate colours: ♠ ♥ ♣ ♦
-    const key = c => (G.trump != null && isTrump(c) ? -1 : pref.indexOf(suit(c))) * 100 + (G.trump != null ? order(c) : NORDER[rank(c)]);
-    h.sort((a, b) => key(a) - key(b));
+    const hasT = G.trump != null && opt.sort !== 'kleur';
+    const sk = c => hasT && isTrump(c) ? (opt.sort === 'troefRechts' ? 9 : -1) : pref.indexOf(suit(c));
+    const rk = c => (G.trump != null ? order(c) : NORDER[rank(c)]) * (opt.sortDir === 'hoog' ? -1 : 1);
+    h.sort((a, b) => (sk(a) - sk(b)) * 100 + (rk(a) - rk(b)));
   }
 
   let geo = {};
@@ -1985,14 +2045,17 @@ const Klaverjas = (() => {
     if (!G) return;
     layout();
     const { W, H, cw, ch } = geo;
-    const L = G.phase === 'play' && G.turn === 0 && !busy ? legal(0) : null;
+    const myTurn = G.phase === 'play' && G.turn === 0 && !busy;
+    const L = myTurn && opt.mark ? legal(0) : null;
+    const tip = myTurn && opt.tips && G.hands[0].length ? aiPlay(0) : null;
+    if (!myTurn) sel = null;
     const inTrick = new Map(G.trick.map(t => [t.c, t.p]));
     const hand = G.hands[0];
     const step0 = Math.min(cw * 0.62, (W - 16 - cw) / Math.max(1, hand.length - 1));
     const x0 = (W - (cw + step0 * (hand.length - 1))) / 2;
     for (const c of DECK) {
       const el = cards[c];
-      el.classList.remove('kj-legal', 'kj-dim', 'kj-win');
+      el.classList.remove('kj-legal', 'kj-dim', 'kj-win', 'kj-sel', 'kj-tip');
       if (inTrick.has(c)) {
         const p = inTrick.get(c), [x, y] = trickPos(p);
         el.classList.remove('down', 'gone');
@@ -2006,8 +2069,10 @@ const Klaverjas = (() => {
       if (owner === 0) {
         const i = hand.indexOf(c);
         el.classList.remove('down');
-        const lift = L && L.includes(c) ? -ch * 0.12 : 0;
+        let lift = L && L.includes(c) ? -ch * 0.12 : 0;
         if (L) el.classList.add(L.includes(c) ? 'kj-legal' : 'kj-dim');
+        if (sel === c) { lift = -ch * 0.3; el.classList.add('kj-sel'); }
+        if (tip === c) el.classList.add('kj-tip');
         place(el, x0 + i * step0, H - ch - 10 + lift, 1, 0, 300 + i);
       } else {
         el.classList.add('down');
@@ -2023,7 +2088,7 @@ const Klaverjas = (() => {
       if (G.dealer === p) tags.push('<i class="tag">gever</i>');
       if (G.chooser === p) tags.push(`<i class="tag trump">gaat ${SUITS[G.trump]}</i>`);
       const turn = (G.phase === 'play' && G.turn === p && !busy) || (G.phase === 'bid' && G.bidTurn === p);
-      return `<b class="${turn ? 'turn' : ''}">${NAMES[p]}</b>${tags.join('')}`;
+      return `<b class="${turn ? 'turn' : ''}">${nm(p)}</b>${tags.join('')}`;
     };
     [1, 2, 3].forEach((p, i) => { seatEls[i].innerHTML = lbl(p); });
     meEl.innerHTML = lbl(0);
@@ -2056,8 +2121,11 @@ const Klaverjas = (() => {
 
   function showBid(forced) {
     const b = $('#kjBid');
-    b.innerHTML = `<p>${forced ? 'Iedereen past: jij moet troef kiezen' : 'Wat wordt troef?'}</p><div class="kj-suits">` +
-      [0, 1, 3, 2].map(s => `<button data-s="${s}" class="${s === 1 || s === 2 ? 'red' : ''}">${SUITS[s]}<small>${SUITN[s]}</small></button>`).join('') + `</div>` +
+    const only = G.bidding === 'gedraaid' && !forced ? G.proposed : null;
+    const title = forced ? (G.passes >= 4 ? 'Iedereen past: jij moet troef kiezen' : 'Jij moet troef kiezen')
+      : only != null ? `Gedraaide troef: ${SUITN[only].toLowerCase()} ${SUITS[only]}. Speel je?` : 'Wat wordt troef?';
+    b.innerHTML = `<p>${title}</p><div class="kj-suits${only != null ? ' one' : ''}">` +
+      (only != null ? [only] : [0, 1, 3, 2]).map(s => `<button data-s="${s}" class="${s === 1 || s === 2 ? 'red' : ''}">${SUITS[s]}<small>${SUITN[s]}</small></button>`).join('') + `</div>` +
       (forced ? '' : `<button class="btn small" data-s="-1" style="width:100%">Passen</button>`);
     b.classList.add('show');
   }
@@ -2071,12 +2139,16 @@ const Klaverjas = (() => {
   });
 
   board.addEventListener('click', e => {
-    const el = e.target.closest('.card.kj'); if (!el || !G) return;
-    const c = +el.dataset.id;
-    if (G.phase === 'play' && G.turn === 0 && G.hands[0].includes(c)) {
-      if (legal(0).includes(c)) play(0, c);
-      else { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); toast(ruleHint()); }
-    }
+    if (!G) return;
+    if (waitTap) { finishTrick(); return; }
+    const el = e.target.closest('.card.kj');
+    const c = el ? +el.dataset.id : null;
+    if (G.phase === 'play' && G.turn === 0 && !busy && c != null && G.hands[0].includes(c)) {
+      const ok = legal(0).includes(c);
+      if (!ok && opt.protect) { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); toast(ruleHint()); return; }
+      if (opt.tap2 && sel !== c) { sel = c; render(); toast('Tik nog een keer om te spelen', 1000); return; }
+      play(0, c);
+    } else if (sel != null) { sel = null; render(); }
   });
   function ruleHint() {
     const led = suit(G.trick[0].c);
@@ -2087,7 +2159,7 @@ const Klaverjas = (() => {
   function showDealResult() {
     const l = G.log[G.log.length - 1];
     const pl = team(l.chooser);
-    $('#kjResTitle').textContent = `Ronde ${G.round} — ${NAMES[l.chooser]} speelde ${SUITN[l.trump].toLowerCase()}`;
+    $('#kjResTitle').textContent = `Ronde ${G.round} — ${nm(l.chooser)} speelde ${SUITN[l.trump].toLowerCase()}`;
     $('#kjResTable').innerHTML = `<tr><th></th><th>Wij</th><th>Zij</th></tr>
       <tr><td>Punten</td><td>${l.pts[0]}</td><td>${l.pts[1]}</td></tr>
       <tr><td>Roem</td><td>${l.roem[0]}</td><td>${l.roem[1]}</td></tr>
@@ -2118,34 +2190,86 @@ const Klaverjas = (() => {
   $('#kjEndMenu').addEventListener('click', () => { closeModals(); G = null; leave(); });
 
   /* ---------- options ---------- */
-  const OPTS = {
-    variant: { label: 'Regels', choices: [['rotterdams', 'Rotterdams'], ['amsterdams', 'Amsterdams']] },
-    rounds: { label: 'Rondes per potje', choices: [[8, '8'], [16, '16']] },
-    speed: { label: 'Tempo computer', choices: [['rustig', 'Rustig'], ['normaal', 'Normaal'], ['snel', 'Snel']] }
-  };
+  const AANUIT = [[true, 'Aan'], [false, 'Uit']];
+  const OPTS = [
+    { section: 'Regels' },
+    { key: 'variant', label: 'Troefplicht', choices: [['rotterdams', 'Rotterdams'], ['amsterdams', 'Amsterdams']],
+      note: () => opt.variant === 'rotterdams' ? 'Kun je niet bekennen, dan moet je altijd (over)troeven, ook als je maat de slag al heeft.' : 'Heeft je maat de slag, dan hoef je niet te troeven.' },
+    { key: 'bidding', label: 'Troef bepalen', choices: [['vrij', 'Vrij'], ['verplicht', 'Verplicht'], ['gedraaid', 'Gedraaid']],
+      note: () => ({ vrij: 'Om de beurt kiezen of passen; past iedereen, dan moet de eerste hand kiezen.', verplicht: 'De speler naast de gever moet altijd troef kiezen.', gedraaid: 'Er wordt een troefkleur gedraaid: spelen of passen. Past iedereen, dan kiest de eerste hand vrij.' })[opt.bidding] },
+    { key: 'roem', label: 'Roem tellen', choices: AANUIT },
+    { key: 'rounds', label: 'Rondes per potje', choices: [[4, '4'], [8, '8'], [12, '12'], [16, '16']], note: () => 'Het aantal rondes geldt vanaf een nieuw potje.' },
+    { section: 'Computerspelers' },
+    { key: 'level', label: 'Niveau', choices: [['makkelijk', 'Makkelijk'], ['normaal', 'Normaal']] },
+    { key: 'speed', label: 'Tempo', choices: [['rustig', 'Rustig'], ['normaal', 'Normaal'], ['snel', 'Snel']] },
+    { key: 'names', label: 'Namen' },
+    { section: 'Kaarten spelen' },
+    { key: 'tap2', label: 'Kaart opgooien', choices: [[false, 'Eén tik'], [true, 'Twee tikken']], note: () => opt.tap2 ? 'Eerste tik kiest de kaart, tweede tik speelt hem. Zo gooi je nooit per ongeluk een verkeerde kaart op.' : '' },
+    { key: 'protect', label: 'Bescherming tegen verzaken', choices: AANUIT, note: () => opt.protect ? 'Kaarten die niet mogen, kun je niet spelen.' : 'Je kunt elke kaart spelen. Speel je een kaart die niet mag, dan verzaak je: de ronde gaat naar de tegenpartij.' },
+    { key: 'mark', label: 'Speelbare kaarten markeren', choices: AANUIT },
+    { key: 'tips', label: 'Speeltip tonen', choices: AANUIT, note: () => opt.tips ? 'De kaart die de computer zou spelen licht groen op.' : '' },
+    { key: 'collect', label: 'Slag opruimen', choices: [['auto', 'Automatisch'], ['tik', 'Na een tik']] },
+    { section: 'Hand sorteren' },
+    { key: 'sort', label: 'Volgorde kleuren', choices: [['troefLinks', 'Troef links'], ['troefRechts', 'Troef rechts'], ['kleur', 'Vaste volgorde'], ['geen', 'Niet']] },
+    { key: 'sortDir', label: 'Binnen een kleur', choices: [['laag', 'Laag → hoog'], ['hoog', 'Hoog → laag']] }
+  ];
   function renderOpts() {
-    $('#kjOptList').innerHTML = Object.entries(OPTS).map(([k, o]) => `<div class="opt"><div class="opt-label">${o.label}</div><div class="seg">` +
-      o.choices.map(([v, l]) => `<button data-key="${k}" data-val='${JSON.stringify(v)}' class="${opt[k] === v ? 'on' : ''}">${l}</button>`).join('') + `</div></div>`).join('') +
-      `<div class="note" style="color:var(--muted)">${opt.variant === 'rotterdams'
-        ? 'Rotterdams: kun je niet bekennen, dan moet je altijd troeven, ook als je maat de slag al heeft.'
-        : 'Amsterdams: heeft je maat de slag, dan hoef je niet te troeven.'} Regels en rondes gelden direct; het aantal rondes vanaf een nieuw potje.</div>`;
+    $('#kjOptList').innerHTML = OPTS.map(o => {
+      if (o.section) return `<div class="opt-section">${o.section}</div>`;
+      if (o.key === 'names') return `<div class="opt"><div class="opt-label">${o.label}</div><div class="names">` +
+        [2, 1, 3].map(i => `<label><small style="min-width:52px">${['', 'links', 'maat', 'rechts'][i]}</small><input data-name="${i}" maxlength="12" value="${esc(nm(i))}" placeholder="${NAMES[i]}"></label>`).join('') + `</div></div>`;
+      const n = o.note ? o.note() : '';
+      return `<div class="opt"><div class="opt-label">${o.label}</div><div class="seg">` +
+        o.choices.map(([v, l]) => `<button data-key="${o.key}" data-val='${JSON.stringify(v)}' class="${opt[o.key] === v ? 'on' : ''}">${l}</button>`).join('') + `</div>` +
+        (n ? `<div class="note" style="color:var(--muted);margin-top:6px">${n}</div>` : '') + `</div>`;
+    }).join('');
     const pct = stats.played ? Math.round(stats.won / stats.played * 100) : 0;
     $('#kjStats').innerHTML = [['Gespeeld', stats.played], ['Gewonnen', stats.won], ['Winst %', pct + '%']]
       .map(([l, v]) => `<div class="stat"><b>${v}</b><small>${l}</small></div>`).join('');
   }
   $('#kjOptList').addEventListener('click', e => {
     const b = e.target.closest('button[data-key]'); if (!b) return;
-    opt[b.dataset.key] = JSON.parse(b.dataset.val); saveOpt();
-    if (G && b.dataset.key === 'variant') G.variant = opt.variant;
+    const k = b.dataset.key;
+    opt[k] = JSON.parse(b.dataset.val); saveOpt();
+    if (G && k === 'variant') G.variant = opt.variant;
+    if (G && (k === 'sort' || k === 'sortDir')) G.hands.forEach(h => sortHand(h));
+    if (G) render();
     renderOpts();
   });
+  $('#kjOptList').addEventListener('input', e => {
+    const i = e.target.closest('input[data-name]'); if (!i) return;
+    opt.names = (opt.names || NAMES.slice()).slice(); opt.names[+i.dataset.name] = i.value; saveOpt(); if (G) render();
+  });
+  const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  $('#kjScores').addEventListener('click', () => {
+    if (!G || !G.log.length) { closeModals(); toast('Er is nog geen ronde gespeeld'); setTimeout(step, 50); return; }
+    $('#kjLogTable').innerHTML = `<tr><th>#</th><th>Troef</th><th>Wij</th><th>Zij</th></tr>` +
+      G.log.map((l, i) => `<tr><td>${i + 1}</td><td style="text-align:left">${SUITS[l.trump]} ${esc(nm(l.chooser))}${l.note ? `<br><small style="color:var(--accent)">${l.note}</small>` : ''}</td><td>${l.score[0]}</td><td>${l.score[1]}</td></tr>`).join('') +
+      `<tr class="sum"><td></td><td style="text-align:left">Totaal</td><td>${G.total[0]}</td><td>${G.total[1]}</td></tr>`;
+    closeModals(); openModal('kjLogModal');
+  });
+  $('#kjLogModal').addEventListener('click', e => { if (e.target.closest('[data-close]') || e.target.id === 'kjLogModal') setTimeout(step, 50); });
   $('#kjOptBtn').addEventListener('click', () => { clearTimeout(timer); renderOpts(); openModal('kjOptModal'); });
   $('#kjOptModal').addEventListener('click', e => { if (e.target.closest('[data-close]') || e.target.id === 'kjOptModal') setTimeout(step, 50); });
   $('#kjNew').addEventListener('click', () => confirmNew());
-  $('#kjLast').addEventListener('click', () => {
-    if (!G || !G.lastTrick) { toast('Er is nog geen slag gespeeld'); return; }
-    toast('Vorige slag: ' + G.lastTrick.map(t => `${NAMES[t.p]} ${cardName(t.c)}`).join(' · '), 3500);
-  });
+  function showTricks() {
+    if (!G) return;
+    const cur = G.tricksLog && G.tricksLog.length, list = cur ? G.tricksLog : (G.prevTricks || []);
+    clearTimeout(timer); closeModals();
+    if (!list.length) { toast('Er is nog geen slag gespeeld'); setTimeout(step, 50); return; }
+    $('#kjTricksTitle').textContent = cur ? `Slagen deze ronde (${list.length})` : 'Slagen vorige ronde';
+    const trumpNote = cur && G.trump != null ? ` · troef ${SUITS[G.trump]}` : '';
+    $('#kjTricksSub').textContent = `Nieuwste bovenaan${trumpNote}`;
+    $('#kjTricksList').innerHTML = list.map((x, i) => ({ x, i })).reverse().map(({ x, i }) => `
+      <div class="kj-trick">
+        <div class="kj-trick-h"><b>Slag ${i + 1}</b><span>${esc(nm(x.w))} wint · ${team(x.w) === 0 ? 'wij' : 'zij'} +${x.pts}${x.roem ? ` · <em>${x.roem} roem</em>` : ''}</span></div>
+        <div class="kj-trick-c">${x.t.map((t, k) => `<div class="mcw"><div class="mc${t.p === x.w ? ' win' : ''}">${Art.face(t.c, settings.faces, settings.letters, settings.courts)}</div><small>${k === 0 ? '▶ ' : ''}${esc(nm(t.p))}</small></div>`).join('')}</div>
+      </div>`).join('');
+    openModal('kjTricksModal');
+  }
+  $('#kjLast').addEventListener('click', showTricks);
+  $('#kjTricksBtn').addEventListener('click', e => { e.stopPropagation(); showTricks(); });
+  $('#kjTricksModal').addEventListener('click', e => { if (e.target.closest('[data-close]') || e.target.id === 'kjTricksModal') setTimeout(step, 50); });
   function cardName(c) { const r = rank(c); return SUITS[suit(c)] + (settings.letters === 'nl' ? { 1: 'A', 11: 'B', 12: 'V', 13: 'H' } : { 1: 'A', 11: 'J', 12: 'Q', 13: 'K' })[r] || SUITS[suit(c)] + r; }
   function confirmNew() { closeModals(); openModal('kjConfirm'); }
   $('#kjConfirmOk').addEventListener('click', () => { closeModals(); clearTimeout(timer); newGame(); });
@@ -2160,7 +2284,8 @@ const Klaverjas = (() => {
     const saved = store.get('kj.save', null);
     if (!G && saved && saved.hands) G = saved;
     if (!G) { newGame(); return; }
-    if (G.trick && G.trick.length === 4) { G.trick = []; }      // interrupted mid-collection
+    G.hands.forEach(h => sortHand(h));
+    if (G.trick && G.trick.length === 4) { render(); finishTrick(); return; }   // interrupted before the trick was collected
     render(); step();
     if (G.phase === 'done') setTimeout(showDealResult, 300);
   }
@@ -2174,7 +2299,7 @@ $('#tileKj').addEventListener('click', () => Klaverjas.enter());
 /* ================================================================
    UPDATES (online)
    ================================================================ */
-const APP_VERSION = '1.8';
+const APP_VERSION = '1.9';
 let menuToastT;
 function menuToast(t, ms) {
   const e = $('#menuToast'); e.textContent = t; e.classList.add('show');
