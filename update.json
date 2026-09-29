@@ -1,9 +1,9 @@
 {
-  "versionCode": 10,
-  "versionName": "1.9",
+  "versionCode": 11,
+  "versionName": "1.10",
   "nativeLevel": 2,
-  "notes": "Klaverjassen: meer opties (sortering, bescherming tegen verkeerde kaart, twee tikken, troef bepalen, namen, speeltip) en alle slagen terugkijken",
+  "notes": "Klaverjassen: hand sorteren met rood en zwart om en om",
   "web": "web/index.html",
-  "webSha256": "5f5c75075a14b7add25c247cb21515742cfa6dfa33c9c966a254630478adefd6",
+  "webSha256": "2ee51336a196cb0ed2f20bcb2d4e6f5f60ac6556ddb7b7d3c0afbbfa2c0c6f63",
   "apk": "apk/Renes-spelletjes.apk"
 }

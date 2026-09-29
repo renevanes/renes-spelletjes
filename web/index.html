@@ -261,7 +261,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
       </div>
     </button>
   </div>
-  <div class="version">Versie 1.9 · <button id="checkUpd">Controleren op updates</button></div>
+  <div class="version">Versie 1.10 · <button id="checkUpd">Controleren op updates</button></div>
   <div id="menuToast"></div>
 </section>
 
@@ -2012,11 +2012,23 @@ const Klaverjas = (() => {
   const seatEls = [1, 2, 3].map(p => { const d = document.createElement('div'); d.className = 'kj-seat s' + p; board.appendChild(d); return d; });
   const meEl = document.createElement('div'); meEl.className = 'kj-seat s0'; board.appendChild(meEl);
 
+  // Order the suits in a hand so red and black alternate wherever possible (trump first or last if wanted)
+  function suitOrder(present, trump, trumpLast) {
+    const base = [0, 1, 3, 2], red = x => x === 1 || x === 2;
+    const perms = a => a.length <= 1 ? [a] : a.flatMap((x, i) => perms([...a.slice(0, i), ...a.slice(i + 1)]).map(r => [x, ...r]));
+    let best = null, bestScore = -1;
+    for (const o of perms(present.slice().sort((a, b) => base.indexOf(a) - base.indexOf(b)))) {
+      if (trump != null && (trumpLast ? o[o.length - 1] !== trump : o[0] !== trump)) continue;
+      let sc = 0; for (let i = 1; i < o.length; i++) if (red(o[i]) !== red(o[i - 1])) sc++;
+      if (sc > bestScore) { bestScore = sc; best = o; }
+    }
+    return best || present;
+  }
   function sortHand(h) {
     if (opt.sort === 'geen' && G.dealt) { const d = G.dealt.find(x => h.every(c => x.includes(c))) || []; h.sort((a, b) => d.indexOf(a) - d.indexOf(b)); return; }
-    const pref = [0, 1, 3, 2];                          // alternate colours: ♠ ♥ ♣ ♦
-    const hasT = G.trump != null && opt.sort !== 'kleur';
-    const sk = c => hasT && isTrump(c) ? (opt.sort === 'troefRechts' ? 9 : -1) : pref.indexOf(suit(c));
+    const hasT = G.trump != null && opt.sort !== 'kleur' && h.some(isTrump);
+    const suitIdx = suitOrder([...new Set(h.map(suit))], hasT ? G.trump : null, opt.sort === 'troefRechts');
+    const sk = c => suitIdx.indexOf(suit(c));
     const rk = c => (G.trump != null ? order(c) : NORDER[rank(c)]) * (opt.sortDir === 'hoog' ? -1 : 1);
     h.sort((a, b) => (sk(a) - sk(b)) * 100 + (rk(a) - rk(b)));
   }
@@ -2291,7 +2303,7 @@ const Klaverjas = (() => {
   }
   function leave() { clearTimeout(timer); save(); show('menu'); refreshMenu(); }
   window.addEventListener('resize', () => { if (current === 'klaverjas' && G) render(); });
-  window.__kj = { get G() { return G; }, legal, roemOf, winnerOf, aiPlay, aiBid, play, step, set G(v) { G = v; } };
+  window.__kj = { get G() { return G; }, sortHand, opt, legal, roemOf, winnerOf, aiPlay, aiBid, play, step, set G(v) { G = v; } };
   return { enter, leave, resume: () => step(), hasSave: () => !!store.get('kj.save', null), repaint: paint };
 })();
 $('#tileKj').addEventListener('click', () => Klaverjas.enter());
@@ -2299,7 +2311,7 @@ $('#tileKj').addEventListener('click', () => Klaverjas.enter());
 /* ================================================================
    UPDATES (online)
    ================================================================ */
-const APP_VERSION = '1.9';
+const APP_VERSION = '1.10';
 let menuToastT;
 function menuToast(t, ms) {
   const e = $('#menuToast'); e.textContent = t; e.classList.add('show');
