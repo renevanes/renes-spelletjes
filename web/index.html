@@ -80,10 +80,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
   box-shadow:0 1px 2px rgba(0,0,0,.35),0 0 0 .5px rgba(0,0,0,.25)}
 .card .face svg{display:block;width:100%;height:100%}
 .card .back{position:absolute;inset:0;border-radius:inherit;display:none;
-  background:
-    repeating-linear-gradient(45deg,rgba(255,255,255,.14) 0 3px,transparent 3px 8px),
-    repeating-linear-gradient(-45deg,rgba(255,255,255,.14) 0 3px,transparent 3px 8px),
-    linear-gradient(160deg,var(--back1),var(--back2));
+  background:var(--back2) center/100% 100% no-repeat;
   border:calc(var(--cw)*.06) solid #fff;box-shadow:0 1px 2px rgba(0,0,0,.4)}
 .card.down .back{display:block} .card.down .face{display:none}
 .card.gone{display:none}
@@ -117,6 +114,12 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .seg{display:flex;background:rgba(0,0,0,.25);border-radius:12px;padding:4px;gap:2px}
 .seg button{flex:1;padding:9px 4px;border-radius:9px;color:var(--muted);font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px}
 .seg button.on{background:var(--accent);color:#2b2100}
+.picker{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.picker button{background:rgba(0,0,0,.25);border:2px solid transparent;border-radius:14px;padding:10px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:13px;font-weight:600}
+.picker button.on{border-color:var(--accent);color:var(--ink);background:rgba(242,193,78,.12)}
+.pv{width:56px;height:80px;border-radius:6px;overflow:hidden;background:var(--card);box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.pv svg{display:block;width:100%;height:100%}
+.back-pv{background-size:100% 100%;border:3px solid #fff}
 .swatch{width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,.7);flex:0 0 20px}
 .note{font-size:13px;color:var(--accent);margin:0 0 8px}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
@@ -202,7 +205,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
       </div>
     </button>
   </div>
-  <div class="version">Versie 1.6 · <button id="checkUpd">Controleren op updates</button></div>
+  <div class="version">Versie 1.7 · <button id="checkUpd">Controleren op updates</button></div>
   <div id="menuToast"></div>
 </section>
 
@@ -339,14 +342,16 @@ const native = (fn, ...a) => { try { if (window.Android && Android[fn]) { Androi
 /* ---------------- Settings ---------------- */
 const DEFAULTS = {
   draw: 1, rounds: 0, jokers: 1,
-  faces: 'groot', letters: 'nl', stockSide: 'links', table: 'groen', back: 'blauw', timer: true,
+  faces: 'groot', courts: 'hof', paper: 'wit', backDesign: 'ruit', letters: 'nl', stockSide: 'links', table: 'groen', back: 'blauw', timer: true,
   tapMove: true, autoPlay: true, stuckAlert: true, vibrate: true
 };
 const settings = Object.assign({}, DEFAULTS, store.get('patience.settings', {}));
+if (settings.faces === 'eenvoudig') { settings.faces = 'groot'; settings.courts = 'geen'; store.set('patience.settings', settings); }
 if (!store.get('patience.v14', false)) { if (settings.faces === 'plaatjes') settings.faces = 'groot'; store.set('patience.v14', true); store.set('patience.settings', settings); }
 const saveSettings = () => store.set('patience.settings', settings);
 const TABLES = { groen: ['#1d6b45', '#0f3d2a'], blauw: ['#22558f', '#0f2a4d'], rood: ['#8a2533', '#48101a'], paars: ['#5b3d8c', '#2b1c49'], grijs: ['#4b525b', '#23272c'] };
-const BACKS = { blauw: ['#2c5aa0', '#1b3a6b'], rood: ['#b3262e', '#6e1419'], groen: ['#2e7d4f', '#17482c'], zwart: ['#3a3d44', '#15161a'] };
+const BACKS = { blauw: ['#2c5aa0', '#1b3a6b'], rood: ['#b3262e', '#6e1419'], groen: ['#2e7d4f', '#17482c'], paars: ['#6b3fa0', '#3b2163'], goud: ['#b8872b', '#6e4d12'], zwart: ['#3a3d44', '#15161a'] };
+const PAPERS = { wit: '#ffffff', creme: '#fbf3e1' };
 
 const vibrate = ms => { if (!settings.vibrate) return; if (!native('vibrate', ms)) { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} } };
 
@@ -443,6 +448,80 @@ const Art = (() => {
     return g;
   }
 
+  // Animal court cards: lion king, cat queen, fox jack
+  function animalCourt(s, r) {
+    const robe = ROBE[s], dark = ROBE_DARK[s], col = COLORS[s];
+    let g = `<rect x="13" y="37" width="74" height="98" rx="5" fill="${s === 1 || s === 2 ? '#fbeee6' : '#eef1f6'}" stroke="${col}" stroke-width="1.5"/>`;
+    g += `<path d="M22 134L27 100Q50 88 73 100L78 134Z" fill="${robe}"/>`;
+    g += `<path d="M22 134L27 100Q34 96 40 94L44 134Z" fill="${dark}" opacity=".55"/>`;
+    g += `<path d="M39 94L50 112L61 94" fill="none" stroke="${GOLD}" stroke-width="3.5" stroke-linejoin="round"/>`;
+    g += `<path d="M50 112V134" stroke="${GOLD}" stroke-width="2.5"/>`;
+    g += use(s, 50, 123, 13, '#fff');
+    const eyes = (c) => `<circle cx="45.5" cy="71" r="1.7" fill="${c}"/><circle cx="54.5" cy="71" r="1.7" fill="${c}"/>`;
+    if (r === 13) {          // Lion king
+      for (let a = 0; a < 12; a++) { const x = 50 + Math.cos(a * 0.5236) * 15, y = 72 + Math.sin(a * 0.5236) * 15; g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5.5" fill="#b8641f"/>`; }
+      g += `<circle cx="50" cy="72" r="15" fill="#c7782a"/>`;
+      g += `<circle cx="41" cy="62" r="3.6" fill="#e0a84e"/><circle cx="59" cy="62" r="3.6" fill="#e0a84e"/>`;
+      g += `<circle cx="50" cy="73" r="11" fill="#f3c774"/>` + eyes('#3a2512');
+      g += `<ellipse cx="50" cy="78.5" rx="6.5" ry="4.6" fill="#fbe6b8"/><path d="M47.3 75.6H52.7L50 78.6Z" fill="#5a3a22"/>`;
+      g += `<path d="M47 81Q50 83 53 81" fill="none" stroke="#5a3a22" stroke-width="1.2" stroke-linecap="round"/>`;
+      g += `<path d="M37 57V42L43.5 49L50 38L56.5 49L63 42V57Z" fill="${GOLD}" stroke="#a8841f" stroke-width="1"/>`;
+      g += `<circle cx="50" cy="52" r="2.2" fill="${robe}"/>`;
+      g += `<path d="M72 132L77 84" stroke="${GOLD}" stroke-width="3.2" stroke-linecap="round"/>` + use(s, 77.5, 80, 11, GOLD);
+    } else if (r === 12) {   // Cat queen
+      g += `<path d="M37.5 70L39 53L48.5 62Z" fill="#8e949c"/><path d="M62.5 70L61 53L51.5 62Z" fill="#8e949c"/>`;
+      g += `<path d="M40 66L40.8 57L46 62Z" fill="#f2a7b8"/><path d="M60 66L59.2 57L54 62Z" fill="#f2a7b8"/>`;
+      g += `<circle cx="50" cy="73" r="12.5" fill="#aab0b8"/>`;
+      g += `<ellipse cx="45.5" cy="71" rx="2.6" ry="1.9" fill="#7cc35f"/><ellipse cx="54.5" cy="71" rx="2.6" ry="1.9" fill="#7cc35f"/>`;
+      g += `<ellipse cx="45.5" cy="71" rx=".8" ry="1.8" fill="#222"/><ellipse cx="54.5" cy="71" rx=".8" ry="1.8" fill="#222"/>`;
+      g += `<ellipse cx="50" cy="79" rx="6" ry="4.2" fill="#eceef0"/><path d="M48.2 76.2H51.8L50 78.2Z" fill="#e9829a"/>`;
+      g += `<path d="M36 77L44 78M36 81L44 80M64 77L56 78M64 81L56 80" stroke="#555" stroke-width=".8" stroke-linecap="round"/>`;
+      g += `<path d="M43 61Q50 53 57 61L55.5 62.5Q50 57.5 44.5 62.5Z" fill="${GOLD}"/><circle cx="50" cy="56" r="2.3" fill="${GOLD}"/>`;
+      g += `<path d="M27 132Q30 116 27 104" fill="none" stroke="#3f7a3a" stroke-width="2"/>`;
+      for (let a = 0; a < 5; a++) { const x = 27 + Math.cos(a * 1.2566) * 4.5, y = 101 + Math.sin(a * 1.2566) * 4.5; g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.8" fill="#e46c8a"/>`; }
+      g += `<circle cx="27" cy="101" r="2.4" fill="${GOLD}"/>`;
+    } else {                 // Fox jack
+      g += `<path d="M36.5 71L35 49L48 61Z" fill="#d9662a"/><path d="M63.5 71L65 49L52 61Z" fill="#d9662a"/>`;
+      g += `<path d="M35.6 55L35 49L39.5 53Z" fill="#3a2418"/><path d="M64.4 55L65 49L60.5 53Z" fill="#3a2418"/>`;
+      g += `<path d="M37 68Q37 58 50 58Q63 58 63 68Q63 80 50 88Q37 80 37 68Z" fill="#e0772f"/>`;
+      g += `<path d="M38 72Q44 76 50 76Q56 76 62 72Q60 82 50 88Q40 82 38 72Z" fill="#fff"/>`;
+      g += eyes('#2b1a10') + `<circle cx="50" cy="84.5" r="2.2" fill="#2b1a10"/>`;
+      g += `<path d="M41 61Q50 50 59 61Z" fill="${dark}"/><rect x="41" y="59" width="18" height="3.2" rx="1.2" fill="${GOLD}"/>`;
+      g += `<path d="M56 56Q68 49 69 40Q62 49 54.5 53.5Z" fill="${GOLD}" stroke="#a8841f" stroke-width=".8"/>`;
+      g += `<path d="M26 132L22 84" stroke="#8a8f98" stroke-width="2.6" stroke-linecap="round"/><path d="M22 84L16 90L20 78L27 84Z" fill="#b8bec7"/>`;
+    }
+    return g;
+  }
+
+  // Card backs (100 x 142)
+  const BACK_DESIGNS = { ruit: 'Ruit', ornament: 'Ornament', sterren: 'Sterren', golven: 'Golven', stippen: 'Stippen', monogram: 'Monogram' };
+  function back(design, c1, c2) {
+    const W = 'rgba(255,255,255,', grad = `<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs><rect width="100" height="142" fill="url(#g)"/>`;
+    let g = '';
+    if (design === 'ornament') {
+      g += `<rect x="7" y="7" width="86" height="128" rx="5" fill="none" stroke="${W}.55)" stroke-width="1.6"/><rect x="11" y="11" width="78" height="120" rx="3" fill="none" stroke="${W}.3)" stroke-width="1"/>`;
+      for (let a = 0; a < 8; a++) g += `<ellipse cx="50" cy="56" rx="6" ry="15" fill="${W}.18)" stroke="${W}.5)" stroke-width=".8" transform="rotate(${a * 22.5} 50 71)"/>`;
+      g += `<circle cx="50" cy="71" r="8" fill="${W}.35)"/><circle cx="50" cy="71" r="3.5" fill="${W}.8)"/>`;
+      [[20, 22], [80, 22], [20, 120], [80, 120]].forEach(([x, y]) => g += `<path d="M${x} ${y - 6}L${x + 5} ${y}L${x} ${y + 6}L${x - 5} ${y}Z" fill="${W}.5)"/>`);
+    } else if (design === 'sterren') {
+      const st = [[18, 20, 4], [70, 14, 3], [44, 38, 5], [84, 46, 3], [22, 60, 3], [62, 70, 6], [32, 92, 4], [80, 96, 4], [52, 112, 3], [16, 124, 5], [72, 128, 3], [40, 64, 2], [88, 76, 2], [58, 30, 2]];
+      st.forEach(([x, y, r]) => g += `<path d="M${x} ${y - r}L${x + r * .3} ${y - r * .3}L${x + r} ${y}L${x + r * .3} ${y + r * .3}L${x} ${y + r}L${x - r * .3} ${y + r * .3}L${x - r} ${y}L${x - r * .3} ${y - r * .3}Z" fill="${W}.85)"/>`);
+      g += `<path d="M26 34A12 12 0 1 0 38 48A9 9 0 1 1 26 34Z" fill="${W}.9)"/>`;
+    } else if (design === 'golven') {
+      for (let y = 6; y < 142; y += 10) g += `<path d="M-5 ${y}Q7.5 ${y - 6} 20 ${y}T45 ${y}T70 ${y}T95 ${y}T120 ${y}" fill="none" stroke="${W}${y % 20 === 6 ? '.45' : '.2'})" stroke-width="2.2"/>`;
+    } else if (design === 'stippen') {
+      for (let y = 8, row = 0; y < 142; y += 11, row++) for (let x = row % 2 ? 13 : 5.5; x < 100; x += 15) g += `<circle cx="${x}" cy="${y}" r="3.2" fill="${W}.35)"/>`;
+    } else if (design === 'monogram') {
+      g += `<rect x="7" y="7" width="86" height="128" rx="5" fill="none" stroke="${GOLD}" stroke-width="2"/>`;
+      for (let y = 16; y < 130; y += 12) g += `<path d="M14 ${y}H20M80 ${y}H86" stroke="${W}.3)" stroke-width="1.4"/>`;
+      g += `<circle cx="50" cy="71" r="23" fill="${W}.12)" stroke="${GOLD}" stroke-width="2"/>`;
+      g += `<text x="50" y="84" text-anchor="middle" font-size="38" font-family="Georgia,serif" font-weight="700" fill="${GOLD}">R</text>`;
+    } else { // ruit
+      for (let i = -150; i < 150; i += 9) g += `<path d="M${i} 0L${i + 142} 142M${i + 142} 0L${i} 142" stroke="${W}.18)" stroke-width="2.2"/>`;
+    }
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 142" preserveAspectRatio="none">${grad}${g}</svg>`;
+  }
+
   function jokerFace() {
     return `<svg viewBox="0 0 100 142" preserveAspectRatio="none">
       <text x="6" y="26" font-size="22" ${FONT} fill="#7a2fb0">★</text>
@@ -461,17 +540,17 @@ const Art = (() => {
     </svg>`;
   }
 
-  function face(c, mode, letters) {
+  function face(c, mode, letters, courts) {
     if (c >= 52) return jokerFace();
     const s = Math.floor(c / 13), r = (c % 13) + 1, col = COLORS[s];
     let body;
-    if (mode === 'eenvoudig' || (mode === 'groot' && r <= 10)) body = use(s, 50, 92, 62, col);      // one big suit in the middle
+    if (mode === 'eenvoudig' || (mode === 'groot' && r <= 10) || (r > 10 && courts === 'geen')) body = use(s, 50, 92, 62, col);      // one big suit in the middle
     else if (r === 1) body = use(s, 50, 88, s === 0 ? 50 : 44, col) + (s === 0 ? `<circle cx="50" cy="88" r="32" fill="none" stroke="${col}" stroke-width="1.2" opacity=".35"/>` : '');
     else if (r <= 10) { const size = r >= 9 ? 16 : 18; body = PIPS[r].map(([x, f]) => use(s, x, 50 + f * 78, size, col, f > .5)).join(''); }
-    else body = `<g transform="translate(0 4)">${court(s, r)}</g>`;
+    else body = `<g transform="translate(0 4)">${courts === 'dieren' ? animalCourt(s, r) : court(s, r)}</g>`;
     return `<svg viewBox="0 0 100 142" preserveAspectRatio="none">${corner(s, r, letters)}${body}</svg>`;
   }
-  return { face };
+  return { face, back, BACK_DESIGNS };
 })();
 
 /* ================================================================
@@ -513,7 +592,7 @@ const Patience = (() => {
     board.appendChild(d); cardEl.push(d);
   }
   function paintFaces() {
-    for (let c = 0; c < NCARDS; c++) cardEl[c].firstChild.innerHTML = Art.face(c, settings.faces, settings.letters);
+    for (let c = 0; c < NCARDS; c++) cardEl[c].firstChild.innerHTML = Art.face(c, settings.faces, settings.letters, settings.courts);
     const k = settings.letters === 'nl' ? 'H' : 'K';
     for (let i = 0; i < 7; i++) slotEl['t' + i].textContent = k;
   }
@@ -522,6 +601,10 @@ const Patience = (() => {
     const r = document.documentElement.style;
     r.setProperty('--felt1', t[0]); r.setProperty('--felt2', t[1]);
     r.setProperty('--back1', b[0]); r.setProperty('--back2', b[1]);
+    r.setProperty('--card', PAPERS[settings.paper] || PAPERS.wit);
+    let st = $('#backStyle');
+    if (!st) { st = document.createElement('style'); st.id = 'backStyle'; document.head.appendChild(st); }
+    st.textContent = `.card .back{background-image:url("data:image/svg+xml,${encodeURIComponent(Art.back(settings.backDesign, b[0], b[1]))}")}`;
     $('#timeBox').classList.toggle('hide', !settings.timer);
     if (current === 'patience') native('setBarColor', t[1]);
   }
@@ -1048,12 +1131,17 @@ const Patience = (() => {
     { key: 'draw', label: 'Kaarten trekken', choices: [[1, '1 kaart'], [3, '3 kaarten']] },
     { key: 'rounds', label: 'Rondes door de stapel', choices: [[0, 'Onbeperkt'], [3, '3 rondes'], [1, '1 ronde']] },
     { key: 'jokers', label: 'Jokers per spel', choices: [[0, 'Geen'], [1, '1'], [2, '2'], [3, '3']] },
-    { section: 'Weergave' },
-    { key: 'faces', label: 'Kaartopdruk', choices: [['groot', 'Groot'], ['plaatjes', 'Klassiek'], ['eenvoudig', 'Zonder plaatjes']] },
+    { section: 'Voorkant kaarten' },
+    { key: 'courts', label: 'Plaatjes op heer, vrouw en boer', picker: 'front', choices: [['hof', 'Koningshuis'], ['dieren', 'Dieren'], ['geen', 'Geen plaatje']] },
+    { key: 'faces', label: 'Getallen', choices: [['groot', 'Groot symbool'], ['plaatjes', 'Klassiek patroon']] },
+    { key: 'paper', label: 'Kaartkleur', choices: [['wit', 'Wit'], ['creme', 'Crème']] },
     { key: 'letters', label: 'Letters op de kaarten', choices: [['nl', 'H · V · B'], ['en', 'K · Q · J']] },
-    { key: 'stockSide', label: 'Trekstapel', choices: [['links', 'Links'], ['rechts', 'Rechts']] },
+    { section: 'Achterkant kaarten' },
+    { key: 'backDesign', label: 'Afbeelding', picker: 'back', choices: Object.entries(Art.BACK_DESIGNS) },
+    { key: 'back', label: 'Kleur', swatch: BACKS },
+    { section: 'Tafel en weergave' },
     { key: 'table', label: 'Tafelkleur', swatch: TABLES },
-    { key: 'back', label: 'Achterkant kaarten', swatch: BACKS },
+    { key: 'stockSide', label: 'Trekstapel', choices: [['links', 'Links'], ['rechts', 'Rechts']] },
     { key: 'timer', label: 'Tijd tonen', choices: ONOFF },
     { section: 'Bediening' },
     { key: 'tapMove', label: 'Tik op een kaart om te verplaatsen', choices: ONOFF },
@@ -1069,6 +1157,16 @@ const Patience = (() => {
       if (o.section) {
         h += `<div class="opt-section">${o.section}${o.note ? `<small>(${o.note})</small>` : ''}</div>`;
         if (o.note && pending) h += `<div class="note">Gewijzigd — start een nieuw spel om dit te gebruiken.</div>`;
+        continue;
+      }
+      if (o.picker) {
+        const b = BACKS[settings.back] || BACKS.blauw;
+        h += `<div class="opt"><div class="opt-label">${o.label}</div><div class="picker">` + o.choices.map(([v, l]) => {
+          const pv = o.picker === 'back'
+            ? `<div class="pv back-pv" style="background-image:url(&quot;data:image/svg+xml,${encodeURIComponent(Art.back(v, b[0], b[1]))}&quot;)"></div>`
+            : `<div class="pv">${Art.face(13 + 12, 'groot', settings.letters, v)}</div>`;
+          return `<button data-key="${o.key}" data-val='${JSON.stringify(v)}' class="${settings[o.key] === v ? 'on' : ''}">${pv}<span>${l}</span></button>`;
+        }).join('') + `</div></div>`;
         continue;
       }
       const choices = o.swatch ? Object.keys(o.swatch).map(k => [k, `<span class="swatch" style="background:${o.swatch[k][0]}"></span>`, cap(k)]) : o.choices;
@@ -1088,8 +1186,8 @@ const Patience = (() => {
     const b = e.target.closest('button[data-key]'); if (!b) return;
     const k = b.dataset.key, v = JSON.parse(b.dataset.val);
     settings[k] = v; saveSettings();
-    if (k === 'faces' || k === 'letters') paintFaces();
-    if (k === 'table' || k === 'back' || k === 'timer') applyTheme();
+    if (k === 'faces' || k === 'letters' || k === 'courts') paintFaces();
+    if (k === 'table' || k === 'back' || k === 'timer' || k === 'backDesign' || k === 'paper') applyTheme();
     if (k === 'stockSide' && S && !won) { layout(); render(); }
     if (k === 'stuckAlert') stuckShownAt = -1;
     renderOptions();
@@ -1522,7 +1620,7 @@ $('#tileAir').addEventListener('click', () => AirHockey.enter());
 /* ================================================================
    UPDATES (online)
    ================================================================ */
-const APP_VERSION = '1.6';
+const APP_VERSION = '1.7';
 let menuToastT;
 function menuToast(t, ms) {
   const e = $('#menuToast'); e.textContent = t; e.classList.add('show');

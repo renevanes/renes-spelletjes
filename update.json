@@ -1,9 +1,9 @@
 {
-  "versionCode": 7,
-  "versionName": "1.6",
+  "versionCode": 8,
+  "versionName": "1.7",
   "nativeLevel": 2,
-  "notes": "Automatische updates",
+  "notes": "Nieuw: kies de afbeelding op de voor- en achterkant van de kaarten (Opties)",
   "web": "web/index.html",
-  "webSha256": "ba2280334acef3606d40a3edeb4dbd6fa4609555a364a7130a6954609ac9b2c3",
+  "webSha256": "c5b856cff715e2851d5478621693247c97f9ea107b91cb876bd4d35ca010f72c",
   "apk": "apk/Renes-spelletjes.apk"
 }
