@@ -1,9 +1,9 @@
 {
-  "versionCode": 11,
-  "versionName": "1.10",
+  "versionCode": 12,
+  "versionName": "1.11",
   "nativeLevel": 2,
-  "notes": "Klaverjassen: hand sorteren met rood en zwart om en om",
+  "notes": "Klaverjassen: kleur van elke kaart ook zichtbaar als kaarten in je hand over elkaar liggen",
   "web": "web/index.html",
-  "webSha256": "2ee51336a196cb0ed2f20bcb2d4e6f5f60ac6556ddb7b7d3c0afbbfa2c0c6f63",
+  "webSha256": "bf7d031b7802166a94edf015bf86f5b46b525911a0429994dde3910af118e9d6",
   "apk": "apk/Renes-spelletjes.apk"
 }
