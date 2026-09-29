@@ -1,9 +1,9 @@
 {
-  "versionCode": 12,
-  "versionName": "1.11",
+  "versionCode": 13,
+  "versionName": "1.12",
   "nativeLevel": 2,
-  "notes": "Klaverjassen: kleur van elke kaart ook zichtbaar als kaarten in je hand over elkaar liggen",
+  "notes": "Klaverjassen: duidelijk scorebord (totaal, deze ronde, troef, wie gaat) en goede weergave rechtop \u00e9n liggend. Airhockey: rustiger, natuurlijker puck",
   "web": "web/index.html",
-  "webSha256": "bf7d031b7802166a94edf015bf86f5b46b525911a0429994dde3910af118e9d6",
+  "webSha256": "1358d84b3fe171cee593cd3267422f2b92dd49e1b91ac8be4223be3f269d862d",
   "apk": "apk/Renes-spelletjes.apk"
 }

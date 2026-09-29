@@ -138,10 +138,29 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 
 /* ---------- Klaverjassen ---------- */
 #klaverjas{background:radial-gradient(130% 90% at 50% 40%,var(--felt1) 0%,var(--felt2) 80%)}
-.kj-score{flex:1;display:flex;justify-content:center;gap:22px;font-size:15px;color:var(--muted)}
-.kj-score b{color:var(--ink);font-size:22px;font-variant-numeric:tabular-nums;margin-left:4px}
-.kj-info{text-align:center;font-size:13px;color:var(--muted);padding:0 10px 4px;min-height:20px}
-.kj-info b{color:#fff;font-size:16px} .kj-info b.red{color:#ff5a5f}
+.kj-sb{flex:1;display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:stretch;min-width:0}
+.kj-team{background:rgba(0,0,0,.28);border:2px solid transparent;border-radius:14px;padding:4px 8px;display:flex;flex-direction:column;align-items:center;line-height:1.15;min-width:0}
+.kj-team small{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.kj-team b{font-size:24px;font-variant-numeric:tabular-nums}
+.kj-team span{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.kj-team span em{color:var(--accent);font-style:normal;font-weight:700}
+.kj-team.playing{border-color:var(--accent)}
+.kj-team.playing{background:rgba(242,193,78,.14)}
+.kj-mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:64px}
+.kj-trump{width:44px;height:44px;border-radius:50%;background:#fffdf8;color:#111;display:flex;align-items:center;justify-content:center;font-size:30px;line-height:1;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.kj-trump.red{color:#d4151f} .kj-trump.none{background:rgba(255,255,255,.18);color:var(--muted);font-size:20px}
+.kj-mid span{font-size:11px;color:var(--muted);text-align:center;line-height:1.25;max-width:96px}
+.kj-mid span b{color:var(--accent)}
+#klaverjas .topbar{padding:6px 6px;gap:4px}
+@media (orientation:landscape){
+  .kj-mid span{max-width:none;white-space:nowrap}
+  .kj-mid span br{display:none} .kj-mid span b::before{content:" · ";color:var(--muted)}
+  #klaverjas .topbar{min-height:44px;padding:3px 6px}
+  .kj-team{flex-direction:row;gap:8px;align-items:baseline;justify-content:center;padding:2px 10px}
+  .kj-team b{font-size:20px}
+  .kj-trump{width:34px;height:34px;font-size:24px}
+  .kj-mid{flex-direction:row;gap:8px}
+}
 #kjBoard{position:relative;flex:1;overflow:hidden;touch-action:manipulation}
 .card.kj{transition:transform .35s cubic-bezier(.2,.8,.3,1),filter .2s}
 .card.kj .back{border-width:calc(var(--cw)*.05)}
@@ -261,7 +280,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
       </div>
     </button>
   </div>
-  <div class="version">Versie 1.11 · <button id="checkUpd">Controleren op updates</button></div>
+  <div class="version">Versie 1.12 · <button id="checkUpd">Controleren op updates</button></div>
   <div id="menuToast"></div>
 </section>
 
@@ -289,10 +308,13 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 <section id="klaverjas" class="screen">
   <div class="topbar">
     <button class="iconbtn" id="kjBack" aria-label="Terug">‹</button>
-    <div class="kj-score"><div>Wij <b id="kjWij">0</b></div><div>Zij <b id="kjZij">0</b></div></div>
+    <div class="kj-sb">
+      <div class="kj-team" id="kjTeam0"><small>Wij</small><b id="kjWij">0</b><span id="kjR0"></span></div>
+      <div class="kj-mid"><div class="kj-trump" id="kjTrump">?</div><span id="kjMid"></span></div>
+      <div class="kj-team" id="kjTeam1"><small>Zij</small><b id="kjZij">0</b><span id="kjR1"></span></div>
+    </div>
     <button class="iconbtn" id="kjOptBtn" aria-label="Opties">⚙&#xFE0E;</button>
   </div>
-  <div class="kj-info" id="kjInfo"></div>
   <div id="kjBoard">
     <button id="kjTricksBtn">🂠 Slagen</button>
     <div id="kjBid"></div>
@@ -1367,8 +1389,8 @@ const AirHockey = (() => {
   const opt = Object.assign({}, AD, store.get('air.settings', {}));
   const saveOpt = () => store.set('air.settings', opt);
   let stats = Object.assign({ played: 0, won: 0, goalsFor: 0, goalsAgainst: 0 }, store.get('air.stats', {}));
-  const LEVEL = { makkelijk: { speed: 0.9, err: 0.35, react: 0.35 }, normaal: { speed: 1.5, err: 0.15, react: 0.18 }, moeilijk: { speed: 2.3, err: 0.04, react: 0.06 } };
-  const SPEED = { rustig: 1.9, normaal: 2.6, snel: 3.4 };
+  const LEVEL = { makkelijk: { speed: 0.75, err: 0.35, react: 0.35 }, normaal: { speed: 1.15, err: 0.15, react: 0.2 }, moeilijk: { speed: 1.7, err: 0.05, react: 0.08 } };
+  const SPEED = { rustig: 1.1, normaal: 1.5, snel: 2.1 };   // max puck speed in table-heights per second
 
   const wrap = $('#ahWrap'), cv = $('#ahCanvas'), ctx = cv.getContext('2d');
   let T = null;                        // table geometry
@@ -1503,7 +1525,7 @@ const AirHockey = (() => {
     puck.x = m.x + nx * min; puck.y = m.y + ny * min;
     const rvx = puck.vx - m.vx, rvy = puck.vy - m.vy, dot = rvx * nx + rvy * ny;
     if (dot < 0) {
-      puck.vx -= 1.9 * dot * nx; puck.vy -= 1.9 * dot * ny;
+      puck.vx -= 1.75 * dot * nx; puck.vy -= 1.75 * dot * ny;
       const hit = Math.min(1, -dot / (T.ih * 2));
       if (hit > 0.05) { beep(420 + hit * 300, 0.06, 0.08 + hit * 0.2); if (hit > 0.3) vibrate(10); }
     }
@@ -1521,18 +1543,22 @@ const AirHockey = (() => {
     mal.forEach((m, i) => clampMallet(i, m));
     const N = 6, h = dt / N;
     const start = mal.map(m => ({ x: m.x, y: m.y }));
-    mal.forEach(m => { m.vx = (m.tx - m.x) / dt; m.vy = (m.ty - m.y) / dt; });
+    const mv = SPEED[opt.speed] * T.ih * 1.1;              // a hard swipe cannot give more than this
+    mal.forEach(m => {
+      m.vx = (m.tx - m.x) / dt * 0.8; m.vy = (m.ty - m.y) / dt * 0.8;
+      const v = Math.hypot(m.vx, m.vy); if (v > mv) { m.vx *= mv / v; m.vy *= mv / v; }
+    });
     const maxV = SPEED[opt.speed] * T.ih;
     for (let k = 1; k <= N; k++) {
       mal.forEach((m, i) => { m.x = start[i].x + (m.tx - start[i].x) * k / N; m.y = start[i].y + (m.ty - start[i].y) * k / N; });
       puck.x += puck.vx * h; puck.y += puck.vy * h;
       mal.forEach(m => collideMallet(m, h));
       const inGoalX = Math.abs(puck.x - T.cx) < T.goal / 2;
-      if (puck.x - puck.r < T.L) { puck.x = T.L + puck.r; puck.vx = Math.abs(puck.vx) * 0.9; beep(220, 0.04, 0.06); }
-      if (puck.x + puck.r > T.R) { puck.x = T.R - puck.r; puck.vx = -Math.abs(puck.vx) * 0.9; beep(220, 0.04, 0.06); }
+      if (puck.x - puck.r < T.L) { puck.x = T.L + puck.r; puck.vx = Math.abs(puck.vx) * 0.8; beep(220, 0.04, 0.06); }
+      if (puck.x + puck.r > T.R) { puck.x = T.R - puck.r; puck.vx = -Math.abs(puck.vx) * 0.8; beep(220, 0.04, 0.06); }
       if (!inGoalX) {
-        if (puck.y - puck.r < T.Tp) { puck.y = T.Tp + puck.r; puck.vy = Math.abs(puck.vy) * 0.9; beep(220, 0.04, 0.06); }
-        if (puck.y + puck.r > T.B) { puck.y = T.B - puck.r; puck.vy = -Math.abs(puck.vy) * 0.9; beep(220, 0.04, 0.06); }
+        if (puck.y - puck.r < T.Tp) { puck.y = T.Tp + puck.r; puck.vy = Math.abs(puck.vy) * 0.8; beep(220, 0.04, 0.06); }
+        if (puck.y + puck.r > T.B) { puck.y = T.B - puck.r; puck.vy = -Math.abs(puck.vy) * 0.8; beep(220, 0.04, 0.06); }
       }
       [[T.cx - T.goal / 2, T.Tp], [T.cx + T.goal / 2, T.Tp], [T.cx - T.goal / 2, T.B], [T.cx + T.goal / 2, T.B]].forEach(p => collidePost(p[0], p[1]));
       const sp = Math.hypot(puck.vx, puck.vy);
@@ -1540,7 +1566,7 @@ const AirHockey = (() => {
       if (puck.y < T.Tp - puck.r) return goal(0);
       if (puck.y > T.B + puck.r) return goal(1);
     }
-    const fr = Math.pow(0.62, dt);
+    const fr = Math.pow(0.5, dt);                          // air-cushion friction: slows down gradually
     puck.vx *= fr; puck.vy *= fr;
     // puck resting exactly on the centre line would be unreachable: nudge it
     if (Math.hypot(puck.vx, puck.vy) < T.ih * 0.02 && Math.abs(puck.y - T.cy) < puck.r) puck.vy += (puck.y < T.cy ? -1 : 1) * T.ih * 0.05;
@@ -2035,10 +2061,10 @@ const Klaverjas = (() => {
 
   let geo = {};
   function layout() {
-    const W = board.clientWidth, H = board.clientHeight;
-    const cw = Math.min(W * 0.2, (H * 0.19) / 1.42), ch = cw * 1.42;
+    const W = board.clientWidth, H = board.clientHeight, land = W > H * 1.2;
+    const cw = land ? Math.min(W * 0.1, (H * 0.27) / 1.42) : Math.min(W * 0.2, (H * 0.19) / 1.42), ch = cw * 1.42;
     board.style.setProperty('--cw', cw + 'px'); board.style.setProperty('--ch', ch + 'px');
-    geo = { W, H, cw, ch, cx: W / 2, cy: H * 0.43 };
+    geo = { W, H, cw, ch, land, cx: W / 2, cy: land ? H * 0.36 : H * 0.43 };
   }
   function place(el, x, y, sc, rot, z) {
     el.style.transform = `translate(${x}px,${y}px) rotate(${rot || 0}deg) scale(${sc || 1})`;
@@ -2049,8 +2075,9 @@ const Klaverjas = (() => {
     return [[cx - cw / 2, cy + ch * 0.08], [cx - cw * 1.25, cy - ch * 0.5], [cx - cw / 2, cy - ch * 1.08], [cx + cw * 0.25, cy - ch * 0.5]][p];
   }
   function seatPos(p) {
-    const { W, H, cw, ch } = geo;
-    return [[W / 2 - cw / 2, H - ch - 8], [6, H * 0.43 - ch * 0.45], [W / 2 - cw / 2, 26], [W - cw - 6, H * 0.43 - ch * 0.45]][p];
+    const { W, H, cw, ch, land, cy } = geo;
+    const side = land ? W * 0.14 : 6;
+    return [[W / 2 - cw / 2, H - ch - 8], [side, cy - ch * 0.45], [W / 2 - cw / 2, land ? 8 : 26], [W - cw - side, cy - ch * 0.45]][p];
   }
 
   function render(highlightP) {
@@ -2063,7 +2090,7 @@ const Klaverjas = (() => {
     if (!myTurn) sel = null;
     const inTrick = new Map(G.trick.map(t => [t.c, t.p]));
     const hand = G.hands[0];
-    const step0 = Math.min(cw * 0.62, (W - 16 - cw) / Math.max(1, hand.length - 1));
+    const step0 = Math.min(cw * (geo.land ? 0.8 : 0.62), (W - 16 - cw) / Math.max(1, hand.length - 1));
     const x0 = (W - (cw + step0 * (hand.length - 1))) / 2;
     for (const c of DECK) {
       const el = cards[c];
@@ -2105,15 +2132,21 @@ const Klaverjas = (() => {
     [1, 2, 3].forEach((p, i) => { seatEls[i].innerHTML = lbl(p); });
     meEl.innerHTML = lbl(0);
     const [x1, y1] = seatPos(1), [x2, y2] = seatPos(2), [x3, y3] = seatPos(3);
-    seatEls[0].style.cssText = `left:4px;top:${y1 + ch * 0.95}px`;
-    seatEls[1].style.cssText = `left:50%;transform:translateX(-50%);top:${y2 + ch * 0.55}px`;
-    seatEls[2].style.cssText = `right:4px;top:${y3 + ch * 0.95}px`;
+    const lx = geo.land ? x1 - cw * 0.1 : 4;
+    seatEls[0].style.cssText = `left:${lx}px;top:${y1 + ch * 0.95}px`;
+    seatEls[1].style.cssText = geo.land ? `left:calc(50% + ${cw * 0.9}px);top:${y2 + ch * 0.1}px` : `left:50%;transform:translateX(-50%);top:${y2 + ch * 0.55}px`;
+    seatEls[2].style.cssText = `right:${lx}px;top:${y3 + ch * 0.95}px`;
     meEl.style.cssText = `left:50%;transform:translateX(-50%);top:${H - ch - 10 - ch * 0.12 - 26}px`;
-    // header
+    // scoreboard: total, this round (+roem), trump and who plays
     $('#kjWij').textContent = G.total[0]; $('#kjZij').textContent = G.total[1];
-    $('#kjInfo').innerHTML = `Ronde ${G.round}/${G.rounds}` + (G.trump != null
-      ? ` · Troef <b class="${G.trump === 1 || G.trump === 2 ? 'red' : ''}">${SUITS[G.trump]}</b> · Wij ${G.pts[0]}${G.roem[0] ? '+' + G.roem[0] : ''} – Zij ${G.pts[1]}${G.roem[1] ? '+' + G.roem[1] : ''}`
-      : ' · troef kiezen');
+    const rr = t => G.trump == null ? 'nu –' : `nu ${G.pts[t]}${G.roem[t] ? ` <em>+${G.roem[t]}</em>` : ''}`;
+    $('#kjR0').innerHTML = rr(0); $('#kjR1').innerHTML = rr(1);
+    const pt = G.chooser != null ? team(G.chooser) : -1;
+    $('#kjTeam0').classList.toggle('playing', pt === 0); $('#kjTeam1').classList.toggle('playing', pt === 1);
+    const tr = $('#kjTrump');
+    tr.className = 'kj-trump' + (G.trump == null ? ' none' : (G.trump === 1 || G.trump === 2 ? ' red' : ''));
+    tr.textContent = G.trump == null ? '?' : SUITS[G.trump];
+    $('#kjMid').innerHTML = `Ronde ${G.round}/${G.rounds}<br>` + (G.chooser != null ? `<b>${esc(nm(G.chooser))} gaat</b>` : 'troef kiezen');
   }
 
   function dealAnim() {
@@ -2311,7 +2344,7 @@ $('#tileKj').addEventListener('click', () => Klaverjas.enter());
 /* ================================================================
    UPDATES (online)
    ================================================================ */
-const APP_VERSION = '1.11';
+const APP_VERSION = '1.12';
 let menuToastT;
 function menuToast(t, ms) {
   const e = $('#menuToast'); e.textContent = t; e.classList.add('show');
