@@ -1,9 +1,9 @@
 {
-  "versionCode": 13,
-  "versionName": "1.12",
+  "versionCode": 14,
+  "versionName": "1.13",
   "nativeLevel": 2,
-  "notes": "Klaverjassen: duidelijk scorebord (totaal, deze ronde, troef, wie gaat) en goede weergave rechtop \u00e9n liggend. Airhockey: rustiger, natuurlijker puck",
+  "notes": "Kaarten: waarde en symbool ook rechtsonder (ondersteboven), standaard aan \u2013 uit te zetten in de opties",
   "web": "web/index.html",
-  "webSha256": "1358d84b3fe171cee593cd3267422f2b92dd49e1b91ac8be4223be3f269d862d",
+  "webSha256": "0c1d9e7c6cf791253cedeeb506d24c1a203cf83d7834fe5c26d9cd744459ec31",
   "apk": "apk/Renes-spelletjes.apk"
 }

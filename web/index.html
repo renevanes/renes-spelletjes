@@ -280,7 +280,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
       </div>
     </button>
   </div>
-  <div class="version">Versie 1.12 · <button id="checkUpd">Controleren op updates</button></div>
+  <div class="version">Versie 1.13 · <button id="checkUpd">Controleren op updates</button></div>
   <div id="menuToast"></div>
 </section>
 
@@ -483,7 +483,7 @@ const native = (fn, ...a) => { try { if (window.Android && Android[fn]) { Androi
 /* ---------------- Settings ---------------- */
 const DEFAULTS = {
   draw: 1, rounds: 0, jokers: 1,
-  faces: 'groot', courts: 'hof', paper: 'wit', backDesign: 'ruit', letters: 'nl', stockSide: 'links', table: 'groen', back: 'blauw', timer: true,
+  faces: 'groot', cornerBR: true, courts: 'hof', paper: 'wit', backDesign: 'ruit', letters: 'nl', stockSide: 'links', table: 'groen', back: 'blauw', timer: true,
   tapMove: true, autoPlay: true, stuckAlert: true, vibrate: true
 };
 const settings = Object.assign({}, DEFAULTS, store.get('patience.settings', {}));
@@ -545,6 +545,10 @@ const Art = (() => {
     `<use href="#s${s}" x="${x - size / 2}" y="${y - size / 2}" width="${size}" height="${size}" fill="${fill}"${rot ? ` transform="rotate(180 ${x} ${y})"` : ''}/>`;
   const FONT = 'font-family="system-ui,Roboto,sans-serif" font-weight="800"';
 
+  function cornerSmall(s, r, letters) {
+    const t = LET[letters][r], col = COLORS[s];
+    return `<text x="5" y="27" font-size="${t.length > 1 ? 25 : 28}" ${FONT} fill="${col}" letter-spacing="${t.length > 1 ? -2 : 0}">${t}</text>` + use(s, 13, 39, 15, col);
+  }
   function corner(s, r, letters, left) {
     const t = LET[letters][r], col = COLORS[s];
     // big value top-left, suit top-right: readable even when cards overlap
@@ -682,15 +686,18 @@ const Art = (() => {
     </svg>`;
   }
 
-  function face(c, mode, letters, courts, left) {
+  function face(c, mode, letters, courts, left, br) {
     if (c >= 52) return jokerFace();
+    if (br == null) br = settings.cornerBR !== false;
     const s = Math.floor(c / 13), r = (c % 13) + 1, col = COLORS[s];
     let body;
-    if (mode === 'eenvoudig' || (mode === 'groot' && r <= 10) || (r > 10 && courts === 'geen')) body = use(s, 50, 92, 62, col);      // one big suit in the middle
+    if (mode === 'eenvoudig' || (mode === 'groot' && r <= 10) || (r > 10 && courts === 'geen'))
+      body = br ? use(s, 46, 85, 50, col) : use(s, 50, 92, 62, col);      // one big suit in the middle
     else if (r === 1) body = use(s, 50, 88, s === 0 ? 50 : 44, col) + (s === 0 ? `<circle cx="50" cy="88" r="32" fill="none" stroke="${col}" stroke-width="1.2" opacity=".35"/>` : '');
-    else if (r <= 10) { const size = r >= 9 ? 16 : 18; body = PIPS[r].map(([x, f]) => use(s, x, 50 + f * 78, size, col, f > .5)).join(''); }
-    else body = `<g transform="translate(12.5 11) scale(0.87)">${courts === 'dieren' ? animalCourt(s, r) : court(s, r)}</g>`;
-    return `<svg viewBox="0 0 100 142" preserveAspectRatio="none">${corner(s, r, letters, left)}${body}</svg>`;
+    else if (r <= 10) { const size = br ? (r >= 9 ? 13 : 15) : (r >= 9 ? 16 : 18), h = br ? 48 : 78, sx = br ? 0.78 : 1; body = PIPS[r].map(([x, f]) => use(s, 50 + (x - 54) * sx, 50 + f * h, size, col, f > .5)).join(''); }
+    else body = `<g transform="${br ? 'translate(18.5 12) scale(0.68)' : 'translate(12.5 11) scale(0.87)'}">${courts === 'dieren' ? animalCourt(s, r) : court(s, r)}</g>`;
+    const bottom = br ? `<g transform="rotate(180 50 71)">${cornerSmall(s, r, letters)}</g>` : '';   // mirrored index bottom-right
+    return `<svg viewBox="0 0 100 142" preserveAspectRatio="none">${corner(s, r, letters, left)}${body}${bottom}</svg>`;
   }
   return { face, back, BACK_DESIGNS };
 })();
@@ -1276,6 +1283,7 @@ const Patience = (() => {
     { section: 'Voorkant kaarten' },
     { key: 'courts', label: 'Plaatjes op heer, vrouw en boer', picker: 'front', choices: [['hof', 'Koningshuis'], ['dieren', 'Dieren'], ['geen', 'Geen plaatje']] },
     { key: 'faces', label: 'Getallen', choices: [['groot', 'Groot symbool'], ['plaatjes', 'Klassiek patroon']] },
+    { key: 'cornerBR', label: 'Waarde en symbool ook rechtsonder', choices: [[true, 'Aan'], [false, 'Uit']] },
     { key: 'paper', label: 'Kaartkleur', choices: [['wit', 'Wit'], ['creme', 'Crème']] },
     { key: 'letters', label: 'Letters op de kaarten', choices: [['nl', 'H · V · B'], ['en', 'K · Q · J']] },
     { section: 'Achterkant kaarten' },
@@ -1328,7 +1336,7 @@ const Patience = (() => {
     const b = e.target.closest('button[data-key]'); if (!b) return;
     const k = b.dataset.key, v = JSON.parse(b.dataset.val);
     settings[k] = v; saveSettings();
-    if (k === 'faces' || k === 'letters' || k === 'courts') paintFaces();
+    if (k === 'faces' || k === 'letters' || k === 'courts' || k === 'cornerBR') paintFaces();
     if (k === 'table' || k === 'back' || k === 'timer' || k === 'backDesign' || k === 'paper') applyTheme();
     if (k === 'stockSide' && S && !won) { layout(); render(); }
     if (k === 'stuckAlert') stuckShownAt = -1;
@@ -1377,7 +1385,7 @@ const Patience = (() => {
   }
   // test hook
   window.__patience = { get S() { return S; }, set S(v) { S = migrate(v); history = []; moves = 1; won = false; stuckShownAt = -1; layout(); render(true); checkStuck(); }, usefulMoves, isStuck };
-  return { enter, leave, hasSave, save };
+  return { enter, leave, hasSave, save, repaint: paintFaces };
 })();
 
 /* ================================================================
@@ -2254,6 +2262,8 @@ const Klaverjas = (() => {
     { key: 'mark', label: 'Speelbare kaarten markeren', choices: AANUIT },
     { key: 'tips', label: 'Speeltip tonen', choices: AANUIT, note: () => opt.tips ? 'De kaart die de computer zou spelen licht groen op.' : '' },
     { key: 'collect', label: 'Slag opruimen', choices: [['auto', 'Automatisch'], ['tik', 'Na een tik']] },
+    { section: 'Kaarten' },
+    { key: 'cornerBR', global: true, label: 'Waarde en symbool ook rechtsonder', choices: AANUIT, note: () => 'Geldt voor alle kaartspellen. Kaartafbeeldingen kies je bij Patience → Opties.' },
     { section: 'Hand sorteren' },
     { key: 'sort', label: 'Volgorde kleuren', choices: [['troefLinks', 'Troef links'], ['troefRechts', 'Troef rechts'], ['kleur', 'Vaste volgorde'], ['geen', 'Niet']] },
     { key: 'sortDir', label: 'Binnen een kleur', choices: [['laag', 'Laag → hoog'], ['hoog', 'Hoog → laag']] }
@@ -2265,7 +2275,7 @@ const Klaverjas = (() => {
         [2, 1, 3].map(i => `<label><small style="min-width:52px">${['', 'links', 'maat', 'rechts'][i]}</small><input data-name="${i}" maxlength="12" value="${esc(nm(i))}" placeholder="${NAMES[i]}"></label>`).join('') + `</div></div>`;
       const n = o.note ? o.note() : '';
       return `<div class="opt"><div class="opt-label">${o.label}</div><div class="seg">` +
-        o.choices.map(([v, l]) => `<button data-key="${o.key}" data-val='${JSON.stringify(v)}' class="${opt[o.key] === v ? 'on' : ''}">${l}</button>`).join('') + `</div>` +
+        o.choices.map(([v, l]) => `<button data-key="${o.key}" data-val='${JSON.stringify(v)}' class="${(o.global ? settings[o.key] : opt[o.key]) === v ? 'on' : ''}">${l}</button>`).join('') + `</div>` +
         (n ? `<div class="note" style="color:var(--muted);margin-top:6px">${n}</div>` : '') + `</div>`;
     }).join('');
     const pct = stats.played ? Math.round(stats.won / stats.played * 100) : 0;
@@ -2275,6 +2285,7 @@ const Klaverjas = (() => {
   $('#kjOptList').addEventListener('click', e => {
     const b = e.target.closest('button[data-key]'); if (!b) return;
     const k = b.dataset.key;
+    if (k === 'cornerBR') { settings.cornerBR = JSON.parse(b.dataset.val); saveSettings(); paint(); Patience.repaint(); renderOpts(); if (G) render(); return; }
     opt[k] = JSON.parse(b.dataset.val); saveOpt();
     if (G && k === 'variant') G.variant = opt.variant;
     if (G && (k === 'sort' || k === 'sortDir')) G.hands.forEach(h => sortHand(h));
@@ -2344,7 +2355,7 @@ $('#tileKj').addEventListener('click', () => Klaverjas.enter());
 /* ================================================================
    UPDATES (online)
    ================================================================ */
-const APP_VERSION = '1.12';
+const APP_VERSION = '1.13';
 let menuToastT;
 function menuToast(t, ms) {
   const e = $('#menuToast'); e.textContent = t; e.classList.add('show');
