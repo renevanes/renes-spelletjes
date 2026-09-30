@@ -1,9 +1,9 @@
 {
-  "versionCode": 15,
-  "versionName": "1.14",
+  "versionCode": 16,
+  "versionName": "1.15",
   "nativeLevel": 2,
-  "notes": "Airhockey: vloeiende tegenstander, puck blijft niet meer vastzitten, stick blijft werken na een goal. Klaverjassen: sneller opgooien, instelbaar",
+  "notes": "Nieuw spel: Torenverdediging (tower defense) met 3 kaarten, 4 torens en 20 golven",
   "web": "web/index.html",
-  "webSha256": "497c14ff4021bd2bece91d59e33f3d12677a47e450279937e27eb996f48df933",
+  "webSha256": "52454528c9cd1961ba38155116d0c3db066a11e8f2ca4eafbba37bca4d24769b",
   "apk": "apk/Renes-spelletjes.apk"
 }

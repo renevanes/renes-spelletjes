@@ -200,6 +200,41 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .kj-table th:first-child,.kj-table td:first-child{text-align:left;color:var(--muted)}
 .kj-table tr.sum td{font-weight:800;font-size:17px}
 
+/* ---------- Tower defense ---------- */
+.td-art{position:absolute;inset:4px;border-radius:12px;background:linear-gradient(135deg,#5fae4e 0 45%,#d2ae74 45% 62%,#57a447 62%);overflow:hidden}
+.td-art b{position:absolute;right:4px;bottom:2px;font-size:22px} .td-art em{position:absolute;left:6px;top:4px;font-size:20px;font-style:normal}
+#td{background:#1f3a24}
+#td .topbar{background:#1a3220}
+.td-hud{flex:1;display:flex;justify-content:center;gap:16px;font-size:15px}
+.td-hud b{font-size:19px;font-variant-numeric:tabular-nums}
+#tdWrap{position:relative;flex:1;overflow:hidden;touch-action:none}
+#tdCanvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.td-bar{gap:4px;padding:6px 4px 8px}
+.tdt{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 2px;border-radius:12px;background:rgba(255,255,255,.08);border:2px solid transparent;color:#ffd54a;font-weight:800;font-size:13px}
+.tdt span{font-size:24px;line-height:1.1}
+.tdt.on{border-color:var(--accent);background:rgba(242,193,78,.18)}
+.tdt.poor{opacity:.45}
+.td-go{background:var(--accent);color:#2b2100!important;min-width:70px;font-weight:800}
+.td-go span{color:#2b2100!important}
+.td-go:disabled{opacity:.6}
+.td-sp{min-width:48px}
+#tdPanel{position:absolute;left:8px;right:8px;bottom:8px;z-index:20;background:rgba(15,30,20,.94);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:10px 12px;display:none;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+#tdPanel.show{display:block}
+@media (orientation:landscape){#tdPanel{left:auto;width:min(360px,46%);top:8px;bottom:auto}}
+.tdp-h{display:flex;align-items:center;gap:10px;margin-bottom:4px} .tdp-h b{font-size:16px} .tdp-h span{color:var(--muted);font-size:13px;flex:1}
+.tdp-x{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.1)}
+.tdp-s{font-size:12px;color:var(--muted);margin-bottom:8px}
+#tdPanel .btn small{display:block;font-size:10px;font-weight:600;opacity:.75;margin-top:2px}
+#tdToast{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);background:rgba(0,0,0,.78);padding:10px 16px;border-radius:12px;font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:30;text-align:center;max-width:86%}
+#tdToast.show{opacity:1}
+.td-maps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.td-maps button{background:rgba(0,0,0,.25);border:2px solid transparent;border-radius:14px;padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--ink)}
+.td-maps button.on{border-color:var(--accent);background:rgba(242,193,78,.12)}
+.td-maps i{width:100%;height:46px;border-radius:8px}
+.td-maps small{font-size:11px;color:var(--muted)}
+.td-info{font-size:13px;color:var(--muted);line-height:1.45;margin-bottom:8px}
+.td-info b{color:var(--ink)}
+
 /* ---------- Airhockey ---------- */
 .ah-art{position:absolute;inset:4px;border-radius:12px;background:#e9f3fb;border:3px solid #2a3b55;overflow:hidden}
 .ah-art:before{content:"";position:absolute;left:0;right:0;top:50%;height:2px;background:#d33}
@@ -270,6 +305,14 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
       </div>
       <span class="badge">Doorgaan</span>
     </button>
+    <button class="tile" id="tileTd">
+      <div class="art"><div class="td-art"><i></i><b>🏰</b><em>🏹</em></div></div>
+      <div>
+        <h2>Torenverdediging</h2>
+        <p>Tower defense · bouw torens, stop de vijand</p>
+      </div>
+      <span class="badge">Doorgaan</span>
+    </button>
     <button class="tile" id="tileAir">
       <div class="art">
         <div class="ah-art"><i class="m1"></i><i class="pk"></i><i class="m2"></i></div>
@@ -280,7 +323,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
       </div>
     </button>
   </div>
-  <div class="version">Versie 1.14 · <button id="checkUpd">Controleren op updates</button></div>
+  <div class="version">Versie 1.15 · <button id="checkUpd">Controleren op updates</button></div>
   <div id="menuToast"></div>
 </section>
 
@@ -319,6 +362,24 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
     <button id="kjTricksBtn">🂠 Slagen</button>
     <div id="kjBid"></div>
     <div id="kjToast"></div>
+  </div>
+</section>
+
+<!-- ============ TOWER DEFENSE ============ -->
+<section id="td" class="screen">
+  <div class="topbar">
+    <button class="iconbtn" id="tdBack" aria-label="Terug">‹</button>
+    <div class="td-hud"><div>❤️ <b id="tdLives">20</b></div><div>💰 <b id="tdGold">0</b></div><div>🌊 <b id="tdWave">0</b></div></div>
+    <button class="iconbtn" id="tdOptBtn" aria-label="Opties">⚙&#xFE0E;</button>
+  </div>
+  <div id="tdWrap"><canvas id="tdCanvas"></canvas><div id="tdPanel"></div><div id="tdToast"></div></div>
+  <div class="bottombar td-bar" id="tdBar">
+    <button class="tdt" data-t="pijl"><span>🏹</span>50</button>
+    <button class="tdt" data-t="kanon"><span>💣</span>90</button>
+    <button class="tdt" data-t="ijs"><span>❄️</span>70</button>
+    <button class="tdt" data-t="magie"><span>✨</span>120</button>
+    <button class="bbtn td-sp" id="tdSpeed"><span>⏩</span>1×</button>
+    <button class="bbtn td-go" id="tdGo"><span>▶</span>Golf 1</button>
   </div>
 </section>
 
@@ -432,6 +493,32 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
   </div>
 </div>
 
+<div class="modal" id="tdStartModal">
+  <div class="sheet">
+    <h3>🏰 Torenverdediging</h3>
+    <div class="opt"><div class="opt-label">Kaart</div><div class="td-maps" id="tdMaps"></div></div>
+    <div class="opt"><div class="opt-label">Moeilijkheid</div><div class="seg" id="tdDiff"></div></div>
+    <div class="opt"><div class="opt-label">Aantal golven</div><div class="seg" id="tdWaves"></div></div>
+    <div class="note" style="color:var(--muted)">Kies onderaan een toren en tik op een grasvakje om te bouwen. Tik op een toren om hem te verbeteren of te verkopen. Start met ▶ de volgende golf.</div>
+    <div class="row sticky-actions"><button class="btn" id="tdStartBack">Menu</button><button class="btn primary" id="tdStartGo">Start ▶</button></div>
+  </div>
+</div>
+<div class="modal" id="tdOptModal">
+  <div class="sheet">
+    <h3>Torenverdediging</h3>
+    <div id="tdOptList"></div>
+    <div class="row sticky-actions"><button class="btn" id="tdNew">Nieuw spel</button><button class="btn primary" data-close>Verder spelen</button></div>
+  </div>
+</div>
+<div class="modal center" id="tdEndModal">
+  <div class="sheet">
+    <div class="big-emoji" id="tdEndEmoji">🏆</div>
+    <h3 id="tdEndTitle"></h3>
+    <p id="tdEndText"></p>
+    <div class="row"><button class="btn" id="tdEndMenu">Menu</button><button class="btn primary" id="tdEndNew">Nieuw spel</button></div>
+  </div>
+</div>
+
 <div class="modal" id="ahOptModal">
   <div class="sheet">
     <h3>Airhockey</h3>
@@ -503,20 +590,22 @@ function show(id) {
   if (id === 'menu' && pendingReload && native('reloadContent')) return;
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
   current = id;
-  native('setBarColor', id === 'menu' ? '#123f2c' : id === 'airhockey' ? '#14202e' : id === 'klaverjas' ? (TABLES[settings.table] || TABLES.groen)[1] : (TABLES[settings.table] || TABLES.groen)[1]);
+  native('setBarColor', id === 'menu' ? '#123f2c' : id === 'airhockey' ? '#14202e' : id === 'klaverjas' ? (TABLES[settings.table] || TABLES.groen)[1] : id === 'td' ? '#1a3220' : (TABLES[settings.table] || TABLES.groen)[1]);
 }
 function openModal(id) { $('#' + id).classList.add('show'); }
 function closeModals() { document.querySelectorAll('.modal.show').forEach(m => m.classList.remove('show')); }
 function anyModal() { return !!document.querySelector('.modal.show'); }
 document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeModals));
-document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', e => { if (e.target === m && !['winModal', 'ahWinModal', 'ahStartModal', 'kjResModal', 'kjEndModal'].includes(m.id)) closeModals(); }));
+document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', e => { if (e.target === m && !['winModal', 'ahWinModal', 'ahStartModal', 'kjResModal', 'kjEndModal', 'tdStartModal', 'tdEndModal'].includes(m.id)) closeModals(); }));
 
 window.appBack = () => {
   if ($('#ahStartModal').classList.contains('show')) { closeModals(); AirHockey.leave(); return true; }
+  if ($('#tdStartModal').classList.contains('show')) { closeModals(); TowerDefense.leave(); return true; }
   if (anyModal()) { closeModals(); if (current === 'klaverjas') setTimeout(() => Klaverjas.resume(), 50); return true; }
   if (current === 'patience') { Patience.leave(); return true; }
   if (current === 'airhockey') { AirHockey.leave(); return true; }
   if (current === 'klaverjas') { Klaverjas.leave(); return true; }
+  if (current === 'td') { TowerDefense.leave(); return true; }
   return false;
 };
 
@@ -2384,9 +2473,458 @@ const Klaverjas = (() => {
 $('#tileKj').addEventListener('click', () => Klaverjas.enter());
 
 /* ================================================================
+   TOWER DEFENSE ("Torenverdediging")
+   ================================================================ */
+const TowerDefense = (() => {
+  const COLS = 9, ROWS = 15;
+  const TD = { map: 'weide', diff: 'normaal', waves: 20, autoNext: false, sound: true };
+  const opt = Object.assign({}, TD, store.get('td.settings', {}));
+  const saveOpt = () => store.set('td.settings', opt);
+  let stats = Object.assign({ played: 0, won: 0, best: {} }, store.get('td.stats', {}));
+
+  const MAPS = {
+    weide: { name: 'Weide', grass: ['#5fae4e', '#57a447'], path: '#d2ae74', edge: '#b88f55', deco: ['tree', 'tree', 'rock', 'bush'],
+      pts: [[-1, 1], [7, 1], [7, 4], [1, 4], [1, 7], [7, 7], [7, 10], [1, 10], [1, 13], [4, 13], [4, 15]] },
+    woestijn: { name: 'Woestijn', grass: ['#e6c67f', '#dfbd72'], path: '#b87b4b', edge: '#9a6538', deco: ['cactus', 'rock', 'cactus', 'bones'],
+      pts: [[4, -1], [4, 2], [1, 2], [1, 6], [7, 6], [7, 9], [2, 9], [2, 12], [6, 12], [6, 15]] },
+    sneeuw: { name: 'Sneeuw', grass: ['#e9f1f7', '#dfe9f2'], path: '#9fb4c7', edge: '#7f97ad', deco: ['pine', 'snowman', 'pine', 'rock'],
+      pts: [[9, 1], [1, 1], [1, 5], [7, 5], [7, 8], [1, 8], [1, 12], [7, 12], [7, 15]] }
+  };
+  const DIFF = { makkelijk: { gold: 220, lives: 30, hp: 0.8 }, normaal: { gold: 160, lives: 20, hp: 1 }, moeilijk: { gold: 150, lives: 12, hp: 1.3 } };
+
+  const TOWERS = {
+    pijl:  { name: 'Pijl',  icon: '🏹', cost: 50,  up: [45, 80],  range: [2.3, 2.5, 2.8], rate: [1.7, 2.0, 2.4], dmg: [7, 12, 20], color: '#8a5a2b', desc: 'Snel, één doel' },
+    kanon: { name: 'Kanon', icon: '💣', cost: 90,  up: [70, 120], range: [2.0, 2.2, 2.4], rate: [0.6, 0.7, 0.8], dmg: [20, 34, 55], splash: [0.9, 1.0, 1.15], color: '#4a4f58', desc: 'Raakt een groep' },
+    ijs:   { name: 'IJs',   icon: '❄️', cost: 70,  up: [55, 90],  range: [2.0, 2.2, 2.4], rate: [1.0, 1.1, 1.2], dmg: [3, 5, 8], slow: [0.4, 0.5, 0.6], color: '#5ab8e8', desc: 'Vertraagt' },
+    magie: { name: 'Magie', icon: '✨', cost: 120, up: [90, 150], range: [3.3, 3.7, 4.2], rate: [0.5, 0.6, 0.7], dmg: [50, 90, 150], magic: true, color: '#8a4fd0', desc: 'Ver, door pantser' }
+  };
+  const ENEMIES = {
+    gewoon: { hp: 1, speed: 1.0, reward: 5, color: '#e0584f', r: 0.26 },
+    snel:   { hp: 0.6, speed: 1.8, reward: 5, color: '#f2b53a', r: 0.22 },
+    tank:   { hp: 3, speed: 0.6, reward: 12, color: '#7c8591', r: 0.32, armor: 4 },
+    zwerm:  { hp: 0.35, speed: 1.35, reward: 2, color: '#62c46b', r: 0.17 },
+    baas:   { hp: 18, speed: 0.5, reward: 80, color: '#b0303a', r: 0.42, armor: 3 }
+  };
+
+  const wrap = $('#tdWrap'), cv = $('#tdCanvas'), ctx = cv.getContext('2d');
+  let S = null;                  // game state
+  let T = null;                  // geometry
+  let pathTiles = new Set(), deco = new Map(), poly = [], pathLen = 0;
+  let enemies = [], shots = [], fx = [], spawnQ = [], sel = null, buildType = null, speed = 1, raf = 0, lastT = 0, running = false;
+
+  /* ---------- map ---------- */
+  function buildMap() {
+    const m = MAPS[S.map];
+    pathTiles = new Set(); poly = [];
+    for (let i = 0; i < m.pts.length; i++) {
+      const [c, r] = m.pts[i]; poly.push([c + 0.5, r + 0.5]);
+      if (i) {
+        const [pc, pr] = m.pts[i - 1];
+        const dc = Math.sign(c - pc), dr = Math.sign(r - pr);
+        for (let x = pc, y = pr; ; x += dc, y += dr) { if (x >= 0 && x < COLS && y >= 0 && y < ROWS) pathTiles.add(x + ',' + y); if (x === c && y === r) break; }
+      }
+    }
+    pathLen = 0; for (let i = 1; i < poly.length; i++) pathLen += Math.hypot(poly[i][0] - poly[i - 1][0], poly[i][1] - poly[i - 1][1]);
+    // fixed decorations (same every time for a map)
+    deco = new Map(); let seed = S.map.length * 97 + 13;
+    const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+    let n = 0, guard = 0;
+    while (n < 7 && guard++ < 200) {
+      const c = Math.floor(rnd() * COLS), r = Math.floor(rnd() * ROWS), k = c + ',' + r;
+      if (pathTiles.has(k) || deco.has(k)) continue;
+      deco.set(k, m.deco[n % m.deco.length]); n++;
+    }
+  }
+  function posAt(d) {                 // point along the path at distance d (tiles)
+    for (let i = 1; i < poly.length; i++) {
+      const [x0, y0] = poly[i - 1], [x1, y1] = poly[i], L = Math.hypot(x1 - x0, y1 - y0);
+      if (d <= L) return [x0 + (x1 - x0) * d / L, y0 + (y1 - y0) * d / L];
+      d -= L;
+    }
+    return poly[poly.length - 1];
+  }
+
+  /* ---------- waves ---------- */
+  function waveList(n) {
+    const g = [], add = (type, count, gap) => { for (let i = 0; i < count; i++) g.push({ type, gap }); };
+    add('gewoon', Math.round(6 + n * 1.3), 0.8);
+    if (n >= 3 && n % 3 === 0) add('snel', Math.round(3 + n * 0.7), 0.45);
+    if (n >= 4 && n % 4 === 0) add('tank', Math.round(1 + n / 4), 1.6);
+    if (n >= 6 && (n % 5 === 1)) add('zwerm', Math.round(10 + n), 0.25);
+    if (n >= 7 && n % 2 === 1) add('snel', Math.round(n / 2), 0.5);
+    if (n >= 9) add('tank', Math.floor(n / 6), 1.8);
+    if (n % 5 === 0) add('baas', n >= 20 ? 2 : 1, 3);
+    return g;
+  }
+  const hpScale = n => 20 * Math.pow(1 + n * 0.3, 1.32) * (1 + (DIFF[S.diff].hp - 1) * Math.min(1, (n - 1) / 8));   // difficulty ramps up over the first waves
+
+  /* ---------- game flow ---------- */
+  function newGame() {
+    const d = DIFF[opt.diff];
+    S = { map: opt.map, diff: opt.diff, waves: opt.waves, wave: 0, gold: d.gold, lives: d.lives, towers: [], inWave: false, over: false };
+    stats.played++; store.set('td.stats', stats);
+    enemies = []; shots = []; fx = []; spawnQ = []; sel = null; buildType = null;
+    buildMap(); layout(); save(); hud(); closeModals();
+    toast('Bouw torens langs het pad en druk op ▶', 2600);
+  }
+  function startWave() {
+    if (!S || S.inWave || S.over) return;
+    S.wave++; S.inWave = true;
+    let t = 0.4; spawnQ = waveList(S.wave).map(x => { t += x.gap; return { type: x.type, at: t }; });
+    S.clock = 0;
+    toast(`Golf ${S.wave}${S.wave % 5 === 0 ? ' — baas!' : ''}`, 1400);
+    hud();
+  }
+  function waveDone() {
+    S.inWave = false;
+    const bonus = 20 + S.wave * 3;
+    S.gold += bonus; toast(`Golf ${S.wave} verslagen! +${bonus} 💰`, 1800);
+    const best = stats.best[S.map] || 0; if (S.wave > best) { stats.best[S.map] = S.wave; store.set('td.stats', stats); }
+    if (S.waves && S.wave >= S.waves) return win();
+    save(); hud();
+    if (opt.autoNext) setTimeout(() => { if (S && !S.inWave && !S.over && current === 'td') startWave(); }, 1500);
+  }
+  function win() {
+    S.over = true; store.del('td.save');
+    stats.won++; store.set('td.stats', stats);
+    $('#tdEndEmoji').textContent = '🏆'; $('#tdEndTitle').textContent = 'Gewonnen!';
+    $('#tdEndText').innerHTML = `Alle ${S.waves} golven verslagen op <b>${MAPS[S.map].name}</b> (${S.diff}) met nog ${S.lives} ❤`;
+    beep(660, .3, .2); beep(880, .5, .15);
+    setTimeout(() => openModal('tdEndModal'), 600);
+  }
+  function lose() {
+    S.over = true; store.del('td.save');
+    $('#tdEndEmoji').textContent = '💥'; $('#tdEndTitle').textContent = 'De vijand is doorgebroken';
+    $('#tdEndText').innerHTML = `Je haalde golf <b>${S.wave}</b> op ${MAPS[S.map].name} (${S.diff}).` + ((stats.best[S.map] || 0) <= S.wave ? '<br>🎉 Je beste resultaat op deze kaart!' : `<br>Record: golf ${stats.best[S.map]}`);
+    vibrate(120); beep(200, .6, .25);
+    setTimeout(() => openModal('tdEndModal'), 600);
+  }
+
+  /* ---------- towers ---------- */
+  const towerAt = (c, r) => S.towers.find(t => t.c === c && t.r === r);
+  function build(type, c, r) {
+    const d = TOWERS[type];
+    if (S.gold < d.cost) { toast('Niet genoeg goud'); return; }
+    S.gold -= d.cost;
+    const t = { type, c, r, lvl: 0, cd: 0, ang: -Math.PI / 2, spent: d.cost };
+    S.towers.push(t); sel = t; beep(520, .08, .1); vibrate(10);
+    save(); hud(); panel();
+  }
+  function upgrade(t) {
+    const d = TOWERS[t.type]; if (t.lvl >= 2) return;
+    const cost = d.up[t.lvl]; if (S.gold < cost) { toast('Niet genoeg goud'); return; }
+    S.gold -= cost; t.lvl++; t.spent += cost; beep(700, .1, .12); vibrate(10);
+    save(); hud(); panel();
+  }
+  function sell(t) {
+    const back = Math.floor(t.spent * 0.7);
+    S.gold += back; S.towers.splice(S.towers.indexOf(t), 1); sel = null;
+    fx.push({ kind: 'text', x: t.c + .5, y: t.r + .5, text: '+' + back, color: '#ffd54a', life: 1 });
+    save(); hud(); panel();
+  }
+
+  /* ---------- simulation ---------- */
+  function update(dt) {
+    if (S.inWave) {
+      S.clock += dt;
+      while (spawnQ.length && spawnQ[0].at <= S.clock) {
+        const q = spawnQ.shift(), e = ENEMIES[q.type], hp = hpScale(S.wave) * e.hp;
+        enemies.push({ type: q.type, d: -0.3, hp, max: hp, slowT: 0, slow: 0, wob: Math.random() * 6 });
+      }
+    }
+    for (const e of enemies) {
+      const def = ENEMIES[e.type];
+      if (e.slowT > 0) e.slowT -= dt; else e.slow = 0;
+      e.d += def.speed * (1 - e.slow) * dt;
+      e.wob += dt * 8;
+      if (e.d >= pathLen) { e.dead = true; e.leaked = true; S.lives -= e.type === 'baas' ? 5 : 1; vibrate(40); beep(180, .15, .12); }
+    }
+    for (const t of S.towers) {
+      const d = TOWERS[t.type]; t.cd -= dt;
+      const R = d.range[t.lvl], cx = t.c + .5, cy = t.r + .5;
+      let target = null, best = -1;
+      for (const e of enemies) { if (e.dead || e.d < 0) continue; const [x, y] = posAt(e.d); if (Math.hypot(x - cx, y - cy) <= R && e.d > best) { best = e.d; target = e; } }
+      if (!target) continue;
+      const [tx, ty] = posAt(target.d);
+      t.ang = Math.atan2(ty - cy, tx - cx);
+      if (t.cd > 0) continue;
+      t.cd = 1 / d.rate[t.lvl];
+      if (t.type === 'pijl') shots.push({ kind: 'arrow', x: cx, y: cy, target, dmg: d.dmg[t.lvl], v: 9 });
+      else if (t.type === 'kanon') shots.push({ kind: 'ball', x: cx, y: cy, sx: cx, sy: cy, tx, ty, t: 0, T: Math.hypot(tx - cx, ty - cy) / 5 + 0.15, dmg: d.dmg[t.lvl], splash: d.splash[t.lvl] });
+      else if (t.type === 'ijs') { hit(target, d.dmg[t.lvl]); target.slow = Math.max(target.slow, d.slow[t.lvl]); target.slowT = 1.6; fx.push({ kind: 'beam', x0: cx, y0: cy, x1: tx, y1: ty, color: '#9be3ff', life: 0.18 }); }
+      else if (t.type === 'magie') { hit(target, d.dmg[t.lvl], true); fx.push({ kind: 'bolt', x0: cx, y0: cy, x1: tx, y1: ty, color: '#d6a8ff', life: 0.22 }); beep(900, .05, .05); }
+    }
+    for (const s of shots) {
+      if (s.kind === 'arrow') {
+        if (s.target.dead) { s.done = true; continue; }
+        const [tx, ty] = posAt(s.target.d), dx = tx - s.x, dy = ty - s.y, dist = Math.hypot(dx, dy), step = s.v * dt;
+        s.ang = Math.atan2(dy, dx);
+        if (dist <= step) { hit(s.target, s.dmg); s.done = true; } else { s.x += dx / dist * step; s.y += dy / dist * step; }
+      } else if (s.kind === 'ball') {
+        s.t += dt; const k = Math.min(1, s.t / s.T);
+        s.x = s.sx + (s.tx - s.sx) * k; s.y = s.sy + (s.ty - s.sy) * k; s.h = Math.sin(k * Math.PI) * 0.6;
+        if (k >= 1) {
+          s.done = true; fx.push({ kind: 'boom', x: s.tx, y: s.ty, r: s.splash, life: 0.35 }); beep(140, .12, .08);
+          for (const e of enemies) { if (e.dead || e.d < 0) continue; const [x, y] = posAt(e.d); if (Math.hypot(x - s.tx, y - s.ty) <= s.splash) hit(e, s.dmg); }
+        }
+      }
+    }
+    shots = shots.filter(s => !s.done);
+    for (const f of fx) { f.life -= dt; if (f.kind === 'text') f.y -= dt * 0.8; }
+    fx = fx.filter(f => f.life > 0);
+    const before = enemies.length;
+    enemies = enemies.filter(e => !e.dead);
+    if (before !== enemies.length) hud();
+    if (S.lives <= 0 && !S.over) { S.lives = 0; hud(); lose(); return; }
+    if (S.inWave && !spawnQ.length && !enemies.length) waveDone();
+  }
+  function hit(e, dmg, magic) {
+    if (e.dead) return;
+    const armor = magic ? 0 : (ENEMIES[e.type].armor || 0);
+    e.hp -= Math.max(1, dmg - armor);
+    if (e.hp <= 0) {
+      e.dead = true; const rw = ENEMIES[e.type].reward; S.gold += rw;
+      const [x, y] = posAt(e.d);
+      fx.push({ kind: 'puff', x, y, color: ENEMIES[e.type].color, life: 0.4 });
+      fx.push({ kind: 'text', x, y: y - 0.2, text: '+' + rw, color: '#ffd54a', life: 0.9 });
+      if (e.type === 'baas') { beep(300, .3, .2); vibrate(30); }
+    }
+  }
+
+  /* ---------- drawing ---------- */
+  function layout() {
+    const dpr = window.devicePixelRatio || 1, W = wrap.clientWidth, H = wrap.clientHeight;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const rot = W > H * 1.1;                     // landscape: turn the field so the path runs left → right
+    const ts = Math.floor(rot ? Math.min(W / ROWS, H / COLS) : Math.min(W / COLS, H / ROWS));
+    const fw = (rot ? ROWS : COLS) * ts, fh = (rot ? COLS : ROWS) * ts;
+    T = { W, H, ts, rot, ox: Math.floor((W - fw) / 2), oy: Math.floor((H - fh) / 2) };
+  }
+  // drawing happens in "world" units (tiles * ts); the canvas transform handles offset and rotation
+  const X = x => x * T.ts, Y = y => T.ts * y;
+  function worldTransform() {
+    if (T.rot) { ctx.translate(T.ox, T.oy + COLS * T.ts); ctx.rotate(-Math.PI / 2); } else ctx.translate(T.ox, T.oy);
+  }
+  function upright(x, y, fn) { ctx.save(); ctx.translate(x, y); if (T.rot) ctx.rotate(Math.PI / 2); fn(); ctx.restore(); }
+  function screenToTile(sx, sy) {
+    if (T.rot) return [Math.floor((T.oy + COLS * T.ts - sy) / T.ts), Math.floor((sx - T.ox) / T.ts)];
+    return [Math.floor((sx - T.ox) / T.ts), Math.floor((sy - T.oy) / T.ts)];
+  }
+  function circle(x, y, r, fill, stroke, lw) { ctx.beginPath(); ctx.arc(x, y, r, 0, 7); if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.lineWidth = lw || 1; ctx.strokeStyle = stroke; ctx.stroke(); } }
+  function drawDeco(kind, x, y, s) {
+    if (kind === 'tree') { circle(x, y + s * .28, s * .1, '#6b4a2b'); circle(x, y, s * .32, '#3f8a3a'); circle(x - s * .1, y - s * .08, s * .16, '#4fa048'); }
+    else if (kind === 'bush') { circle(x - s * .14, y + s * .05, s * .2, '#3f8a3a'); circle(x + s * .14, y + s * .05, s * .2, '#46953f'); circle(x, y - s * .08, s * .2, '#4fa048'); }
+    else if (kind === 'rock') { ctx.fillStyle = '#8d939b'; ctx.beginPath(); ctx.ellipse(x, y + s * .08, s * .3, s * .2, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#a9aeb5'; ctx.beginPath(); ctx.ellipse(x - s * .06, y + s * .02, s * .16, s * .1, 0, 0, 7); ctx.fill(); }
+    else if (kind === 'cactus') { ctx.fillStyle = '#4c9a50'; ctx.fillRect(x - s * .07, y - s * .3, s * .14, s * .6); ctx.fillRect(x - s * .25, y - s * .08, s * .14, s * .1); ctx.fillRect(x - s * .25, y - s * .2, s * .08, s * .16); ctx.fillRect(x + s * .11, y - s * .02, s * .14, s * .1); ctx.fillRect(x + s * .17, y - s * .16, s * .08, s * .16); }
+    else if (kind === 'bones') { ctx.strokeStyle = '#f4efe2'; ctx.lineWidth = s * .07; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x - s * .22, y + s * .1); ctx.lineTo(x + s * .22, y - s * .05); ctx.stroke(); circle(x - s * .02, y - s * .12, s * .12, '#f4efe2'); }
+    else if (kind === 'pine') { ctx.fillStyle = '#2f6b4a'; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(x, y - s * .38 + i * s * .15); ctx.lineTo(x - s * (.18 + i * .07), y - s * .08 + i * s * .15); ctx.lineTo(x + s * (.18 + i * .07), y - s * .08 + i * s * .15); ctx.fill(); } ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(x, y - s * .38); ctx.lineTo(x - s * .08, y - s * .26); ctx.lineTo(x + s * .08, y - s * .26); ctx.fill(); }
+    else if (kind === 'snowman') { circle(x, y + s * .14, s * .2, '#fff', '#c9d6e0', 1); circle(x, y - s * .14, s * .14, '#fff', '#c9d6e0', 1); circle(x - s * .04, y - s * .16, s * .02, '#222'); circle(x + s * .04, y - s * .16, s * .02, '#222'); ctx.fillStyle = '#f28c28'; ctx.beginPath(); ctx.moveTo(x, y - s * .12); ctx.lineTo(x + s * .12, y - s * .1); ctx.lineTo(x, y - s * .09); ctx.fill(); }
+  }
+  function drawTower(t, s) {
+    const d = TOWERS[t.type], x = X(t.c + .5), y = Y(t.r + .5);
+    upright(x, y, () => drawTowerBase(t, s)); drawTurret(t, d, x, y, s);
+    upright(x, y, () => { for (let i = 0; i <= t.lvl; i++) circle(-s * .16 + i * s * .16, s * .31, s * .05, '#ffd54a', '#8a6a10', 1); });
+  }
+  function drawTowerBase(t, s) {
+    const x = 0, y = 0;
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(x + s * .04, y + s * .08, s * .38, s * .3, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#9aa0a8'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x - s * .38, y - s * .38, s * .76, s * .76, s * .14) : ctx.rect(x - s * .38, y - s * .38, s * .76, s * .76); ctx.fill();
+    ctx.fillStyle = '#b8bec6'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x - s * .32, y - s * .36, s * .64, s * .6, s * .1) : ctx.rect(x - s * .32, y - s * .36, s * .64, s * .6); ctx.fill();
+  }
+  function drawTurret(t, d, x, y, s) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(t.ang + Math.PI / 2);
+    if (t.type === 'pijl') { circle(0, 0, s * .22, d.color); ctx.strokeStyle = '#5a3a1b'; ctx.lineWidth = s * .06; ctx.beginPath(); ctx.arc(0, -s * .05, s * .22, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke(); ctx.fillStyle = '#e8d6b0'; ctx.fillRect(-s * .025, -s * .36, s * .05, s * .3); }
+    else if (t.type === 'kanon') { ctx.fillStyle = '#2d3138'; ctx.fillRect(-s * .08, -s * .4, s * .16, s * .34); circle(0, 0, s * .22, d.color); circle(0, 0, s * .1, '#6b717b'); }
+    else if (t.type === 'ijs') { ctx.fillStyle = '#bfefff'; ctx.beginPath(); ctx.moveTo(0, -s * .32); ctx.lineTo(s * .18, 0); ctx.lineTo(0, s * .22); ctx.lineTo(-s * .18, 0); ctx.closePath(); ctx.fill(); ctx.strokeStyle = d.color; ctx.lineWidth = s * .04; ctx.stroke(); }
+    else { const g = ctx.createRadialGradient(0, 0, 1, 0, 0, s * .25); g.addColorStop(0, '#f3e4ff'); g.addColorStop(1, d.color); circle(0, 0, s * .22, g); ctx.rotate(performance.now() / 500); ctx.fillStyle = '#fff'; for (let i = 0; i < 4; i++) { ctx.rotate(Math.PI / 2); ctx.fillRect(-s * .015, -s * .32, s * .03, s * .08); } }
+    ctx.restore();
+  }
+  function drawEnemy(e, s) { const [px, py] = posAt(Math.max(0, e.d)); upright(X(px), Y(py), () => drawEnemyAt(e, s)); }
+  function drawEnemyAt(e, s) {
+    const def = ENEMIES[e.type], x = 0, y = Math.sin(e.wob) * s * .02, r = def.r * s;
+    ctx.fillStyle = 'rgba(0,0,0,.2)'; ctx.beginPath(); ctx.ellipse(x, y + r * .8, r * .9, r * .35, 0, 0, 7); ctx.fill();
+    circle(x, y, r, e.slow ? '#8fc8e8' : def.color, 'rgba(0,0,0,.35)', 1.5);
+    if (def.armor) circle(x, y, r * .78, null, 'rgba(255,255,255,.55)', s * .04);
+    circle(x - r * .35, y - r * .15, r * .22, '#fff'); circle(x + r * .35, y - r * .15, r * .22, '#fff');
+    circle(x - r * .3, y - r * .12, r * .1, '#222'); circle(x + r * .4, y - r * .12, r * .1, '#222');
+    if (e.type === 'baas') { ctx.fillStyle = '#ffd54a'; ctx.beginPath(); ctx.moveTo(x - r * .5, y - r * .7); ctx.lineTo(x - r * .5, y - r * 1.2); ctx.lineTo(x - r * .2, y - r * .95); ctx.lineTo(x, y - r * 1.3); ctx.lineTo(x + r * .2, y - r * .95); ctx.lineTo(x + r * .5, y - r * 1.2); ctx.lineTo(x + r * .5, y - r * .7); ctx.fill(); }
+    if (e.hp < e.max) {
+      const w = s * .6; ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(x - w / 2, y - r - s * .16, w, s * .07);
+      ctx.fillStyle = e.hp / e.max > .5 ? '#5bd46a' : e.hp / e.max > .25 ? '#f2c14e' : '#ef5350'; ctx.fillRect(x - w / 2, y - r - s * .16, w * Math.max(0, e.hp / e.max), s * .07);
+    }
+  }
+  function draw() {
+    if (!T || !S) return;
+    const m = MAPS[S.map], s = T.ts;
+    ctx.clearRect(0, 0, T.W, T.H);
+    ctx.save(); worldTransform();
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      const k = c + ',' + r;
+      ctx.fillStyle = pathTiles.has(k) ? m.path : m.grass[(c + r) % 2];
+      ctx.fillRect(X(c), Y(r), s + 0.5, s + 0.5);
+    }
+    // path edges
+    ctx.strokeStyle = m.edge; ctx.lineWidth = Math.max(1, s * .06); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.globalAlpha = .35; ctx.beginPath(); poly.forEach(([x, y], i) => i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y))); ctx.lineWidth = s * .98; ctx.stroke(); ctx.globalAlpha = 1;
+    ctx.strokeStyle = m.path; ctx.lineWidth = s * .86; ctx.beginPath(); poly.forEach(([x, y], i) => i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y))); ctx.stroke();
+    // entry/exit markers
+    const [ex, ey] = poly[poly.length - 1]; ctx.font = `${s * .6}px system-ui`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    upright(X(Math.max(.5, Math.min(COLS - .5, ex))), Y(Math.max(.5, Math.min(ROWS - .5, ey))), () => ctx.fillText('🏰', 0, -s * .1));
+    for (const [k, kind] of deco) { const [c, r] = k.split(',').map(Number); upright(X(c + .5), Y(r + .5), () => drawDeco(kind, 0, 0, s)); }
+    // build hints
+    if (buildType) {
+      ctx.fillStyle = 'rgba(255,255,255,.18)';
+      for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) { const k = c + ',' + r; if (!pathTiles.has(k) && !deco.has(k) && !towerAt(c, r)) ctx.fillRect(X(c) + s * .12, Y(r) + s * .12, s * .76, s * .76); }
+    }
+    if (sel) { const d = TOWERS[sel.type]; circle(X(sel.c + .5), Y(sel.r + .5), d.range[sel.lvl] * s, 'rgba(255,255,255,.15)', 'rgba(255,255,255,.7)', 2); }
+    for (const t of S.towers) drawTower(t, s);
+    enemies.slice().sort((a, b) => a.d - b.d).forEach(e => drawEnemy(e, s));
+    for (const sh of shots) {
+      if (sh.kind === 'arrow') { ctx.save(); ctx.translate(X(sh.x), Y(sh.y)); ctx.rotate(sh.ang || 0); ctx.fillStyle = '#5a3a1b'; ctx.fillRect(-s * .18, -s * .02, s * .3, s * .04); ctx.fillStyle = '#ddd'; ctx.beginPath(); ctx.moveTo(s * .16, -s * .06); ctx.lineTo(s * .24, 0); ctx.lineTo(s * .16, s * .06); ctx.fill(); ctx.restore(); }
+      else { circle(X(sh.x), Y(sh.y) + s * .1, s * .08, 'rgba(0,0,0,.2)'); circle(X(sh.x), Y(sh.y - sh.h), s * .1, '#23262b'); }
+    }
+    for (const f of fx) {
+      const a = Math.max(0, f.life);
+      if (f.kind === 'beam' || f.kind === 'bolt') {
+        ctx.globalAlpha = Math.min(1, a * 5); ctx.strokeStyle = f.color; ctx.lineWidth = f.kind === 'bolt' ? s * .09 : s * .07; ctx.beginPath(); ctx.moveTo(X(f.x0), Y(f.y0));
+        if (f.kind === 'bolt') { for (let i = 1; i < 5; i++) { const k = i / 5; ctx.lineTo(X(f.x0 + (f.x1 - f.x0) * k) + (Math.random() - .5) * s * .3, Y(f.y0 + (f.y1 - f.y0) * k) + (Math.random() - .5) * s * .3); } }
+        ctx.lineTo(X(f.x1), Y(f.y1)); ctx.stroke(); ctx.globalAlpha = 1;
+      } else if (f.kind === 'boom') { ctx.globalAlpha = a / .35; circle(X(f.x), Y(f.y), f.r * s * (1.2 - a), 'rgba(255,170,60,.45)', 'rgba(255,120,40,.8)', 2); ctx.globalAlpha = 1; }
+      else if (f.kind === 'puff') { ctx.globalAlpha = a / .4; circle(X(f.x), Y(f.y), s * (.45 - a * .5), f.color); ctx.globalAlpha = 1; }
+      else if (f.kind === 'text') upright(X(f.x), Y(f.y), () => { ctx.globalAlpha = Math.min(1, a * 2); ctx.font = `800 ${s * .34}px system-ui`; ctx.fillStyle = f.color; ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.lineWidth = 3; ctx.strokeText(f.text, 0, 0); ctx.fillText(f.text, 0, 0); ctx.globalAlpha = 1; });
+    }
+    ctx.restore();
+  }
+
+  /* ---------- loop ---------- */
+  function frame(now) {
+    raf = requestAnimationFrame(frame);
+    const dt = Math.min(0.05, Math.max(0.001, (now - lastT) / 1000)); lastT = now;
+    const paused = !S || S.over || current !== 'td' || anyModal() || document.hidden;
+    if (!paused) { const n = speed; for (let i = 0; i < n; i++) update(dt); }
+    draw();
+  }
+
+  /* ---------- UI ---------- */
+  function hud() {
+    if (!S) return;
+    $('#tdLives').textContent = S.lives; $('#tdGold').textContent = S.gold;
+    $('#tdWave').textContent = S.waves ? `${S.wave}/${S.waves}` : S.wave;
+    const go = $('#tdGo');
+    go.disabled = S.inWave || S.over;
+    go.innerHTML = S.inWave ? `<span>⏳</span>Bezig` : `<span>▶</span>Golf ${S.wave + 1}`;
+    $('#tdSpeed').innerHTML = `<span>⏩</span>${speed}×`;
+    document.querySelectorAll('#tdBar .tdt').forEach(b => {
+      const d = TOWERS[b.dataset.t];
+      b.classList.toggle('on', buildType === b.dataset.t);
+      b.classList.toggle('poor', S.gold < d.cost);
+    });
+  }
+  function panel() {
+    const p = $('#tdPanel');
+    if (!sel || !S.towers.includes(sel)) { sel = null; p.classList.remove('show'); return; }
+    const d = TOWERS[sel.type], L = sel.lvl;
+    const stat = l => `bereik ${d.range[l]} · schade ${d.dmg[l]}${d.slow ? ` · ${Math.round(d.slow[l] * 100)}% trager` : ''}${d.splash ? ' · groep' : ''}`;
+    p.innerHTML = `<div class="tdp-h"><b>${d.icon} ${d.name}</b><span>niveau ${L + 1}/3</span><button class="tdp-x" data-a="x">✕</button></div>
+      <div class="tdp-s">${stat(L)}</div>
+      <div class="row">` + (L < 2 ? `<button class="btn primary small" data-a="up" ${S.gold < d.up[L] ? 'disabled' : ''}>⬆ Verbeter · ${d.up[L]} 💰<small>${stat(L + 1)}</small></button>` : `<button class="btn small" disabled>Maximaal niveau</button>`) +
+      `<button class="btn small" data-a="sell">Verkoop · +${Math.floor(sel.spent * 0.7)}</button></div>`;
+    p.classList.add('show');
+  }
+  $('#tdPanel').addEventListener('click', e => {
+    const b = e.target.closest('button[data-a]'); if (!b || !sel) return;
+    if (b.dataset.a === 'up') upgrade(sel); else if (b.dataset.a === 'sell') sell(sel); else { sel = null; panel(); }
+  });
+  $('#tdBar').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b || !S) return;
+    if (b.id === 'tdGo') { startWave(); return; }
+    if (b.id === 'tdSpeed') { speed = speed === 1 ? 2 : speed === 2 ? 3 : 1; hud(); return; }
+    const t = b.dataset.t; if (!t) return;
+    buildType = buildType === t ? null : t; sel = null; panel(); hud();
+    if (buildType) toast(`${TOWERS[t].name}: ${TOWERS[t].desc}. Tik op een grasvakje.`, 1800);
+  });
+  cv.addEventListener('pointerdown', e => {
+    if (!S || S.over || !T) return;
+    const rc = cv.getBoundingClientRect();
+    const [c, r] = screenToTile(e.clientX - rc.left, e.clientY - rc.top);
+    if (c < 0 || r < 0 || c >= COLS || r >= ROWS) { sel = null; panel(); return; }
+    const t = towerAt(c, r);
+    if (t) { sel = sel === t ? null : t; buildType = null; hud(); panel(); return; }
+    const k = c + ',' + r;
+    if (pathTiles.has(k) || deco.has(k)) { sel = null; panel(); if (buildType) toast('Hier kun je niet bouwen'); return; }
+    if (buildType) build(buildType, c, r);
+    else { sel = null; panel(); toast('Kies onderaan eerst een toren'); }
+  });
+
+  let toastT;
+  function toast(t, ms) { const e = $('#tdToast'); e.textContent = t; e.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => e.classList.remove('show'), ms || 1300); }
+  let ac = null;
+  function beep(freq, dur, vol) {
+    if (!opt.sound) return;
+    try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); const o = ac.createOscillator(), g = ac.createGain(); o.type = 'triangle'; o.frequency.value = freq; g.gain.setValueAtTime(vol || .1, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + dur); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + dur); } catch (e) {}
+  }
+
+  /* ---------- start screen & options ---------- */
+  function renderStart() {
+    const b = stats.best;
+    $('#tdMaps').innerHTML = Object.entries(MAPS).map(([k, m]) => `<button data-map="${k}" class="${opt.map === k ? 'on' : ''}">
+      <i style="background:linear-gradient(135deg,${m.grass[0]} 0 60%,${m.path} 60% 75%,${m.grass[1]} 75%)"></i><b>${m.name}</b><small>${b[k] ? 'record: golf ' + b[k] : 'nog niet gespeeld'}</small></button>`).join('');
+    const seg = (key, ch) => ch.map(([v, l]) => `<button data-key="${key}" data-val='${JSON.stringify(v)}' class="${opt[key] === v ? 'on' : ''}">${l}</button>`).join('');
+    $('#tdDiff').innerHTML = seg('diff', [['makkelijk', 'Makkelijk'], ['normaal', 'Normaal'], ['moeilijk', 'Moeilijk']]);
+    $('#tdWaves').innerHTML = seg('waves', [[10, '10'], [20, '20'], [0, 'Eindeloos']]);
+  }
+  $('#tdStartModal').addEventListener('click', e => {
+    const m = e.target.closest('button[data-map]'); if (m) { opt.map = m.dataset.map; saveOpt(); renderStart(); return; }
+    const b = e.target.closest('button[data-key]'); if (b) { opt[b.dataset.key] = JSON.parse(b.dataset.val); saveOpt(); renderStart(); }
+  });
+  $('#tdStartGo').addEventListener('click', () => newGame());
+  $('#tdStartBack').addEventListener('click', () => { closeModals(); leave(); });
+  function openStart() { renderStart(); closeModals(); openModal('tdStartModal'); }
+
+  function renderOpts() {
+    const seg = (key, ch) => `<div class="seg">` + ch.map(([v, l]) => `<button data-key="${key}" data-val='${JSON.stringify(v)}' class="${opt[key] === v ? 'on' : ''}">${l}</button>`).join('') + `</div>`;
+    $('#tdOptList').innerHTML = `<div class="opt"><div class="opt-label">Volgende golf automatisch starten</div>${seg('autoNext', [[false, 'Uit'], [true, 'Aan']])}</div>
+      <div class="opt"><div class="opt-label">Geluid</div>${seg('sound', [[true, 'Aan'], [false, 'Uit']])}</div>
+      <div class="opt-section">Torens</div>` +
+      Object.values(TOWERS).map(d => `<div class="td-info"><b>${d.icon} ${d.name}</b> · ${d.cost} 💰 — ${d.desc}. Bereik ${d.range[0]}, schade ${d.dmg[0]}${d.magic ? ', negeert pantser' : ''}.</div>`).join('') +
+      `<div class="opt-section">Vijanden</div><div class="td-info">🔴 gewoon · 🟡 snel · ⚪ gepantserd (pijlen en kanonnen doen minder schade, magie niet) · 🟢 zwerm · 👑 baas (elke 5e golf, kost 5 ❤ als hij erdoor komt)</div>
+      <div class="opt-section">Statistieken</div><div class="stats">` +
+      [['Gespeeld', stats.played], ['Gewonnen', stats.won], ...Object.entries(MAPS).map(([k, m]) => [`Record ${m.name}`, stats.best[k] ? 'golf ' + stats.best[k] : '–'])].map(([l, v]) => `<div class="stat"><b>${v}</b><small>${l}</small></div>`).join('') + `</div>`;
+  }
+  $('#tdOptList').addEventListener('click', e => { const b = e.target.closest('button[data-key]'); if (!b) return; opt[b.dataset.key] = JSON.parse(b.dataset.val); saveOpt(); renderOpts(); });
+  $('#tdOptBtn').addEventListener('click', () => { renderOpts(); openModal('tdOptModal'); });
+  $('#tdNew').addEventListener('click', () => openStart());
+  $('#tdEndNew').addEventListener('click', () => openStart());
+  $('#tdEndMenu').addEventListener('click', () => { closeModals(); leave(); });
+  $('#tdBack').addEventListener('click', () => leave());
+
+  /* ---------- persistence & navigation ---------- */
+  function save() { if (S && !S.over && !S.inWave) store.set('td.save', S); }
+  function enter() {
+    show('td');
+    if (!running) { running = true; lastT = performance.now(); raf = requestAnimationFrame(frame); }
+    const saved = store.get('td.save', null);
+    if (!S && saved && saved.towers) { S = saved; S.inWave = false; enemies = []; shots = []; fx = []; buildMap(); }
+    layout();
+    if (!S || S.over) { if (!S) { S = { map: opt.map, diff: opt.diff, waves: opt.waves, wave: 0, gold: 0, lives: 0, towers: [], over: true }; buildMap(); } openStart(); }
+    hud(); panel();
+  }
+  function leave() {
+    // leaving during a wave: the wave restarts next time (towers and gold are kept)
+    if (S && S.inWave && !S.over) { S.wave--; S.inWave = false; enemies = []; shots = []; spawnQ = []; }
+    save(); running = false; cancelAnimationFrame(raf); sel = null; buildType = null; $('#tdPanel').classList.remove('show');
+    show('menu'); refreshMenu();
+  }
+  window.addEventListener('resize', () => { if (current === 'td') layout(); });
+  window.__td = { get S() { return S; }, get T() { return T; }, screenToTile: (x, y) => screenToTile(x, y), get enemies() { return enemies; }, build, upgrade, startWave, TOWERS, get pathTiles() { return pathTiles; }, get deco() { return deco; }, setSpeed: v => { speed = v; } };
+  return { enter, leave, hasSave: () => !!store.get('td.save', null) };
+})();
+$('#tileTd').addEventListener('click', () => TowerDefense.enter());
+
+/* ================================================================
    UPDATES (online)
    ================================================================ */
-const APP_VERSION = '1.14';
+const APP_VERSION = '1.15';
 let menuToastT;
 function menuToast(t, ms) {
   const e = $('#menuToast'); e.textContent = t; e.classList.add('show');
@@ -2422,7 +2960,7 @@ $('#checkUpd').addEventListener('click', () => {
   if (u) { store.del('app.updatedTo'); setTimeout(() => menuToast(`Bijgewerkt naar versie ${u.name} ✓` + (u.notes ? ` — ${u.notes}` : ''), 4000), 400); }
 })();
 
-function refreshMenu() { $('#tilePatience').classList.toggle('has-save', Patience.hasSave()); $('#tileKj').classList.toggle('has-save', Klaverjas.hasSave()); }
+function refreshMenu() { $('#tilePatience').classList.toggle('has-save', Patience.hasSave()); $('#tileKj').classList.toggle('has-save', Klaverjas.hasSave()); $('#tileTd').classList.toggle('has-save', TowerDefense.hasSave()); }
 $('#tilePatience').addEventListener('click', () => Patience.enter());
 window.addEventListener('pagehide', () => Patience.save());
 refreshMenu();
