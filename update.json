@@ -1,9 +1,10 @@
 {
-  "versionCode": 22,
-  "versionName": "1.21",
-  "nativeLevel": 3,
-  "notes": "Torenverdediging: 13 uitdagingen met eigen regels (alleen pijlen, \u00e9\u00e9n leven, luchtaanval, bazenjacht, marathon en meer); verbeteren en specialiseren kost nu bouwtijd, met steigers op de toren. Volledig nieuwe, realistische geluiden (boogpees, kanonnen, explosies, oorlogshoorns, publiek bij airhockey). Airhockey: ronde hoeken en de puck kan niet meer vast komen te zitten",
+  "versionCode": 23,
+  "versionName": "1.22",
+  "nativeLevel": 4,
+  "notes": "Nieuw spel: Springvos \u2013 een klassieke platformgame met 9 levels, kratten, power-ups en gouden tulpen. Airhockey: voller, minder schel goalgeluid. Beveiliging: updates zijn digitaal ondertekend en worden gecontroleerd, strengere app-instellingen. Kleiner en sneller door geoptimaliseerde code",
   "web": "web/index.html",
-  "webSha256": "84f7e4508ae8a52dd2092a69b22701f95e0842f38ff808b431c931d553c4ea7f",
+  "webSha256": "39d0287d54417ccc6cee869f3a2592fc7283f8d7ea925bc80822eda3d867470d",
+  "webSig": "MEYCIQCLEgklpxosZOOpqzn6EqN/o8OWi4X7hADqbrZOdVmRPwIhAJqKG4y+NnIcRxj0xpK62TnbFyrXbwNE0h7iip+Sfk9o",
   "apk": "apk/Renes-spelletjes.apk"
 }
