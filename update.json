@@ -1,9 +1,9 @@
 {
-  "versionCode": 19,
-  "versionName": "1.18",
-  "nativeLevel": 2,
-  "notes": "Torenverdediging: melding na een golf toont rente nu netjes op een nieuwe regel",
+  "versionCode": 20,
+  "versionName": "1.19",
+  "nativeLevel": 3,
+  "notes": "Het scherm blijft aan tijdens de spellen, ook zonder aanraken. Torenverdediging: verkopen is minder prominent en vraagt eerst om bevestiging",
   "web": "web/index.html",
-  "webSha256": "c1ffa2b0be4fa5a5dc93acd8883e4f3d73047a8885667172adff0c8bea92e450",
+  "webSha256": "416238b24ec986f46a9f93e4296514b4ca538d018208ac59a5a720cf70782e10",
   "apk": "apk/Renes-spelletjes.apk"
 }
