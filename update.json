@@ -1,9 +1,9 @@
 {
-  "versionCode": 20,
-  "versionName": "1.19",
+  "versionCode": 21,
+  "versionName": "1.20",
   "nativeLevel": 3,
-  "notes": "Het scherm blijft aan tijdens de spellen, ook zonder aanraken. Torenverdediging: verkopen is minder prominent en vraagt eerst om bevestiging",
+  "notes": "Torenverdediging: de volgende golf komt automatisch na een instelbare tijd (standaard 15 s, eerder starten geeft bonusgoud); vijanden komen zichtbaar uit een portaal met een startzone waar je niet kunt bouwen; meldingen klein bovenin zodat ze niet in de weg zitten; verbeteren direct beschikbaar zodra je genoeg goud hebt. Professionelere geluiden in Torenverdediging en Airhockey. Nieuw: 'Over deze app' met versiegeschiedenis, statistieken en technische gegevens",
   "web": "web/index.html",
-  "webSha256": "416238b24ec986f46a9f93e4296514b4ca538d018208ac59a5a720cf70782e10",
+  "webSha256": "31f92c589ad50845238687ddffd306d913fc3acd540929e2798f898eb1bb51df",
   "apk": "apk/Renes-spelletjes.apk"
 }
