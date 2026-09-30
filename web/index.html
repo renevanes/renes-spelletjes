@@ -347,7 +347,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
       </div>
     </button>
   </div>
-  <div class="version">Versie 1.17 · <button id="checkUpd">Controleren op updates</button></div>
+  <div class="version">Versie 1.18 · <button id="checkUpd">Controleren op updates</button></div>
   <div id="menuToast"></div>
 </section>
 
@@ -3306,7 +3306,7 @@ const TowerDefense = (() => {
   });
 
   let toastT;
-  function toast(t, ms) { const e = $('#tdToast'); e.textContent = t; e.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => e.classList.remove('show'), ms || 1300); }
+  function toast(t, ms) { const e = $('#tdToast'); e.innerHTML = t; e.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => e.classList.remove('show'), ms || 1300); }
   let ac = null;
   function beep(freq, dur, vol) {
     if (!opt.sound) return;
@@ -3382,7 +3382,7 @@ $('#tileTd').addEventListener('click', () => TowerDefense.enter());
 /* ================================================================
    UPDATES (online)
    ================================================================ */
-const APP_VERSION = '1.17';
+const APP_VERSION = '1.18';
 let menuToastT;
 function menuToast(t, ms) {
   const e = $('#menuToast'); e.textContent = t; e.classList.add('show');

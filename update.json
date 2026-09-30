@@ -1,9 +1,9 @@
 {
-  "versionCode": 18,
-  "versionName": "1.17",
+  "versionCode": 19,
+  "versionName": "1.18",
   "nativeLevel": 2,
-  "notes": "Torenverdediging met meer diepgang: specialisaties op niveau 3, doelkeuze per toren, spreuken (meteoor en vriesgolf), nieuwe vijanden (vliegend, splitser, genezer), rente, sterren en de expertkaart Vulkaan",
+  "notes": "Torenverdediging: melding na een golf toont rente nu netjes op een nieuwe regel",
   "web": "web/index.html",
-  "webSha256": "a39da3b420d9a19d7f64c440a4253cd662c400aba02391c169a34838da9159ef",
+  "webSha256": "c1ffa2b0be4fa5a5dc93acd8883e4f3d73047a8885667172adff0c8bea92e450",
   "apk": "apk/Renes-spelletjes.apk"
 }
