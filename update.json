@@ -1,9 +1,9 @@
 {
-  "versionCode": 21,
-  "versionName": "1.20",
+  "versionCode": 22,
+  "versionName": "1.21",
   "nativeLevel": 3,
-  "notes": "Torenverdediging: de volgende golf komt automatisch na een instelbare tijd (standaard 15 s, eerder starten geeft bonusgoud); vijanden komen zichtbaar uit een portaal met een startzone waar je niet kunt bouwen; meldingen klein bovenin zodat ze niet in de weg zitten; verbeteren direct beschikbaar zodra je genoeg goud hebt. Professionelere geluiden in Torenverdediging en Airhockey. Nieuw: 'Over deze app' met versiegeschiedenis, statistieken en technische gegevens",
+  "notes": "Torenverdediging: 13 uitdagingen met eigen regels (alleen pijlen, \u00e9\u00e9n leven, luchtaanval, bazenjacht, marathon en meer); verbeteren en specialiseren kost nu bouwtijd, met steigers op de toren. Volledig nieuwe, realistische geluiden (boogpees, kanonnen, explosies, oorlogshoorns, publiek bij airhockey). Airhockey: ronde hoeken en de puck kan niet meer vast komen te zitten",
   "web": "web/index.html",
-  "webSha256": "31f92c589ad50845238687ddffd306d913fc3acd540929e2798f898eb1bb51df",
+  "webSha256": "84f7e4508ae8a52dd2092a69b22701f95e0842f38ff808b431c931d553c4ea7f",
   "apk": "apk/Renes-spelletjes.apk"
 }

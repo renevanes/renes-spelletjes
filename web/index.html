@@ -266,6 +266,15 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .tdp-h{display:flex;align-items:center;gap:10px;margin-bottom:4px} .tdp-h b{font-size:16px} .tdp-h span{color:var(--muted);font-size:13px;flex:1}
 .tdp-x{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.1)}
 .tdp-s{font-size:12px;color:var(--muted);margin-bottom:8px}
+.tdp-busy{position:relative;background:rgba(242,193,78,.12);border:1px solid rgba(242,193,78,.35);border-radius:12px;padding:8px 10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;font-size:13px;overflow:hidden}
+.tdp-busy span{color:var(--muted)} .tdp-busy i{position:absolute;left:0;bottom:0;height:4px;background:var(--accent)}
+.td-ch{display:grid;gap:8px}
+.td-ch button{display:flex;gap:10px;align-items:center;text-align:left;background:rgba(0,0,0,.25);border:2px solid transparent;border-radius:14px;padding:10px 12px;color:var(--ink)}
+.td-ch button.on{border-color:var(--accent);background:rgba(242,193,78,.12)}
+.td-ch .ic{font-size:26px;width:34px;text-align:center;flex:none}
+.td-ch b{display:block;font-size:15px} .td-ch small{display:block;color:var(--muted);font-size:12px;line-height:1.35;margin-top:2px}
+.td-ch .done{margin-left:auto;color:#7bd88f;font-weight:800;font-size:18px;flex:none}
+.tdt.locked{opacity:.25;filter:grayscale(1)}
 #tdPanel .btn small{display:block;font-size:10px;font-weight:600;opacity:.75;margin-top:2px}
 #tdToast{position:absolute;left:50%;top:6px;transform:translate(-50%,-8px);background:rgba(10,20,14,.72);padding:5px 12px;border-radius:999px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:30;text-align:center;max-width:92%;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 #tdToast br{display:none}
@@ -366,7 +375,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
       </div>
     </button>
   </div>
-  <div class="version">Versie 1.20 · <button id="aboutBtn">Over deze app</button> · <button id="checkUpd">Controleren op updates</button></div>
+  <div class="version">Versie 1.21 · <button id="aboutBtn">Over deze app</button> · <button id="checkUpd">Controleren op updates</button></div>
   <div id="menuToast"></div>
 </section>
 
@@ -540,16 +549,20 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 <div class="modal" id="tdStartModal">
   <div class="sheet">
     <h3>🏰 Torenverdediging</h3>
+    <div class="opt"><div class="seg" id="tdMode"></div></div>
+    <div id="tdFree">
     <div class="opt"><div class="opt-label">Kaart</div><div class="td-maps" id="tdMaps"></div></div>
     <div class="opt"><div class="opt-label">Moeilijkheid</div><div class="seg" id="tdDiff"></div></div>
     <div class="opt"><div class="opt-label">Aantal golven</div><div class="seg" id="tdWaves"></div></div>
+    </div>
+    <div id="tdChWrap" hidden><div class="opt-label" id="tdChHead" style="margin-bottom:8px"></div><div class="td-ch" id="tdCh"></div></div>
     <div class="note" style="color:var(--muted)">Kies onderaan een toren en tik op een grasvakje om te bouwen. Tik op een toren om hem te verbeteren, te specialiseren of te verkopen. Tijdens een golf kun je ☄️ en 🌨️ spreuken gebruiken. Start met ▶ de volgende golf.</div>
     <div class="row sticky-actions"><button class="btn" id="tdStartBack">Menu</button><button class="btn primary" id="tdStartGo">Start ▶</button></div>
   </div>
 </div>
 <div class="modal" id="aboutModal">
   <div class="sheet">
-    <div class="about-head"><div class="about-icon">🃏</div><div><h3>Rene's spelletjes</h3><div class="about-ver">Versie 1.20</div></div></div>
+    <div class="about-head"><div class="about-icon">🃏</div><div><h3>Rene's spelletjes</h3><div class="about-ver">Versie 1.21</div></div></div>
     <div id="aboutBody"></div>
     <div class="row sticky-actions"><button class="btn" id="aboutUpd">Controleren op updates</button><button class="btn primary" data-close>Sluiten</button></div>
   </div>
@@ -618,99 +631,206 @@ const store = {
 };
 const native = (fn, ...a) => { try { if (window.Android && Android[fn]) { Android[fn](...a); return true; } } catch (e) {} return false; };
 /* ================================================================
-   SFX – small synthesised sound engine (Web Audio, no files)
+   SFX – procedurally rendered sample bank (Web Audio, no sound files)
+   Every sound is synthesised once into an AudioBuffer (with a few
+   variations) using physical-ish models: plucked strings, filtered
+   noise, inharmonic metal, brass and drums; then played back with a
+   little pitch variation through a compressor and a room reverb.
    ================================================================ */
 const Sfx = (() => {
-  let ac = null, out = null, rev = null, noiseBuf = null, voices = 0;
-  const last = {};
+  let ac = null, out = null, rev = null, sr = 44100, voices = 0;
+  const bank = {}, last = {}, TAU = Math.PI * 2;
+  const wn = () => Math.random() * 2 - 1;
+  const ad = (t, a, d) => t < a ? t / a : Math.exp(-(t - a) / d);
+  const buf = sec => new Float32Array(Math.ceil(sec * sr));
+  function biq(type, f, q) {                       // RBJ biquad, frequency can be changed on the fly
+    let b0, b1, b2, a1, a2, x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+    const set = f => {
+      f = Math.max(20, Math.min(f, sr * .45));
+      const w = TAU * f / sr, cs = Math.cos(w), al = Math.sin(w) / (2 * q), A0 = 1 + al;
+      let B0, B1, B2;
+      if (type === 'lp') { B0 = (1 - cs) / 2; B1 = 1 - cs; B2 = B0; }
+      else if (type === 'hp') { B0 = (1 + cs) / 2; B1 = -(1 + cs); B2 = B0; }
+      else { B0 = al; B1 = 0; B2 = -al; }
+      b0 = B0 / A0; b1 = B1 / A0; b2 = B2 / A0; a1 = -2 * cs / A0; a2 = (1 - al) / A0;
+    };
+    set(f);
+    const fn = x => { const y = b0 * x + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2; x2 = x1; x1 = x; y2 = y1; y1 = y; return y; };
+    fn.set = set; return fn;
+  }
+  // ---- building blocks (they add into d) ----
+  function brass(d, t0, f, dur, amp, bright = 1) {
+    const i0 = Math.floor(t0 * sr), n = Math.floor((dur + .5) * sr), lp = biq('lp', 300, .9), ph = [Math.random(), Math.random(), Math.random()], det = [1, 1.0045, .9958];
+    for (let k = 0; k < n && i0 + k < d.length; k++) {
+      const t = k / sr;
+      const env = t < .07 ? t / .07 : t < dur ? .8 + .2 * Math.exp(-(t - .07) / .12) : .8 * Math.exp(-(t - dur) / .13);
+      const vib = 1 + .005 * Math.sin(TAU * 5.3 * t) * Math.min(1, t / .35), bend = 1 - .04 * Math.exp(-t / .05);
+      let s = 0; for (let v = 0; v < 3; v++) { ph[v] += f * det[v] * vib * bend / sr; ph[v] -= Math.floor(ph[v]); s += ph[v] * 2 - 1; }
+      if ((k & 15) === 0) lp.set(f * (1.2 + bright * 5 * Math.min(1, t / .09) * (t < dur ? 1 : Math.exp(-(t - dur) / .1))));
+      d[i0 + k] += lp(s / 3) * env * amp;
+    }
+  }
+  function drum(d, t0, f, amp, dec = .35, snap = .5) {
+    const i0 = Math.floor(t0 * sr), n = Math.floor(dec * 6 * sr), lp = biq('lp', 900, .7); let ph = 0;
+    for (let k = 0; k < n && i0 + k < d.length; k++) {
+      const t = k / sr; ph += TAU * f * (1 + .6 * Math.exp(-t / .025)) / sr;
+      d[i0 + k] += (Math.sin(ph) * Math.exp(-t / dec) + lp(wn()) * Math.exp(-t / .035) * snap) * amp;
+    }
+  }
+  function metal(d, t0, f0, amp, dec = .12, ratios = [1, 2.76, 5.40, 8.93]) {
+    const i0 = Math.floor(t0 * sr), n = Math.floor(dec * 6 * sr), hp = biq('hp', 3000, .7);
+    for (let k = 0; k < n && i0 + k < d.length; k++) {
+      const t = k / sr; let s = hp(wn()) * Math.exp(-t / .004) * .6;
+      ratios.forEach((r, j) => { s += Math.sin(TAU * f0 * r * t) * Math.exp(-t / (dec / (1 + j * .6))) / (1 + j * .7); });
+      d[i0 + k] += s * amp;
+    }
+  }
+  function thud(d, t0, f, amp, dec = .08) {
+    const i0 = Math.floor(t0 * sr), n = Math.floor(dec * 7 * sr), lp = biq('lp', f * 3, .8); let ph = 0;
+    for (let k = 0; k < n && i0 + k < d.length; k++) {
+      const t = k / sr; ph += TAU * f * (1 + 1.2 * Math.exp(-t / .012)) / sr;
+      d[i0 + k] += (Math.sin(ph) * Math.exp(-t / dec) + lp(wn()) * Math.exp(-t / (dec * .6)) * .9) * amp;
+    }
+  }
+  function explosion(d, len, sub, amp, dark = 1) {
+    let ph = 0, c = 0; const lp = biq('lp', 600, .8), lp2 = biq('lp', 80, .7);
+    for (let i = 0; i < d.length; i++) {
+      const t = i / sr; ph += TAU * (sub + sub * 2.2 * Math.exp(-t / .06)) / sr;
+      if ((i & 31) === 0) lp.set((120 + 1800 * Math.exp(-t / (.12 * len))) / dark);
+      let s = Math.sin(ph) * Math.exp(-t / (.3 * len)) * 1.3;
+      s += lp(wn()) * ad(t, .004, .45 * len) * 2.2;
+      s += lp2(wn()) * Math.exp(-t / (.9 * len)) * 3;                     // long rumble
+      c = c * .82 + (Math.random() < .006 * Math.exp(-t / (.35 * len)) ? wn() * 2 : 0); s += c * .6;
+      d[i] += Math.tanh(s * 1.3) * amp;
+    }
+  }
+  function crowd(d, t0, dur, amp, fall = 0) {
+    const i0 = Math.floor(t0 * sr), n = Math.floor(dur * sr), f = [biq('bp', 550, 1.5), biq('bp', 1300, 1.8), biq('bp', 2600, 2)];
+    let m = .5, mt = .5;
+    for (let k = 0; k < n && i0 + k < d.length; k++) {
+      const t = k / sr; if ((k & 511) === 0) mt = .35 + Math.random() * .65; m += (mt - m) * .002;
+      if (fall && (k & 31) === 0) { const q = 1 - fall * t / dur; f[0].set(550 * q); f[1].set(1300 * q); }
+      const x = wn(); d[i0 + k] += (f[0](x) * 1.2 + f[1](x) + f[2](x) * .5) * m * ad(t, .18, dur * .45) * amp;
+    }
+  }
+  function grains(d, t0, spread, count, fLo, fHi, amp, dLo = .01, dHi = .05) {
+    for (let g = 0; g < count; g++) {
+      const st = t0 + Math.pow(Math.random(), 1.8) * spread, f = fLo + Math.random() * (fHi - fLo), a = (.3 + Math.random() * .7) * amp, dec = dLo + Math.random() * (dHi - dLo);
+      const i0 = Math.floor(st * sr), n = Math.floor(dec * 6 * sr);
+      for (let k = 0; k < n && i0 + k < d.length; k++) { const t = k / sr; d[i0 + k] += Math.sin(TAU * f * t) * a * Math.exp(-t / dec); }
+    }
+  }
+  function sweep(d, t0, dur, type, f0, f1, q, amp, a = .05) {
+    const i0 = Math.floor(t0 * sr), n = Math.floor(dur * sr), f = biq(type, f0, q);
+    for (let k = 0; k < n && i0 + k < d.length; k++) {
+      const t = k / sr, p = t / dur; if ((k & 15) === 0) f.set(f0 * Math.pow(f1 / f0, p));
+      d[i0 + k] += f(wn()) * ad(t, a, dur * .35) * amp;
+    }
+  }
+  // ---- the sounds: [render function, wet (reverb send), volume, variants] ----
+  const G = {
+    tap:     [() => { const d = buf(.08); const bp = biq('bp', 3200, 2); for (let i = 0; i < d.length; i++) { const t = i / sr; d[i] = bp(wn()) * Math.exp(-t / .004) + Math.sin(TAU * 1700 * t) * Math.exp(-t / .006) * .3; } return d; }, 0, .12, 1],
+    arrow:   [() => {                               // bow string release + arrow whoosh
+      const d = buf(.4), f = 90 + Math.random() * 30, L = Math.round(sr / f), dl = new Float32Array(L), bp = biq('bp', 1500, 1.4), lp = biq('lp', 2500, .7); let p = 0;
+      for (let i = 0; i < L; i++) dl[i] = lp(wn());
+      for (let i = 0; i < d.length; i++) {
+        const t = i / sr, a = dl[p], b = dl[(p + 1) % L]; dl[p] = (a + b) * .5 * .994; p = (p + 1) % L;
+        if ((i & 15) === 0) bp.set(900 + 3200 * Math.sin(Math.min(1, t / .2) * Math.PI));
+        d[i] = a * Math.exp(-t / .06) * .7 + bp(wn()) * ad(t, .02, .06) * 1.1;
+      } return d; }, .12, .32, 4],
+    cannon:  [() => {                               // muzzle crack + low boom + smoke
+      const d = buf(1.2), hp = biq('hp', 1200, .7), lp = biq('lp', 2000, .7), lp2 = biq('lp', 350, .7); let ph = 0;
+      for (let i = 0; i < d.length; i++) {
+        const t = i / sr; ph += TAU * (40 + 110 * Math.exp(-t / .04)) / sr;
+        if ((i & 31) === 0) lp.set(200 + 3000 * Math.exp(-t / .06));
+        let s = Math.sin(ph) * Math.exp(-t / .2) * 1.4 + hp(wn()) * Math.exp(-t / .01) * 1.2 + lp(wn()) * Math.exp(-t / .1) * .9 + lp2(wn()) * ad(t, .01, .35) * 1.3;
+        d[i] = Math.tanh(s * 1.5);
+      } return d; }, .22, .55, 3],
+    boom:    [() => { const d = buf(1.4); explosion(d, 1, 38, 1); return d; }, .28, .5, 3],
+    meteorIn:[() => { const d = buf(.75), lp = biq('lp', 150, 1); let c = 0;
+      for (let i = 0; i < d.length; i++) { const t = i / sr, p = t / .75; if ((i & 15) === 0) lp.set(150 + 3500 * p * p); c = c * .8 + (Math.random() < .01 * p ? wn() : 0); d[i] = (lp(wn()) * 2.5 + c) * p * p * (1 - Math.max(0, (p - .96) / .04)); } return d; }, .25, .5, 1],
+    meteor:  [() => { const d = buf(2.6); explosion(d, 2, 30, 1, 1.3); grains(d, .02, .6, 30, 150, 900, .08, .01, .04); return d; }, .45, 1, 1],
+    ice:     [() => { const d = buf(.5), hp = biq('hp', 5000, .7); for (let i = 0; i < d.length; i++) { const t = i / sr; d[i] = hp(wn()) * ad(t, .002, .04) * .5; } grains(d, 0, .12, 16, 2600, 8500, .35, .008, .04); return d; }, .3, .28, 3],
+    storm:   [() => { const d = buf(.9); sweep(d, 0, .9, 'bp', 500, 1400, 1.4, 1.4, .15); grains(d, .05, .5, 10, 3000, 8000, .12); return d; }, .3, .28, 2],
+    magic:   [() => { const d = buf(.7); sweep(d, 0, .55, 'bp', 220, 1800, 5, 2.2, .04); let ph = 0; for (let i = 0; i < d.length; i++) { const t = i / sr; ph += TAU * (65 + 40 * t) / sr; d[i] += Math.sin(ph) * ad(t, .03, .12) * .5; } return d; }, .4, .38, 3],
+    zap:     [() => { const d = buf(.35), hp = biq('hp', 1500, .7), bp = biq('bp', 3200, 8); let g = 1;
+      for (let i = 0; i < d.length; i++) { const t = i / sr; if ((i & 127) === 0) g = Math.random() < .5 ? 1 : .15; const buzz = Math.sign(Math.sin(TAU * 110 * t)); d[i] = (hp(wn()) * g * 1.2 + bp(wn()) * 1.5 + buzz * .25 * g) * ad(t, .002, .07); } return d; }, .2, .3, 3],
+    pop:     [() => { const d = buf(.3); thud(d, 0, 110 + Math.random() * 60, 1, .05); const bp = biq('bp', 800 + Math.random() * 500, 2); for (let i = 0; i < d.length; i++) { const t = i / sr; d[i] += bp(wn()) * Math.exp(-t / .025) * .5; } return d; }, .1, .3, 4],
+    bossdie: [() => { const d = buf(2.4), lp = biq('lp', 450, 1.2); let ph = 0;
+      for (let i = 0; i < d.length; i++) { const t = i / sr; ph += (75 - 35 * Math.min(1, t / 1.2)) / sr; ph -= Math.floor(ph); d[i] = lp((ph * 2 - 1) * (.6 + .4 * Math.sin(TAU * 27 * t))) * ad(t, .05, .5) * 1.4; }
+      explosion(d, 1.5, 34, .8); return d; }, .35, .8, 1],
+    leak:    [() => { const d = buf(2.6); thud(d, 0, 65, 1.2, .12); metal(d, .03, 196, .7, 1.1, [.5, 1, 1.19, 1.5, 2, 2.51, 3.01, 4.2]); return d; }, .4, .5, 1],
+    place:   [() => { const d = buf(.45); thud(d, 0, 85, 1, .09); grains(d, .02, .18, 8, 1200, 3200, .2, .004, .015); return d; }, .12, .5, 3],
+    build:   [() => { const d = buf(1.1); [0, .3, .6].forEach((t, k) => { metal(d, t, 780 + k * 40 + Math.random() * 30, .5, .09); thud(d, t, 140, .45, .04); }); return d; }, .2, .42, 2],
+    built:   [() => { const d = buf(1.3); thud(d, 0, 70, 1, .1); metal(d, .01, 420, .35, .25); brass(d, .08, 146.8, .35, .5, .7); brass(d, .08, 220, .35, .3, .7); return d; }, .35, .5, 1],
+    spec:    [() => { const d = buf(2.2); drum(d, 0, 60, .9, .5); [146.8, 220, 293.7, 370].forEach((f, k) => brass(d, .05 + k * .02, f, 1, .38, 1.1)); return d; }, .45, .6, 1],
+    sell:    [() => { const d = buf(1); for (let k = 0; k < 5; k++) metal(d, Math.random() * .22, 2400 + Math.random() * 1600, .22, .09, [1, 1.59, 2.33, 3.1]); return d; }, .2, .3, 2],
+    deny:    [() => { const d = buf(.35); thud(d, 0, 120, .8, .03); thud(d, .11, 105, .8, .03); return d; }, .05, .3, 1],
+    wave:    [() => { const d = buf(2.2); drum(d, 0, 58, 1, .4, .6); drum(d, .32, 58, .7, .35, .6); brass(d, .02, 110, 1.1, .55, 1); brass(d, .02, 220, 1.1, .2, .8); return d; }, .45, .5, 1],
+    boss:    [() => { const d = buf(3); [0, .3, .6].forEach(t => drum(d, t, 50, 1, .45, .7)); brass(d, .05, 82.4, .8, .55, 1.2); brass(d, .9, 98, 1.1, .55, 1.2); brass(d, .9, 73.4, 1.1, .35, 1); return d; }, .5, .7, 1],
+    clear:   [() => { const d = buf(1.8); drum(d, 0, 62, .6, .4); [146.8, 185, 220, 293.7].forEach(f => brass(d, .03, f, .55, .3, .6)); return d; }, .45, .42, 1],
+    win:     [() => { const d = buf(3.4); [[0, 293.7, .12], [.16, 293.7, .12], [.32, 293.7, .12], [.48, 440, 1.5]].forEach(([t, f, l]) => { brass(d, t, f, l, .45, 1.2); brass(d, t, f / 2, l, .25, .8); });
+      for (let k = 0; k < 10; k++) drum(d, .48 + k * .07, 62, .25 + k * .05, .25, .2); drum(d, 1.2, 55, 1, .7); return d; }, .45, .7, 1],
+    lose:    [() => { const d = buf(3); drum(d, 0, 50, 1, .6); [[.1, 146.8], [.6, 130.8], [1.1, 116.5]].forEach(([t, f], k) => brass(d, t, f, k === 2 ? 1.3 : .42, .45, .5)); return d; }, .45, .6, 1],
+    frost:   [() => { const d = buf(2.2); sweep(d, 0, 1.6, 'bp', 1800, 7000, 1.2, 1.2, .35); grains(d, .1, 1.3, 70, 2500, 9000, .18, .01, .06); sweep(d, 0, 1.2, 'lp', 200, 600, .8, .8, .2); return d; }, .55, .55, 1],
+    // airhockey
+    hit:     [() => { const d = buf(.15), b1 = biq('bp', 2300 + Math.random() * 400, 6), b2 = biq('bp', 900, 4); for (let i = 0; i < d.length; i++) { const t = i / sr, x = wn(); d[i] = b1(x) * Math.exp(-t / .006) * 2.5 + b2(x) * Math.exp(-t / .018) * 1.2 + Math.sin(TAU * 680 * t) * Math.exp(-t / .01) * .3; } return d; }, .06, .6, 3],
+    wall:    [() => { const d = buf(.2), lp = biq('lp', 700, .8), b = biq('bp', 330, 3); for (let i = 0; i < d.length; i++) { const t = i / sr, x = wn(); d[i] = lp(x) * Math.exp(-t / .012) * 1.5 + b(x) * Math.exp(-t / .03) * 1.5; } return d; }, .06, .35, 2],
+    goal:    [() => { const d = buf(2.6); [220, 277.2, 329.6].forEach(f => brass(d, 0, f, .75, .4, 1.6)); crowd(d, .15, 2.4, 1.1); return d; }, .4, .65, 1],
+    against: [() => { const d = buf(1.8); brass(d, 0, 110, .5, .5, .6); brass(d, 0, 130.8, .5, .35, .6); crowd(d, .1, 1.6, .7, .45); return d; }, .35, .5, 1],
+  };
+  function render(name) {
+    const [fn, , , n] = G[name]; bank[name] = [];
+    for (let v = 0; v < n; v++) {
+      const d = fn(); let pk = 0; for (let i = 0; i < d.length; i++) pk = Math.max(pk, Math.abs(d[i]));
+      const k = pk > 0 ? .95 / pk : 1, fade = Math.min(d.length, Math.floor(sr * .02));
+      for (let i = 0; i < d.length; i++) d[i] *= k;
+      for (let i = 0; i < fade; i++) d[d.length - 1 - i] *= i / fade;
+      const b = ac.createBuffer(1, d.length, sr); b.getChannelData(0).set(d); bank[name].push(b);
+    }
+  }
   function init() {
-    if (ac) return ac.state === 'running' || (ac.resume(), true);
+    if (ac) { if (ac.state === 'suspended') ac.resume(); return true; }
     try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return false; }
+    sr = ac.sampleRate;
     const comp = ac.createDynamicsCompressor();
-    comp.threshold.value = -18; comp.knee.value = 12; comp.ratio.value = 4; comp.attack.value = .003; comp.release.value = .15;
-    out = ac.createGain(); out.gain.value = .8; out.connect(comp); comp.connect(ac.destination);
-    // short room reverb from decaying noise
-    const len = ac.sampleRate * 1.3, ir = ac.createBuffer(2, len, ac.sampleRate);
-    for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3.2); }
-    const conv = ac.createConvolver(); conv.buffer = ir;
-    rev = ac.createGain(); rev.gain.value = .22; rev.connect(conv); conv.connect(out);
-    noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
-    const nd = noiseBuf.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+    comp.threshold.value = -16; comp.knee.value = 10; comp.ratio.value = 4; comp.attack.value = .003; comp.release.value = .25;
+    out = ac.createGain(); out.gain.value = .9; out.connect(comp); comp.connect(ac.destination);
+    // dark stereo room reverb
+    const len = Math.floor(sr * 1.9), ir = ac.createBuffer(2, len, sr);
+    for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); let y = 0; for (let i = 0; i < len; i++) { const p = i / len, c = .85 - .7 * p; y += (wn() - y) * c; d[i] = y * Math.pow(1 - p, 2.6) * (i < sr * .012 ? i / (sr * .012) : 1); } }
+    const conv = ac.createConvolver(); conv.buffer = ir; rev = ac.createGain(); rev.gain.value = .5; rev.connect(conv); conv.connect(out);
+    // render the rest of the bank in the background so the first use doesn't stutter
+    const names = Object.keys(G); let q = 0;
+    const idle = () => { if (q < names.length && !bank[names[q]]) render(names[q]); q++; if (q < names.length) setTimeout(idle, 40); };
+    setTimeout(idle, 50);
     return true;
   }
-  function env(g, t, vol, a, d) {
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(Math.max(vol, .0002), t + a);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + a + d);
-  }
-  function route(node, wet) { node.connect(out); if (wet) { const s = ac.createGain(); s.gain.value = wet; node.connect(s); s.connect(rev); } }
-  // tone: f → f2 glide, optional lowpass
-  function tone(o) {
-    const t = ac.currentTime + (o.at || 0), a = o.a || .005, d = o.d || .15;
-    const osc = ac.createOscillator(), g = ac.createGain();
-    osc.type = o.type || 'sine'; osc.frequency.setValueAtTime(o.f, t);
-    if (o.f2) osc.frequency.exponentialRampToValueAtTime(o.f2, t + (o.glide || a + d));
-    if (o.det) osc.detune.value = o.det;
-    let node = osc;
-    if (o.lp) { const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = o.lp; f.Q.value = o.q || .7; osc.connect(f); node = f; }
-    node.connect(g); env(g, t, o.v || .1, a, d); route(g, o.wet);
-    osc.start(t); osc.stop(t + a + d + .05); voices++; osc.onended = () => voices--;
-  }
-  // filtered noise burst, optional filter sweep
-  function noise(o) {
-    const t = ac.currentTime + (o.at || 0), a = o.a || .003, d = o.d || .1;
-    const src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
-    src.buffer = noiseBuf; src.loop = true;
-    f.type = o.ft || 'bandpass'; f.Q.value = o.q || 1; f.frequency.setValueAtTime(o.f, t);
-    if (o.f2) f.frequency.exponentialRampToValueAtTime(o.f2, t + a + d);
-    src.connect(f); f.connect(g); env(g, t, o.v || .1, a, d); route(g, o.wet);
-    src.start(t, Math.random() * .5); src.stop(t + a + d + .05); voices++; src.onended = () => voices--;
-  }
-  const bell = (f, at, v, d, wet) => { tone({ f, at, v, a: .004, d: d || .6, wet: wet ?? .35 }); tone({ f: f * 2.01, at, v: v * .35, a: .003, d: (d || .6) * .5, wet: wet ?? .35 }); tone({ f: f * 3.03, at, v: v * .12, a: .002, d: (d || .6) * .3 }); };
-  const N = { C4: 261.6, E4: 329.6, G4: 392, A4: 440, C5: 523.3, D5: 587.3, E5: 659.3, G5: 784, A5: 880, C6: 1046.5, E6: 1318.5, G6: 1568, Eb4: 311.1, Bb3: 233.1, G3: 196 };
-  const S = {
-    tap:     () => { tone({ f: 1400, f2: 900, v: .05, a: .002, d: .035 }); },
-    place:   () => { tone({ f: 190, f2: 80, v: .35, a: .003, d: .16 }); noise({ f: 900, q: 1.5, v: .12, d: .06 }); tone({ f: N.G5, at: .06, v: .05, d: .2, wet: .3 }); },
-    upgrade: () => { [N.C5, N.E5, N.G5, N.C6].forEach((f, i) => bell(f, i * .06, .09, .5)); },
-    spec:    () => { [N.C5, N.E5, N.G5, N.C6, N.E6, N.G6].forEach((f, i) => bell(f, i * .055, .09, .8)); noise({ ft: 'highpass', f: 6000, v: .04, a: .05, d: .6, wet: .5 }); },
-    sell:    () => { bell(N.E6 * 1.2, 0, .07, .25, .2); bell(N.G6 * 1.2, .07, .07, .35, .2); },
-    deny:    () => { tone({ type: 'square', f: 150, v: .06, lp: 700, d: .08 }); tone({ type: 'square', f: 120, at: .1, v: .06, lp: 700, d: .12 }); },
-    arrow:   () => { noise({ f: 3500, f2: 1400, q: 2.5, v: .07, a: .004, d: .09 }); tone({ f: 900, f2: 500, v: .02, d: .04 }); },
-    cannon:  () => { tone({ f: 130, f2: 42, v: .38, a: .003, d: .22 }); noise({ ft: 'lowpass', f: 1400, f2: 250, v: .22, d: .18 }); },
-    boom:    () => { noise({ ft: 'lowpass', f: 900, f2: 120, v: .3, a: .004, d: .35, wet: .25 }); tone({ f: 80, f2: 38, v: .3, d: .3 }); },
-    ice:     () => { tone({ f: 2637, v: .035, a: .002, d: .18, wet: .5 }); tone({ f: 3520, at: .02, v: .025, d: .14, wet: .5 }); noise({ ft: 'highpass', f: 5000, v: .025, d: .07 }); },
-    storm:   () => { noise({ ft: 'highpass', f: 3000, f2: 6000, v: .05, a: .04, d: .3, wet: .4 }); },
-    magic:   () => { tone({ type: 'triangle', f: 700, f2: 1500, v: .06, a: .005, d: .12, wet: .45 }); tone({ f: 2100, at: .03, v: .03, d: .15, wet: .5 }); },
-    zap:     () => { noise({ f: 2500, q: 4, v: .06, d: .08 }); tone({ type: 'sawtooth', f: 1800, f2: 400, v: .025, lp: 3000, d: .08 }); },
-    pop:     () => { tone({ f: 420, f2: 880, v: .06, a: .002, d: .06 }); noise({ f: 1800, q: 2, v: .03, d: .03 }); },
-    bossdie: () => { noise({ ft: 'lowpass', f: 1200, f2: 90, v: .35, d: .7, wet: .35 }); [N.C5, N.G4, N.E4, N.C4].forEach((f, i) => tone({ type: 'triangle', f, at: .1 + i * .08, v: .07, d: .3, wet: .3 })); },
-    leak:    () => { tone({ type: 'square', f: 220, f2: 110, v: .07, lp: 900, a: .005, d: .28 }); },
-    wave:    () => { [[N.G4, 0], [N.C5, .18]].forEach(([f, at]) => { tone({ type: 'sawtooth', f, at, v: .07, lp: 1400, a: .03, d: .35, wet: .35 }); tone({ type: 'sawtooth', f: f * 1.005, at, v: .05, lp: 1400, a: .03, d: .35 }); }); },
-    boss:    () => { [N.G3, N.Bb3].forEach((f, i) => { tone({ type: 'sawtooth', f, at: i * .25, v: .09, lp: 700, a: .05, d: .5, wet: .4 }); tone({ type: 'sawtooth', f: f / 2, at: i * .25, v: .07, lp: 400, a: .05, d: .5 }); }); },
-    clear:   () => { [N.C5, N.E5, N.G5].forEach(f => bell(f, 0, .06, .9)); bell(N.C6, .12, .06, .9); },
-    win:     () => { [N.C5, N.E5, N.G5, N.C6].forEach((f, i) => { tone({ type: 'sawtooth', f, at: i * .13, v: .05, lp: 2200, a: .02, d: i === 3 ? .9 : .2, wet: .4 }); bell(f, i * .13, .05, .6); }); },
-    lose:    () => { [N.G4, N.Eb4, N.C4].forEach((f, i) => tone({ type: 'triangle', f, at: i * .22, v: .12, lp: 1200, a: .02, d: i === 2 ? .8 : .25, wet: .35 })); },
-    meteorIn:() => { noise({ ft: 'lowpass', f: 300, f2: 2500, v: .12, a: .45, d: .15 }); },
-    meteor:  () => { noise({ ft: 'lowpass', f: 1500, f2: 60, v: .5, a: .005, d: .8, wet: .4 }); tone({ f: 70, f2: 30, v: .45, d: .5 }); },
-    frost:   () => { noise({ ft: 'highpass', f: 2500, f2: 8000, v: .08, a: .1, d: .9, wet: .6 }); [N.E6, N.G6, N.C6 * 2].forEach((f, i) => bell(f, .05 + i * .07, .03, .9, .6)); },
-    // airhockey
-    hit:     k => { k = Math.min(1, k || .5); noise({ f: 1800 + k * 1500, q: 3, v: .08 + k * .25, a: .001, d: .03 }); tone({ f: 700 + k * 300, f2: 350, v: .05 + k * .15, a: .001, d: .05 }); },
-    wall:    () => { noise({ f: 700, q: 2, v: .12, a: .001, d: .05 }); tone({ f: 260, f2: 180, v: .06, d: .06 }); },
-    goal:    () => { [N.C5, N.E5, N.G5].forEach((f, i) => tone({ type: 'sawtooth', f, at: i * .09, v: .06, lp: 2500, a: .01, d: .3, wet: .4 })); noise({ ft: 'highpass', f: 2000, v: .05, a: .2, d: .6, wet: .5 }); },
-    against: () => { tone({ type: 'sawtooth', f: 180, f2: 120, v: .1, lp: 800, a: .02, d: .5, wet: .3 }); },
-  };
-  const gap = { arrow: .06, cannon: .07, boom: .08, ice: .08, magic: .07, zap: .06, pop: .045, leak: .1, hit: .03, wall: .05, storm: .2 };
+  const gap = { arrow: .05, cannon: .06, boom: .07, ice: .07, magic: .07, zap: .06, pop: .04, leak: .15, hit: .03, wall: .05, storm: .25, place: .05, build: .2, built: .1 };
+  const vary = { arrow: .07, cannon: .06, boom: .08, ice: .08, magic: .06, zap: .06, pop: .1, place: .06, hit: .05, wall: .06, sell: .04, build: .03 };
   return {
+    _test() { init(); const r = {}; for (const n of Object.keys(G)) { const t0 = performance.now(); render(n); const d = bank[n][0].getChannelData(0); let pk = 0, rms = 0, nan = 0; for (const x of d) { if (x !== x) nan++; pk = Math.max(pk, Math.abs(x)); rms += x * x; } r[n] = { ms: Math.round(performance.now() - t0), len: +(d.length / sr).toFixed(2), pk: +pk.toFixed(2), rms: +Math.sqrt(rms / d.length).toFixed(3), nan }; } return r; },
     play(name, arg) {
-      if (!S[name] || !init() || !ac || ac.state !== 'running' && ac.state !== 'suspended') return;
+      if (!init() || !G[name]) return;
       const now = ac.currentTime;
-      if (gap[name] && now - (last[name] || -1) < gap[name]) return;
-      if (voices > 40 && gap[name]) return;          // too busy: skip the small stuff
+      if (gap[name] && now - (last[name] ?? -1) < gap[name]) return;
+      if (voices > 28 && gap[name]) return;                 // busy: skip the small stuff
       last[name] = now;
-      try { S[name](arg); } catch (e) {}
+      try {
+        if (!bank[name]) render(name);
+        const list = bank[name], src = ac.createBufferSource(), g = ac.createGain(), [, wet, vol] = G[name];
+        src.buffer = list[Math.floor(Math.random() * list.length)];
+        src.playbackRate.value = 1 + (Math.random() * 2 - 1) * (vary[name] || 0) + (name === 'hit' ? ((arg || .5) - .5) * .15 : 0);
+        g.gain.value = vol * (name === 'hit' ? .25 + .75 * Math.min(1, arg || .5) : 1);
+        src.connect(g); g.connect(out);
+        if (wet) { const w = ac.createGain(); w.gain.value = wet; g.connect(w); w.connect(rev); }
+        voices++; src.onended = () => voices--; src.start();
+      } catch (e) {}
     }
   };
 })();
+window.__sfx = Sfx;
+document.addEventListener('pointerdown', () => Sfx.play('__warm'), { once: true, capture: true });   // start audio + pre-render on the first touch
 
 /* ---------------- Settings ---------------- */
 const DEFAULTS = {
@@ -1717,7 +1837,7 @@ const AirHockey = (() => {
     pointers.set(e.pointerId, i);
     try { cv.setPointerCapture(e.pointerId); } catch (_) {}
     setTarget(i, p);
-    if (ac && ac.state === 'suspended') ac.resume();
+    Sfx.play("__warm");
   });
   cv.addEventListener('pointermove', e => { if (pointers.has(e.pointerId)) setTarget(pointers.get(e.pointerId), toTable(e)); });
   const up = e => pointers.delete(e.pointerId);
@@ -1726,7 +1846,20 @@ const AirHockey = (() => {
   /* ---------- AI ---------- */
   // Smooth, human-like computer player: it "sees" the puck with a small delay, steers with limited
   // acceleration and slows down when it arrives, instead of jumping between targets.
-  let aiV = { x: 0, y: 0 }, aiSeen = null, aiBias = 0, aiHalf = false, slowT = 0;
+  let aiV = { x: 0, y: 0 }, aiSeen = null, aiBias = 0, aiHalf = false, slowT = 0, anchor = null, anchorT = 0, ghostT = 0;
+  // rounded corners: the puck can never get deeper into a corner than a stick can reach
+  const cornerR = () => T.mr * 1.35;
+  function cornerFix(o, r, bounce) {
+    const Rc = cornerR(), lim = Rc - r;
+    for (const [cx, cy] of [[T.L + Rc, T.Tp + Rc], [T.R - Rc, T.Tp + Rc], [T.L + Rc, T.B - Rc], [T.R - Rc, T.B - Rc]]) {
+      const sx = cx < T.cx ? -1 : 1, sy = cy < T.cy ? -1 : 1;
+      if ((o.x - cx) * sx <= 0 || (o.y - cy) * sy <= 0) continue;
+      const dx = o.x - cx, dy = o.y - cy, d = Math.hypot(dx, dy);
+      if (d <= lim) continue;
+      const nx = dx / d, ny = dy / d; o.x = cx + nx * lim; o.y = cy + ny * lim;
+      if (bounce) { const dot = o.vx * nx + o.vy * ny; if (dot > 0) { o.vx -= 1.8 * dot * nx; o.vy -= 1.8 * dot * ny; } }
+    }
+  }
   function ai(now, dt) {
     const m = mal[1], L = LEVEL[opt.level];
     if (!aiSeen) aiSeen = { x: puck.x, y: puck.y, vx: 0, vy: 0 };
@@ -1776,6 +1909,7 @@ const AirHockey = (() => {
     const lo = i === 0 ? T.cy + m.r : T.Tp + m.r, hi = i === 0 ? T.B - m.r : T.cy - m.r;
     m.tx = Math.max(T.L + m.r, Math.min(T.R - m.r, m.tx));
     m.ty = Math.max(lo, Math.min(hi, m.ty));
+    const o = { x: m.tx, y: m.ty }; cornerFix(o, m.r, false); m.tx = o.x; m.ty = o.y;
   }
   function collideMallet(m, sub) {
     const dx = puck.x - m.x, dy = puck.y - m.y, d = Math.hypot(dx, dy), min = puck.r + m.r;
@@ -1811,7 +1945,7 @@ const AirHockey = (() => {
     for (let k = 1; k <= N; k++) {
       mal.forEach((m, i) => { m.x = start[i].x + (m.tx - start[i].x) * k / N; m.y = start[i].y + (m.ty - start[i].y) * k / N; });
       puck.x += puck.vx * h; puck.y += puck.vy * h;
-      mal.forEach(m => collideMallet(m, h));
+      if (ghostT <= 0) mal.forEach(m => collideMallet(m, h));
       const inGoalX = Math.abs(puck.x - T.cx) < T.goal / 2;
       if (puck.x - puck.r < T.L) { puck.x = T.L + puck.r; puck.vx = Math.abs(puck.vx) * 0.8; sfx('wall'); }
       if (puck.x + puck.r > T.R) { puck.x = T.R - puck.r; puck.vx = -Math.abs(puck.vx) * 0.8; sfx('wall'); }
@@ -1820,10 +1954,25 @@ const AirHockey = (() => {
         if (puck.y + puck.r > T.B) { puck.y = T.B - puck.r; puck.vy = -Math.abs(puck.vy) * 0.8; sfx('wall'); }
       }
       [[T.cx - T.goal / 2, T.Tp], [T.cx + T.goal / 2, T.Tp], [T.cx - T.goal / 2, T.B], [T.cx + T.goal / 2, T.B]].forEach(p => collidePost(p[0], p[1]));
+      cornerFix(puck, puck.r, true);
+      // squeezed between a stick and the wall: let the puck slip out sideways instead of getting stuck
+      if (ghostT <= 0) for (const m of mal) {
+        const dx = puck.x - m.x, dy = puck.y - m.y, d = Math.hypot(dx, dy) || 1, ov = puck.r + m.r - d;
+        if (ov <= 1) continue;
+        let tx = -dy / d, ty = dx / d; if (tx * (T.cx - puck.x) + ty * (T.cy - puck.y) < 0) { tx = -tx; ty = -ty; }
+        puck.x += tx * ov; puck.y += ty * ov; puck.vx = tx * T.ih * .5 + m.vx * .3; puck.vy = ty * T.ih * .5 + m.vy * .3;
+      }
       const sp = Math.hypot(puck.vx, puck.vy);
       if (sp > maxV) { puck.vx *= maxV / sp; puck.vy *= maxV / sp; }
       if (puck.y < T.Tp - puck.r) return goal(0);
       if (puck.y > T.B + puck.r) return goal(1);
+    }
+    // watchdog: if the puck hardly moves for 3 s (pinned, stuck, or nobody reaches it) it is released towards the middle
+    if (ghostT > 0) ghostT -= dt;
+    if (!anchor || Math.hypot(puck.x - anchor.x, puck.y - anchor.y) > T.ih * .06) { anchor = { x: puck.x, y: puck.y }; anchorT = 0; } else anchorT += dt;
+    if (anchorT > 3) {
+      let dx = T.cx - puck.x, dy = T.cy - puck.y; const d = Math.hypot(dx, dy) || 1;
+      puck.vx = dx / d * T.ih * .45; puck.vy = dy / d * T.ih * .45; ghostT = .45; anchorT = 0; anchor = null;
     }
     const fr = Math.pow(0.5, dt);                          // air-cushion friction: slows down gradually
     puck.vx *= fr; puck.vy *= fr;
@@ -1879,8 +2028,8 @@ const AirHockey = (() => {
     // surface
     const g = ctx.createLinearGradient(0, T.Tp, 0, T.B);
     g.addColorStop(0, '#dcebf7'); g.addColorStop(.5, '#f2f8fd'); g.addColorStop(1, '#dcebf7');
-    rr(T.L, T.Tp, T.iw, T.ih, T.rail * 1.4); ctx.fillStyle = g; ctx.fill();
-    ctx.save(); rr(T.L, T.Tp, T.iw, T.ih, T.rail * 1.4); ctx.clip();
+    rr(T.L, T.Tp, T.iw, T.ih, cornerR()); ctx.fillStyle = g; ctx.fill();
+    ctx.save(); rr(T.L, T.Tp, T.iw, T.ih, cornerR()); ctx.clip();
     // air holes
     ctx.fillStyle = 'rgba(40,70,110,.08)';
     const sp = T.iw / 14;
@@ -2620,7 +2769,7 @@ $('#tileKj').addEventListener('click', () => Klaverjas.enter());
    ================================================================ */
 const TowerDefense = (() => {
   const COLS = 9, ROWS = 15;
-  const TD = { map: 'weide', diff: 'normaal', waves: 20, nextDelay: 15, sound: true };
+  const TD = { map: 'weide', diff: 'normaal', waves: 20, nextDelay: 15, sound: true, mode: 'vrij', ch: null };
   const opt = Object.assign({}, TD, store.get('td.settings', {}));
   const saveOpt = () => store.set('td.settings', opt);
   let stats = Object.assign({ played: 0, won: 0, best: {} }, store.get('td.stats', {}));
@@ -2660,6 +2809,25 @@ const TowerDefense = (() => {
     if (t.spec != null) return Object.assign({ splash: 0, slow: 0, magic: !!d.magic }, SPECS[t.type][t.spec]);
     const l = t.lvl; return { range: d.range[l], rate: d.rate[l], dmg: d.dmg[l], splash: d.splash ? d.splash[l] : 0, slow: d.slow ? d.slow[l] : 0, magic: !!d.magic };
   }
+  const CHALLENGES = [
+    { id: 'pijlen', icon: '🏹', name: 'Alleen pijlen', desc: 'Weide · 15 golven. Je mag alleen pijltorens bouwen.', map: 'weide', only: ['pijl'] },
+    { id: 'krap', icon: '🪙', name: 'Krap bij kas', desc: 'Woestijn · 15 golven. Start met 100 goud en geen rente.', map: 'woestijn', gold: 100, noInterest: true },
+    { id: 'eenleven', icon: '💔', name: 'Eén leven', desc: 'Sneeuw · 10 golven. Eén vijand erdoor en het is voorbij.', map: 'sneeuw', waves: 10, lives: 1, gold: 200 },
+    { id: 'haast', icon: '⏱️', name: 'Geen adempauze', desc: 'Weide · 15 golven. Elke golf komt al na 4 seconden.', map: 'weide', nextDelay: 4, gold: 240 },
+    { id: 'zes', icon: '🧮', name: 'Zes torens', desc: 'Woestijn · 15 golven. Nooit meer dan 6 torens tegelijk.', map: 'woestijn', maxTowers: 6, gold: 220 },
+    { id: 'lucht', icon: '🦇', name: 'Luchtaanval', desc: 'Sneeuw · 15 golven vol vliegende vijanden (kanonnen raken ze niet).', map: 'sneeuw', flyers: true },
+    { id: 'pantser', icon: '🛡️', name: 'IJzeren leger', desc: 'Weide · 15 golven. Alle vijanden hebben +3 pantser.', map: 'weide', armorPlus: 3, gold: 200 },
+    { id: 'bazen', icon: '👑', name: 'Bazenjacht', desc: 'Woestijn · 15 golven. Elke 3e golf komt er een baas.', map: 'woestijn', bossEvery: 3 },
+    { id: 'basis', icon: '🧱', name: 'Basisbouw', desc: 'Sneeuw · 12 golven. Torens kunnen niet verbeterd worden.', map: 'sneeuw', waves: 12, noUpgrades: true, gold: 260 },
+    { id: 'puur', icon: '🚫', name: 'Zonder trucs', desc: 'Vulkaan · 15 golven. Geen spreuken en geen specialisaties.', map: 'vulkaan', noSpells: true, noSpecs: true },
+    { id: 'magiers', icon: '✨', name: 'Magiërsgilde', desc: 'Vulkaan · 15 golven. Alleen magie- en ijstorens.', map: 'vulkaan', only: ['magie', 'ijs'], gold: 220 },
+    { id: 'inferno', icon: '🌋', name: 'Inferno', desc: 'Vulkaan op moeilijk · 25 golven.', map: 'vulkaan', diff: 'moeilijk', waves: 25 },
+    { id: 'marathon', icon: '🏃', name: 'Marathon', desc: 'Weide · 40 golven op normaal. Hou je het vol?', map: 'weide', waves: 40 },
+  ];
+  const CH = () => S && S.ch ? CHALLENGES.find(c => c.id === S.ch) || null : null;
+  const rule = k => { const c = CH(); return c ? c[k] : undefined; };
+  const nextDelay = () => rule('nextDelay') ?? opt.nextDelay;
+  const isBoss = n => n % (rule('bossEvery') || 5) === 0;
   const MODES = { eerste: 'Eerste', laatste: 'Laatste', sterkste: 'Sterkste', dichtst: 'Dichtstbij' };
   const ENEMIES = {
     gewoon: { hp: 1, speed: 1.0, reward: 5, color: '#e0584f', r: 0.26 },
@@ -2744,49 +2912,55 @@ const TowerDefense = (() => {
     if (n >= 8 && n % 3 === 2) add('splitser', Math.round(2 + n / 4), 1.3);
     if (n >= 10 && n % 2 === 0) add('genezer', Math.round(1 + n / 8), 2);
     if (n >= 14) add('vlieger', Math.round(n / 3), 0.5);
-    if (n % 5 === 0) add('baas', n >= 20 ? 2 : 1, 3);
+    if (rule('flyers') && n >= 2) add('vlieger', Math.round(3 + n * .9), .45);
+    if (isBoss(n)) add('baas', n >= 20 ? 2 : 1, 3);
     return g;
   }
   const hpScale = n => 20 * Math.pow(1 + n * 0.3, 1.32) * (1 + (DIFF[S.diff].hp - 1) * Math.min(1, (n - 1) / 8));   // difficulty ramps up over the first waves
 
   /* ---------- game flow ---------- */
   function newGame() {
-    const d = DIFF[opt.diff];
-    S = { map: opt.map, diff: opt.diff, waves: opt.waves, wave: 0, gold: d.gold, lives: d.lives, startLives: d.lives, towers: [], inWave: false, over: false, cd: { meteor: 0, frost: 0 } };
+    const ch = opt.mode === 'uitdaging' ? CHALLENGES.find(c => c.id === opt.ch) || CHALLENGES[0] : null;
+    const map = ch ? ch.map : opt.map, diff = ch ? ch.diff || 'normaal' : opt.diff, waves = ch ? ch.waves || 15 : opt.waves;
+    const d = DIFF[diff], gold = ch && ch.gold ? ch.gold : d.gold, lives = ch && ch.lives ? ch.lives : d.lives;
+    S = { map, diff, waves, ch: ch ? ch.id : null, wave: 0, gold, lives, startLives: lives, towers: [], inWave: false, over: false, cd: { meteor: 0, frost: 0 } };
     stats.played++; store.set('td.stats', stats);
     enemies = []; shots = []; fx = []; spawnQ = []; sel = null; buildType = null;
     buildMap(); layout(); save(); hud(); closeModals();
-    toast('Bouw torens langs het pad en druk op ▶', 2200);
+    toast(ch ? `🎯 ${ch.name}: ${ch.desc.split('. ').slice(1).join('. ') || ch.desc}` : 'Bouw torens langs het pad en druk op ▶', ch ? 3500 : 2200);
   }
   function startWave() {
     if (!S || S.inWave || S.over) return;
-    if (S.wave > 0 && S.nextT > 1 && opt.nextDelay) { const b = Math.floor(S.nextT); S.gold += b; toast(`⏩ Vroeg gestart · +${b} 💰`, 1200); }
+    if (S.wave > 0 && S.nextT > 1 && nextDelay()) { const b = Math.floor(S.nextT); S.gold += b; toast(`⏩ Vroeg gestart · +${b} 💰`, 1200); }
     S.nextT = 0;
     S.wave++; S.inWave = true; armed = null;
     let t = 0.4; spawnQ = waveList(S.wave).map(x => { t += x.gap; return { type: x.type, at: t }; }); spawnN = 0;
     S.clock = 0;
-    if (S.wave % 5 === 0) toast('👑 Golf ' + S.wave + ' — baas!', 1400); sfx(S.wave % 5 === 0 ? 'boss' : 'wave');
+    if (isBoss(S.wave)) toast('👑 Golf ' + S.wave + ' — baas!', 1400); sfx(isBoss(S.wave) ? 'boss' : 'wave');
     hud();
   }
   function waveDone() {
     S.inWave = false;
     const bonus = 20 + S.wave * 3; if (!(S.waves && S.wave >= S.waves)) sfx('clear');
     S.gold += bonus;
-    const interest = Math.min(30, Math.floor(S.gold * 0.05));       // savings pay off
+    const interest = rule('noInterest') ? 0 : Math.min(30, Math.floor(S.gold * 0.05));       // savings pay off
     S.gold += interest;
     toast(`✓ Golf ${S.wave} · +${bonus} 💰` + (interest ? ` · rente +${interest}` : ''), 1600);
-    const best = stats.best[S.map] || 0; if (S.wave > best) { stats.best[S.map] = S.wave; store.set('td.stats', stats); }
+    const best = stats.best[S.map] || 0; if (!S.ch && S.wave > best) { stats.best[S.map] = S.wave; store.set('td.stats', stats); }
     if (S.waves && S.wave >= S.waves) return win();
     save(); hud();
-    S.nextT = opt.nextDelay || 0;          // countdown to the next wave (0 = start by hand)
+    S.nextT = nextDelay() || 0;          // countdown to the next wave (0 = start by hand)
   }
   function win() {
     S.over = true; store.del('td.save');
     stats.won++;
     const f = S.lives / (S.startLives || DIFF[S.diff].lives), stars = f >= .9 ? 3 : f >= .5 ? 2 : 1;
-    stats.stars = stats.stars || {}; const key = S.map + '/' + S.diff; stats.stars[key] = Math.max(stats.stars[key] || 0, stars);
+    const ch = CH();
+    if (ch) { stats.challenges = stats.challenges || {}; stats.challenges[ch.id] = true; }
+    else { stats.stars = stats.stars || {}; const key = S.map + '/' + S.diff; stats.stars[key] = Math.max(stats.stars[key] || 0, stars); }
     store.set('td.stats', stats);
-    $('#tdEndEmoji').textContent = '🏆'; $('#tdEndTitle').textContent = 'Gewonnen! ' + '★'.repeat(stars) + '☆'.repeat(3 - stars);
+    $('#tdEndEmoji').textContent = ch ? ch.icon : '🏆'; $('#tdEndTitle').textContent = ch ? 'Uitdaging voltooid!' : 'Gewonnen! ' + '★'.repeat(stars) + '☆'.repeat(3 - stars);
+    if (ch) { const n = Object.keys(stats.challenges).length; $('#tdEndText').innerHTML = `<b>${ch.name}</b> gehaald met nog ${S.lives} ❤.<br>Je hebt nu ${n} van de ${CHALLENGES.length} uitdagingen voltooid.`; sfx('win'); setTimeout(() => openModal('tdEndModal'), 600); return; }
     $('#tdEndText').innerHTML = `Alle ${S.waves} golven verslagen op <b>${MAPS[S.map].name}</b> (${S.diff}) met nog ${S.lives} ❤` + (stars < 3 ? '<br><small>3 sterren: verlies minder dan 10% van je levens</small>' : '');
     sfx('win');
     setTimeout(() => openModal('tdEndModal'), 600);
@@ -2794,6 +2968,7 @@ const TowerDefense = (() => {
   function lose() {
     S.over = true; store.del('td.save');
     $('#tdEndEmoji').textContent = '💥'; $('#tdEndTitle').textContent = 'De vijand is doorgebroken';
+    if (CH()) { $('#tdEndText').innerHTML = `Uitdaging <b>${CH().name}</b> mislukt bij golf ${S.wave} van ${S.waves}. Probeer het nog eens!`; setTimeout(() => openModal('tdEndModal'), 600); return; }
     $('#tdEndText').innerHTML = `Je haalde golf <b>${S.wave}</b> op ${MAPS[S.map].name} (${S.diff}).` + ((stats.best[S.map] || 0) <= S.wave ? '<br>🎉 Je beste resultaat op deze kaart!' : `<br>Record: golf ${stats.best[S.map]}`);
     vibrate(120); sfx('lose');
     setTimeout(() => openModal('tdEndModal'), 600);
@@ -2804,6 +2979,8 @@ const TowerDefense = (() => {
   function build(type, c, r) {
     const d = TOWERS[type];
     if (neutral.has(c + ',' + r) || pathTiles.has(c + ',' + r)) return;
+    const only = rule('only'); if (only && !only.includes(type)) { toast('Deze toren is niet toegestaan in deze uitdaging'); sfx('deny'); return; }
+    const mx = rule('maxTowers'); if (mx && S.towers.length >= mx) { toast(`Maximaal ${mx} torens in deze uitdaging`); sfx('deny'); return; }
     if (S.gold < d.cost) { toast('Niet genoeg goud'); sfx('deny'); return; }
     S.gold -= d.cost;
     const t = { type, c, r, lvl: 0, cd: 0, ang: -Math.PI / 2, spent: d.cost, mode: 'eerste' };
@@ -2814,16 +2991,25 @@ const TowerDefense = (() => {
   function upgrade(t) {
     const d = TOWERS[t.type]; if (t.lvl >= 2) return;
     const cost = d.up[t.lvl]; if (S.gold < cost) { toast('Niet genoeg goud'); sfx('deny'); return; }
-    S.gold -= cost; t.lvl++; t.spent += cost; sfx('upgrade'); vibrate(10);
+    if (t.busy) return;
+    if (rule('noUpgrades')) { toast('In deze uitdaging kun je niet verbeteren'); sfx('deny'); return; }
+    S.gold -= cost; t.spent += cost; t.busy = { kind: 'up', t: BUILD_T[t.lvl], T: BUILD_T[t.lvl] }; sfx('build'); vibrate(10);
     save(); hud(); panel();
   }
   function specialise(t, i) {
-    const sp = SPECS[t.type][i]; if (t.lvl < 2 || t.spec != null) return;
+    const sp = SPECS[t.type][i]; if (t.lvl < 2 || t.spec != null || t.busy) return;
+    if (rule('noSpecs')) { toast('In deze uitdaging zijn specialisaties niet toegestaan'); sfx('deny'); return; }
     if (S.gold < sp.cost) { toast('Niet genoeg goud'); sfx('deny'); return; }
-    S.gold -= sp.cost; t.spec = i; t.spent += sp.cost; sfx('spec'); vibrate(15);
-    burst(t.c + .5, t.r + .5, '#ffd54a', 14, 2, .05, 0);
-    toast(`${TOWERS[t.type].name} → ${sp.name}!`, 1500);
+    S.gold -= sp.cost; t.spent += sp.cost; t.busy = { kind: 'spec', i, t: BUILD_T[2], T: BUILD_T[2] }; sfx('build'); vibrate(15);
     save(); hud(); panel();
+  }
+  const BUILD_T = [5, 8, 11];                 // construction time (game seconds): level 2, level 3, specialisation
+  function finishBuild(t) {
+    const b = t.busy; t.busy = null; t.cd = 0;
+    if (b.kind === 'up') { t.lvl++; sfx('built'); }
+    else { t.spec = b.i; sfx('spec'); toast(`${TOWERS[t.type].name} → ${SPECS[t.type][b.i].name}!`, 1400); }
+    burst(t.c + .5, t.r + .5, '#ffd54a', 14, 2, .05, 0); burst(t.c + .5, t.r + .5, 'rgba(160,120,80,.8)', 8, 1.2, .06, 3);
+    vibrate(10); if (sel === t) panel(); hud();
   }
   function sell(t) {
     const back = Math.floor(t.spent * 0.7);
@@ -2855,6 +3041,7 @@ const TowerDefense = (() => {
       if (e.d >= paths[e.p || 0].len) { e.dead = true; e.leaked = true; S.lives -= e.type === 'baas' ? 5 : 1; vibrate(40); sfx('leak'); }
     }
     for (const t of S.towers) {
+      if (t.busy) { t.busy.t -= dt; if (t.busy.t <= 0) finishBuild(t); continue; }     // under construction: no shooting
       const st = stat(t); t.cd -= dt; if (t.fire > 0) t.fire -= dt;
       const R = st.range, cx = t.c + .5, cy = t.r + .5;
       const inRange = [];
@@ -2906,7 +3093,7 @@ const TowerDefense = (() => {
       }
     }
     // countdown to the next wave
-    if (!S.inWave && !S.over && S.wave > 0 && opt.nextDelay && S.nextT > 0) { S.nextT -= dt / speed; /* real time, not affected by the speed button */ if (S.nextT <= 0) { S.nextT = 0; startWave(); return; } }
+    if (!S.inWave && !S.over && S.wave > 0 && nextDelay() && S.nextT > 0) { S.nextT -= dt / speed; /* real time, not affected by the speed button */ if (S.nextT <= 0) { S.nextT = 0; startWave(); return; } }
     // spells
     if (S.cd) { S.cd.meteor = Math.max(0, S.cd.meteor - dt); S.cd.frost = Math.max(0, S.cd.frost - dt); }
     for (const s of shots) {
@@ -2942,7 +3129,7 @@ const TowerDefense = (() => {
   }
   function hit(e, dmg, magic, dot) {
     if (e.dead) return;
-    const armor = magic ? 0 : (ENEMIES[e.type].armor || 0);
+    const armor = magic ? 0 : (ENEMIES[e.type].armor || 0) + (rule('armorPlus') || 0);
     let dd = dot ? dmg : Math.max(1, dmg - armor);
     if (e.curseT > 0) dd *= 1.3;
     e.hp -= dd; if (!dot) e.hitT = 0.1;
@@ -3188,7 +3375,27 @@ const TowerDefense = (() => {
   function drawTower(t, s, now) {
     const x = X(t.c + .5), y = Y(t.r + .5);
     upright(x, y, () => drawTowerBase(t, s));
-    drawTurret(t, x, y, s, now);
+    if (t.busy) { ctx.globalAlpha = .55; drawTurret(t, x, y, s, now); ctx.globalAlpha = 1; upright(x, y, () => drawScaffold(s, 1 - t.busy.t / t.busy.T, now)); }
+    else drawTurret(t, x, y, s, now);
+  }
+  function drawScaffold(s, p, now) {          // wooden scaffolding + progress bar while a tower is being rebuilt
+    ctx.save(); ctx.lineCap = 'round';
+    const w = s * .78, h = s * .7, x0 = -w / 2, y0 = -h * .62;
+    ctx.strokeStyle = '#7a5230'; ctx.lineWidth = s * .055;
+    for (const x of [x0, x0 + w]) { ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y0 + h); ctx.stroke(); }
+    ctx.strokeStyle = '#9c6b3e'; ctx.lineWidth = s * .045;
+    for (const y of [y0 + h * .2, y0 + h * .62]) { ctx.beginPath(); ctx.moveTo(x0 - s * .04, y); ctx.lineTo(x0 + w + s * .04, y); ctx.stroke(); }
+    ctx.strokeStyle = 'rgba(156,107,62,.8)'; ctx.lineWidth = s * .03;
+    ctx.beginPath(); ctx.moveTo(x0, y0 + h * .2); ctx.lineTo(x0 + w, y0 + h * .62); ctx.moveTo(x0 + w, y0 + h * .2); ctx.lineTo(x0, y0 + h * .62); ctx.stroke();
+    // hammer that swings
+    const a = Math.sin(now / 90) * .6;
+    ctx.save(); ctx.translate(x0 + w * .8, y0 + h * .05); ctx.rotate(-.6 + a);
+    ctx.fillStyle = '#6b4a2b'; ctx.fillRect(-s * .02, 0, s * .04, s * .22); ctx.fillStyle = '#9aa3ad'; ctx.fillRect(-s * .07, -s * .02, s * .14, s * .06); ctx.restore();
+    // progress bar
+    const bw = s * .8, by = s * .36;
+    ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(-bw / 2, by, bw, s * .1);
+    ctx.fillStyle = '#f2c14e'; ctx.fillRect(-bw / 2 + 1, by + 1, (bw - 2) * Math.max(0, Math.min(1, p)), s * .1 - 2);
+    ctx.restore();
   }
 
   /* enemies */
@@ -3351,6 +3558,7 @@ const TowerDefense = (() => {
     const paused = !S || S.over || current !== 'td' || anyModal() || document.hidden;
     if (!paused) { const n = speed; for (let i = 0; i < n; i++) update(dt); }
     draw(); spellUI();
+    if (sel && sel.busy && panelKey !== affordKey()) panel();
   }
 
   /* ---------- UI ---------- */
@@ -3360,8 +3568,8 @@ const TowerDefense = (() => {
     $('#tdWave').textContent = S.waves ? `${S.wave}/${S.waves}` : S.wave;
     const go = $('#tdGo');
     go.disabled = S.inWave || S.over;
-    go.innerHTML = S.inWave ? `<span>⏳</span>Bezig` : `<span>▶</span>Golf ${S.wave + 1}` + (S.nextT > 0 && opt.nextDelay && S.wave > 0 ? `<small class="td-cnt">over ${Math.ceil(S.nextT)} s</small>` : '');
-    go.style.setProperty('--p', S.nextT > 0 && opt.nextDelay ? (1 - S.nextT / opt.nextDelay) : 0);
+    go.innerHTML = S.inWave ? `<span>⏳</span>Bezig` : `<span>▶</span>Golf ${S.wave + 1}` + (S.nextT > 0 && nextDelay() && S.wave > 0 ? `<small class="td-cnt">over ${Math.ceil(S.nextT)} s</small>` : '');
+    go.style.setProperty('--p', S.nextT > 0 && nextDelay() ? (1 - S.nextT / nextDelay()) : 0);
     $('#tdSpeed').innerHTML = `<span>⏩</span>${speed}×`;
     nextInfo(); spellUI(true);
     if (sel && panelKey !== affordKey()) panel();
@@ -3369,20 +3577,21 @@ const TowerDefense = (() => {
       const d = TOWERS[b.dataset.t];
       b.classList.toggle('on', buildType === b.dataset.t);
       b.classList.toggle('poor', S.gold < d.cost);
+      const only = rule('only'); b.classList.toggle('locked', !!only && !only.includes(b.dataset.t));
     });
   }
   let sellArm = null, sellT, panelKey = '';
   function affordKey() {                 // which buttons in the panel are affordable
     if (!sel) return '';
     const d = TOWERS[sel.type];
-    return [sel.lvl, sel.spec, sel.lvl < 2 ? S.gold >= d.up[sel.lvl] : SPECS[sel.type].map(o => S.gold >= o.cost).join()].join('|');
+    return [sel.lvl, sel.spec, sel.busy ? Math.ceil(sel.busy.t) : '-', sel.lvl < 2 ? S.gold >= d.up[sel.lvl] : SPECS[sel.type].map(o => S.gold >= o.cost).join()].join('|');
   }
   function nextInfo() {
     const el = $('#tdNext'); if (!S || S.over) { el.textContent = ''; return; }
     const n = S.inWave ? S.wave : S.wave + 1;
     if (S.waves && n > S.waves) { el.textContent = ''; return; }
     const cnt = {}; for (const x of waveList(n)) cnt[x.type] = (cnt[x.type] || 0) + 1;
-    el.innerHTML = `<b>${S.inWave ? 'Nu' : 'Volgende'}:</b> ` + Object.entries(cnt).map(([t, c]) => `${EICON[t]}${c}`).join(' ');
+    el.innerHTML = (CH() ? `<span title="${CH().name}">${CH().icon}</span> ` : '') + `<b>${S.inWave ? 'Nu' : 'Volgende'}:</b> ` + Object.entries(cnt).map(([t, c]) => `${EICON[t]}${c}`).join(' ');
     el.title = Object.entries(cnt).map(([t, c]) => `${c}× ${ENAME[t]}`).join(', ');
   }
   const SPELLS = { meteor: { cd: 35, name: 'Meteoor' }, frost: { cd: 50, name: 'Vriesgolf' } };
@@ -3395,7 +3604,7 @@ const TowerDefense = (() => {
     if (!force && key === spellKey) return; spellKey = key;
     for (const k of ['meteor', 'frost']) {
       const b = $(k === 'meteor' ? '#tdMeteor' : '#tdFrost'), c = cd[k];
-      b.disabled = S.over || !S.inWave || c > 0;
+      b.disabled = S.over || !S.inWave || c > 0 || !!rule('noSpells');
       b.classList.toggle('armed', armed === k);
       b.querySelector('span').textContent = c > 0 ? Math.ceil(c) + 's' : '';
       b.querySelector('i').style.width = c > 0 ? (100 - c / SPELLS[k].cd * 100) + '%' : '0';
@@ -3419,11 +3628,14 @@ const TowerDefense = (() => {
     if (!sel || !S.towers.includes(sel)) { sel = null; p.classList.remove('show'); return; }
     const d = TOWERS[sel.type], L = sel.lvl, sp = sel.spec != null ? SPECS[sel.type][sel.spec] : null;
     const fmt = st => `bereik ${st.range} · schade ${st.dmg}` + (st.slow ? ` · ${Math.round(st.slow * 100)}% trager` : '') + (st.splash ? ' · groep' : '') + (st.multi ? ` · ${st.multi} doelen` : '') + (st.chain ? ' · ketting' : '') + (st.burn ? ' · brand' : '') + (st.crit ? ' · kritiek' : '') + (st.freeze ? ' · bevriest' : '') + (st.aura ? ' · alles in bereik' : '') + (st.curse ? ' · vloek' : '');
-    const cur = stat(sel);
+    const cur = stat(sel), ch = CH();
     let body = `<div class="tdp-s">${fmt(cur)}</div>`;
-    if (L < 2) body += `<div class="row"><button class="btn primary small" data-a="up" ${S.gold < d.up[L] ? 'disabled' : ''}>⬆ Verbeter · ${d.up[L]} 💰<small>${fmt(stat({ type: sel.type, lvl: L + 1 }))}</small></button>`;
+    if (sel.busy) body += `<div class="tdp-busy"><b>🔨 Verbouwing naar ${sel.busy.kind === 'up' ? 'niveau ' + (L + 2) : SPECS[sel.type][sel.busy.i].name}</b><span>nog ${Math.ceil(sel.busy.t)} s</span><i style="width:${Math.round((1 - sel.busy.t / sel.busy.T) * 100)}%"></i></div><div class="row">`;
+    else if (L < 2 && ch && ch.noUpgrades) body += `<div class="row"><button class="btn small" disabled>Verbeteren niet toegestaan</button>`;
+    else if (L >= 2 && !sp && ch && ch.noSpecs) body += `<div class="row"><button class="btn small" disabled>Specialiseren niet toegestaan</button>`;
+    else if (L < 2) body += `<div class="row"><button class="btn primary small" data-a="up" ${S.gold < d.up[L] ? 'disabled' : ''}>⬆ Verbeter · ${d.up[L]} 💰<small>${fmt(stat({ type: sel.type, lvl: L + 1 }))} · bouwtijd ${BUILD_T[L]} s</small></button>`;
     else if (!sp) body += `<div class="tdp-s" style="margin-bottom:4px"><b style="color:var(--ink)">Kies een specialisatie:</b></div><div class="tdp-spec">` +
-      SPECS[sel.type].map((o, i) => `<button class="btn small ${i ? '' : 'primary'}" data-a="spec" data-i="${i}" ${S.gold < o.cost ? 'disabled' : ''}>★ ${o.name}<small>${o.cost} 💰 · ${o.desc}</small></button>`).join('') + `</div><div class="row">`;
+      SPECS[sel.type].map((o, i) => `<button class="btn small ${i ? '' : 'primary'}" data-a="spec" data-i="${i}" ${S.gold < o.cost ? 'disabled' : ''}>★ ${o.name}<small>${o.cost} 💰 · ${BUILD_T[2]} s · ${o.desc}</small></button>`).join('') + `</div><div class="row">`;
     else body += `<div class="row"><button class="btn small" disabled>★ ${sp.name}</button>`;
     body += `</div><div class="tdp-sell"><button data-a="sell" class="${sellArm === sel ? 'arm' : ''}">${sellArm === sel ? `Echt verkopen voor +${Math.floor(sel.spent * 0.7)} 💰? Tik nog eens` : `Verkopen…`}</button></div>`;
     const modes = (sp && sp.aura) ? '' : `<div class="tdp-mode">🎯 Doel:` + Object.entries(MODES).map(([k, l]) => `<button data-a="mode" data-m="${k}" class="${(sel.mode || 'eerste') === k ? 'on' : ''}">${l}</button>`).join('') + `</div>`;
@@ -3441,6 +3653,7 @@ const TowerDefense = (() => {
     if (b.id === 'tdGo') { startWave(); return; }
     if (b.id === 'tdSpeed') { speed = speed === 1 ? 2 : speed === 2 ? 3 : 1; hud(); return; }
     const t = b.dataset.t; if (!t) return;
+    const only = rule('only'); if (only && !only.includes(t)) { toast('Deze toren is niet toegestaan in deze uitdaging'); sfx('deny'); return; }
     buildType = buildType === t ? null : t; sel = null; panel(); hud();
     if (buildType) toast(`${TOWERS[t].icon} ${TOWERS[t].name} · ${TOWERS[t].desc}`, 1500);
   });
@@ -3479,9 +3692,16 @@ const TowerDefense = (() => {
     const seg = (key, ch) => ch.map(([v, l]) => `<button data-key="${key}" data-val='${JSON.stringify(v)}' class="${opt[key] === v ? 'on' : ''}">${l}</button>`).join('');
     $('#tdDiff').innerHTML = seg('diff', [['makkelijk', 'Makkelijk'], ['normaal', 'Normaal'], ['moeilijk', 'Moeilijk']]);
     $('#tdWaves').innerHTML = seg('waves', [[10, '10'], [20, '20'], [0, 'Eindeloos']]);
+    $('#tdMode').innerHTML = seg('mode', [['vrij', 'Vrij spel'], ['uitdaging', '🎯 Uitdagingen']]);
+    const chMode = opt.mode === 'uitdaging', done = stats.challenges || {};
+    $('#tdFree').hidden = chMode; $('#tdChWrap').hidden = !chMode;
+    if (!opt.ch) opt.ch = CHALLENGES[0].id;
+    $('#tdChHead').textContent = `${Object.keys(done).length} van de ${CHALLENGES.length} voltooid`;
+    $('#tdCh').innerHTML = CHALLENGES.map(c => `<button data-ch="${c.id}" class="${opt.ch === c.id ? 'on' : ''}"><span class="ic">${c.icon}</span><span><b>${c.name}</b><small>${c.desc}</small></span>${done[c.id] ? '<span class="done">✓</span>' : ''}</button>`).join('');
   }
   $('#tdStartModal').addEventListener('click', e => {
     const m = e.target.closest('button[data-map]'); if (m) { opt.map = m.dataset.map; saveOpt(); renderStart(); return; }
+    const c = e.target.closest('button[data-ch]'); if (c) { opt.ch = c.dataset.ch; saveOpt(); renderStart(); return; }
     const b = e.target.closest('button[data-key]'); if (b) { opt[b.dataset.key] = JSON.parse(b.dataset.val); saveOpt(); renderStart(); }
   });
   $('#tdStartGo').addEventListener('click', () => newGame());
@@ -3490,18 +3710,20 @@ const TowerDefense = (() => {
 
   function renderOpts() {
     const seg = (key, ch) => `<div class="seg">` + ch.map(([v, l]) => `<button data-key="${key}" data-val='${JSON.stringify(v)}' class="${opt[key] === v ? 'on' : ''}">${l}</button>`).join('') + `</div>`;
-    $('#tdOptList').innerHTML = `<div class="opt"><div class="opt-label">Volgende golf komt automatisch na</div>${seg('nextDelay', [[0, 'Zelf starten'], [10, '10 s'], [15, '15 s'], [25, '25 s'], [40, '40 s']])}<div class="opt-hint" style="font-size:12px;color:var(--muted);margin-top:6px">Start je eerder met ▶, dan krijg je een bonus in goud. De eerste golf start je altijd zelf.</div></div>
+    const ch = CH();
+    $('#tdOptList').innerHTML = (ch ? `<div class="opt-section">Uitdaging</div><div class="td-info"><b>${ch.icon} ${ch.name}</b> — ${ch.desc}</div>` : '') + `<div class="opt"><div class="opt-label">Volgende golf komt automatisch na</div>${seg('nextDelay', [[0, 'Zelf starten'], [10, '10 s'], [15, '15 s'], [25, '25 s'], [40, '40 s']])}<div class="opt-hint" style="font-size:12px;color:var(--muted);margin-top:6px">Start je eerder met ▶, dan krijg je een bonus in goud. De eerste golf start je altijd zelf.</div></div>
       <div class="opt"><div class="opt-label">Geluid</div>${seg('sound', [[true, 'Aan'], [false, 'Uit']])}</div>
       <div class="opt-section">Torens</div>` +
       Object.values(TOWERS).map(d => `<div class="td-info"><b>${d.icon} ${d.name}</b> · ${d.cost} 💰 — ${d.desc}. Bereik ${d.range[0]}, schade ${d.dmg[0]}${d.magic ? ', negeert pantser' : ''}.</div>`).join('') +
       `<div class="opt-section">Specialisaties</div><div class="td-info">Een toren op niveau 3 kan een specialisatie kiezen (★). Per toren zijn er twee keuzes:</div>` +
       Object.entries(SPECS).map(([k, a]) => `<div class="td-info"><b>${TOWERS[k].icon} ${TOWERS[k].name}</b> → ` + a.map(o => `<b>${o.name}</b> (${o.cost} 💰): ${o.desc}`).join(' · ') + `</div>`).join('') +
       `<div class="td-info">🎯 Tik op een toren om te kiezen op welke vijand hij mikt: de eerste, de laatste, de sterkste of de dichtstbijzijnde.</div>
+      <div class="opt-section">Verbouwen</div><div class="td-info">🔨 Verbeteren en specialiseren kost bouwtijd: ${BUILD_T[0]} s naar niveau 2, ${BUILD_T[1]} s naar niveau 3 en ${BUILD_T[2]} s voor een specialisatie. Tijdens de verbouwing schiet de toren niet — plan het dus tussen de golven door.</div>
       <div class="opt-section">Spreuken & goud</div><div class="td-info">☄️ <b>Meteoor</b> — tik daarna op het veld: grote schade in een gebied (35 s wachten). 🌨️ <b>Vriesgolf</b> — bevriest alle vijanden 2,5 s (50 s wachten). Alleen tijdens een golf.<br>💰 <b>Rente</b>: na elke golf krijg je 5% van je goud erbij (max 30). Sparen loont!<br>★ <b>Sterren</b>: win met ≥90% levens voor 3 sterren.</div>
       <div class="opt-section">Vijanden</div><div class="td-info">🔴 gewoon · 🟡 snel · 🛡️ gepantserd (pijlen en kanonnen doen minder schade, magie niet) · 🟢 zwerm · 🦇 vliegend (kanonnen kunnen ze niet raken) · 🟣 splitser (valt uiteen in 3 kleintjes) · 💚 genezer (heelt vijanden om zich heen) · 👑 baas (elke 5e golf, kost 5 ❤ als hij erdoor komt)</div>
       <div class="opt-section">Kaarten</div><div class="td-info">🌋 <b>Vulkaan</b> (expert) heeft twee ingangen die samenkomen — verdeel je torens goed.</div>
       <div class="opt-section">Statistieken</div><div class="stats">` +
-      [['Gespeeld', stats.played], ['Gewonnen', stats.won], ...Object.entries(MAPS).map(([k, m]) => [`Record ${m.name}`, stats.best[k] ? 'golf ' + stats.best[k] : '–'])].map(([l, v]) => `<div class="stat"><b>${v}</b><small>${l}</small></div>`).join('') + `</div>`;
+      [['Gespeeld', stats.played], ['Gewonnen', stats.won], ['Uitdagingen', Object.keys(stats.challenges || {}).length + '/' + CHALLENGES.length], ...Object.entries(MAPS).map(([k, m]) => [`Record ${m.name}`, stats.best[k] ? 'golf ' + stats.best[k] : '–'])].map(([l, v]) => `<div class="stat"><b>${v}</b><small>${l}</small></div>`).join('') + `</div>`;
   }
   $('#tdOptList').addEventListener('click', e => { const b = e.target.closest('button[data-key]'); if (!b) return; opt[b.dataset.key] = JSON.parse(b.dataset.val); saveOpt(); renderOpts(); });
   $('#tdOptBtn').addEventListener('click', () => { renderOpts(); openModal('tdOptModal'); });
@@ -3518,7 +3740,7 @@ const TowerDefense = (() => {
     if (!iconsDone) { iconsDone = true; document.querySelectorAll('#tdBar .tdt').forEach(b => { b.querySelector('span').innerHTML = `<img src="${towerIcon(b.dataset.t)}" alt="">`; }); }
     if (!running) { running = true; lastT = performance.now(); raf = requestAnimationFrame(frame); }
     const saved = store.get('td.save', null);
-    if (!S && saved && saved.towers) { S = saved; S.inWave = false; S.cd = S.cd || { meteor: 0, frost: 0 }; if (S.wave > 0 && !S.nextT) S.nextT = opt.nextDelay || 0; S.startLives = S.startLives || DIFF[S.diff].lives; S.towers.forEach(t => { t.mode = t.mode || 'eerste'; }); enemies = []; shots = []; fx = []; buildMap();
+    if (!S && saved && saved.towers) { S = saved; S.inWave = false; S.cd = S.cd || { meteor: 0, frost: 0 }; if (S.wave > 0 && !S.nextT) S.nextT = nextDelay() || 0; S.startLives = S.startLives || DIFF[S.diff].lives; S.towers.forEach(t => { t.mode = t.mode || 'eerste'; }); enemies = []; shots = []; fx = []; buildMap();
       const bad = S.towers.filter(t => neutral.has(t.c + ',' + t.r));
       if (bad.length) { const back = bad.reduce((a, t) => a + t.spent, 0); S.gold += back; S.towers = S.towers.filter(t => !bad.includes(t)); setTimeout(() => toast(`Nieuw: startzone bij de ingang · ${bad.length} toren${bad.length > 1 ? 's' : ''} daar volledig terugbetaald (+${back} 💰)`, 4000), 300); } }
     layout();
@@ -3534,7 +3756,7 @@ const TowerDefense = (() => {
   window.addEventListener('resize', () => { if (current === 'td') layout(); });
   // new map → rebuild the cached background
   const _buildMap = buildMap; buildMap = function () { _buildMap(); bg = null; };
-  window.__td = { get S() { return S; }, get T() { return T; }, screenToTile: (x, y) => screenToTile(x, y), get enemies() { return enemies; }, build, upgrade, specialise, get neutral() { return neutral; }, stat, startWave, castFrost, TOWERS, SPECS, MAPS, waveList, get pathTiles() { return pathTiles; }, get deco() { return deco; }, setSpeed: v => { speed = v; } };
+  window.__td = { get S() { return S; }, get T() { return T; }, screenToTile: (x, y) => screenToTile(x, y), get enemies() { return enemies; }, build, upgrade, specialise, get neutral() { return neutral; }, CHALLENGES, finishBuild, newGame, opt, stat, startWave, castFrost, TOWERS, SPECS, MAPS, waveList, get pathTiles() { return pathTiles; }, get deco() { return deco; }, setSpeed: v => { speed = v; } };
   return { enter, leave, hasSave: () => !!store.get('td.save', null) };
 })();
 $('#tileTd').addEventListener('click', () => TowerDefense.enter());
@@ -3542,7 +3764,7 @@ $('#tileTd').addEventListener('click', () => TowerDefense.enter());
 /* ================================================================
    UPDATES (online)
    ================================================================ */
-const APP_VERSION = '1.20';
+const APP_VERSION = '1.21';
 let menuToastT;
 function menuToast(t, ms) {
   const e = $('#menuToast'); e.textContent = t; e.classList.add('show');
@@ -3582,8 +3804,8 @@ $('#checkUpd').addEventListener('click', () => {
 /* ================================================================
    OVER DEZE APP
    ================================================================ */
-const CHANGELOG = [{"v": "1.20", "date": "2026-09-30", "notes": "Torenverdediging: de volgende golf komt automatisch na een instelbare tijd (standaard 15 s, eerder starten geeft bonusgoud); vijanden komen zichtbaar uit een portaal met een startzone waar je niet kunt bouwen; meldingen klein bovenin zodat ze niet in de weg zitten; verbeteren direct beschikbaar zodra je genoeg goud hebt. Professionelere geluiden in Torenverdediging en Airhockey. Nieuw: 'Over deze app' met versiegeschiedenis, statistieken en technische gegevens"}, {"v": "1.19", "date": "2026-09-30", "notes": "Het scherm blijft aan tijdens de spellen, ook zonder aanraken. Torenverdediging: verkopen is minder prominent en vraagt eerst om bevestiging"}, {"v": "1.18", "date": "2026-09-30", "notes": "Torenverdediging: melding na een golf toont rente nu netjes op een nieuwe regel"}, {"v": "1.17", "date": "2026-09-30", "notes": "Torenverdediging met meer diepgang: specialisaties op niveau 3, doelkeuze per toren, spreuken (meteoor en vriesgolf), nieuwe vijanden (vliegend, splitser, genezer), rente, sterren en de expertkaart Vulkaan"}, {"v": "1.16", "date": "2026-09-30", "notes": "Torenverdediging: veel mooiere graphics; elke toren apart plaatsen. Menu beter leesbaar op kleine schermen"}, {"v": "1.15", "date": "2026-09-30", "notes": "Nieuw spel: Torenverdediging (tower defense) met 3 kaarten, 4 torens en 20 golven"}, {"v": "1.14", "date": "2026-09-29", "notes": "Airhockey: vloeiende tegenstander, puck blijft niet meer vastzitten, stick blijft werken na een goal. Klaverjassen: sneller opgooien, instelbaar"}, {"v": "1.13", "date": "2026-09-29", "notes": "Kaarten: waarde en symbool ook rechtsonder (ondersteboven), standaard aan – uit te zetten in de opties"}, {"v": "1.12", "date": "2026-09-29", "notes": "Klaverjassen: duidelijk scorebord (totaal, deze ronde, troef, wie gaat) en goede weergave rechtop én liggend. Airhockey: rustiger, natuurlijker puck"}, {"v": "1.11", "date": "2026-09-29", "notes": "Klaverjassen: kleur van elke kaart ook zichtbaar als kaarten in je hand over elkaar liggen"}, {"v": "1.10", "date": "2026-09-29", "notes": "Klaverjassen: hand sorteren met rood en zwart om en om"}, {"v": "1.9", "date": "2026-09-29", "notes": "Klaverjassen: meer opties (sortering, bescherming tegen verkeerde kaart, twee tikken, troef bepalen, namen, speeltip) en alle slagen terugkijken"}, {"v": "1.8", "date": "2026-09-29", "notes": "Nieuw spel: Klaverjassen (Rotterdams of Amsterdams)"}, {"v": "1.7", "date": "2026-09-29", "notes": "Nieuw: kies de afbeelding op de voor- en achterkant van de kaarten (Opties)"}, {"v": "1.6", "date": "2026-09-29", "notes": "Automatische updates"}, {"v": "1.5", "date": "2026-09-29", "notes": "Beter leesbare kaarten. Airhockey met 2 spelers op één telefoon"}, {"v": "1.4", "date": "2026-09-29", "notes": "Nieuw spel: Airhockey"}, {"v": "1.3", "date": "2026-09-29", "notes": "Patience: meer opties, draaistapel links of rechts, kaarten met plaatjes, melding als er geen zetten meer zijn, joker"}, {"v": "1.2", "date": "2026-09-28", "notes": "Installatieproblemen opgelost (nieuwe ondertekening)"}, {"v": "1.1", "date": "2026-09-28", "notes": "Nieuwe naam: Rene's spelletjes. Geschikt voor de nieuwste Android-versies"}, {"v": "1.0", "date": "2026-09-28", "notes": "Eerste versie: Patience (Klondike)"}];
-const BUILD_DATE = '30-09-2026 19:48';
+const CHANGELOG = [{"v": "1.21", "date": "2026-09-30", "notes": "Torenverdediging: 13 uitdagingen met eigen regels (alleen pijlen, één leven, luchtaanval, bazenjacht, marathon en meer); verbeteren en specialiseren kost nu bouwtijd, met steigers op de toren. Volledig nieuwe, realistische geluiden (boogpees, kanonnen, explosies, oorlogshoorns, publiek bij airhockey). Airhockey: ronde hoeken en de puck kan niet meer vast komen te zitten"}, {"v": "1.20", "date": "2026-09-30", "notes": "Torenverdediging: de volgende golf komt automatisch na een instelbare tijd (standaard 15 s, eerder starten geeft bonusgoud); vijanden komen zichtbaar uit een portaal met een startzone waar je niet kunt bouwen; meldingen klein bovenin zodat ze niet in de weg zitten; verbeteren direct beschikbaar zodra je genoeg goud hebt. Professionelere geluiden in Torenverdediging en Airhockey. Nieuw: 'Over deze app' met versiegeschiedenis, statistieken en technische gegevens"}, {"v": "1.19", "date": "2026-09-30", "notes": "Het scherm blijft aan tijdens de spellen, ook zonder aanraken. Torenverdediging: verkopen is minder prominent en vraagt eerst om bevestiging"}, {"v": "1.18", "date": "2026-09-30", "notes": "Torenverdediging: melding na een golf toont rente nu netjes op een nieuwe regel"}, {"v": "1.17", "date": "2026-09-30", "notes": "Torenverdediging met meer diepgang: specialisaties op niveau 3, doelkeuze per toren, spreuken (meteoor en vriesgolf), nieuwe vijanden (vliegend, splitser, genezer), rente, sterren en de expertkaart Vulkaan"}, {"v": "1.16", "date": "2026-09-30", "notes": "Torenverdediging: veel mooiere graphics; elke toren apart plaatsen. Menu beter leesbaar op kleine schermen"}, {"v": "1.15", "date": "2026-09-30", "notes": "Nieuw spel: Torenverdediging (tower defense) met 3 kaarten, 4 torens en 20 golven"}, {"v": "1.14", "date": "2026-09-29", "notes": "Airhockey: vloeiende tegenstander, puck blijft niet meer vastzitten, stick blijft werken na een goal. Klaverjassen: sneller opgooien, instelbaar"}, {"v": "1.13", "date": "2026-09-29", "notes": "Kaarten: waarde en symbool ook rechtsonder (ondersteboven), standaard aan – uit te zetten in de opties"}, {"v": "1.12", "date": "2026-09-29", "notes": "Klaverjassen: duidelijk scorebord (totaal, deze ronde, troef, wie gaat) en goede weergave rechtop én liggend. Airhockey: rustiger, natuurlijker puck"}, {"v": "1.11", "date": "2026-09-29", "notes": "Klaverjassen: kleur van elke kaart ook zichtbaar als kaarten in je hand over elkaar liggen"}, {"v": "1.10", "date": "2026-09-29", "notes": "Klaverjassen: hand sorteren met rood en zwart om en om"}, {"v": "1.9", "date": "2026-09-29", "notes": "Klaverjassen: meer opties (sortering, bescherming tegen verkeerde kaart, twee tikken, troef bepalen, namen, speeltip) en alle slagen terugkijken"}, {"v": "1.8", "date": "2026-09-29", "notes": "Nieuw spel: Klaverjassen (Rotterdams of Amsterdams)"}, {"v": "1.7", "date": "2026-09-29", "notes": "Nieuw: kies de afbeelding op de voor- en achterkant van de kaarten (Opties)"}, {"v": "1.6", "date": "2026-09-29", "notes": "Automatische updates"}, {"v": "1.5", "date": "2026-09-29", "notes": "Beter leesbare kaarten. Airhockey met 2 spelers op één telefoon"}, {"v": "1.4", "date": "2026-09-29", "notes": "Nieuw spel: Airhockey"}, {"v": "1.3", "date": "2026-09-29", "notes": "Patience: meer opties, draaistapel links of rechts, kaarten met plaatjes, melding als er geen zetten meer zijn, joker"}, {"v": "1.2", "date": "2026-09-28", "notes": "Installatieproblemen opgelost (nieuwe ondertekening)"}, {"v": "1.1", "date": "2026-09-28", "notes": "Nieuwe naam: Rene's spelletjes. Geschikt voor de nieuwste Android-versies"}, {"v": "1.0", "date": "2026-09-28", "notes": "Eerste versie: Patience (Klondike)"}];
+const BUILD_DATE = '30-09-2026 20:06';
 let aboutAll = false;
 function renderAbout() {
   let nat = null; try { if (window.Android && Android.updateInfo) nat = JSON.parse(Android.updateInfo()); } catch (e) {}
@@ -3603,7 +3825,7 @@ function renderAbout() {
       <div class="stat"><b>${ks.won || 0}/${ks.played || 0}</b><small>Klaverjassen gewonnen</small></div>
       <div class="stat"><b>${as.won || 0}/${as.played || 0}</b><small>Airhockey gewonnen</small></div>
       <div class="stat"><b>${ts.won || 0}/${ts.played || 0}</b><small>Toren&shy;verdediging</small></div>
-      <div class="stat"><b>${stars} ★</b><small>Sterren verdiend</small></div>
+      <div class="stat"><b>${stars} ★ · ${Object.keys(ts.challenges || {}).length} 🎯</b><small>Sterren · uitdagingen</small></div>
       <div class="stat"><b>${ps.bestStreak || 0}</b><small>Langste reeks Patience</small></div>
     </div>
     <div class="opt-section">Versiegeschiedenis</div>
