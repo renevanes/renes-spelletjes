@@ -1,9 +1,9 @@
 {
-  "versionCode": 17,
-  "versionName": "1.16",
+  "versionCode": 18,
+  "versionName": "1.17",
   "nativeLevel": 2,
-  "notes": "Torenverdediging: veel mooiere graphics; elke toren apart plaatsen. Menu beter leesbaar op kleine schermen",
+  "notes": "Torenverdediging met meer diepgang: specialisaties op niveau 3, doelkeuze per toren, spreuken (meteoor en vriesgolf), nieuwe vijanden (vliegend, splitser, genezer), rente, sterren en de expertkaart Vulkaan",
   "web": "web/index.html",
-  "webSha256": "57fac792867366f5bd2b69bde9fc4cd109bf03766a36e1c41cacf71393dc018a",
+  "webSha256": "a39da3b420d9a19d7f64c440a4253cd662c400aba02391c169a34838da9159ef",
   "apk": "apk/Renes-spelletjes.apk"
 }

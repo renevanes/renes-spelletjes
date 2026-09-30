@@ -221,6 +221,23 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .tdt span img{width:40px;height:40px;display:block}
 .tdt.on{border-color:var(--accent);background:rgba(242,193,78,.18)}
 .tdt.poor{opacity:.45}
+.td-info-bar{display:flex;align-items:center;gap:6px;padding:4px 8px;background:#18301d;border-top:1px solid rgba(255,255,255,.08)}
+#tdNext{flex:1;min-width:0;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#tdNext b{color:var(--ink)}
+@media (orientation:landscape){.td-info-bar{position:absolute;left:8px;bottom:calc(var(--tdbar-h,80px) + 8px);flex-direction:column;align-items:stretch;background:rgba(15,30,20,.85);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:6px;z-index:15;max-width:24%}
+.td-info-bar #tdNext{white-space:normal;font-size:11px}}
+.td-spell{position:relative;min-width:64px;height:36px;border-radius:10px;background:rgba(255,255,255,.1);border:2px solid transparent;color:var(--ink);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;gap:4px;overflow:hidden}
+.td-spell:disabled{opacity:.45}
+.td-spell.armed{border-color:#ff7a3a;background:rgba(255,110,50,.25)}
+.td-spell i{position:absolute;left:0;bottom:0;height:3px;background:#ffd54a;font-style:normal}
+.tdp-spec{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+.tdp-spec .btn{text-align:left;white-space:normal;line-height:1.2;padding:8px}
+.tdp-mode{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-bottom:8px}
+.tdp-mode button{padding:4px 8px;border-radius:8px;background:rgba(255,255,255,.1);font-size:12px;color:var(--ink)}
+.tdp-mode button.on{background:var(--accent);color:#2b2100;font-weight:800}
+.td-maps{grid-template-columns:repeat(2,1fr)!important}
+.td-maps .stars{color:#ffd54a;font-size:12px;letter-spacing:1px}
+.td-maps .exp{font-size:10px;background:#e8581e;color:#fff;border-radius:6px;padding:1px 5px;font-weight:800}
 .td-go{background:var(--accent);color:#2b2100!important;min-width:70px;font-weight:800}
 .td-go span{color:#2b2100!important}
 .td-go:disabled{opacity:.6}
@@ -330,7 +347,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
       </div>
     </button>
   </div>
-  <div class="version">Versie 1.16 · <button id="checkUpd">Controleren op updates</button></div>
+  <div class="version">Versie 1.17 · <button id="checkUpd">Controleren op updates</button></div>
   <div id="menuToast"></div>
 </section>
 
@@ -380,6 +397,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
     <button class="iconbtn" id="tdOptBtn" aria-label="Opties">⚙&#xFE0E;</button>
   </div>
   <div id="tdWrap"><canvas id="tdCanvas"></canvas><div id="tdPanel"></div><div id="tdToast"></div></div>
+  <div class="td-info-bar"><div id="tdNext"></div><button class="td-spell" id="tdMeteor">☄️<span></span><i></i></button><button class="td-spell" id="tdFrost">🌨️<span></span><i></i></button></div>
   <div class="bottombar td-bar" id="tdBar">
     <button class="tdt" data-t="pijl"><span>🏹</span>50</button>
     <button class="tdt" data-t="kanon"><span>💣</span>90</button>
@@ -506,7 +524,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
     <div class="opt"><div class="opt-label">Kaart</div><div class="td-maps" id="tdMaps"></div></div>
     <div class="opt"><div class="opt-label">Moeilijkheid</div><div class="seg" id="tdDiff"></div></div>
     <div class="opt"><div class="opt-label">Aantal golven</div><div class="seg" id="tdWaves"></div></div>
-    <div class="note" style="color:var(--muted)">Kies onderaan een toren en tik op een grasvakje om te bouwen. Tik op een toren om hem te verbeteren of te verkopen. Start met ▶ de volgende golf.</div>
+    <div class="note" style="color:var(--muted)">Kies onderaan een toren en tik op een grasvakje om te bouwen. Tik op een toren om hem te verbeteren, te specialiseren of te verkopen. Tijdens een golf kun je ☄️ en 🌨️ spreuken gebruiken. Start met ▶ de volgende golf.</div>
     <div class="row sticky-actions"><button class="btn" id="tdStartBack">Menu</button><button class="btn primary" id="tdStartGo">Start ▶</button></div>
   </div>
 </div>
@@ -2495,7 +2513,10 @@ const TowerDefense = (() => {
     woestijn: { name: 'Woestijn', grass: ['#e6c67f', '#dfbd72'], path: '#b87b4b', edge: '#9a6538', deco: ['cactus', 'rock', 'cactus', 'bones'],
       pts: [[4, -1], [4, 2], [1, 2], [1, 6], [7, 6], [7, 9], [2, 9], [2, 12], [6, 12], [6, 15]] },
     sneeuw: { name: 'Sneeuw', grass: ['#e9f1f7', '#dfe9f2'], path: '#9fb4c7', edge: '#7f97ad', deco: ['pine', 'snowman', 'pine', 'rock'],
-      pts: [[9, 1], [1, 1], [1, 5], [7, 5], [7, 8], [1, 8], [1, 12], [7, 12], [7, 15]] }
+      pts: [[9, 1], [1, 1], [1, 5], [7, 5], [7, 8], [1, 8], [1, 12], [7, 12], [7, 15]] },
+    vulkaan: { name: 'Vulkaan', expert: true, grass: ['#4d3f3c', '#463935'], path: '#2e2828', edge: '#e8581e', deco: ['lava', 'deadtree', 'rock', 'lava'],
+      paths: [[[-1, 2], [2, 2], [2, 6], [4, 6], [4, 9], [7, 9], [7, 12], [2, 12], [2, 15]],
+              [[9, 2], [6, 2], [6, 6], [4, 6], [4, 9], [7, 9], [7, 12], [2, 12], [2, 15]]] }
   };
   const DIFF = { makkelijk: { gold: 220, lives: 30, hp: 0.8 }, normaal: { gold: 160, lives: 20, hp: 1 }, moeilijk: { gold: 150, lives: 12, hp: 1.3 } };
 
@@ -2505,34 +2526,61 @@ const TowerDefense = (() => {
     ijs:   { name: 'IJs',   icon: '❄️', cost: 70,  up: [55, 90],  range: [2.0, 2.2, 2.4], rate: [1.0, 1.1, 1.2], dmg: [3, 5, 8], slow: [0.4, 0.5, 0.6], color: '#5ab8e8', desc: 'Vertraagt' },
     magie: { name: 'Magie', icon: '✨', cost: 120, up: [90, 150], range: [3.3, 3.7, 4.2], rate: [0.5, 0.6, 0.7], dmg: [50, 90, 150], magic: true, color: '#8a4fd0', desc: 'Ver, door pantser' }
   };
+  // specialisations: one extra upgrade after level 3, choose one of two
+  const SPECS = {
+    pijl:  [{ name: 'Scherpschutter', cost: 150, desc: 'Groot bereik, 25% kans op 3× schade', range: 3.7, rate: 1.5, dmg: 42, crit: .25 },
+            { name: 'Salvo', cost: 150, desc: 'Schiet op 3 vijanden tegelijk', range: 2.9, rate: 2.4, dmg: 22, multi: 3 }],
+    kanon: [{ name: 'Mortier', cost: 200, desc: 'Enorm bereik en grote inslag', range: 3.9, rate: .6, dmg: 85, splash: 1.45 },
+            { name: 'Brandbom', cost: 200, desc: 'Zet vijanden in brand (schade over tijd)', range: 2.6, rate: .9, dmg: 55, splash: 1.15, burn: 14 }],
+    ijs:   [{ name: 'Bevriezer', cost: 160, desc: '20% kans om een vijand te bevriezen', range: 2.6, rate: 1.4, dmg: 12, slow: .65, freeze: .2 },
+            { name: 'Sneeuwstorm', cost: 160, desc: 'Vertraagt en raakt álle vijanden in bereik', range: 2.3, rate: 2, dmg: 5, slow: .5, aura: true }],
+    magie: [{ name: 'Kettingbliksem', cost: 240, desc: 'Springt over naar 3 andere vijanden', range: 4.2, rate: .7, dmg: 150, chain: 3, magic: true },
+            { name: 'Vervloeking', cost: 240, desc: 'Getroffen vijanden krijgen 30% meer schade', range: 4.4, rate: .8, dmg: 120, curse: true, magic: true }]
+  };
+  function stat(t) {                    // effective stats of a tower (level + specialisation)
+    const d = TOWERS[t.type];
+    if (t.spec != null) return Object.assign({ splash: 0, slow: 0, magic: !!d.magic }, SPECS[t.type][t.spec]);
+    const l = t.lvl; return { range: d.range[l], rate: d.rate[l], dmg: d.dmg[l], splash: d.splash ? d.splash[l] : 0, slow: d.slow ? d.slow[l] : 0, magic: !!d.magic };
+  }
+  const MODES = { eerste: 'Eerste', laatste: 'Laatste', sterkste: 'Sterkste', dichtst: 'Dichtstbij' };
   const ENEMIES = {
     gewoon: { hp: 1, speed: 1.0, reward: 5, color: '#e0584f', r: 0.26 },
     snel:   { hp: 0.6, speed: 1.8, reward: 5, color: '#f2b53a', r: 0.22 },
     tank:   { hp: 3, speed: 0.6, reward: 12, color: '#7c8591', r: 0.32, armor: 4 },
     zwerm:  { hp: 0.35, speed: 1.35, reward: 2, color: '#62c46b', r: 0.17 },
-    baas:   { hp: 18, speed: 0.5, reward: 80, color: '#b0303a', r: 0.42, armor: 3 }
+    baas:   { hp: 18, speed: 0.5, reward: 80, color: '#b0303a', r: 0.42, armor: 3 },
+    vlieger: { hp: 0.7, speed: 1.2, reward: 6, color: '#5e9be0', r: 0.22, flying: true },
+    splitser: { hp: 1.6, speed: 0.8, reward: 4, color: '#a45fd0', r: 0.3, split: 3 },
+    genezer: { hp: 1.3, speed: 0.85, reward: 10, color: '#eef3f6', r: 0.26, heal: true }
   };
+  const EICON = { gewoon: '🔴', snel: '🟡', tank: '🛡️', zwerm: '🟢', baas: '👑', vlieger: '🦇', splitser: '🟣', genezer: '💚' };
+  const ENAME = { gewoon: 'gewoon', snel: 'snel', tank: 'gepantserd', zwerm: 'zwerm', baas: 'baas', vlieger: 'vliegend', splitser: 'splitser', genezer: 'genezer' };
 
   const wrap = $('#tdWrap'), cv = $('#tdCanvas');
   let ctx = cv.getContext('2d');
   let S = null;                  // game state
   let T = null;                  // geometry
-  let pathTiles = new Set(), deco = new Map(), poly = [], pathLen = 0;
+  let pathTiles = new Set(), deco = new Map(), poly = [], pathLen = 0, paths = [], armed = null, spawnN = 0;
   let enemies = [], shots = [], fx = [], spawnQ = [], sel = null, buildType = null, speed = 1, raf = 0, lastT = 0, running = false;
 
   /* ---------- map ---------- */
   let buildMap = function () {
     const m = MAPS[S.map];
-    pathTiles = new Set(); poly = [];
-    for (let i = 0; i < m.pts.length; i++) {
-      const [c, r] = m.pts[i]; poly.push([c + 0.5, r + 0.5]);
-      if (i) {
-        const [pc, pr] = m.pts[i - 1];
-        const dc = Math.sign(c - pc), dr = Math.sign(r - pr);
-        for (let x = pc, y = pr; ; x += dc, y += dr) { if (x >= 0 && x < COLS && y >= 0 && y < ROWS) pathTiles.add(x + ',' + y); if (x === c && y === r) break; }
+    pathTiles = new Set(); paths = [];
+    for (const pts of (m.paths || [m.pts])) {
+      const pl = [];
+      for (let i = 0; i < pts.length; i++) {
+        const [c, r] = pts[i]; pl.push([c + 0.5, r + 0.5]);
+        if (i) {
+          const [pc, pr] = pts[i - 1];
+          const dc = Math.sign(c - pc), dr = Math.sign(r - pr);
+          for (let x = pc, y = pr; ; x += dc, y += dr) { if (x >= 0 && x < COLS && y >= 0 && y < ROWS) pathTiles.add(x + ',' + y); if (x === c && y === r) break; }
+        }
       }
+      let len = 0; for (let i = 1; i < pl.length; i++) len += Math.hypot(pl[i][0] - pl[i - 1][0], pl[i][1] - pl[i - 1][1]);
+      paths.push({ poly: pl, len });
     }
-    pathLen = 0; for (let i = 1; i < poly.length; i++) pathLen += Math.hypot(poly[i][0] - poly[i - 1][0], poly[i][1] - poly[i - 1][1]);
+    poly = paths[0].poly; pathLen = paths[0].len;
     // fixed decorations (same every time for a map)
     deco = new Map(); let seed = S.map.length * 97 + 13;
     const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
@@ -2544,14 +2592,17 @@ const TowerDefense = (() => {
     }
   };
 
-  function posAt(d) {                 // point along the path at distance d (tiles)
-    for (let i = 1; i < poly.length; i++) {
-      const [x0, y0] = poly[i - 1], [x1, y1] = poly[i], L = Math.hypot(x1 - x0, y1 - y0);
+  function posAt(d, p) {              // point along path p at distance d (tiles)
+    const pl = (paths[p || 0] || paths[0]).poly;
+    for (let i = 1; i < pl.length; i++) {
+      const [x0, y0] = pl[i - 1], [x1, y1] = pl[i], L = Math.hypot(x1 - x0, y1 - y0);
       if (d <= L) return [x0 + (x1 - x0) * d / L, y0 + (y1 - y0) * d / L];
       d -= L;
     }
-    return poly[poly.length - 1];
+    return pl[pl.length - 1];
   }
+  const ePos = e => posAt(Math.max(0, e.d), e.p);
+  const progress = e => e.d / paths[e.p || 0].len;
 
   /* ---------- waves ---------- */
   function waveList(n) {
@@ -2562,6 +2613,10 @@ const TowerDefense = (() => {
     if (n >= 6 && (n % 5 === 1)) add('zwerm', Math.round(10 + n), 0.25);
     if (n >= 7 && n % 2 === 1) add('snel', Math.round(n / 2), 0.5);
     if (n >= 9) add('tank', Math.floor(n / 6), 1.8);
+    if (n >= 5 && n % 4 === 1) add('vlieger', Math.round(3 + n * 0.5), 0.6);
+    if (n >= 8 && n % 3 === 2) add('splitser', Math.round(2 + n / 4), 1.3);
+    if (n >= 10 && n % 2 === 0) add('genezer', Math.round(1 + n / 8), 2);
+    if (n >= 14) add('vlieger', Math.round(n / 3), 0.5);
     if (n % 5 === 0) add('baas', n >= 20 ? 2 : 1, 3);
     return g;
   }
@@ -2570,7 +2625,7 @@ const TowerDefense = (() => {
   /* ---------- game flow ---------- */
   function newGame() {
     const d = DIFF[opt.diff];
-    S = { map: opt.map, diff: opt.diff, waves: opt.waves, wave: 0, gold: d.gold, lives: d.lives, towers: [], inWave: false, over: false };
+    S = { map: opt.map, diff: opt.diff, waves: opt.waves, wave: 0, gold: d.gold, lives: d.lives, startLives: d.lives, towers: [], inWave: false, over: false, cd: { meteor: 0, frost: 0 } };
     stats.played++; store.set('td.stats', stats);
     enemies = []; shots = []; fx = []; spawnQ = []; sel = null; buildType = null;
     buildMap(); layout(); save(); hud(); closeModals();
@@ -2578,8 +2633,8 @@ const TowerDefense = (() => {
   }
   function startWave() {
     if (!S || S.inWave || S.over) return;
-    S.wave++; S.inWave = true;
-    let t = 0.4; spawnQ = waveList(S.wave).map(x => { t += x.gap; return { type: x.type, at: t }; });
+    S.wave++; S.inWave = true; armed = null;
+    let t = 0.4; spawnQ = waveList(S.wave).map(x => { t += x.gap; return { type: x.type, at: t }; }); spawnN = 0;
     S.clock = 0;
     toast(`Golf ${S.wave}${S.wave % 5 === 0 ? ' — baas!' : ''}`, 1400);
     hud();
@@ -2587,7 +2642,10 @@ const TowerDefense = (() => {
   function waveDone() {
     S.inWave = false;
     const bonus = 20 + S.wave * 3;
-    S.gold += bonus; toast(`Golf ${S.wave} verslagen! +${bonus} 💰`, 1800);
+    S.gold += bonus;
+    const interest = Math.min(30, Math.floor(S.gold * 0.05));       // savings pay off
+    S.gold += interest;
+    toast(`Golf ${S.wave} verslagen! +${bonus} 💰` + (interest ? `<br>Rente: +${interest} 💰` : ''), 2200);
     const best = stats.best[S.map] || 0; if (S.wave > best) { stats.best[S.map] = S.wave; store.set('td.stats', stats); }
     if (S.waves && S.wave >= S.waves) return win();
     save(); hud();
@@ -2595,9 +2653,12 @@ const TowerDefense = (() => {
   }
   function win() {
     S.over = true; store.del('td.save');
-    stats.won++; store.set('td.stats', stats);
-    $('#tdEndEmoji').textContent = '🏆'; $('#tdEndTitle').textContent = 'Gewonnen!';
-    $('#tdEndText').innerHTML = `Alle ${S.waves} golven verslagen op <b>${MAPS[S.map].name}</b> (${S.diff}) met nog ${S.lives} ❤`;
+    stats.won++;
+    const f = S.lives / (S.startLives || DIFF[S.diff].lives), stars = f >= .9 ? 3 : f >= .5 ? 2 : 1;
+    stats.stars = stats.stars || {}; const key = S.map + '/' + S.diff; stats.stars[key] = Math.max(stats.stars[key] || 0, stars);
+    store.set('td.stats', stats);
+    $('#tdEndEmoji').textContent = '🏆'; $('#tdEndTitle').textContent = 'Gewonnen! ' + '★'.repeat(stars) + '☆'.repeat(3 - stars);
+    $('#tdEndText').innerHTML = `Alle ${S.waves} golven verslagen op <b>${MAPS[S.map].name}</b> (${S.diff}) met nog ${S.lives} ❤` + (stars < 3 ? '<br><small>3 sterren: verlies minder dan 10% van je levens</small>' : '');
     beep(660, .3, .2); beep(880, .5, .15);
     setTimeout(() => openModal('tdEndModal'), 600);
   }
@@ -2615,7 +2676,7 @@ const TowerDefense = (() => {
     const d = TOWERS[type];
     if (S.gold < d.cost) { toast('Niet genoeg goud'); return; }
     S.gold -= d.cost;
-    const t = { type, c, r, lvl: 0, cd: 0, ang: -Math.PI / 2, spent: d.cost };
+    const t = { type, c, r, lvl: 0, cd: 0, ang: -Math.PI / 2, spent: d.cost, mode: 'eerste' };
     S.towers.push(t); sel = null; buildType = null; beep(520, .08, .1); vibrate(10);   // every tower is placed separately
     fx.push({ kind: 'part', x: c + .5, y: r + .5, vx: 0, vy: 0, grav: 0, color: 'rgba(255,255,255,.5)', size: .45, grow: true, life: .35, max: .35 });
     save(); hud(); panel();
@@ -2624,6 +2685,14 @@ const TowerDefense = (() => {
     const d = TOWERS[t.type]; if (t.lvl >= 2) return;
     const cost = d.up[t.lvl]; if (S.gold < cost) { toast('Niet genoeg goud'); return; }
     S.gold -= cost; t.lvl++; t.spent += cost; beep(700, .1, .12); vibrate(10);
+    save(); hud(); panel();
+  }
+  function specialise(t, i) {
+    const sp = SPECS[t.type][i]; if (t.lvl < 2 || t.spec != null) return;
+    if (S.gold < sp.cost) { toast('Niet genoeg goud'); return; }
+    S.gold -= sp.cost; t.spec = i; t.spent += sp.cost; beep(880, .15, .14); vibrate(15);
+    burst(t.c + .5, t.r + .5, '#ffd54a', 14, 2, .05, 0);
+    toast(`${TOWERS[t.type].name} → ${sp.name}!`, 1500);
     save(); hud(); panel();
   }
   function sell(t) {
@@ -2639,50 +2708,97 @@ const TowerDefense = (() => {
       S.clock += dt;
       while (spawnQ.length && spawnQ[0].at <= S.clock) {
         const q = spawnQ.shift(), e = ENEMIES[q.type], hp = hpScale(S.wave) * e.hp;
-        enemies.push({ type: q.type, d: -0.3, hp, max: hp, slowT: 0, slow: 0, wob: Math.random() * 6 });
+        enemies.push({ type: q.type, p: spawnN++ % paths.length, d: -0.3, hp, max: hp, slowT: 0, slow: 0, wob: Math.random() * 6 });
       }
     }
     for (const e of enemies) {
       const def = ENEMIES[e.type];
       if (e.slowT > 0) e.slowT -= dt; else e.slow = 0;
       if (e.hitT > 0) e.hitT -= dt;
-      e.d += def.speed * (1 - e.slow) * dt;
-      e.wob += dt * 8;
-      if (e.d >= pathLen) { e.dead = true; e.leaked = true; S.lives -= e.type === 'baas' ? 5 : 1; vibrate(40); beep(180, .15, .12); }
+      if (e.freezeT > 0) e.freezeT -= dt;
+      if (e.curseT > 0) e.curseT -= dt;
+      if (e.burnT > 0) { e.burnT -= dt; hit(e, e.burnDps * dt, true, true); if (Math.random() < dt * 8) { const [x, y] = ePos(e); fx.push({ kind: 'part', x: x + (Math.random() - .5) * .2, y, vx: 0, vy: -.8, grav: 0, color: 'rgba(255,140,40,.8)', size: .05, life: .3, max: .3 }); } }
+      if (def.heal) for (const o of enemies) { if (o !== e && !o.dead && o.hp < o.max) { const [ax, ay] = ePos(e), [bx, by] = ePos(o); if (Math.hypot(ax - bx, ay - by) < 1.6) o.hp = Math.min(o.max, o.hp + o.max * 0.05 * dt); } }
+      e.d += def.speed * (e.freezeT > 0 ? 0 : 1 - e.slow) * dt;
+      e.wob += dt * (e.freezeT > 0 ? 0 : 8);
+      if (e.dead) continue;
+      if (e.d >= paths[e.p || 0].len) { e.dead = true; e.leaked = true; S.lives -= e.type === 'baas' ? 5 : 1; vibrate(40); beep(180, .15, .12); }
     }
     for (const t of S.towers) {
-      const d = TOWERS[t.type]; t.cd -= dt; if (t.fire > 0) t.fire -= dt;
-      const R = d.range[t.lvl], cx = t.c + .5, cy = t.r + .5;
-      let target = null, best = -1;
-      for (const e of enemies) { if (e.dead || e.d < 0) continue; const [x, y] = posAt(e.d); if (Math.hypot(x - cx, y - cy) <= R && e.d > best) { best = e.d; target = e; } }
-      if (!target) continue;
-      const [tx, ty] = posAt(target.d);
+      const st = stat(t); t.cd -= dt; if (t.fire > 0) t.fire -= dt;
+      const R = st.range, cx = t.c + .5, cy = t.r + .5;
+      const inRange = [];
+      for (const e of enemies) {
+        if (e.dead || e.d < 0) continue;
+        if (t.type === 'kanon' && ENEMIES[e.type].flying) continue;         // cannons can't hit flyers
+        const [x, y] = ePos(e), dist = Math.hypot(x - cx, y - cy);
+        if (dist <= R) inRange.push({ e, x, y, dist });
+      }
+      if (!inRange.length) continue;
+      const key = { eerste: o => progress(o.e), laatste: o => -progress(o.e), sterkste: o => o.e.hp, dichtst: o => -o.dist }[t.mode || 'eerste'];
+      inRange.sort((a, b) => key(b) - key(a));
+      const target = inRange[0].e, tx = inRange[0].x, ty = inRange[0].y;
       t.ang = Math.atan2(ty - cy, tx - cx);
       if (t.cd > 0) continue;
-      t.cd = 1 / d.rate[t.lvl]; t.fire = 0.12;
-      if (t.type === 'pijl') shots.push({ kind: 'arrow', x: cx, y: cy, target, dmg: d.dmg[t.lvl], v: 9 });
-      else if (t.type === 'kanon') shots.push({ kind: 'ball', x: cx, y: cy, sx: cx, sy: cy, tx, ty, t: 0, T: Math.hypot(tx - cx, ty - cy) / 5 + 0.15, dmg: d.dmg[t.lvl], splash: d.splash[t.lvl] });
-      else if (t.type === 'ijs') { burst(tx, ty, '#dff6ff', 3, 1.2, .04, 0); hit(target, d.dmg[t.lvl]); target.slow = Math.max(target.slow, d.slow[t.lvl]); target.slowT = 1.6; fx.push({ kind: 'beam', x0: cx, y0: cy, x1: tx, y1: ty, color: '#9be3ff', life: 0.18 }); }
-      else if (t.type === 'magie') { hit(target, d.dmg[t.lvl], true); fx.push({ kind: 'bolt', x0: cx, y0: cy, x1: tx, y1: ty, color: '#d6a8ff', life: 0.22 }); beep(900, .05, .05); }
+      t.cd = 1 / st.rate; t.fire = 0.12;
+      if (t.type === 'pijl') {
+        const n = st.multi || 1;
+        for (let i = 0; i < Math.min(n, inRange.length); i++) {
+          const crit = st.crit && Math.random() < st.crit;
+          shots.push({ kind: 'arrow', x: cx, y: cy, target: inRange[i].e, dmg: st.dmg * (crit ? 3 : 1), crit, v: 10 });
+        }
+      }
+      else if (t.type === 'kanon') shots.push({ kind: 'ball', x: cx, y: cy, sx: cx, sy: cy, tx, ty, t: 0, T: Math.hypot(tx - cx, ty - cy) / 5 + 0.15, dmg: st.dmg, splash: st.splash, burn: st.burn });
+      else if (t.type === 'ijs') {
+        const list = st.aura ? inRange : [inRange[0]];
+        for (const o of list) {
+          hit(o.e, st.dmg); o.e.slow = Math.max(o.e.slow, st.slow); o.e.slowT = 1.6;
+          if (st.freeze && Math.random() < st.freeze) { o.e.freezeT = 1.2; burst(o.x, o.y, '#ffffff', 6, 1.5, .05, 0); }
+          if (!st.aura) fx.push({ kind: 'beam', x0: cx, y0: cy, x1: o.x, y1: o.y, color: '#9be3ff', life: 0.18 });
+        }
+        if (st.aura) fx.push({ kind: 'ring', x: cx, y: cy, r: R, color: 'rgba(200,240,255,', life: .5 });
+        else burst(tx, ty, '#dff6ff', 3, 1.2, .04, 0);
+      }
+      else if (t.type === 'magie') {
+        hit(target, st.dmg, true); if (st.curse) target.curseT = 4;
+        fx.push({ kind: 'bolt', x0: cx, y0: cy, x1: tx, y1: ty, color: '#d6a8ff', life: 0.22 }); beep(900, .05, .05);
+        if (st.chain) {
+          let from = inRange[0], hitSet = new Set([target]), dmg = st.dmg;
+          for (let k = 0; k < st.chain; k++) {
+            dmg *= .7; let nxt = null, nd = 1e9;
+            for (const e of enemies) { if (e.dead || hitSet.has(e) || e.d < 0) continue; const [x, y] = ePos(e), dd = Math.hypot(x - from.x, y - from.y); if (dd < 1.8 && dd < nd) { nd = dd; nxt = { e, x, y }; } }
+            if (!nxt) break;
+            hitSet.add(nxt.e); hit(nxt.e, dmg, true); fx.push({ kind: 'bolt', x0: from.x, y0: from.y, x1: nxt.x, y1: nxt.y, color: '#d6a8ff', life: 0.2 }); from = nxt;
+          }
+        }
+      }
     }
+    // spells
+    if (S.cd) { S.cd.meteor = Math.max(0, S.cd.meteor - dt); S.cd.frost = Math.max(0, S.cd.frost - dt); }
     for (const s of shots) {
       if (s.kind === 'arrow') {
         if (s.target.dead) { s.done = true; continue; }
-        const [tx, ty] = posAt(s.target.d), dx = tx - s.x, dy = ty - s.y, dist = Math.hypot(dx, dy), step = s.v * dt;
+        const [tx, ty] = ePos(s.target), dx = tx - s.x, dy = ty - s.y, dist = Math.hypot(dx, dy), step = s.v * dt;
         s.ang = Math.atan2(dy, dx);
-        if (dist <= step) { hit(s.target, s.dmg); s.done = true; } else { s.x += dx / dist * step; s.y += dy / dist * step; }
+        if (dist <= step) { hit(s.target, s.dmg); if (s.crit) fx.push({ kind: 'text', x: tx, y: ty - .3, text: 'KRITIEK!', color: '#ff6b5b', life: .7, plain: true }); s.done = true; } else { s.x += dx / dist * step; s.y += dy / dist * step; }
       } else if (s.kind === 'ball') {
         s.t += dt; const k = Math.min(1, s.t / s.T);
         s.x = s.sx + (s.tx - s.sx) * k; s.y = s.sy + (s.ty - s.sy) * k; s.h = Math.sin(k * Math.PI) * 0.6;
         if (Math.random() < .5) fx.push({ kind: 'part', x: s.x, y: s.y - s.h, vx: 0, vy: -.2, grav: 0, color: 'rgba(200,200,200,.5)', size: .06, grow: true, life: .4, max: .4 });
         if (k >= 1) {
           s.done = true; fx.push({ kind: 'boom', x: s.tx, y: s.ty, r: s.splash, life: 0.45 }); burst(s.tx, s.ty, '#7a5a3a', 8, 2.5, .05, 5); burst(s.tx, s.ty, 'rgba(120,120,120,.6)', 5, .8, .12, 0); beep(140, .12, .08);
-          for (const e of enemies) { if (e.dead || e.d < 0) continue; const [x, y] = posAt(e.d); if (Math.hypot(x - s.tx, y - s.ty) <= s.splash) hit(e, s.dmg); }
+          for (const e of enemies) { if (e.dead || e.d < 0 || ENEMIES[e.type].flying) continue; const [x, y] = ePos(e); if (Math.hypot(x - s.tx, y - s.ty) <= s.splash) { hit(e, s.dmg); if (s.burn) { e.burnT = 3; e.burnDps = s.burn; } } }
         }
       }
     }
     shots = shots.filter(s => !s.done);
-    for (const f of fx) { f.life -= dt; if (f.kind === 'text') f.y -= dt * 0.8; if (f.kind === 'part') { f.x += f.vx * dt; f.y += f.vy * dt; f.vy += f.grav * dt; } }
+    for (const f of fx) {
+      f.life -= dt; if (f.kind === 'text') f.y -= dt * 0.8;
+      if (f.kind === 'meteor' && !f.hit && f.life <= f.impact) {        // meteor lands
+        f.hit = true; beep(90, .4, .25); vibrate(40);
+        fx.push({ kind: 'boom', x: f.x, y: f.y, r: 1.4, life: .6 }); burst(f.x, f.y, '#ff8a2a', 18, 3.5, .07, 5); burst(f.x, f.y, 'rgba(90,90,90,.7)', 8, 1, .15, 0);
+        for (const e of enemies) { if (e.dead || e.d < 0) continue; const [x, y] = ePos(e); if (Math.hypot(x - f.x, y - f.y) <= 1.4) hit(e, f.dmg, true); }
+      } if (f.kind === 'part') { f.x += f.vx * dt; f.y += f.vy * dt; f.vy += f.grav * dt; } }
     fx = fx.filter(f => f.life > 0);
     const before = enemies.length;
     enemies = enemies.filter(e => !e.dead);
@@ -2690,13 +2806,16 @@ const TowerDefense = (() => {
     if (S.lives <= 0 && !S.over) { S.lives = 0; hud(); lose(); return; }
     if (S.inWave && !spawnQ.length && !enemies.length) waveDone();
   }
-  function hit(e, dmg, magic) {
+  function hit(e, dmg, magic, dot) {
     if (e.dead) return;
     const armor = magic ? 0 : (ENEMIES[e.type].armor || 0);
-    e.hp -= Math.max(1, dmg - armor); e.hitT = 0.1;
+    let dd = dot ? dmg : Math.max(1, dmg - armor);
+    if (e.curseT > 0) dd *= 1.3;
+    e.hp -= dd; if (!dot) e.hitT = 0.1;
     if (e.hp <= 0) {
       e.dead = true; const rw = ENEMIES[e.type].reward; S.gold += rw;
-      const [x, y] = posAt(e.d);
+      const [x, y] = ePos(e);
+      if (ENEMIES[e.type].split) for (let i = 0; i < ENEMIES[e.type].split; i++) { const hp = hpScale(S.wave) * ENEMIES.zwerm.hp; enemies.push({ type: 'zwerm', p: e.p, d: e.d - i * .25, hp, max: hp, slowT: 0, slow: 0, wob: Math.random() * 6 }); }
       burst(x, y, ENEMIES[e.type].color, e.type === 'baas' ? 22 : 10, 2.2, e.type === 'baas' ? .09 : .06, 4); burst(x, y, 'rgba(255,255,255,.8)', 4, 1.2, .05, 0);
       fx.push({ kind: 'text', x, y: y - 0.2, text: '+' + rw, color: '#ffd54a', life: 0.9 });
       if (e.type === 'baas') { beep(300, .3, .2); vibrate(30); }
@@ -2706,6 +2825,7 @@ const TowerDefense = (() => {
   /* ---------- drawing ---------- */
   let bg = null;                                // pre-rendered static terrain (world orientation)
   function layout() {
+    document.getElementById('td').style.setProperty('--tdbar-h', $('#tdBar').offsetHeight + 'px');
     const dpr = window.devicePixelRatio || 1, W = wrap.clientWidth, H = wrap.clientHeight;
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const rot = W > H * 1.1;                     // landscape: turn the field so the path runs left → right
@@ -2719,9 +2839,10 @@ const TowerDefense = (() => {
     if (T.rot) { ctx.translate(T.ox, T.oy + COLS * T.ts); ctx.rotate(-Math.PI / 2); } else ctx.translate(T.ox, T.oy);
   }
   function upright(x, y, fn) { ctx.save(); ctx.translate(x, y); if (T.rot) ctx.rotate(Math.PI / 2); fn(); ctx.restore(); }
-  function screenToTile(sx, sy) {
-    if (T.rot) return [Math.floor((T.oy + COLS * T.ts - sy) / T.ts), Math.floor((sx - T.ox) / T.ts)];
-    return [Math.floor((sx - T.ox) / T.ts), Math.floor((sy - T.oy) / T.ts)];
+  function screenToTile(sx, sy, exact) {
+    const f = exact ? v => v : Math.floor;
+    if (T.rot) return [f((T.oy + COLS * T.ts - sy) / T.ts), f((sx - T.ox) / T.ts)];
+    return [f((sx - T.ox) / T.ts), f((sy - T.oy) / T.ts)];
   }
   function circle(x, y, r, fill, stroke, lw) { ctx.beginPath(); ctx.arc(x, y, Math.max(0.1, r), 0, 7); if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.lineWidth = lw || 1; ctx.strokeStyle = stroke; ctx.stroke(); } }
   function ellipse(x, y, rx, ry, fill) { ctx.beginPath(); ctx.ellipse(x, y, Math.max(.1, rx), Math.max(.1, ry), 0, 0, 7); ctx.fillStyle = fill; ctx.fill(); }
@@ -2758,20 +2879,23 @@ const TowerDefense = (() => {
       } else if (S.map === 'woestijn') {
         if (rnd() < .35) { ctx.strokeStyle = 'rgba(160,120,60,.22)'; ctx.lineWidth = Math.max(1, s * .02); ctx.beginPath(); ctx.arc(x, y, s * (.15 + rnd() * .2), Math.PI * 1.15, Math.PI * 1.85); ctx.stroke(); }
         else circle(x, y, s * .012, 'rgba(120,85,40,.35)');
+      } else if (S.map === 'vulkaan') {
+        if (rnd() < .06) circle(x, y, s * .02, 'rgba(255,120,40,.8)'); else if (rnd() < .4) circle(x, y, s * .015, 'rgba(20,15,15,.35)');
       } else {
         if (rnd() < .2) circle(x, y, s * .015, 'rgba(255,255,255,.95)'); else circle(x, y, s * .01, 'rgba(120,150,180,.25)');
       }
     }
     // path: shadow, edge, fill
-    const trace = () => { ctx.beginPath(); poly.forEach(([x, y], i) => i ? ctx.lineTo(x * s, y * s) : ctx.moveTo(x * s, y * s)); };
+    const trace = () => { ctx.beginPath(); for (const P of paths) P.poly.forEach(([x, y], i) => i ? ctx.lineTo(x * s, y * s) : ctx.moveTo(x * s, y * s)); };
     ctx.lineJoin = 'round'; ctx.lineCap = 'round';
     ctx.save(); ctx.translate(0, s * .06); trace(); ctx.strokeStyle = 'rgba(0,0,0,.18)'; ctx.lineWidth = s * 1.02; ctx.stroke(); ctx.restore();
+    if (S.map === 'vulkaan') { trace(); ctx.strokeStyle = 'rgba(255,110,30,.35)'; ctx.lineWidth = s * 1.2; ctx.stroke(); }
     trace(); ctx.strokeStyle = m.edge; ctx.lineWidth = s * .98; ctx.stroke();
     trace(); ctx.strokeStyle = m.path; ctx.lineWidth = s * .84; ctx.stroke();
     trace(); ctx.strokeStyle = shade(m.path, .12); ctx.lineWidth = s * .5; ctx.globalAlpha = .45; ctx.stroke(); ctx.globalAlpha = 1;
     // pebbles & ruts along the path
-    for (let d = 0.2; d < pathLen; d += 0.18) {
-      const [px, py] = posAt(d), a = rnd() * 6.28, off = (rnd() - .5) * .7;
+    for (let pi = 0; pi < paths.length; pi++) for (let d = 0.2; d < paths[pi].len; d += 0.18) {
+      const [px, py] = posAt(d, pi), a = rnd() * 6.28, off = (rnd() - .5) * .7;
       const x = (px + Math.cos(a) * off * .5) * s, y = (py + Math.sin(a) * off * .5) * s;
       if (rnd() < .55) { ellipse(x, y + s * .015, s * (.03 + rnd() * .03), s * (.02 + rnd() * .02), 'rgba(0,0,0,.18)'); ellipse(x, y, s * (.03 + rnd() * .03), s * (.02 + rnd() * .02), shade(m.edge, .1 + rnd() * .25)); }
     }
@@ -2808,6 +2932,14 @@ const TowerDefense = (() => {
         ctx.beginPath(); ctx.moveTo(x, yy - s * .06); ctx.lineTo(x - w, yy + s * .2); ctx.lineTo(x + w, yy + s * .2); ctx.fill();
         ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(x, yy - s * .06); ctx.lineTo(x - w * .45, yy + s * .07); ctx.lineTo(x + w * .45, yy + s * .07); ctx.fill();
       }
+    } else if (kind === 'lava') {
+      ellipse(x, y + s * .05, s * .36, s * .22, '#2a1d1b');
+      ellipse(x, y + s * .05, s * .3, s * .17, rgrad(x, y + s * .05, s * .3, '#ffe27a', '#e8401e', 0, 0));
+      circle(x - s * .1, y, s * .04, 'rgba(255,255,200,.8)'); circle(x + s * .12, y + s * .08, s * .03, 'rgba(255,255,200,.7)');
+    } else if (kind === 'deadtree') {
+      ctx.strokeStyle = '#2b211d'; ctx.lineCap = 'round';
+      ctx.lineWidth = s * .09; ctx.beginPath(); ctx.moveTo(x, y + s * .28); ctx.lineTo(x, y - s * .15); ctx.stroke();
+      ctx.lineWidth = s * .05; ctx.beginPath(); ctx.moveTo(x, y - s * .02); ctx.lineTo(x - s * .2, y - s * .22); ctx.moveTo(x, y - s * .1); ctx.lineTo(x + s * .18, y - s * .3); ctx.moveTo(x - s * .12, y - s * .14); ctx.lineTo(x - s * .12, y - s * .3); ctx.stroke();
     } else if (kind === 'snowman') {
       circle(x, y + s * .12, s * .21, rgrad(x, y + s * .12, s * .21, '#ffffff', '#c4d4e2'));
       circle(x, y - s * .15, s * .15, rgrad(x, y - s * .15, s * .15, '#ffffff', '#c4d4e2'));
@@ -2851,11 +2983,15 @@ const TowerDefense = (() => {
     ctx.strokeStyle = lvl >= 1 ? '#e2b23a' : 'rgba(0,0,0,.25)'; ctx.lineWidth = lvl >= 1 ? s * .04 : 1;
     ctx.beginPath(); ctx.ellipse(0, -s * .02, s * .36, s * .185, 0, 0, 7); ctx.stroke();
     if (lvl >= 2) for (const a of [0.6, 2.54]) { const bx = Math.cos(a) * s * .34, by = -s * .02 + Math.sin(a) * s * .17; ctx.fillStyle = '#e2b23a'; ctx.fillRect(bx - s * .015, by - s * .28, s * .03, s * .28); ctx.fillStyle = TOWERS[t.type].color; ctx.beginPath(); ctx.moveTo(bx, by - s * .28); ctx.lineTo(bx + s * .14, by - s * .23); ctx.lineTo(bx, by - s * .17); ctx.fill(); }
+    if (t.spec != null) {                      // specialisation: golden star emblem
+      const cx = 0, cy = -s * .3; circle(cx, cy, s * .11, rgrad(cx, cy, s * .11, '#fff3b0', '#d49a12'), '#7a5a0a', 1);
+      ctx.fillStyle = '#fff'; ctx.beginPath(); for (let i = 0; i < 10; i++) { const rr = i % 2 ? s * .035 : s * .08, a = i * Math.PI / 5 - Math.PI / 2; ctx.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr); } ctx.fill();
+    }
     // level chevrons
     for (let i = 0; i <= lvl; i++) { const cx = (i - lvl / 2) * s * .12, cy = s * .3; ctx.fillStyle = '#ffd54a'; ctx.strokeStyle = '#7a5a0a'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(cx - s * .05, cy - s * .02); ctx.lineTo(cx, cy - s * .06); ctx.lineTo(cx + s * .05, cy - s * .02); ctx.lineTo(cx + s * .05, cy + s * .02); ctx.lineTo(cx, cy - s * .02); ctx.lineTo(cx - s * .05, cy + s * .02); ctx.closePath(); ctx.fill(); ctx.stroke(); }
   }
   function drawTurret(t, x, y, s, now) {
-    const d = TOWERS[t.type], k = 1 + t.lvl * .1, fire = Math.max(0, t.fire || 0);
+    const d = TOWERS[t.type], k = 1 + t.lvl * .1 + (t.spec != null ? .12 : 0), fire = Math.max(0, t.fire || 0);
     ctx.save(); ctx.translate(x, y);
     if (T.rot) ctx.translate(-s * .02, 0); else ctx.translate(0, -s * .02);
     if (t.type === 'ijs') {
@@ -2906,19 +3042,24 @@ const TowerDefense = (() => {
 
   /* enemies */
   function drawEnemy(e, s, now) {
-    const [px, py] = posAt(Math.max(0, e.d)), [qx, qy] = posAt(Math.max(0, e.d) + .05);
+    const [px, py] = ePos(e), [qx, qy] = posAt(Math.max(0, e.d) + .05, e.p);
     let dx = qx - px, dy = qy - py; if (T.rot) [dx, dy] = [dy, -dx];
     upright(X(px), Y(py), () => drawEnemyAt(e, s, dx, dy, now));
   }
   function drawEnemyAt(e, s, dx, dy, now) {
-    const def = ENEMIES[e.type], r = def.r * s, step = Math.sin(e.wob), hop = Math.abs(step) * s * .05, flash = e.hitT > 0;
-    const base = e.slow ? '#8fc8e8' : def.color;
-    ellipse(0, r * .85, r * (.9 - hop / s), r * .3, 'rgba(0,0,0,.28)');
+    const def = ENEMIES[e.type], r = def.r * s, step = Math.sin(e.wob), flash = e.hitT > 0;
+    const hop = def.flying ? s * (.35 + Math.sin(now / 200 + e.wob) * .05) : Math.abs(step) * s * .05;
+    const base = e.freezeT > 0 ? '#bfe8ff' : e.slow ? '#8fc8e8' : def.color;
+    ellipse(0, r * .85, r * (def.flying ? .6 : .9 - hop / s), r * (def.flying ? .2 : .3), 'rgba(0,0,0,.28)');
     const y = -hop;
+    if (def.heal) { const pr = r * (1.6 + .2 * Math.sin(now / 250)); circle(0, y, pr, 'rgba(120,230,140,.12)', 'rgba(120,230,140,.45)', 1.5); }
+    if (e.curseT > 0) circle(0, y, r * 1.35, 'rgba(160,80,220,.18)', 'rgba(190,120,255,.6)', 1.5);
+    if (def.flying) { const fl = Math.sin(now / 60 + e.wob); ctx.fillStyle = shade(def.color, -.35);
+      for (const sx of [-1, 1]) { ctx.beginPath(); ctx.moveTo(sx * r * .5, y); ctx.quadraticCurveTo(sx * r * 1.5, y - r * (1 + fl * .6), sx * r * 2, y + r * .1); ctx.quadraticCurveTo(sx * r * 1.4, y - r * .1, sx * r * 1.2, y + r * .35); ctx.quadraticCurveTo(sx * r, y + r * .1, sx * r * .5, y + r * .3); ctx.fill(); } }
     if (e.type === 'snel') { ctx.strokeStyle = 'rgba(255,230,150,.6)'; ctx.lineWidth = s * .03; for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.moveTo(-dx / .05 * r * 1.1 + i * r * .3 * dy / .05, y + i * r * .3 - dy / .05 * r * 1.1); ctx.lineTo(-dx / .05 * r * 1.8 + i * r * .3 * dy / .05, y + i * r * .3 - dy / .05 * r * 1.8); ctx.stroke(); } }
     if (e.type === 'zwerm') { const fl = Math.sin(now / 40 + e.wob) * .5 + .5; ctx.fillStyle = 'rgba(230,255,240,.75)'; ellipse(-r * .8, y - r * .5, r * .55, r * (.2 + fl * .25), 'rgba(230,255,240,.75)'); ellipse(r * .8, y - r * .5, r * .55, r * (.2 + fl * .25), 'rgba(230,255,240,.75)'); }
     // feet
-    if (e.type !== 'zwerm') { ellipse(-r * .45, r * .72 + step * r * .12, r * .25, r * .15, shade(def.color, -.4)); ellipse(r * .45, r * .72 - step * r * .12, r * .25, r * .15, shade(def.color, -.4)); }
+    if (e.type !== 'zwerm' && !def.flying) { ellipse(-r * .45, r * .72 + step * r * .12, r * .25, r * .15, shade(def.color, -.4)); ellipse(r * .45, r * .72 - step * r * .12, r * .25, r * .15, shade(def.color, -.4)); }
     if (e.type === 'tank') {
       circle(0, y, r, rgrad(0, y, r, shade(base, .35), shade(base, -.45)));
       ctx.strokeStyle = 'rgba(30,35,40,.6)'; ctx.lineWidth = s * .03;
@@ -2929,6 +3070,12 @@ const TowerDefense = (() => {
       ctx.fillStyle = '#f2ead8'; for (const sx of [-1, 1]) { ctx.beginPath(); ctx.moveTo(sx * r * .55, y - r * .6); ctx.quadraticCurveTo(sx * r * 1.15, y - r * 1.05, sx * r * .95, y - r * 1.35); ctx.quadraticCurveTo(sx * r * .85, y - r * .95, sx * r * .3, y - r * .8); ctx.fill(); }
       ctx.fillStyle = '#ffd54a'; ctx.strokeStyle = '#a0770b'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-r * .45, y - r * .78); ctx.lineTo(-r * .45, y - r * 1.2); ctx.lineTo(-r * .2, y - r * .98); ctx.lineTo(0, y - r * 1.3); ctx.lineTo(r * .2, y - r * .98); ctx.lineTo(r * .45, y - r * 1.2); ctx.lineTo(r * .45, y - r * .78); ctx.closePath(); ctx.fill(); ctx.stroke();
       ctx.fillStyle = '#fff'; for (const sx of [-.25, .25]) { ctx.beginPath(); ctx.moveTo(sx * r - r * .08, y + r * .35); ctx.lineTo(sx * r, y + r * .6); ctx.lineTo(sx * r + r * .08, y + r * .35); ctx.fill(); }
+    } else if (e.type === 'splitser') {
+      circle(0, y, r, rgrad(0, y, r, shade(base, .4), shade(base, -.35)));
+      for (const [bx, by] of [[-.4, .35], [.4, .35], [0, .55]]) circle(bx * r, y + by * r, r * .22, 'rgba(98,196,107,.8)');
+    } else if (e.type === 'genezer') {
+      circle(0, y, r, rgrad(0, y, r, '#ffffff', '#b9c6cf'));
+      ctx.fillStyle = '#3cb85a'; ctx.fillRect(-r * .12, y + r * .15, r * .24, r * .6); ctx.fillRect(-r * .3, y + r * .33, r * .6, r * .24);
     } else {
       circle(0, y, r, rgrad(0, y, r, shade(base, .4), shade(base, -.35)));
       if (e.type === 'gewoon') { ctx.fillStyle = shade(def.color, -.3); for (const sx of [-1, 1]) { ctx.beginPath(); ctx.moveTo(sx * r * .35, y - r * .82); ctx.lineTo(sx * r * .55, y - r * 1.2); ctx.lineTo(sx * r * .62, y - r * .7); ctx.fill(); } }
@@ -2939,6 +3086,8 @@ const TowerDefense = (() => {
     for (const sx of [-1, 1]) { circle(sx * r * .32, y - r * .12, r * er, '#fff'); circle(sx * r * .32 + lx, y - r * .12 + ly, r * er * .5, '#1b1d22'); }
     if (e.type === 'baas' || e.type === 'gewoon') { ctx.strokeStyle = '#1b1d22'; ctx.lineWidth = Math.max(1, s * .02); for (const sx of [-1, 1]) { ctx.beginPath(); ctx.moveTo(sx * r * .55, y - r * .42); ctx.lineTo(sx * r * .15, y - r * .3); ctx.stroke(); } }
     if (e.slow) { ctx.fillStyle = 'rgba(220,245,255,.9)'; for (let i = 0; i < 3; i++) { const a = i * 2.1 + now / 500; ctx.beginPath(); ctx.moveTo(Math.cos(a) * r, y + Math.sin(a) * r - r * .12); ctx.lineTo(Math.cos(a) * r + r * .1, y + Math.sin(a) * r); ctx.lineTo(Math.cos(a) * r, y + Math.sin(a) * r + r * .12); ctx.lineTo(Math.cos(a) * r - r * .1, y + Math.sin(a) * r); ctx.fill(); } }
+    if (e.freezeT > 0) { ctx.fillStyle = 'rgba(210,240,255,.55)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(-r * 1.15, y - r * 1.15, r * 2.3, r * 2.3, r * .3) : ctx.rect(-r * 1.15, y - r * 1.15, r * 2.3, r * 2.3); ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke(); }
+    if (e.burnT > 0) for (let i = 0; i < 3; i++) { const fxx = (i - 1) * r * .5, fl = Math.sin(now / 70 + i * 2) * r * .15; ctx.fillStyle = i % 2 ? '#ffb13b' : '#ff6a1f'; ctx.beginPath(); ctx.moveTo(fxx - r * .2, y - r * .5); ctx.quadraticCurveTo(fxx, y - r * 1.3 - fl, fxx + r * .2, y - r * .5); ctx.fill(); }
     if (flash) circle(0, y, r, `rgba(255,255,255,${Math.min(.8, e.hitT * 8)})`);
     if (e.hp < e.max) {
       const w = Math.max(s * .6, r * 1.6), hy = y - r - (e.type === 'baas' ? r * .5 : 0) - s * .16, f = Math.max(0, e.hp / e.max);
@@ -2955,11 +3104,11 @@ const TowerDefense = (() => {
     ctx.save(); worldTransform();
     ctx.drawImage(bg, 0, 0, COLS * s, ROWS * s);
     // portal at the entrance, castle at the exit
-    const ent = [Math.max(.5, Math.min(COLS - .5, poly[0][0])), Math.max(.5, Math.min(ROWS - .5, poly[0][1]))];
-    upright(X(ent[0]), Y(ent[1]), () => drawPortal(0, 0, s, now / 1000));
+    for (const P of paths) { const ent = [Math.max(.5, Math.min(COLS - .5, P.poly[0][0])), Math.max(.5, Math.min(ROWS - .5, P.poly[0][1]))]; upright(X(ent[0]), Y(ent[1]), () => drawPortal(0, 0, s, now / 1000)); }
     for (const [k, kind] of deco) { const [c, r] = k.split(',').map(Number); upright(X(c + .5), Y(r + .5), () => drawDecoFancy(kind, 0, 0, s, seeded(c * 31 + r * 7 + 3))); }
     const [ex, ey] = poly[poly.length - 1];
     upright(X(Math.max(.5, Math.min(COLS - .5, ex))), Y(Math.max(.5, Math.min(ROWS - .5, ey))), () => drawCastle(0, 0, s));
+    if (armed === 'meteor') { const a2 = .25 + .15 * Math.sin(now / 150); ctx.fillStyle = `rgba(255,90,40,${a2 * .25})`; ctx.fillRect(0, 0, COLS * s, ROWS * s); }
     // build hints
     if (buildType) {
       const a = .16 + .08 * Math.sin(now / 250);
@@ -2969,13 +3118,13 @@ const TowerDefense = (() => {
       }
     }
     if (sel) {
-      const d = TOWERS[sel.type], R = d.range[sel.lvl] * s;
+      const R = stat(sel).range * s;
       circle(X(sel.c + .5), Y(sel.r + .5), R, 'rgba(255,255,255,.12)');
       ctx.setLineDash([s * .15, s * .1]); ctx.lineDashOffset = -now / 40; circle(X(sel.c + .5), Y(sel.r + .5), R, null, 'rgba(255,255,255,.85)', 2); ctx.setLineDash([]);
     }
     // draw towers and enemies from back to front for a nice overlap
     const items = S.towers.map(t => ({ k: t.r + .5, f: () => drawTower(t, s, now) }))
-      .concat(enemies.map(e => { const [, y] = posAt(Math.max(0, e.d)); return { k: y, f: () => drawEnemy(e, s, now) }; }));
+      .concat(enemies.map(e => { const [, y] = ePos(e); return { k: y + (ENEMIES[e.type].flying ? 5 : 0), f: () => drawEnemy(e, s, now) }; }));
     if (!T.rot) items.sort((a, b) => a.k - b.k);
     items.forEach(i => i.f());
     for (const sh of shots) {
@@ -3009,9 +3158,19 @@ const TowerDefense = (() => {
         circle(X(f.x), Y(f.y), f.r * s * (.5 + k * .9), null, `rgba(255,255,255,${.6 * (1 - k)})`, s * .04);
       } else if (f.kind === 'part') {
         ctx.globalAlpha = Math.min(1, a / f.max * 1.5); circle(X(f.x), Y(f.y), s * f.size * (f.grow ? (1 + (1 - a / f.max)) : 1), f.color); ctx.globalAlpha = 1;
+      } else if (f.kind === 'ring') {
+        circle(X(f.x), Y(f.y), f.r * s * (1.1 - a), null, f.color + (a * 1.4) + ')', s * .06);
+      } else if (f.kind === 'meteor') {
+        if (!f.hit) {
+          const k = 1 - (f.life - f.impact) / (f.max - f.impact), mx = f.x + (1 - k) * 2.5, my = f.y - (1 - k) * 4;
+          circle(X(f.x), Y(f.y), s * 1.4, 'rgba(255,80,30,.12)', 'rgba(255,120,40,.6)', 2);
+          for (let i = 1; i < 6; i++) circle(X(mx + i * .15), Y(my - i * .24), s * (.22 - i * .03), `rgba(255,${120 + i * 20},40,${.5 - i * .08})`);
+          circle(X(mx), Y(my), s * .28, rgrad(X(mx), Y(my), s * .28, '#ffd27a', '#6b2b12'));
+        }
       } else if (f.kind === 'text') {
         upright(X(f.x), Y(f.y), () => {
           ctx.globalAlpha = Math.min(1, a * 2); ctx.font = `800 ${s * .34}px system-ui`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          if (f.plain) { ctx.font = `900 ${s * .3}px system-ui`; ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.lineWidth = 3; ctx.strokeText(f.text, 0, 0); ctx.fillStyle = f.color; ctx.fillText(f.text, 0, 0); ctx.globalAlpha = 1; return; }
           circle(-s * .3, 0, s * .12, rgrad(-s * .3, 0, s * .12, '#fff3b0', '#e2a51a'));
           ctx.font = `800 ${s * .34}px system-ui`; ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.lineWidth = 3; ctx.strokeText(f.text, s * .08, 0); ctx.fillStyle = f.color; ctx.fillText(f.text, s * .08, 0); ctx.globalAlpha = 1;
         });
@@ -3039,7 +3198,7 @@ const TowerDefense = (() => {
     const dt = Math.min(0.05, Math.max(0.001, (now - lastT) / 1000)); lastT = now;
     const paused = !S || S.over || current !== 'td' || anyModal() || document.hidden;
     if (!paused) { const n = speed; for (let i = 0; i < n; i++) update(dt); }
-    draw();
+    draw(); spellUI();
   }
 
   /* ---------- UI ---------- */
@@ -3051,26 +3210,70 @@ const TowerDefense = (() => {
     go.disabled = S.inWave || S.over;
     go.innerHTML = S.inWave ? `<span>⏳</span>Bezig` : `<span>▶</span>Golf ${S.wave + 1}`;
     $('#tdSpeed').innerHTML = `<span>⏩</span>${speed}×`;
+    nextInfo(); spellUI(true);
     document.querySelectorAll('#tdBar .tdt').forEach(b => {
       const d = TOWERS[b.dataset.t];
       b.classList.toggle('on', buildType === b.dataset.t);
       b.classList.toggle('poor', S.gold < d.cost);
     });
   }
+  function nextInfo() {
+    const el = $('#tdNext'); if (!S || S.over) { el.textContent = ''; return; }
+    const n = S.inWave ? S.wave : S.wave + 1;
+    if (S.waves && n > S.waves) { el.textContent = ''; return; }
+    const cnt = {}; for (const x of waveList(n)) cnt[x.type] = (cnt[x.type] || 0) + 1;
+    el.innerHTML = `<b>${S.inWave ? 'Nu' : 'Volgende'}:</b> ` + Object.entries(cnt).map(([t, c]) => `${EICON[t]}${c}`).join(' ');
+    el.title = Object.entries(cnt).map(([t, c]) => `${c}× ${ENAME[t]}`).join(', ');
+  }
+  const SPELLS = { meteor: { cd: 35, name: 'Meteoor' }, frost: { cd: 50, name: 'Vriesgolf' } };
+  let spellKey = '';
+  function spellUI(force) {
+    if (!S) return;
+    const cd = S.cd || { meteor: 0, frost: 0 };
+    const key = [Math.ceil(cd.meteor), Math.ceil(cd.frost), armed, S.inWave, S.over].join();
+    if (!force && key === spellKey) return; spellKey = key;
+    for (const k of ['meteor', 'frost']) {
+      const b = $(k === 'meteor' ? '#tdMeteor' : '#tdFrost'), c = cd[k];
+      b.disabled = S.over || !S.inWave || c > 0;
+      b.classList.toggle('armed', armed === k);
+      b.querySelector('span').textContent = c > 0 ? Math.ceil(c) + 's' : '';
+      b.querySelector('i').style.width = c > 0 ? (100 - c / SPELLS[k].cd * 100) + '%' : '0';
+    }
+    if (armed && (!S.inWave || S.over)) armed = null;
+  }
+  function castFrost() {
+    for (const e of enemies) if (!e.dead) { e.freezeT = Math.max(e.freezeT || 0, 2.5); e.slow = Math.max(e.slow, .4); e.slowT = 5; }
+    fx.push({ kind: 'ring', x: COLS / 2, y: ROWS / 2, r: Math.max(COLS, ROWS), color: 'rgba(190,230,255,', life: .8 });
+    for (const e of enemies) if (!e.dead && e.d >= 0) { const [x, y] = ePos(e); burst(x, y, '#e6f6ff', 5, 1.2, .05, 0); }
+    S.cd.frost = SPELLS.frost.cd; beep(1200, .4, .1); vibrate(25); spellUI(true);
+  }
+  $('#tdMeteor').addEventListener('click', () => {
+    if (!S || !S.inWave || S.cd.meteor > 0) return;
+    armed = armed === 'meteor' ? null : 'meteor'; buildType = null; sel = null; panel(); hud();
+    if (armed) toast('Tik op het veld waar de meteoor moet inslaan', 1600);
+  });
+  $('#tdFrost').addEventListener('click', () => { if (S && S.inWave && S.cd.frost <= 0) castFrost(); });
   function panel() {
     const p = $('#tdPanel');
     if (!sel || !S.towers.includes(sel)) { sel = null; p.classList.remove('show'); return; }
-    const d = TOWERS[sel.type], L = sel.lvl;
-    const stat = l => `bereik ${d.range[l]} · schade ${d.dmg[l]}${d.slow ? ` · ${Math.round(d.slow[l] * 100)}% trager` : ''}${d.splash ? ' · groep' : ''}`;
-    p.innerHTML = `<div class="tdp-h"><b>${d.icon} ${d.name}</b><span>niveau ${L + 1}/3</span><button class="tdp-x" data-a="x">✕</button></div>
-      <div class="tdp-s">${stat(L)}</div>
-      <div class="row">` + (L < 2 ? `<button class="btn primary small" data-a="up" ${S.gold < d.up[L] ? 'disabled' : ''}>⬆ Verbeter · ${d.up[L]} 💰<small>${stat(L + 1)}</small></button>` : `<button class="btn small" disabled>Maximaal niveau</button>`) +
-      `<button class="btn small" data-a="sell">Verkoop · +${Math.floor(sel.spent * 0.7)}</button></div>`;
+    const d = TOWERS[sel.type], L = sel.lvl, sp = sel.spec != null ? SPECS[sel.type][sel.spec] : null;
+    const fmt = st => `bereik ${st.range} · schade ${st.dmg}` + (st.slow ? ` · ${Math.round(st.slow * 100)}% trager` : '') + (st.splash ? ' · groep' : '') + (st.multi ? ` · ${st.multi} doelen` : '') + (st.chain ? ' · ketting' : '') + (st.burn ? ' · brand' : '') + (st.crit ? ' · kritiek' : '') + (st.freeze ? ' · bevriest' : '') + (st.aura ? ' · alles in bereik' : '') + (st.curse ? ' · vloek' : '');
+    const cur = stat(sel);
+    let body = `<div class="tdp-s">${fmt(cur)}</div>`;
+    if (L < 2) body += `<div class="row"><button class="btn primary small" data-a="up" ${S.gold < d.up[L] ? 'disabled' : ''}>⬆ Verbeter · ${d.up[L]} 💰<small>${fmt(stat({ type: sel.type, lvl: L + 1 }))}</small></button>`;
+    else if (!sp) body += `<div class="tdp-s" style="margin-bottom:4px"><b style="color:var(--ink)">Kies een specialisatie:</b></div><div class="tdp-spec">` +
+      SPECS[sel.type].map((o, i) => `<button class="btn small ${i ? '' : 'primary'}" data-a="spec" data-i="${i}" ${S.gold < o.cost ? 'disabled' : ''}>★ ${o.name}<small>${o.cost} 💰 · ${o.desc}</small></button>`).join('') + `</div><div class="row">`;
+    else body += `<div class="row"><button class="btn small" disabled>★ ${sp.name}</button>`;
+    body += `<button class="btn small" data-a="sell">Verkoop · +${Math.floor(sel.spent * 0.7)}</button></div>`;
+    const modes = (sp && sp.aura) ? '' : `<div class="tdp-mode">🎯 Doel:` + Object.entries(MODES).map(([k, l]) => `<button data-a="mode" data-m="${k}" class="${(sel.mode || 'eerste') === k ? 'on' : ''}">${l}</button>`).join('') + `</div>`;
+    p.innerHTML = `<div class="tdp-h"><b>${d.icon} ${sp ? sp.name : d.name}</b><span>${sp ? '★ specialist' : `niveau ${L + 1}/3`}</span><button class="tdp-x" data-a="x">✕</button></div>` + modes + body;
     p.classList.add('show');
   }
   $('#tdPanel').addEventListener('click', e => {
     const b = e.target.closest('button[data-a]'); if (!b || !sel) return;
-    if (b.dataset.a === 'up') upgrade(sel); else if (b.dataset.a === 'sell') sell(sel); else { sel = null; panel(); }
+    const a = b.dataset.a;
+    if (a === 'up') upgrade(sel); else if (a === 'spec') specialise(sel, +b.dataset.i); else if (a === 'sell') sell(sel);
+    else if (a === 'mode') { sel.mode = b.dataset.m; save(); panel(); } else { sel = null; panel(); }
   });
   $('#tdBar').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b || !S) return;
@@ -3084,6 +3287,15 @@ const TowerDefense = (() => {
     if (!S || S.over || !T) return;
     const rc = cv.getBoundingClientRect();
     const [c, r] = screenToTile(e.clientX - rc.left, e.clientY - rc.top);
+    if (armed === 'meteor') {
+      armed = null;
+      if (c >= 0 && r >= 0 && c < COLS && r < ROWS && S.inWave) {
+        const [fx0, fy0] = screenToTile(e.clientX - rc.left, e.clientY - rc.top, true);
+        fx.push({ kind: 'meteor', x: fx0, y: fy0, dmg: 150 + S.wave * 25, life: .7, max: .7, impact: .1 });
+        S.cd.meteor = SPELLS.meteor.cd; beep(300, .5, .08); $('#tdToast').classList.remove('show');
+      }
+      spellUI(true); return;
+    }
     if (c < 0 || r < 0 || c >= COLS || r >= ROWS) { sel = null; panel(); return; }
     const t = towerAt(c, r);
     if (t) { sel = sel === t ? null : t; buildType = null; hud(); panel(); return; }
@@ -3105,7 +3317,7 @@ const TowerDefense = (() => {
   function renderStart() {
     const b = stats.best;
     $('#tdMaps').innerHTML = Object.entries(MAPS).map(([k, m]) => `<button data-map="${k}" class="${opt.map === k ? 'on' : ''}">
-      <i style="background:linear-gradient(135deg,${m.grass[0]} 0 60%,${m.path} 60% 75%,${m.grass[1]} 75%)"></i><b>${m.name}</b><small>${b[k] ? 'record: golf ' + b[k] : 'nog niet gespeeld'}</small></button>`).join('');
+      <i style="background:linear-gradient(135deg,${m.grass[0]} 0 60%,${m.path} 60% 75%,${m.grass[1]} 75%)"></i><b>${m.name} ${m.expert ? '<span class="exp">EXPERT</span>' : ''}</b><span class="stars">${['makkelijk', 'normaal', 'moeilijk'].map(d => { const n = (stats.stars || {})[k + '/' + d] || 0; return '★'.repeat(n) + '☆'.repeat(3 - n); }).join(' ')}</span><small>${b[k] ? 'record: golf ' + b[k] : 'nog niet gespeeld'}</small></button>`).join('');
     const seg = (key, ch) => ch.map(([v, l]) => `<button data-key="${key}" data-val='${JSON.stringify(v)}' class="${opt[key] === v ? 'on' : ''}">${l}</button>`).join('');
     $('#tdDiff').innerHTML = seg('diff', [['makkelijk', 'Makkelijk'], ['normaal', 'Normaal'], ['moeilijk', 'Moeilijk']]);
     $('#tdWaves').innerHTML = seg('waves', [[10, '10'], [20, '20'], [0, 'Eindeloos']]);
@@ -3124,7 +3336,12 @@ const TowerDefense = (() => {
       <div class="opt"><div class="opt-label">Geluid</div>${seg('sound', [[true, 'Aan'], [false, 'Uit']])}</div>
       <div class="opt-section">Torens</div>` +
       Object.values(TOWERS).map(d => `<div class="td-info"><b>${d.icon} ${d.name}</b> · ${d.cost} 💰 — ${d.desc}. Bereik ${d.range[0]}, schade ${d.dmg[0]}${d.magic ? ', negeert pantser' : ''}.</div>`).join('') +
-      `<div class="opt-section">Vijanden</div><div class="td-info">🔴 gewoon · 🟡 snel · ⚪ gepantserd (pijlen en kanonnen doen minder schade, magie niet) · 🟢 zwerm · 👑 baas (elke 5e golf, kost 5 ❤ als hij erdoor komt)</div>
+      `<div class="opt-section">Specialisaties</div><div class="td-info">Een toren op niveau 3 kan een specialisatie kiezen (★). Per toren zijn er twee keuzes:</div>` +
+      Object.entries(SPECS).map(([k, a]) => `<div class="td-info"><b>${TOWERS[k].icon} ${TOWERS[k].name}</b> → ` + a.map(o => `<b>${o.name}</b> (${o.cost} 💰): ${o.desc}`).join(' · ') + `</div>`).join('') +
+      `<div class="td-info">🎯 Tik op een toren om te kiezen op welke vijand hij mikt: de eerste, de laatste, de sterkste of de dichtstbijzijnde.</div>
+      <div class="opt-section">Spreuken & goud</div><div class="td-info">☄️ <b>Meteoor</b> — tik daarna op het veld: grote schade in een gebied (35 s wachten). 🌨️ <b>Vriesgolf</b> — bevriest alle vijanden 2,5 s (50 s wachten). Alleen tijdens een golf.<br>💰 <b>Rente</b>: na elke golf krijg je 5% van je goud erbij (max 30). Sparen loont!<br>★ <b>Sterren</b>: win met ≥90% levens voor 3 sterren.</div>
+      <div class="opt-section">Vijanden</div><div class="td-info">🔴 gewoon · 🟡 snel · 🛡️ gepantserd (pijlen en kanonnen doen minder schade, magie niet) · 🟢 zwerm · 🦇 vliegend (kanonnen kunnen ze niet raken) · 🟣 splitser (valt uiteen in 3 kleintjes) · 💚 genezer (heelt vijanden om zich heen) · 👑 baas (elke 5e golf, kost 5 ❤ als hij erdoor komt)</div>
+      <div class="opt-section">Kaarten</div><div class="td-info">🌋 <b>Vulkaan</b> (expert) heeft twee ingangen die samenkomen — verdeel je torens goed.</div>
       <div class="opt-section">Statistieken</div><div class="stats">` +
       [['Gespeeld', stats.played], ['Gewonnen', stats.won], ...Object.entries(MAPS).map(([k, m]) => [`Record ${m.name}`, stats.best[k] ? 'golf ' + stats.best[k] : '–'])].map(([l, v]) => `<div class="stat"><b>${v}</b><small>${l}</small></div>`).join('') + `</div>`;
   }
@@ -3143,7 +3360,7 @@ const TowerDefense = (() => {
     if (!iconsDone) { iconsDone = true; document.querySelectorAll('#tdBar .tdt').forEach(b => { b.querySelector('span').innerHTML = `<img src="${towerIcon(b.dataset.t)}" alt="">`; }); }
     if (!running) { running = true; lastT = performance.now(); raf = requestAnimationFrame(frame); }
     const saved = store.get('td.save', null);
-    if (!S && saved && saved.towers) { S = saved; S.inWave = false; enemies = []; shots = []; fx = []; buildMap(); }
+    if (!S && saved && saved.towers) { S = saved; S.inWave = false; S.cd = S.cd || { meteor: 0, frost: 0 }; S.startLives = S.startLives || DIFF[S.diff].lives; S.towers.forEach(t => { t.mode = t.mode || 'eerste'; }); enemies = []; shots = []; fx = []; buildMap(); }
     layout();
     if (!S || S.over) { if (!S) { S = { map: opt.map, diff: opt.diff, waves: opt.waves, wave: 0, gold: 0, lives: 0, towers: [], over: true }; buildMap(); } openStart(); }
     hud(); panel();
@@ -3151,13 +3368,13 @@ const TowerDefense = (() => {
   function leave() {
     // leaving during a wave: the wave restarts next time (towers and gold are kept)
     if (S && S.inWave && !S.over) { S.wave--; S.inWave = false; enemies = []; shots = []; spawnQ = []; }
-    save(); running = false; cancelAnimationFrame(raf); sel = null; buildType = null; $('#tdPanel').classList.remove('show');
+    save(); running = false; cancelAnimationFrame(raf); sel = null; buildType = null; $('#tdPanel').classList.remove('show'); armed = null;
     show('menu'); refreshMenu();
   }
   window.addEventListener('resize', () => { if (current === 'td') layout(); });
   // new map → rebuild the cached background
   const _buildMap = buildMap; buildMap = function () { _buildMap(); bg = null; };
-  window.__td = { get S() { return S; }, get T() { return T; }, screenToTile: (x, y) => screenToTile(x, y), get enemies() { return enemies; }, build, upgrade, startWave, TOWERS, get pathTiles() { return pathTiles; }, get deco() { return deco; }, setSpeed: v => { speed = v; } };
+  window.__td = { get S() { return S; }, get T() { return T; }, screenToTile: (x, y) => screenToTile(x, y), get enemies() { return enemies; }, build, upgrade, specialise, stat, startWave, castFrost, TOWERS, SPECS, MAPS, waveList, get pathTiles() { return pathTiles; }, get deco() { return deco; }, setSpeed: v => { speed = v; } };
   return { enter, leave, hasSave: () => !!store.get('td.save', null) };
 })();
 $('#tileTd').addEventListener('click', () => TowerDefense.enter());
@@ -3165,7 +3382,7 @@ $('#tileTd').addEventListener('click', () => TowerDefense.enter());
 /* ================================================================
    UPDATES (online)
    ================================================================ */
-const APP_VERSION = '1.16';
+const APP_VERSION = '1.17';
 let menuToastT;
 function menuToast(t, ms) {
   const e = $('#menuToast'); e.textContent = t; e.classList.add('show');
