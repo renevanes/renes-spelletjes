@@ -1,9 +1,9 @@
 {
-  "versionCode": 16,
-  "versionName": "1.15",
+  "versionCode": 17,
+  "versionName": "1.16",
   "nativeLevel": 2,
-  "notes": "Nieuw spel: Torenverdediging (tower defense) met 3 kaarten, 4 torens en 20 golven",
+  "notes": "Torenverdediging: veel mooiere graphics; elke toren apart plaatsen. Menu beter leesbaar op kleine schermen",
   "web": "web/index.html",
-  "webSha256": "52454528c9cd1961ba38155116d0c3db066a11e8f2ca4eafbba37bca4d24769b",
+  "webSha256": "57fac792867366f5bd2b69bde9fc4cd109bf03766a36e1c41cacf71393dc018a",
   "apk": "apk/Renes-spelletjes.apk"
 }
