@@ -1,10 +1,10 @@
 {
-  "versionCode": 26,
-  "versionName": "1.25",
+  "versionCode": 27,
+  "versionName": "1.26",
   "nativeLevel": 4,
-  "notes": "Spoorsprinter: 3 hartjes \u2013 bij een botsing ben je er \u00e9\u00e9n kwijt en ren je door; pas als ze op zijn word je gepakt. Extra hartjes onderweg te vinden",
+  "notes": "Spoorsprinter: treinen zien er op het dak veel echter uit (grijze daken, losse wagons, dakunits) en het beeld blijft normaal als je over de treinen rent",
   "web": "web/index.html",
-  "webSha256": "63ddcd5a048abbea7b59bd55fb918e651ef3f9837d3e6fa3357a52e85d0f44cc",
-  "webSig": "MEUCIFoPOhyUZH9Mlr3w7Eqrx0qcYo3XPltHxC+bfVmvMe89AiEAmQHI20zWKzm+kVd/rA6tlyf2+dbYyZDhzx75vjK31fw=",
+  "webSha256": "5b365c0180257e2317f8c5a61e1755db50c1b6449203d16718e29542bdf98b6d",
+  "webSig": "MEYCIQD9c5y1p5adF0csWrN03GJ0yGGkCofdg0B1I1lTBk1CowIhAMh28fn192dcst/Sk3K0DIgfcELGLcwlH5/+26HGmwt7",
   "apk": "apk/Renes-spelletjes.apk"
 }
