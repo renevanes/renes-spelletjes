@@ -1,10 +1,10 @@
 {
-  "versionCode": 25,
-  "versionName": "1.24",
+  "versionCode": 26,
+  "versionName": "1.25",
   "nativeLevel": 4,
-  "notes": "Nieuw spel: Spoorsprinter \u2013 ren over het spoor, spring over treinen, ontwijk palen en hekken, met skateboard, jetpack en magneet, en ontsnap aan de handhaver en zijn hond",
+  "notes": "Spoorsprinter: 3 hartjes \u2013 bij een botsing ben je er \u00e9\u00e9n kwijt en ren je door; pas als ze op zijn word je gepakt. Extra hartjes onderweg te vinden",
   "web": "web/index.html",
-  "webSha256": "bce003fee0bd5700cbc4f94670462949f855be5549d0b22a45749ed2866d73d2",
-  "webSig": "MEUCIB2bj80WNRZ9WAA35/9JtLlSyWgHbd9tpCDDTiruCB3FAiEA2+aXvCCykYw1VwZXT4bW/ClVzEPtwuFaoLDobzGbFyg=",
+  "webSha256": "63ddcd5a048abbea7b59bd55fb918e651ef3f9837d3e6fa3357a52e85d0f44cc",
+  "webSig": "MEUCIFoPOhyUZH9Mlr3w7Eqrx0qcYo3XPltHxC+bfVmvMe89AiEAmQHI20zWKzm+kVd/rA6tlyf2+dbYyZDhzx75vjK31fw=",
   "apk": "apk/Renes-spelletjes.apk"
 }
