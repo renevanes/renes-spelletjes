@@ -1,10 +1,10 @@
 {
-  "versionCode": 23,
-  "versionName": "1.22",
+  "versionCode": 24,
+  "versionName": "1.23",
   "nativeLevel": 4,
-  "notes": "Nieuw spel: Springvos \u2013 een klassieke platformgame met 9 levels, kratten, power-ups en gouden tulpen. Airhockey: voller, minder schel goalgeluid. Beveiliging: updates zijn digitaal ondertekend en worden gecontroleerd, strengere app-instellingen. Kleiner en sneller door geoptimaliseerde code",
+  "notes": "Springvos vernieuwd: 12 levels in 4 werelden met eindbazen, muursprong, dash, springveren, liften, brokkelplanken, kanonnen en wespen; veel mooiere graphics met sfeer per wereld (polder, bos, donkere grot, nacht), water, animaties en effecten; tijd en records per level",
   "web": "web/index.html",
-  "webSha256": "39d0287d54417ccc6cee869f3a2592fc7283f8d7ea925bc80822eda3d867470d",
-  "webSig": "MEYCIQCLEgklpxosZOOpqzn6EqN/o8OWi4X7hADqbrZOdVmRPwIhAJqKG4y+NnIcRxj0xpK62TnbFyrXbwNE0h7iip+Sfk9o",
+  "webSha256": "e4a8f9892e920f4fb895af3f66c8d4bec75d2c4296d71146a4fb69ce7f0526ad",
+  "webSig": "MEYCIQDgAwlXM3OTJJ/f/uV6pNHDhTj3yRbzFXrtFkTOqoSNsAIhAKWN+nGZ7BurYbfE4sGokdUDSyqwPCAK/8mpzin7HVMh",
   "apk": "apk/Renes-spelletjes.apk"
 }
