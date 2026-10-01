@@ -1,10 +1,10 @@
 {
-  "versionCode": 24,
-  "versionName": "1.23",
+  "versionCode": 25,
+  "versionName": "1.24",
   "nativeLevel": 4,
-  "notes": "Springvos vernieuwd: 12 levels in 4 werelden met eindbazen, muursprong, dash, springveren, liften, brokkelplanken, kanonnen en wespen; veel mooiere graphics met sfeer per wereld (polder, bos, donkere grot, nacht), water, animaties en effecten; tijd en records per level",
+  "notes": "Nieuw spel: Spoorsprinter \u2013 ren over het spoor, spring over treinen, ontwijk palen en hekken, met skateboard, jetpack en magneet, en ontsnap aan de handhaver en zijn hond",
   "web": "web/index.html",
-  "webSha256": "e4a8f9892e920f4fb895af3f66c8d4bec75d2c4296d71146a4fb69ce7f0526ad",
-  "webSig": "MEYCIQDgAwlXM3OTJJ/f/uV6pNHDhTj3yRbzFXrtFkTOqoSNsAIhAKWN+nGZ7BurYbfE4sGokdUDSyqwPCAK/8mpzin7HVMh",
+  "webSha256": "bce003fee0bd5700cbc4f94670462949f855be5549d0b22a45749ed2866d73d2",
+  "webSig": "MEUCIB2bj80WNRZ9WAA35/9JtLlSyWgHbd9tpCDDTiruCB3FAiEA2+aXvCCykYw1VwZXT4bW/ClVzEPtwuFaoLDobzGbFyg=",
   "apk": "apk/Renes-spelletjes.apk"
 }
