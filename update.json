@@ -1,10 +1,10 @@
 {
-  "versionCode": 27,
-  "versionName": "1.26",
+  "versionCode": 28,
+  "versionName": "1.27",
   "nativeLevel": 4,
-  "notes": "Spoorsprinter: treinen zien er op het dak veel echter uit (grijze daken, losse wagons, dakunits) en het beeld blijft normaal als je over de treinen rent",
+  "notes": "Nieuw spel: Zeeslag \u2013 tegen de computer (3 niveaus) of met z'n twee\u00ebn op \u00e9\u00e9n telefoon, schepen zelf plaatsen of willekeurig",
   "web": "web/index.html",
-  "webSha256": "5b365c0180257e2317f8c5a61e1755db50c1b6449203d16718e29542bdf98b6d",
-  "webSig": "MEYCIQD9c5y1p5adF0csWrN03GJ0yGGkCofdg0B1I1lTBk1CowIhAMh28fn192dcst/Sk3K0DIgfcELGLcwlH5/+26HGmwt7",
+  "webSha256": "f28a6bbdfc65100f83bc135865cc2dd5492d80d7d557cb2aa1737cdfbd8a03e6",
+  "webSig": "MEYCIQDuua57Qtb4t8qIqNNFvkUFTaqdXsjhxNqQNCg0c9MxqQIhAOL8RYBv9Z2DxQ93hDiTKN9WI8Tz2lbMiwuZn5L3qYWR",
   "apk": "apk/Renes-spelletjes.apk"
 }
