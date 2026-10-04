@@ -1,10 +1,10 @@
 {
-  "versionCode": 29,
-  "versionName": "1.28",
-  "nativeLevel": 5,
-  "notes": "Snelkoppelingen: zet elk spel als eigen icoon op je beginscherm (via \ud83d\udccc Snelkoppelingen of door een spel in het menu ingedrukt te houden), en houd het app-icoon ingedrukt voor je laatst gespeelde spellen",
+  "versionCode": 30,
+  "versionName": "1.29",
+  "nativeLevel": 6,
+  "notes": "Grote app-update: spelers (profielen), instellingenpagina, licht/donker thema, grotere tekst, compact menu, \"Verder waar je was\", statistieken met speeltijd, trofee\u00ebnkast, speeltijdlimiet, ouderslot met pincode, back-up en herstel, updates alleen via wifi of handmatig, \"Wat is er nieuw\", herstel bij fouten en voortgang wissen per spel",
   "web": "web/index.html",
-  "webSha256": "e825e501f5db0fdc295d9f25aabfd1c1ced52492ae1cde1d3d4dc953687ff461",
-  "webSig": "MEYCIQDWUOKQQp3GFzmjkxZqIg0TeEriy7jMAY13eBn8GrghAAIhANLOLXnfylmh7UPdbCAjsUXWOtqPjdiy45uIbFc+crag",
+  "webSha256": "b64adbb3ba97e3d26d0e9e9f4ff18a536c5a1b235d2c00516079aa8396cb6cd0",
+  "webSig": "MEUCIQD6m1Si4KZNS93YHnsZFr29LS0JjH3Z5nPCmoErreDzVgIgZzpgFihg51yEAWf5R4xFrkUf/Rg8LE1af4eYdxiBJl4=",
   "apk": "apk/Renes-spelletjes.apk"
 }
