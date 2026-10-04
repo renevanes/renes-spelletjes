@@ -1,10 +1,10 @@
 {
-  "versionCode": 28,
-  "versionName": "1.27",
-  "nativeLevel": 4,
-  "notes": "Nieuw spel: Zeeslag \u2013 tegen de computer (3 niveaus) of met z'n twee\u00ebn op \u00e9\u00e9n telefoon, schepen zelf plaatsen of willekeurig",
+  "versionCode": 29,
+  "versionName": "1.28",
+  "nativeLevel": 5,
+  "notes": "Snelkoppelingen: zet elk spel als eigen icoon op je beginscherm (via \ud83d\udccc Snelkoppelingen of door een spel in het menu ingedrukt te houden), en houd het app-icoon ingedrukt voor je laatst gespeelde spellen",
   "web": "web/index.html",
-  "webSha256": "f28a6bbdfc65100f83bc135865cc2dd5492d80d7d557cb2aa1737cdfbd8a03e6",
-  "webSig": "MEYCIQDuua57Qtb4t8qIqNNFvkUFTaqdXsjhxNqQNCg0c9MxqQIhAOL8RYBv9Z2DxQ93hDiTKN9WI8Tz2lbMiwuZn5L3qYWR",
+  "webSha256": "e825e501f5db0fdc295d9f25aabfd1c1ced52492ae1cde1d3d4dc953687ff461",
+  "webSig": "MEYCIQDWUOKQQp3GFzmjkxZqIg0TeEriy7jMAY13eBn8GrghAAIhANLOLXnfylmh7UPdbCAjsUXWOtqPjdiy45uIbFc+crag",
   "apk": "apk/Renes-spelletjes.apk"
 }
