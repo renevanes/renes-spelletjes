@@ -1,10 +1,10 @@
 {
-  "versionCode": 31,
-  "versionName": "1.30",
+  "versionCode": 32,
+  "versionName": "1.31",
   "nativeLevel": 6,
-  "notes": "Nieuwe graphics: Springvos in haarscherpe getekende stijl met diepte, licht en nieuwe figuren; Spoorsprinter met echte treinen, bovenleiding, posters en een nieuwe hardloper; Airhockey met glanzende neon-tafel en effecten; Zeeslag met bewegende zee, echte oorlogsschepen en explosies; Torenverdediging met licht en wolkenschaduwen",
+  "notes": "Professioneel geluid: eigen achtergrondmuziek per spel (elke Springvos-wereld en de eindbaas hebben hun eigen muziek), kaartgeluiden voor Patience en Klaverjassen, nieuwe Springvos-effecten, stereo-geluid, en in de instellingen aparte knoppen voor muziek en effectvolume",
   "web": "web/index.html",
-  "webSha256": "93f52407eddae4af235e4ee293f186f569088cc7fce8edbd4d5e7862d0e2b2ad",
-  "webSig": "MEUCIQDPZQa2rXNKqnTJA8MfmQ0N2UboXEtCN+DdgSKKDF09SwIgNUpAtf0HLr3JZiB2ssqDIMwXMQJhSUB9r2P26ckHtC0=",
+  "webSha256": "f433b574f8d6ad5fca63f1cf0ccd27b334c3c28c058269d091154f1a57399861",
+  "webSig": "MEUCIEL0lgaKST/lB0KUE3X2Ib2ylIZtQ/mpC+EOxquQzF5mAiEA1Q4lVUXfGO/HnxstiCXxvgmKj6Cb1HISUcvB7bJh6ow=",
   "apk": "apk/Renes-spelletjes.apk"
 }
