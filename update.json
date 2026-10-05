@@ -1,10 +1,10 @@
 {
-  "versionCode": 33,
-  "versionName": "1.32",
+  "versionCode": 34,
+  "versionName": "1.33",
   "nativeLevel": 6,
-  "notes": "Drie nieuwe spellen: Mijnenveger (3 niveaus, vlaggen, zoomen), Goudgraver (10 levels: pak het goud, graaf gaten en ontsnap aan de mollen) en De Drie Kabouters (8 levels: werk samen met Snel, Sterk en Schild). Met eigen muziek, geluiden en trofee\u00ebn. Zeeslag: als je verliest zie je waar de schepen van de computer lagen",
+  "notes": "Goudgraver: graven werkt nu echt tegen de mollen. Een mol die in je gat valt zit vast tot het gat dichtgroeit en is dan verslagen. Mollen lopen ook niet meer om je gaten heen",
   "web": "web/index.html",
-  "webSha256": "1b423bf9c6e3945026efad74c0d7c3c0eb6fbd0deef2eeb2dd1cdb464d6c1bda",
-  "webSig": "MEQCIA+FVT8fmMAF2TA0BW2Jsj7kCjv1WOlRSbfl1Te6/uwAAiBH579y1PiJVLBD3AYDdPR90HL2q4AnUxvu22KMzy/03g==",
+  "webSha256": "2a1fcf48c88bd4f131ab50704dfe584076e689fd787055370f64aed535818adc",
+  "webSig": "MEUCIQC9FT7Dv+dyHAuUlNylp5o/DLxtSgzOl87AFjV9SgihxwIgQ2x24YWiqNqQs7qFIVgNyBaF81pey8G8rL4u+EgK1L0=",
   "apk": "apk/Renes-spelletjes.apk"
 }
