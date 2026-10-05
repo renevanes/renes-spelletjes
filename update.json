@@ -1,10 +1,10 @@
 {
-  "versionCode": 30,
-  "versionName": "1.29",
+  "versionCode": 31,
+  "versionName": "1.30",
   "nativeLevel": 6,
-  "notes": "Grote app-update: spelers (profielen), instellingenpagina, licht/donker thema, grotere tekst, compact menu, \"Verder waar je was\", statistieken met speeltijd, trofee\u00ebnkast, speeltijdlimiet, ouderslot met pincode, back-up en herstel, updates alleen via wifi of handmatig, \"Wat is er nieuw\", herstel bij fouten en voortgang wissen per spel",
+  "notes": "Nieuwe graphics: Springvos in haarscherpe getekende stijl met diepte, licht en nieuwe figuren; Spoorsprinter met echte treinen, bovenleiding, posters en een nieuwe hardloper; Airhockey met glanzende neon-tafel en effecten; Zeeslag met bewegende zee, echte oorlogsschepen en explosies; Torenverdediging met licht en wolkenschaduwen",
   "web": "web/index.html",
-  "webSha256": "b64adbb3ba97e3d26d0e9e9f4ff18a536c5a1b235d2c00516079aa8396cb6cd0",
-  "webSig": "MEUCIQD6m1Si4KZNS93YHnsZFr29LS0JjH3Z5nPCmoErreDzVgIgZzpgFihg51yEAWf5R4xFrkUf/Rg8LE1af4eYdxiBJl4=",
+  "webSha256": "93f52407eddae4af235e4ee293f186f569088cc7fce8edbd4d5e7862d0e2b2ad",
+  "webSig": "MEUCIQDPZQa2rXNKqnTJA8MfmQ0N2UboXEtCN+DdgSKKDF09SwIgNUpAtf0HLr3JZiB2ssqDIMwXMQJhSUB9r2P26ckHtC0=",
   "apk": "apk/Renes-spelletjes.apk"
 }
