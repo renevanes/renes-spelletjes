@@ -1,10 +1,10 @@
 {
-  "versionCode": 32,
-  "versionName": "1.31",
+  "versionCode": 33,
+  "versionName": "1.32",
   "nativeLevel": 6,
-  "notes": "Professioneel geluid: eigen achtergrondmuziek per spel (elke Springvos-wereld en de eindbaas hebben hun eigen muziek), kaartgeluiden voor Patience en Klaverjassen, nieuwe Springvos-effecten, stereo-geluid, en in de instellingen aparte knoppen voor muziek en effectvolume",
+  "notes": "Drie nieuwe spellen: Mijnenveger (3 niveaus, vlaggen, zoomen), Goudgraver (10 levels: pak het goud, graaf gaten en ontsnap aan de mollen) en De Drie Kabouters (8 levels: werk samen met Snel, Sterk en Schild). Met eigen muziek, geluiden en trofee\u00ebn. Zeeslag: als je verliest zie je waar de schepen van de computer lagen",
   "web": "web/index.html",
-  "webSha256": "f433b574f8d6ad5fca63f1cf0ccd27b334c3c28c058269d091154f1a57399861",
-  "webSig": "MEUCIEL0lgaKST/lB0KUE3X2Ib2ylIZtQ/mpC+EOxquQzF5mAiEA1Q4lVUXfGO/HnxstiCXxvgmKj6Cb1HISUcvB7bJh6ow=",
+  "webSha256": "1b423bf9c6e3945026efad74c0d7c3c0eb6fbd0deef2eeb2dd1cdb464d6c1bda",
+  "webSig": "MEQCIA+FVT8fmMAF2TA0BW2Jsj7kCjv1WOlRSbfl1Te6/uwAAiBH579y1PiJVLBD3AYDdPR90HL2q4AnUxvu22KMzy/03g==",
   "apk": "apk/Renes-spelletjes.apk"
 }
