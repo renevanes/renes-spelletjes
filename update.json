@@ -1,10 +1,10 @@
 {
-  "versionCode": 34,
-  "versionName": "1.33",
+  "versionCode": 35,
+  "versionName": "1.34",
   "nativeLevel": 6,
-  "notes": "Goudgraver: graven werkt nu echt tegen de mollen. Een mol die in je gat valt zit vast tot het gat dichtgroeit en is dan verslagen. Mollen lopen ook niet meer om je gaten heen",
+  "notes": "Nieuw spel: Sudoku (3 niveaus, elke puzzel met precies \u00e9\u00e9n oplossing, potloodnotities, hints en ongedaan maken). Goudgraver is makkelijker: je hebt nu levens, de mollen zijn trager en minder fanatiek, en je kiest zelf de moeilijkheid (makkelijk, normaal of moeilijk)",
   "web": "web/index.html",
-  "webSha256": "2a1fcf48c88bd4f131ab50704dfe584076e689fd787055370f64aed535818adc",
-  "webSig": "MEUCIQC9FT7Dv+dyHAuUlNylp5o/DLxtSgzOl87AFjV9SgihxwIgQ2x24YWiqNqQs7qFIVgNyBaF81pey8G8rL4u+EgK1L0=",
+  "webSha256": "0e34e6ea2c40942ee95491ec0626bcafff88e5309fb036647eb7bb167fd0bcb7",
+  "webSig": "MEUCIQC0/5ewXjjos7HeZLX/Nck1wDwCaDJ7Q9vaCEXx+X6r9QIgcChlWeVq41bcqvUn0gzCL4P8YpmvEfKM9/TANXsxRv0=",
   "apk": "apk/Renes-spelletjes.apk"
 }
