@@ -1,10 +1,10 @@
 {
-  "versionCode": 35,
-  "versionName": "1.34",
+  "versionCode": 36,
+  "versionName": "1.35",
   "nativeLevel": 6,
-  "notes": "Nieuw spel: Sudoku (3 niveaus, elke puzzel met precies \u00e9\u00e9n oplossing, potloodnotities, hints en ongedaan maken). Goudgraver is makkelijker: je hebt nu levens, de mollen zijn trager en minder fanatiek, en je kiest zelf de moeilijkheid (makkelijk, normaal of moeilijk)",
+  "notes": "Goudgraver: de onderste vloer is nu ook te graven, zodat je altijd een gat voor een mol kunt maken. Level 2 (Touwbrug) aangepast: de mol staat niet meer vlak naast je in een doodlopende hoek",
   "web": "web/index.html",
-  "webSha256": "0e34e6ea2c40942ee95491ec0626bcafff88e5309fb036647eb7bb167fd0bcb7",
-  "webSig": "MEUCIQC0/5ewXjjos7HeZLX/Nck1wDwCaDJ7Q9vaCEXx+X6r9QIgcChlWeVq41bcqvUn0gzCL4P8YpmvEfKM9/TANXsxRv0=",
+  "webSha256": "108f347385f1e79d6c453c7bba6f15e96b4df1c8bf0cc45709af61bb3584a1e6",
+  "webSig": "MEYCIQCxgQzsm1U6M+vMsaOTZcOjnMBFzopRL9o2FAfa1JTQZQIhAK8JkYiy6sODVer9wC2QgpEDBVreupaiyiNLrpwzfErC",
   "apk": "apk/Renes-spelletjes.apk"
 }
