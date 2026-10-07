@@ -1,10 +1,10 @@
 {
-  "versionCode": 41,
-  "versionName": "1.40",
+  "versionCode": 42,
+  "versionName": "1.41",
   "nativeLevel": 9,
-  "notes": "Twee nieuwe spellen: Blokval (vallende blokken, met Klassiek, 40 regels en 2 minuten) en Snoepmix (snoep wisselen en combineren, 20 levels plus vrij spel). Klaverjassen: na elke ronde en na het potje kun je alle slagen, de rondes en de puntentelling bekijken, en er is een nieuw niveau Moeilijk met veel sterkere computerspelers (nu standaard)",
+  "notes": "Nieuw spel: Katapult. Schiet de Bollen met de katapult naar de torens van de wasberen die de picknick hebben gestolen: 20 levels in park, haven en kasteel, vijf soorten Bollen met een eigen kunstje",
   "web": "web/index.html",
-  "webSha256": "f6720b73f4eb81174927bd58e2f4cc8e9cf3fdd55e23979b8d835124336b290a",
-  "webSig": "MEUCIEQONZZIqYWtUnlBeieMRzEvCpxSVQEAYNhZ44E4ITRiAiEA7qcAZ0x6EMOTsM+D0cTaYShLNN8M+bldokRxbOje71Q=",
+  "webSha256": "c23e250b92dbd55b731c741887611c44c1e9c895423b5ae7d9a133148cbe73b3",
+  "webSig": "MEUCIGvAOy8bTGIrdw2ektt+hj3zEcMU2P1TQJzr02yQgKzgAiEA4GSudfF6aigVBNc1/FvDlSy5P4MbZODR6t79IEbQhnk=",
   "apk": "apk/Renes-spelletjes.apk"
 }
