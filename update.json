@@ -1,10 +1,10 @@
 {
-  "versionCode": 40,
-  "versionName": "1.39",
+  "versionCode": 41,
+  "versionName": "1.40",
   "nativeLevel": 9,
-  "notes": "Klaverjassen: het troefsymbool bij de speler die speelt (en in het scoreoverzicht) staat nu in de juiste kleur, harten en ruiten in rood",
+  "notes": "Twee nieuwe spellen: Blokval (vallende blokken, met Klassiek, 40 regels en 2 minuten) en Snoepmix (snoep wisselen en combineren, 20 levels plus vrij spel). Klaverjassen: na elke ronde en na het potje kun je alle slagen, de rondes en de puntentelling bekijken, en er is een nieuw niveau Moeilijk met veel sterkere computerspelers (nu standaard)",
   "web": "web/index.html",
-  "webSha256": "25a3dc6a5afaffac9c902d3ba18d1bb609147d4a2f1861916729d809cd175625",
-  "webSig": "MEYCIQCNPQgnOd1EHOstRrfN6Ibx8KCx58H/9RNTpu4umJ/ldgIhANqoeRftkK2fb+CpYgGf7ZWFi/GngU14vlCuzJA4rZbh",
+  "webSha256": "f6720b73f4eb81174927bd58e2f4cc8e9cf3fdd55e23979b8d835124336b290a",
+  "webSig": "MEUCIEQONZZIqYWtUnlBeieMRzEvCpxSVQEAYNhZ44E4ITRiAiEA7qcAZ0x6EMOTsM+D0cTaYShLNN8M+bldokRxbOje71Q=",
   "apk": "apk/Renes-spelletjes.apk"
 }
