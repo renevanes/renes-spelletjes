@@ -1,10 +1,10 @@
 {
-  "versionCode": 38,
-  "versionName": "1.37",
-  "nativeLevel": 8,
-  "notes": "Nieuw, stijlvol app-icoon (gouden R op groen laken). Grote controle van alle code met tientallen reparaties: verwijderen van spelers, gewist spel en back-up terugzetten werken nu echt; Klaverjassen kan niet meer vastlopen en telt roem correct; Torenverdediging telt een verloren potje niet meer als winst; de eindbaas in Springvos is niet meer te omzeilen; munten in Spoorsprinter blijven bewaard als je stopt; Zeeslag-opties wijzigen tijdens een potje breekt het spel niet meer; Airhockey-puck schiet niet meer door je slagger; Sudoku Moeilijk is echt moeilijk; vensters verschijnen niet meer onverwacht over het menu; speeltijdlimiet is niet meer te omzeilen; donkere statusbalk-iconen bij het lichte thema",
+  "versionCode": 39,
+  "versionName": "1.38",
+  "nativeLevel": 9,
+  "notes": "Nieuw app-icoon: een neon gamecontroller",
   "web": "web/index.html",
-  "webSha256": "afad8070d73713af8d01c03c42de04927f1bf3e5fcc8514a516a3b828ecd15d5",
-  "webSig": "MEUCIDlKXxiR3FcxDEQXFlgNjkqYZOiTXc+S4TQGJlIPRmZRAiEAhyxftMPZuojMk7pH2QJ3J5E0/xNO1LCY87Zc4dgBBww=",
+  "webSha256": "c9ad20cf3194ecdc5cbe333251fe9ca0650929469850fa7cc88ddb15d0f2a57c",
+  "webSig": "MEUCIQCvc0yCHszILazUw87psCa173N2r5VzNpthusVhod83ZgIgRIaKa675VDW1eAGrIa63Kego4/68qWuKtHUVwZ5SF0Y=",
   "apk": "apk/Renes-spelletjes.apk"
 }
