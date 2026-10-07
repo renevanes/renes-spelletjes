@@ -1,10 +1,10 @@
 {
-  "versionCode": 36,
-  "versionName": "1.35",
-  "nativeLevel": 6,
-  "notes": "Goudgraver: de onderste vloer is nu ook te graven, zodat je altijd een gat voor een mol kunt maken. Level 2 (Touwbrug) aangepast: de mol staat niet meer vlak naast je in een doodlopende hoek",
+  "versionCode": 37,
+  "versionName": "1.36",
+  "nativeLevel": 7,
+  "notes": "Nieuwe, professionele iconen: elk spel heeft een eigen getekend icoon in het menu, in de snelkoppelingen en in de statistieken, en de app zelf heeft een nieuw app-icoon dat zich aanpast aan de vorm van je telefoon",
   "web": "web/index.html",
-  "webSha256": "108f347385f1e79d6c453c7bba6f15e96b4df1c8bf0cc45709af61bb3584a1e6",
-  "webSig": "MEYCIQCxgQzsm1U6M+vMsaOTZcOjnMBFzopRL9o2FAfa1JTQZQIhAK8JkYiy6sODVer9wC2QgpEDBVreupaiyiNLrpwzfErC",
+  "webSha256": "18a8055aadcaafc2a88c0724246e10a6a11a448dd67b07e7514fbf45092f1f45",
+  "webSig": "MEQCIEsaccjp9XDasySHaY+5vlh7tLzVyNgYlzXyOoda95vvAiBNHDaMdUkFNQhiaAg0h1BkS+x/y2tdw/AM+DC+p1WAEQ==",
   "apk": "apk/Renes-spelletjes.apk"
 }
