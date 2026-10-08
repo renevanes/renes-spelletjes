@@ -1,11 +1,11 @@
 {
-  "versionCode": 44,
-  "versionName": "1.43",
+  "versionCode": 45,
+  "versionName": "1.44",
   "nativeLevel": 10,
-  "notes": "Nieuw spel: Woordbord \ud83d\udd24 \u2013 een Nederlands woordspel op een bord van 15\u00d715. Leg woorden tegen de computer (Makkelijk, Normaal of Sterk) of speel met z'n twee\u00ebn op \u00e9\u00e9n toestel. Met bijna 300.000 woorden (OpenTaal), letterwaarde- en woordwaardevakjes, 40 bonuspunten voor alle 7 letters, slepen of tikken om te leggen, inzoomen, tips en een willekeurig bord",
+  "notes": "Beter geluid in alle spellen: geen gekraak of tikjes meer en een vollere, warmere klank. Harde momenten worden zacht begrensd in plaats van afgekapt, diepe tonen worden hoorbaar gemaakt op de telefoonspeaker, schelle bijtonen zijn verwijderd en de muziek wordt op de geluidskwaliteit van je toestel gemaakt",
   "web": "web/index.html",
-  "webSha256": "b9ce3b8675ef4a326c564c1cf713d2b354906dbc6345f537c561beaa32e16d8c",
-  "webSig": "MEUCIGgKXIXNjYl/zTt9JgR11UGMfM6z4N3FjJeveW4rWR9fAiEAyuy7YdyJODkr7xfGnIWygm9RC0kRB63EXtWNDNlBkDI=",
+  "webSha256": "f4662a095b2da7ebab99866936172af20b70d36ddb2c186250d25a8c5fb4f9a4",
+  "webSig": "MEYCIQC5Es8YWOAbGZahoLF2nYwbMZShpBmi+k4ZfUa/Tj27mAIhAITzuMuyxNH6sfC5CDwkWB9mZN5UzPv5tUkQV/zBN8Pt",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": ""
 }
