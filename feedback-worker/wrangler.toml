@@ -1,0 +1,7 @@
+name = "renes-spelletjes-feedback"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+
+[vars]
+REPO = "renevanes/renes-spelletjes-feedback"
+# Geheim (niet hier invullen): npx wrangler secret put GITHUB_TOKEN

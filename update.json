@@ -1,10 +1,11 @@
 {
-  "versionCode": 42,
-  "versionName": "1.41",
-  "nativeLevel": 9,
-  "notes": "Nieuw spel: Katapult. Schiet de Bollen met de katapult naar de torens van de wasberen die de picknick hebben gestolen: 20 levels in park, haven en kasteel, vijf soorten Bollen met een eigen kunstje",
+  "versionCode": 43,
+  "versionName": "1.42",
+  "nativeLevel": 10,
+  "notes": "Nieuw: feedback geven vanuit de app (menu \u2192 \ud83d\udcac Feedback, of via Instellingen). Idee\u00ebn, problemen en complimenten komen direct bij de ontwikkelaar terecht; zonder internet wordt je bericht bewaard en later verstuurd",
   "web": "web/index.html",
-  "webSha256": "c23e250b92dbd55b731c741887611c44c1e9c895423b5ae7d9a133148cbe73b3",
-  "webSig": "MEUCIGvAOy8bTGIrdw2ektt+hj3zEcMU2P1TQJzr02yQgKzgAiEA4GSudfF6aigVBNc1/FvDlSy5P4MbZODR6t79IEbQhnk=",
-  "apk": "apk/Renes-spelletjes.apk"
+  "webSha256": "739201033611434c77547b1e618514357b475d395eae1e766ad39278348c5379",
+  "webSig": "MEQCIHq0PkjgezwbW8sL/CXZ+1jGLXEWEw4i3opWriSkrVq9AiBc9CMZPMfNpBVMjhS816HhN7R3O7CXHSk2aKccOE9Xsw==",
+  "apk": "apk/Renes-spelletjes.apk",
+  "feedbackUrl": ""
 }
