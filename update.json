@@ -1,11 +1,11 @@
 {
-  "versionCode": 46,
-  "versionName": "1.45",
+  "versionCode": 47,
+  "versionName": "1.46",
   "nativeLevel": 10,
-  "notes": "Muziek en geluidseffecten los aan of uit: tik in het menu op \ud83d\udd0a voor een snelmenu, of kies het per spel bij de opties (Geluidseffecten / Achtergrondmuziek). Zeeslag heeft nieuwe, eigen geluiden: een scheepskanon met fluitende granaat, plons, inslag met klinkende romp en een zinkend schip met kreunend staal en bubbels \u2013 zonder gekraak",
+  "notes": "Klaverjassen: het scorebord is instelbaar. Standaard staan nu de punten van het huidige potje groot in beeld (met roem) en de totaalscore klein eronder. Wil je het andersom, kies dan bij \u2699 Opties \u2192 Scorebord \u2192 Groot in beeld: Totaal",
   "web": "web/index.html",
-  "webSha256": "1f2ae6d6881e9cfa839588d05cba67aba3d9eb76c62d63ecb910c73d20965507",
-  "webSig": "MEQCIDNBu/xxvX+o+OAVmaGqg7/d92KjDwZzolsSG2Tg3yneAiBZudOA1+p1zMAlrnJOQEpEOOAk/Bpigd3QYAFljZNXqg==",
+  "webSha256": "c79aa9c8ce96c4d0e0e1eb327900ef585cc1001308ec8142844e8274abbee220",
+  "webSig": "MEQCIDgX8eFZrBlQgrmVookUdOxU1J44qT283HjHgIclKbtcAiAbzYOLvk7WV1hystI/EjmoO27zDp0P+NMler1AOg0F4A==",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": ""
 }
