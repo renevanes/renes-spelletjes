@@ -1,11 +1,11 @@
 {
-  "versionCode": 45,
-  "versionName": "1.44",
+  "versionCode": 46,
+  "versionName": "1.45",
   "nativeLevel": 10,
-  "notes": "Beter geluid in alle spellen: geen gekraak of tikjes meer en een vollere, warmere klank. Harde momenten worden zacht begrensd in plaats van afgekapt, diepe tonen worden hoorbaar gemaakt op de telefoonspeaker, schelle bijtonen zijn verwijderd en de muziek wordt op de geluidskwaliteit van je toestel gemaakt",
+  "notes": "Muziek en geluidseffecten los aan of uit: tik in het menu op \ud83d\udd0a voor een snelmenu, of kies het per spel bij de opties (Geluidseffecten / Achtergrondmuziek). Zeeslag heeft nieuwe, eigen geluiden: een scheepskanon met fluitende granaat, plons, inslag met klinkende romp en een zinkend schip met kreunend staal en bubbels \u2013 zonder gekraak",
   "web": "web/index.html",
-  "webSha256": "f4662a095b2da7ebab99866936172af20b70d36ddb2c186250d25a8c5fb4f9a4",
-  "webSig": "MEYCIQC5Es8YWOAbGZahoLF2nYwbMZShpBmi+k4ZfUa/Tj27mAIhAITzuMuyxNH6sfC5CDwkWB9mZN5UzPv5tUkQV/zBN8Pt",
+  "webSha256": "1f2ae6d6881e9cfa839588d05cba67aba3d9eb76c62d63ecb910c73d20965507",
+  "webSig": "MEQCIDNBu/xxvX+o+OAVmaGqg7/d92KjDwZzolsSG2Tg3yneAiBZudOA1+p1zMAlrnJOQEpEOOAk/Bpigd3QYAFljZNXqg==",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": ""
 }
