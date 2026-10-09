@@ -1,11 +1,11 @@
 {
-  "versionCode": 47,
-  "versionName": "1.46",
+  "versionCode": 49,
+  "versionName": "1.48",
   "nativeLevel": 10,
-  "notes": "Klaverjassen: het scorebord is instelbaar. Standaard staan nu de punten van het huidige potje groot in beeld (met roem) en de totaalscore klein eronder. Wil je het andersom, kies dan bij \u2699 Opties \u2192 Scorebord \u2192 Groot in beeld: Totaal",
+  "notes": "Klaverjassen: duidelijker troef kiezen \u2013 midden op tafel zie je wie als eerste mag kiezen, wie gepast heeft en wie aan de beurt is, met labels 'kiest eerst', 'past' en 'komt uit'. Nieuwe regeloptie Ondertroeven: Niet (officieel), Mag of Verplicht. Mag een kaart niet, dan legt de app nu precies uit waarom (bijv. 'je kunt niet over de troefboer heen; gooi een andere kaart bij')",
   "web": "web/index.html",
-  "webSha256": "c79aa9c8ce96c4d0e0e1eb327900ef585cc1001308ec8142844e8274abbee220",
-  "webSig": "MEQCIDgX8eFZrBlQgrmVookUdOxU1J44qT283HjHgIclKbtcAiAbzYOLvk7WV1hystI/EjmoO27zDp0P+NMler1AOg0F4A==",
+  "webSha256": "f85b60793c58626f9eb668069c64489fc3508f2fd4af5858cd748b64b3ce8988",
+  "webSig": "MEUCIEgKtO8URbhSTngQJvg2yecGld/gm2mTDX4KN1Lo7/bIAiEA7VRPEkqQc2umYOGwZg+G18aybyF8v+FaqBNf4lSMlB4=",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": ""
 }
