@@ -1,11 +1,11 @@
 {
-  "versionCode": 49,
-  "versionName": "1.48",
+  "versionCode": 50,
+  "versionName": "1.49",
   "nativeLevel": 10,
-  "notes": "Klaverjassen: duidelijker troef kiezen \u2013 midden op tafel zie je wie als eerste mag kiezen, wie gepast heeft en wie aan de beurt is, met labels 'kiest eerst', 'past' en 'komt uit'. Nieuwe regeloptie Ondertroeven: Niet (officieel), Mag of Verplicht. Mag een kaart niet, dan legt de app nu precies uit waarom (bijv. 'je kunt niet over de troefboer heen; gooi een andere kaart bij')",
+  "notes": "De Drie Kabouters helemaal vernieuwd! 20 levels in 5 werelden (Bos, Kristalgrot, Oude Mijn, IJsberg en Burcht met eindbaas De Steenreus). Snel springt en geeft een kopstoot, Sterk heeft een hamer \u00e9n een katapult, Schild blokkeert met haar paddenstoel, zweeft en de anderen kunnen op haar hoed staan. Met zakken vol spullen (sleutels, appels, bommen, tandwielen) die je aan elkaar kunt geven, liften, lopende banden, ventilatoren, teleporters, hendels en nieuwe vijanden. Mooiere graphics met bewegende achtergronden en licht, en sterren voor alle edelstenen en snelle tijden. Je bestaande voortgang blijft bewaard",
   "web": "web/index.html",
-  "webSha256": "f85b60793c58626f9eb668069c64489fc3508f2fd4af5858cd748b64b3ce8988",
-  "webSig": "MEUCIEgKtO8URbhSTngQJvg2yecGld/gm2mTDX4KN1Lo7/bIAiEA7VRPEkqQc2umYOGwZg+G18aybyF8v+FaqBNf4lSMlB4=",
+  "webSha256": "377007ba296028357a7886c1e66d67c95cc6c5eae3161feffc59db7bc6ad3316",
+  "webSig": "MEUCIB3ZSjs3ZtnPiMTr5Rdec2MUPvjxxacwQmLuJmLG4kY4AiEA7Uk8V7u5pvKswlm+d3UmK3pl7+ozZTtmlIPITK+OXzU=",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": ""
 }
