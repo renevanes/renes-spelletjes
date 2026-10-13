@@ -1,11 +1,11 @@
 {
-  "versionCode": 52,
-  "versionName": "1.51",
+  "versionCode": 53,
+  "versionName": "1.52",
   "nativeLevel": 10,
-  "notes": "Nieuw spel: Bushalte \ud83d\ude8c \u2013 tik de bussen het parkeerterrein af (alleen als de weg vrij is!) en laat de passagiers instappen in de bus met hun kleur. Maar pas op: er zijn maar een paar vakken bij de halte. 40 levels met paaltjes, vraagteken-bussen en bussen met een slotje, hulpjes (Terug, Extra vak, Schudden, Kraan), een dagelijkse Dagrit en kleurenblind-hulp",
+  "notes": "Bushalte: opgelost dat het spel bleef hangen na Terug (passagiers stapten niet meer in). Ook gebruikt het spel nu minder batterij, omdat het scherm niet meer onnodig blijft tekenen als er niets beweegt",
   "web": "web/index.html",
-  "webSha256": "94b2af9f8930ef36f37aaebf78bc98c2ebe37571c7e67139de6b9a1deed35864",
-  "webSig": "MEYCIQCWj4k+9RNX/fJ7bwIiilgDkS5HMTldO7XFrXqu09hOFQIhAO1qDx4nPZ6PWnNHrgVA/7zMAImCAflSEfJCeb2dRIOX",
+  "webSha256": "8d7c5383b5a04a89ce22ec02b44d02062bb91b93dac2a9710ef3b21d0bcf864e",
+  "webSig": "MEYCIQDqXm9AIeheEQySuAugr9kaZ2kFAsMFlD3JsUesdPM5hAIhAKsMOHTuaGO7g1p4bQETa3OP5gypMjuCZcuKml22LWNY",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": ""
 }
