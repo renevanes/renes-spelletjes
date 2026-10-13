@@ -1,11 +1,11 @@
 {
-  "versionCode": 51,
-  "versionName": "1.50",
+  "versionCode": 52,
+  "versionName": "1.51",
   "nativeLevel": 10,
-  "notes": "Nieuw spel: Mahjong \ud83c\udc04 \u2013 speel paren van gelijke stenen weg. 8 vormen (Schildpad, Piramide, Burcht, Draak, Vlinder, Bloem, Brug en Ruit), elk spel is altijd op te lossen. Met hint, onbeperkt terugzetten, schudden, inzoomen, drie tafels (groen vilt, hout, nacht), een dagpuzzel die voor iedereen hetzelfde is, records per vorm en rustige eigen muziek",
+  "notes": "Nieuw spel: Bushalte \ud83d\ude8c \u2013 tik de bussen het parkeerterrein af (alleen als de weg vrij is!) en laat de passagiers instappen in de bus met hun kleur. Maar pas op: er zijn maar een paar vakken bij de halte. 40 levels met paaltjes, vraagteken-bussen en bussen met een slotje, hulpjes (Terug, Extra vak, Schudden, Kraan), een dagelijkse Dagrit en kleurenblind-hulp",
   "web": "web/index.html",
-  "webSha256": "40d16b2d33165cb1143768ee305789d544b600204a7df50d0535ffaa00cc0d20",
-  "webSig": "MEUCICkM8HXYYfKXP5S7sxeV3NwaaraEQBa2MxWvDadpNlgQAiEA7es4SRb2swnB8srs6ccbuoat6OswPnw+jyqctKiI4bQ=",
+  "webSha256": "94b2af9f8930ef36f37aaebf78bc98c2ebe37571c7e67139de6b9a1deed35864",
+  "webSig": "MEYCIQCWj4k+9RNX/fJ7bwIiilgDkS5HMTldO7XFrXqu09hOFQIhAO1qDx4nPZ6PWnNHrgVA/7zMAImCAflSEfJCeb2dRIOX",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": ""
 }
