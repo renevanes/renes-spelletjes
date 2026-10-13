@@ -1,11 +1,11 @@
 {
-  "versionCode": 54,
-  "versionName": "1.53",
+  "versionCode": 55,
+  "versionName": "1.54",
   "nativeLevel": 10,
-  "notes": "Twee nieuwe spellen! Kleurbuisjes \ud83e\uddea \u2013 giet de gekleurde vloeistoffen tot elk buisje \u00e9\u00e9n kleur heeft: 120 levels met verborgen lagen, bevroren en kleine buisjes, plus een dagpuzzel. Bellenschieter \ud83e\udee7 \u2013 mik, schiet en knal drie of meer bellen van dezelfde kleur: 60 levels in 6 werelden met bommen, regenboogbellen, ijs en steen, en een eindeloze modus",
+  "notes": "Nieuw spel: Wereldquiz \ud83c\udf0d \u2013 raad vlaggen en hoofdsteden, herken landen op de kaart of wijs ze zelf aan (met inzoomen). Per werelddeel en niveau, met typen of meerkeuze, tegen de klok, een dagquiz, een atlas om te leren en een voortgangskaart. Fouten komen vanzelf terug zodat je ze leert",
   "web": "web/index.html",
-  "webSha256": "be0944fd1145ce5868f20f432ac13a3d2d87ef2675ded96ba09e2287c490983a",
-  "webSig": "MEQCIB3ntq4nWhhdhsURVB5hqKRMI27rFD6kmMpoBALvrZfbAiBT/QVXYYBZwH+7nRL/Jk3u0eTVa+T9UpxCMjrWjoEBNA==",
+  "webSha256": "b653bc7517d240d345b3cbaadcd3a0dbd2e79cfbee4738a03b75e2c4a44d201f",
+  "webSig": "MEYCIQDs4FtYLvVRLxBYNzJCUWQNBFDcJqiLVAi+0v5ulkYAiAIhAPKR5d4BIsVlY+u989E09DKPkQbZP+pAb6n7b8Y+YzAs",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": ""
 }
