@@ -1,0 +1,33 @@
+<div id="saveWarning" class="save-warning" role="alert" hidden>
+  <p>
+    Je voortgang kon niet worden opgeslagen. Maak een back-up voordat je de app
+    sluit.
+  </p>
+  <button id="dismissSaveWarning" aria-label="Opslagwaarschuwing sluiten">
+    ×
+  </button>
+</div>
+<div
+  id="appAnnouncement"
+  class="visually-hidden"
+  role="status"
+  aria-live="polite"
+  aria-atomic="true"
+></div>
+<div id="favoritesModal" class="modal">
+  <div class="sheet">
+    <h3 id="favoritesTitle">⭐ Kies je favorieten</h3>
+    <p>
+      Tik op een spel om het vast te zetten. Favorieten staan bovenaan in je
+      menu.
+    </p>
+    <div id="favoriteChoices" class="favorite-choices"></div>
+    <button
+      class="btn primary"
+      data-close
+      style="width: 100%; margin-top: 16px"
+    >
+      Klaar
+    </button>
+  </div>
+</div>

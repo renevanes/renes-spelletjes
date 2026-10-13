@@ -1,0 +1,196 @@
+<section id="risk" class="screen" aria-label="Risk">
+  <div class="risk-topbar">
+    <button
+      id="riskBack"
+      class="iconbtn"
+      aria-label="Risk opslaan en naar het menu"
+    >
+      ‹
+    </button>
+    <div><b>Risk</b><small id="riskRound">Wereldverovering</small></div>
+    <button id="riskPause" class="iconbtn" aria-label="Risk pauzeren">Ⅱ</button>
+    <button id="riskHelp" class="iconbtn" aria-label="Spelregels van Risk">
+      ?
+    </button>
+    <button id="riskNew" class="iconbtn" aria-label="Nieuw Risk-spel">↻</button>
+  </div>
+  <div class="risk-turn">
+    <span id="riskPlayerBadge"></span>
+    <div>
+      <b id="riskPlayerName"></b>
+      <p id="riskInstruction"></p>
+    </div>
+    <span id="riskPhase"></span>
+  </div>
+  <div
+    id="riskScoreboard"
+    class="risk-scoreboard"
+    aria-label="Spelers en aantallen landen"
+  ></div>
+  <div class="risk-layout">
+    <div class="risk-board-panel">
+      <div class="risk-map-tools">
+        <div class="risk-tabs" aria-label="Weergave van het bord">
+          <button id="riskMapTab" aria-pressed="true">Kaart</button
+          ><button id="riskListTab" aria-pressed="false">Landenlijst</button>
+        </div>
+        <div id="riskZoomTools">
+          <button id="riskZoomOut" aria-label="Kaart uitzoomen">−</button
+          ><button id="riskZoomIn" aria-label="Kaart inzoomen">+</button>
+        </div>
+      </div>
+      <p id="riskMapTip" class="risk-map-tip">
+        Schuif de kaart om alle landen te zien. Kies een eigen land en daarna
+        een buur om aan te vallen.
+      </p>
+      <div
+        id="riskMapViewport"
+        class="risk-map-viewport"
+        tabindex="0"
+        aria-label="Wereldkaart. Gebruik de pijltjestoetsen om de kaart te schuiven, of kies de landenlijst."
+      >
+        <svg
+          id="riskMap"
+          viewBox="0 0 1160 680"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-label="Risk-wereldkaart met 42 landen"
+        ></svg>
+      </div>
+      <div id="riskCountryList" class="risk-country-list" hidden></div>
+      <div id="riskContinentBonuses" class="risk-continent-bonuses"></div>
+    </div>
+    <aside class="risk-command-panel" aria-label="Spelacties">
+      <div id="riskControls"></div>
+      <div id="riskBattle" class="risk-battle"></div>
+      <details class="risk-history">
+        <summary>Beurtverslag</summary>
+        <ol id="riskHistory"></ol>
+      </details>
+    </aside>
+  </div>
+</section>
+<div id="riskStartModal" class="modal">
+  <div class="sheet">
+    <h3>🌍 Risk · Wereldverovering</h3>
+    <p>
+      Verover alle 42 landen. Speel tegen de computer of geef het toestel door
+      aan je medespelers. De startlanden en legers worden automatisch verdeeld.
+    </p>
+    <button
+      id="riskResume"
+      class="btn primary"
+      style="width: 100%; margin-bottom: 16px"
+      hidden
+    >
+      Verder spelen
+    </button>
+    <div class="risk-setup-grid">
+      <label
+        >Spelers<select id="riskPlayerCount">
+          <option value="2">2 spelers</option>
+          <option value="3" selected>3 spelers</option>
+          <option value="4">4 spelers</option>
+          <option value="5">5 spelers</option>
+          <option value="6">6 spelers</option>
+        </select></label
+      >
+      <label
+        >Mensen op dit toestel<select id="riskHumanCount">
+          <option value="1">1 mens</option>
+          <option value="2">2 mensen</option>
+          <option value="3">3 mensen</option>
+        </select></label
+      >
+      <label
+        >Niveau computer<select id="riskDifficulty">
+          <option value="easy">Makkelijk</option>
+          <option value="normal" selected>Normaal</option>
+          <option value="strong">Sterk</option>
+        </select></label
+      >
+      <label
+        >Computertempo<select id="riskTempo">
+          <option value="normal">Rustig</option>
+          <option value="fast">Snel</option>
+        </select></label
+      >
+    </div>
+    <div id="riskNames" class="risk-names"></div>
+    <p class="risk-note">
+      Bij twee spelers worden de landen tussen jullie verdeeld; er zijn geen
+      neutrale legers.
+    </p>
+    <div class="row">
+      <button id="riskStartMenu" class="btn">Menu</button
+      ><button id="riskStart" class="btn primary">Nieuw spel starten</button>
+    </div>
+  </div>
+</div>
+<div id="riskHelpModal" class="modal">
+  <div class="sheet">
+    <h3>Zo speel je Risk</h3>
+    <ol class="risk-rules">
+      <li>
+        <b>Versterken.</b> Je krijgt minimaal 3 legers, of één per drie landen
+        als dat meer is. Een compleet continent geeft extra legers. Plaats alle
+        versterkingen in je eigen landen.
+      </li>
+      <li>
+        <b>Aanvallen.</b> Kies een eigen land met minstens 2 legers en een
+        aangrenzend vijandelijk land. Je gooit maximaal 3 dobbelstenen; de
+        verdediger gebruikt maximaal 2. Vergelijk de hoogste worpen, daarna de
+        tweede. Bij gelijkspel wint de verdediger. Eén leger blijft altijd
+        achter.
+      </li>
+      <li>
+        <b>Veroveren.</b> Als het laatste vijandelijke leger verdwijnt, kies je
+        de bezetting: minstens het aantal dobbelstenen van de laatste aanval. Je
+        kunt meerdere landen per beurt veroveren.
+      </li>
+      <li>
+        <b>Verplaatsen.</b> Na het aanvallen mag je één keer legers verplaatsen
+        tussen eigen landen die via eigen landen verbonden zijn. Dit mag je
+        overslaan.
+      </li>
+      <li>
+        <b>Kaarten.</b> Na een beurt waarin je een land verovert, krijg je één
+        kaart. Ruil drie gelijke of drie verschillende symbolen; jokers
+        vervangen elk symbool. Sets leveren 4, 6, 8, 10, 12, 15 en daarna steeds
+        5 extra legers op. Een eigen land op een ingeruilde kaart krijgt 2 extra
+        legers. Bij 5 kaarten moet je aan het begin van je beurt ruilen. Na
+        uitschakeling neem je de kaarten over; bij 6 of meer ruil en plaats je
+        direct, daarna val je verder aan.
+      </li>
+    </ol>
+    <p>
+      De stippellijnen verbinden continenten. Alaska en Kamtsjatka zijn ook
+      buren. Elk spelersnummer blijft zichtbaar, zodat je geen kleuren hoeft te
+      onderscheiden.
+    </p>
+    <button class="btn primary" data-close style="width: 100%">
+      Verder spelen
+    </button>
+  </div>
+</div>
+<div id="riskPauseModal" class="modal center">
+  <div class="sheet">
+    <h3>Risk staat op pauze</h3>
+    <p>Je spel wordt na elke actie opgeslagen.</p>
+    <div class="row">
+      <button id="riskPauseMenu" class="btn">Naar menu</button
+      ><button id="riskContinue" class="btn primary">Verder spelen</button>
+    </div>
+  </div>
+</div>
+<div id="riskHandoffModal" class="modal center">
+  <div class="sheet">
+    <h3 id="riskHandoffTitle">Volgende speler</h3>
+    <p>
+      Geef het toestel door. Je kaarten blijven verborgen totdat je je beurt
+      opent.
+    </p>
+    <button id="riskBeginTurn" class="btn primary" style="width: 100%">
+      Mijn beurt bekijken
+    </button>
+  </div>
+</div>
