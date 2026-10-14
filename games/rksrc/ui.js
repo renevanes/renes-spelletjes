@@ -31,7 +31,6 @@
       botTimer = null,
       battleTimer = null,
       autoBattle = null,
-      zoom = 1,
       lastTurn = 0,
       diceChoice = null;
     const storedInvalid = state !== null && !E.validState(state);
@@ -161,94 +160,20 @@
       stop();
       render();
     }
-    const hulls = [
-      [
-        "na",
-        "M28 102 165 35 285 75 422 28 443 138 388 242 325 333 267 433 183 405 108 314 78 229 22 171Z",
-        170,
-        50,
-      ],
-      [
-        "sa",
-        "M266 358 373 333 463 422 468 506 386 647 312 610 279 499Z",
-        350,
-        650,
-      ],
-      ["eu", "M445 68 640 32 752 90 763 245 682 343 511 334 458 250Z", 553, 42],
-      [
-        "af",
-        "M481 342 642 327 726 405 741 574 651 648 550 632 511 522Z",
-        600,
-        654,
-      ],
-      [
-        "as",
-        "M751 65 908 16 1122 35 1143 177 1118 359 1000 482 878 469 791 399 690 342 747 244Z",
-        909,
-        20,
-      ],
-      ["au", "M868 486 1098 453 1140 574 1127 662 925 660 879 580Z", 1029, 665],
-    ];
-    function drawMap() {
-      $("rkMap").innerHTML =
-        `<defs><pattern id="rkSea" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="15" cy="15" r="1" fill="#708b9917"/></pattern></defs><rect width="1160" height="680" fill="#dce8eb"/><rect width="1160" height="680" fill="url(#rkSea)"/>` +
-        hulls
-          .map(([id, path, x, y]) => {
-            const c = E.continents.find((c) => c.id === id);
-            return `<path d="${path}" fill="${c.color}" fill-opacity=".35" stroke="#fff" stroke-opacity=".8" stroke-width="3"/><text x="${x}" y="${y}" fill="#344d5b" font-family="system-ui" font-size="12" font-weight="700" text-anchor="middle" letter-spacing="1">${c.name.toUpperCase()} +${c.bonus}</text>`;
-          })
-          .join("") +
-        E.edges
-          .map(([a, b]) => {
-            const from = E.territories[E.byId[a]],
-              to = E.territories[E.byId[b]],
-              sea = from.continent !== to.continent;
-            if (
-              (a === "alaska" && b === "kamchatka") ||
-              (b === "alaska" && a === "kamchatka")
-            )
-              return '<path d="M70 135H0M1080 120H1160" stroke="#567786" stroke-width="2" stroke-dasharray="5 5"/><text x="14" y="120" fill="#567786" font-size="13">↔</text><text x="1140" y="105" fill="#567786" font-size="13">↔</text>';
-            return `<path class="rk-route" data-route="${E.byId[a]}-${E.byId[b]}" d="M${from.x} ${from.y}L${to.x} ${to.y}" stroke="#345766" stroke-opacity="${sea ? 0.55 : 0.17}" stroke-width="${sea ? 2 : 1.5}" ${sea ? 'stroke-dasharray="5 5"' : ""}/>`;
-          })
-          .join("") +
-        E.territories
-          .map(
-            (t, i) =>
-              `<g class="rk-country" data-country="${i}" role="button" tabindex="0" transform="translate(${t.x} ${t.y})"><title>${t.name}</title><path class="rk-country-shape" d="M-31-22 0-35 31-22 31 21 0 35-31 21Z"/><text class="rk-abbr" y="-16">${t.short}</text><text class="rk-armies" y="6"></text><text class="rk-owner" y="23"></text></g>`,
-          )
-          .join("");
-    }
+    const board = window.ReneWereldBoard.create({
+      engine: E, data: window.ReneWereldMap, onSelect: choose,
+      onActions: () => {
+        $("rkControls").scrollIntoView({ block: "start", behavior: "auto" });
+        $("rkControls").querySelector("button:not(:disabled),select,input")?.focus({ preventScroll: true });
+      },
+    });
     function updateMap() {
       const focusedCountry = $("rkCountryList").contains(
         document.activeElement,
       )
         ? document.activeElement.dataset.country
         : null;
-      $("rkMap")
-        .querySelectorAll("[data-country]")
-        .forEach((node) => {
-          const i = Number(node.dataset.country),
-            t = state.territories[i],
-            p = state.players[t.owner];
-          node.querySelector("path").setAttribute("fill", p.color);
-          node.querySelector(".rk-armies").textContent = t.armies;
-          node.querySelector(".rk-owner").textContent =
-            `SPELER ${t.owner + 1}`;
-          node.setAttribute(
-            "aria-label",
-            `${E.territories[i].name}, speler ${t.owner + 1}, ${p.name}, ${t.armies} legers`,
-          );
-          node.setAttribute(
-            "aria-pressed",
-            String(i === selected || i === target),
-          );
-          node.classList.toggle("selected", i === selected);
-          node.classList.toggle("target", i === target);
-          node.classList.toggle(
-            "neighbor",
-            selected !== null && E.territories[selected].neighbors.includes(i),
-          );
-        });
+      board.update(state, { selected, target, handoff });
       $("rkCountryList").innerHTML = E.continents
         .map(
           (c) =>
@@ -270,7 +195,7 @@
       $("rkContinentBonuses").innerHTML = E.continents
         .map(
           (c) =>
-            `<span class="${ownedBonuses.includes(c.id) ? "owned" : ""}">${c.name} +${c.bonus}${ownedBonuses.includes(c.id) ? " ✓" : ""}</span>`,
+            `<button data-continent="${c.id}" class="${ownedBonuses.includes(c.id) ? "owned" : ""}" style="--continent:${window.ReneWereldBoard.palette[c.id]}" aria-label="Inzoomen op ${c.name}, continentbonus ${c.bonus}">${c.name} +${c.bonus}${ownedBonuses.includes(c.id) ? " ✓" : ""}</button>`,
         )
         .join("");
     }
@@ -290,6 +215,11 @@
     }
     function button(label, action, disabled = false, secondary = false) {
       return `<button id="rkAction${action}" class="rk-action ${secondary ? "rk-secondary" : ""}" data-action="${action}" ${disabled ? "disabled" : ""}>${label}</button>`;
+    }
+    function die(n, defense = false) {
+      const spots = [[5,5],[15,5],[5,10],[15,10],[5,15],[15,15],[10,10]];
+      const faces = { 1:[6], 2:[0,5], 3:[0,5,6], 4:[0,1,4,5], 5:[0,1,4,5,6], 6:[0,1,2,3,4,5] };
+      return `<span class="rk-die ${defense ? "defense" : ""}" role="img" aria-label="${n} ogen"><svg viewBox="0 0 20 20" aria-hidden="true">${faces[n].map(i => `<circle cx="${spots[i][0]}" cy="${spots[i][1]}" r="1.7"/>`).join("")}</svg></span>`;
     }
     function renderControls() {
       const focused = document.activeElement?.id,
@@ -409,7 +339,7 @@
       renderControls();
       const b = state.lastBattle;
       $("rkBattle").innerHTML = b
-        ? `<h4>${E.territories[b.from].name} → ${E.territories[b.to].name}</h4><div class="rk-dice-row"><span>Aanval</span>${b.attack.map((n) => `<span class="rk-die">${n}</span>`).join("")}</div><div class="rk-dice-row"><span>Verdediging</span>${b.defend.map((n) => `<span class="rk-die defense">${n}</span>`).join("")}</div><p>Aanvaller verliest ${b.attackLoss}, verdediger ${b.defendLoss}. Bij gelijke worpen wint de verdediger.</p>`
+        ? `<h4>${E.territories[b.from].name} → ${E.territories[b.to].name}</h4><div class="rk-dice-row"><span>Aanval</span>${b.attack.map(n => die(n)).join("")}</div><div class="rk-dice-row"><span>Verdediging</span>${b.defend.map(n => die(n, true)).join("")}</div><p>Aanvaller verliest ${b.attackLoss}, verdediger ${b.defendLoss}. Bij gelijke worpen wint de verdediger.</p>`
         : "";
       $("rkHistory").innerHTML = state.log
         .map((text) => `<li>${esc(text)}</li>`)
@@ -459,6 +389,7 @@
     }
     function leave() {
       stop();
+      board.close();
       save();
       active = false;
       api.close();
@@ -506,7 +437,7 @@
       api.enter();
       if (!api.isActive()) return;
       active = true;
-      fitMap();
+      board.fit();
       if (state) {
         render();
         if (isHuman() && state.players.filter((p) => !p.ai).length > 1)
@@ -521,7 +452,6 @@
           );
       }
     }
-    drawMap();
     $("rkBack").addEventListener("click", leave);
     $("rkStartMenu").addEventListener("click", leave);
     $("rkPauseMenu").addEventListener("click", leave);
@@ -613,31 +543,9 @@
     }
     $("rkMapTab").addEventListener("click", () => changeView(false));
     $("rkListTab").addEventListener("click", () => changeView(true));
-    const resizeMap = () => {
-      $("rkMap").style.width = `${1160 * zoom}px`;
-      $("rkMap").style.height = `${680 * zoom}px`;
-    };
-    function fitMap() {
-      const width = $("rkMapViewport").clientWidth;
-      if (width >= 700) {
-        zoom = Math.min(1, width / 1160);
-        resizeMap();
-        $("rkMapViewport").style.height = `${680 * zoom}px`;
-      } else {
-        $("rkMapViewport").style.height = "";
-        zoom = 1;
-        resizeMap();
-      }
-    }
-    $("rkZoomIn").addEventListener("click", () => {
-      zoom = Math.min(1.7, zoom + 0.15);
-      resizeMap();
-    });
-    $("rkZoomOut").addEventListener("click", () => {
-      zoom = Math.max(0.8, zoom - 0.15);
-      resizeMap();
-    });
     $("rk").addEventListener("click", (event) => {
+      const continent = event.target.closest("[data-continent]");
+      if (continent) { changeView(false); board.focusContinent(continent.dataset.continent); return; }
       const country = event.target.closest("[data-country]");
       if (country) {
         choose(Number(country.dataset.country));

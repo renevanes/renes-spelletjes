@@ -28,36 +28,30 @@
     aria-label="Spelers en aantallen landen"
   ></div>
   <div class="rk-layout">
-    <div class="rk-board-panel">
+    <div id="rkBoardPanel" class="rk-board-panel">
       <div class="rk-map-tools">
         <div class="rk-tabs" aria-label="Weergave van het bord">
-          <button id="rkMapTab" aria-pressed="true">Kaart</button
-          ><button id="rkListTab" aria-pressed="false">Landenlijst</button>
+          <button id="rkMapTab" aria-pressed="true">Wereldkaart</button>
+          <button id="rkListTab" aria-pressed="false">Landenlijst</button>
         </div>
-        <div id="rkZoomTools">
-          <button id="rkZoomOut" aria-label="Kaart uitzoomen">−</button
-          ><button id="rkZoomIn" aria-label="Kaart inzoomen">+</button>
+        <button id="rkExpandMap" class="rk-map-button" aria-pressed="false">⛶ Grote kaart</button>
+      </div>
+      <div id="rkZoomTools" class="rk-map-toolbar">
+        <button id="rkWorldView" class="rk-map-button" aria-label="De volledige wereldkaart tonen">⌖ Wereld</button>
+        <button id="rkOwnership" class="rk-map-button" aria-pressed="false" aria-label="Toon gebieden in spelerskleuren">Spelerskleuren</button>
+        <div class="rk-zoom-group">
+          <button id="rkZoomOut" aria-label="Kaart uitzoomen">−</button>
+          <output id="rkZoomLabel" aria-label="Kaartvergroting">100%</output>
+          <button id="rkZoomIn" aria-label="Kaart inzoomen">+</button>
         </div>
       </div>
-      <p id="rkMapTip" class="rk-map-tip">
-        Schuif de kaart om alle landen te zien. Kies een eigen land en daarna
-        een buur om aan te vallen.
-      </p>
-      <div
-        id="rkMapViewport"
-        class="rk-map-viewport"
-        tabindex="0"
-        aria-label="Wereldkaart. Gebruik de pijltjestoetsen om de kaart te schuiven, of kies de landenlijst."
-      >
-        <svg
-          id="rkMap"
-          viewBox="0 0 1160 680"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-label="Wereldmacht-wereldkaart met 42 landen"
-        ></svg>
+      <p id="rkMapTip" class="rk-map-tip">Tik op een gebied of legerfiche. Tik op een continent hieronder om te vergroten.</p>
+      <div id="rkMapViewport" class="rk-map-viewport" tabindex="0" aria-label="Geografische wereldkaart met 42 speelgebieden. Gebruik de zoomknoppen of de landenlijst.">
+        <div id="rkMapSurface"><svg id="rkMap" viewBox="0 0 1440 760" xmlns="http://www.w3.org/2000/svg" aria-label="Wereldkaart met de 42 gebieden en gekleurde legerfiches"></svg></div>
       </div>
       <div id="rkCountryList" class="rk-country-list" hidden></div>
-      <div id="rkContinentBonuses" class="rk-continent-bonuses"></div>
+      <div class="rk-map-status"><span id="rkMapTurn"></span><span id="rkMapSelection">Kies een eigen gebied op de kaart</span><button id="rkToActions" class="rk-map-button" hidden>Spelacties →</button></div>
+      <div id="rkContinentBonuses" class="rk-continent-bonuses" aria-label="Continentbonussen en continentvergroting"></div>
     </div>
     <aside class="rk-command-panel" aria-label="Spelacties">
       <div id="rkControls"></div>
@@ -73,7 +67,7 @@
   <div class="sheet">
     <h3>🌍 Wereldmacht · Wereldverovering</h3>
     <p>
-      Verover alle 42 landen. Speel tegen de computer of geef het toestel door
+      Verover alle 42 gebieden op de wereldkaart. Speel tegen de computer of geef het toestel door
       aan je medespelers. De startlanden en legers worden automatisch verdeeld.
     </p>
     <button
