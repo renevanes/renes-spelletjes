@@ -1,0 +1,598 @@
+#rk {
+  background: #f3f1e8;
+  color: #233544;
+  --muted: #61727d;
+  --ink: #233544;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  --accent: #e8b54b;
+}
+.rk-topbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 64px;
+  padding: 8px 16px;
+  border-bottom: 1px solid #263b4c18;
+  background: #fff8;
+}
+.rk-topbar > div {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.rk-topbar b {
+  font-family: Georgia, serif;
+  letter-spacing: 1px;
+  font-size: 24px;
+  overflow-wrap: anywhere;
+}
+.rk-topbar small {
+  color: #69777c;
+  font-size: 12px;
+}
+.rk-topbar .iconbtn {
+  background: #2335440b;
+  font-size: 22px;
+}
+.rk-topbar,
+.rk-turn,
+.rk-scoreboard {
+  flex-shrink: 0;
+}
+.rk-layout {
+  flex: none !important;
+}
+#rkPlayerName {
+  overflow-wrap: anywhere;
+}
+html.big-text #rkControls h3 {
+  font-size: 21px;
+}
+html.big-text #rkControls .rk-muted,
+html.big-text .rk-turn p {
+  font-size: 15px;
+}
+html.big-text .rk-country-list button {
+  font-size: 14px;
+}
+html.big-text .rk-command-panel label {
+  font-size: 14px;
+}
+.rk-turn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 22px 12px;
+}
+.rk-turn > div {
+  flex: 1;
+  min-width: 0;
+}
+.rk-turn b {
+  font-size: 20px;
+}
+.rk-turn p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #52646c;
+  line-height: 1.4;
+}
+#rkPlayerBadge {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 6px #0002;
+  color: #fff;
+  flex-shrink: 0;
+}
+#rkPhase {
+  padding: 7px 12px;
+  background: #23354410;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.rk-scoreboard {
+  display: flex;
+  gap: 8px;
+  overflow: auto;
+  padding: 2px 22px 14px;
+}
+.rk-score {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #263b4c22;
+  border-radius: 12px;
+  padding: 8px 12px;
+  background: #fff8;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.rk-score.active {
+  background: #fff;
+  border-color: #263b4c70;
+  box-shadow: 0 2px 5px #0001;
+}
+.rk-score.out {
+  opacity: 0.5;
+}
+.rk-score span {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+}
+.rk-score small {
+  display: block;
+  color: #61727d;
+  font-size: 11px;
+  margin-top: 3px;
+}
+.rk-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 310px;
+  gap: 20px;
+  padding: 0 22px 26px;
+  flex: 1;
+  align-items: start;
+}
+.rk-board-panel,
+.rk-command-panel {
+  min-width: 0;
+  border: 1px solid #2537471f;
+  background: #fff9;
+  border-radius: 18px;
+  overflow: hidden;
+}
+.rk-command-panel {
+  padding: 18px;
+}
+.rk-map-tools {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+}
+.rk-tabs {
+  display: flex;
+  background: #243e4c0c;
+  border-radius: 10px;
+  padding: 3px;
+}
+.rk-tabs button {
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.rk-tabs button[aria-pressed="true"] {
+  background: #fff;
+  box-shadow: 0 1px 4px #0002;
+  font-weight: 700;
+}
+#rkZoomTools {
+  display: flex;
+  gap: 5px;
+}
+#rkZoomTools button {
+  width: 44px;
+  height: 44px;
+  font-size: 21px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #0002;
+}
+.rk-map-tip {
+  font-size: 12px;
+  color: #61727d;
+  padding: 0 16px;
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+.rk-map-viewport {
+  height: clamp(340px, 55vh, 630px);
+  overflow: auto;
+  background: #dae6e9;
+  scrollbar-width: thin;
+  touch-action: pan-x pan-y pinch-zoom;
+  border-top: 1px solid #243e4c10;
+  border-bottom: 1px solid #243e4c10;
+}
+#rkMap {
+  display: block;
+  width: 1160px;
+  height: 680px;
+  max-width: none;
+}
+.rk-country {
+  cursor: pointer;
+  outline: none;
+}
+.rk-country .rk-country-shape {
+  stroke: #fff;
+  stroke-width: 2;
+  filter: drop-shadow(0 2px 2px #0002);
+}
+.rk-country.selected .rk-country-shape {
+  stroke: #233544;
+  stroke-width: 4;
+}
+.rk-country.target .rk-country-shape {
+  stroke: #ffe185;
+  stroke-width: 5;
+}
+.rk-country.neighbor .rk-country-shape {
+  stroke: #263c4b;
+  stroke-width: 2;
+  stroke-dasharray: 4 2;
+}
+.rk-country:focus-visible .rk-country-shape {
+  stroke: #171f26;
+  stroke-width: 5;
+}
+.rk-country text {
+  fill: #fff;
+  pointer-events: none;
+  text-anchor: middle;
+  font-family: system-ui, sans-serif;
+}
+.rk-country .rk-abbr {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.rk-country .rk-armies {
+  font-size: 18px;
+  font-weight: 800;
+}
+.rk-country .rk-owner {
+  font-size: 9px;
+}
+.rk-continent-bonuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 12px 14px;
+}
+.rk-continent-bonuses span {
+  border: 1px solid #0002;
+  background: #fff8;
+  padding: 5px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+}
+.rk-continent-bonuses span.owned {
+  font-weight: 700;
+  border-color: #213849;
+}
+.rk-country-list {
+  max-height: 580px;
+  overflow: auto;
+  padding: 12px;
+}
+.rk-country-list h3 {
+  font-size: 13px;
+  margin: 14px 0 8px;
+}
+.rk-country-list > div {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+  gap: 7px;
+}
+.rk-country-list button {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  background: #fff;
+  border: 1px solid #23354430;
+  border-radius: 10px;
+  text-align: left;
+  font-size: 12px;
+}
+.rk-country-list button.selected {
+  border: 2px solid #263744;
+}
+.rk-country-list button.target {
+  border: 2px solid #b47c12;
+}
+.rk-country-list button span {
+  flex: 1;
+}
+.rk-country-list button small {
+  display: block;
+  margin-top: 3px;
+  color: #61727d;
+}
+.rk-country-list button i {
+  font-style: normal;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+}
+#rkControls h3 {
+  font-size: 18px;
+  margin: 0 0 6px;
+}
+#rkControls .rk-muted {
+  color: #657783;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+#rkControls label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  margin: 12px 0;
+}
+.rk-command-panel select,
+.rk-command-panel input,
+.rk-setup-grid select,
+.rk-names input {
+  font: inherit;
+  color: #243b47;
+  background: #fff;
+  border: 1px solid #263c4b35;
+  border-radius: 10px;
+  min-height: 44px;
+  padding: 10px;
+  width: 100%;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.rk-command-panel button.rk-action {
+  min-height: 46px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #263d4b;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  margin-top: 8px;
+}
+.rk-command-panel button.rk-secondary {
+  background: #263d4b0c;
+  color: #263d4b;
+  border: 1px solid #263d4b25;
+}
+.rk-command-panel button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.rk-buttons {
+  display: flex;
+  gap: 8px;
+}
+.rk-amount {
+  display: flex;
+  gap: 8px;
+}
+.rk-amount input {
+  width: 80px;
+}
+.rk-amount button {
+  border: 1px solid #263c4b30;
+  background: #fff;
+  border-radius: 10px;
+  min-height: 44px;
+  padding: 8px;
+  font-size: 12px;
+  flex: 1;
+}
+.rk-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin: 8px 0;
+}
+.rk-cards button {
+  background: #fff;
+  border: 1px solid #24374735;
+  border-radius: 10px;
+  min-height: 70px;
+  padding: 8px 4px;
+  font-size: 20px;
+}
+.rk-cards button[aria-pressed="true"] {
+  border: 2px solid #b58219;
+  background: #fff8dd;
+}
+.rk-cards button small {
+  display: block;
+  font-size: 9px;
+  margin-top: 5px;
+  line-height: 1.25;
+}
+.rk-battle {
+  border-top: 1px solid #23354420;
+  margin-top: 18px;
+  padding-top: 14px;
+}
+.rk-battle:empty {
+  display: none;
+}
+.rk-battle h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+.rk-dice-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 7px 0;
+  font-size: 11px;
+}
+.rk-die {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 800;
+  background: #c24b48;
+  color: white;
+}
+.rk-die.defense {
+  background: #fff;
+  color: #233544;
+  border: 1px solid #0003;
+}
+.rk-battle p {
+  font-size: 11px;
+  line-height: 1.4;
+  color: #61727d;
+}
+.rk-history {
+  margin-top: 16px;
+  border-top: 1px solid #23354420;
+  padding-top: 10px;
+}
+.rk-history summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.rk-history ol {
+  font-size: 12px;
+  padding-left: 20px;
+  line-height: 1.5;
+  max-height: 220px;
+  overflow: auto;
+  color: #5d707b;
+}
+.rk-history li {
+  margin-bottom: 8px;
+}
+#rkStartModal .sheet,
+#rkHelpModal .sheet,
+#rkPauseModal .sheet,
+#rkHandoffModal .sheet {
+  background: #f5f3eb;
+  color: #233544;
+  --muted: #657783;
+}
+.rk-setup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.rk-setup-grid label,
+.rk-names label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.rk-names {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+.rk-note {
+  font-size: 12px;
+  margin-top: 14px !important;
+}
+.rk-rules {
+  padding-left: 22px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.rk-rules li {
+  margin-bottom: 14px;
+}
+#rkStartModal .btn:not(.primary),
+#rkPauseModal .btn:not(.primary) {
+  background: #23354412;
+  color: #233544;
+}
+#rkStartModal .row {
+  margin-top: 16px;
+}
+@media (max-width: 900px) {
+  .rk-layout {
+    grid-template-columns: 1fr;
+    padding: 0 12px 20px;
+    gap: 12px;
+  }
+  .rk-turn {
+    padding: 14px 14px 10px;
+  }
+  .rk-scoreboard {
+    padding: 2px 14px 12px;
+  }
+  .rk-command-panel {
+    padding: 16px;
+  }
+  .rk-map-viewport {
+    height: 320px;
+  }
+  .rk-topbar {
+    padding: 8px 12px;
+    gap: 6px;
+  }
+  .rk-topbar b {
+    font-size: 22px;
+  }
+  .rk-turn b {
+    font-size: 17px;
+  }
+  #rkPhase {
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+  .rk-setup-grid {
+    gap: 10px;
+  }
+}
+@media (max-width: 360px) {
+  .rk-names {
+    grid-template-columns: 1fr;
+  }
+  .rk-topbar {
+    gap: 3px;
+  }
+  .rk-topbar b {
+    font-size: 18px;
+    letter-spacing: 0;
+  }
+  .rk-turn {
+    gap: 8px;
+  }
+  .rk-tabs button {
+    padding: 8px 10px;
+  }
+}
+
+.rk-sound-options{display:flex;flex-wrap:wrap;gap:16px;margin:14px 0}.rk-sound-options label{display:flex;align-items:center;gap:8px;min-height:44px;font-size:14px}.rk-sound-options input{width:20px;height:20px}

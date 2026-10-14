@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f3d2a">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; media-src data: blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Rene's spelletjes</title>
@@ -1627,6 +1627,862 @@ html.big-text .vd-info b{font-size:21px}html.big-text .vd-info small{font-size:1
 .vdh-inputs{position:absolute;left:calc(10px*var(--s) + env(safe-area-inset-left));top:30%;font-weight:700;font-size:calc(14px*var(--s));line-height:1.3;text-shadow:0 0 2px #120a1e,1px 1px 0 #120a1e,-1px -1px 0 #120a1e}
 .vdh-inputs b{color:#ffd23a}
 
+/* RK_CSS_BEGIN */
+#rk {
+  background: #f3f1e8;
+  color: #233544;
+  --muted: #61727d;
+  --ink: #233544;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  --accent: #e8b54b;
+}
+.rk-topbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 64px;
+  padding: 8px 16px;
+  border-bottom: 1px solid #263b4c18;
+  background: #fff8;
+}
+.rk-topbar > div {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.rk-topbar b {
+  font-family: Georgia, serif;
+  letter-spacing: 1px;
+  font-size: 24px;
+  overflow-wrap: anywhere;
+}
+.rk-topbar small {
+  color: #69777c;
+  font-size: 12px;
+}
+.rk-topbar .iconbtn {
+  background: #2335440b;
+  font-size: 22px;
+}
+.rk-topbar,
+.rk-turn,
+.rk-scoreboard {
+  flex-shrink: 0;
+}
+.rk-layout {
+  flex: none !important;
+}
+#rkPlayerName {
+  overflow-wrap: anywhere;
+}
+html.big-text #rkControls h3 {
+  font-size: 21px;
+}
+html.big-text #rkControls .rk-muted,
+html.big-text .rk-turn p {
+  font-size: 15px;
+}
+html.big-text .rk-country-list button {
+  font-size: 14px;
+}
+html.big-text .rk-command-panel label {
+  font-size: 14px;
+}
+.rk-turn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 22px 12px;
+}
+.rk-turn > div {
+  flex: 1;
+  min-width: 0;
+}
+.rk-turn b {
+  font-size: 20px;
+}
+.rk-turn p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #52646c;
+  line-height: 1.4;
+}
+#rkPlayerBadge {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 6px #0002;
+  color: #fff;
+  flex-shrink: 0;
+}
+#rkPhase {
+  padding: 7px 12px;
+  background: #23354410;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.rk-scoreboard {
+  display: flex;
+  gap: 8px;
+  overflow: auto;
+  padding: 2px 22px 14px;
+}
+.rk-score {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #263b4c22;
+  border-radius: 12px;
+  padding: 8px 12px;
+  background: #fff8;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.rk-score.active {
+  background: #fff;
+  border-color: #263b4c70;
+  box-shadow: 0 2px 5px #0001;
+}
+.rk-score.out {
+  opacity: 0.5;
+}
+.rk-score span {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+}
+.rk-score small {
+  display: block;
+  color: #61727d;
+  font-size: 11px;
+  margin-top: 3px;
+}
+.rk-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 310px;
+  gap: 20px;
+  padding: 0 22px 26px;
+  flex: 1;
+  align-items: start;
+}
+.rk-board-panel,
+.rk-command-panel {
+  min-width: 0;
+  border: 1px solid #2537471f;
+  background: #fff9;
+  border-radius: 18px;
+  overflow: hidden;
+}
+.rk-command-panel {
+  padding: 18px;
+}
+.rk-map-tools {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+}
+.rk-tabs {
+  display: flex;
+  background: #243e4c0c;
+  border-radius: 10px;
+  padding: 3px;
+}
+.rk-tabs button {
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.rk-tabs button[aria-pressed="true"] {
+  background: #fff;
+  box-shadow: 0 1px 4px #0002;
+  font-weight: 700;
+}
+#rkZoomTools {
+  display: flex;
+  gap: 5px;
+}
+#rkZoomTools button {
+  width: 44px;
+  height: 44px;
+  font-size: 21px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #0002;
+}
+.rk-map-tip {
+  font-size: 12px;
+  color: #61727d;
+  padding: 0 16px;
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+.rk-map-viewport {
+  height: clamp(340px, 55vh, 630px);
+  overflow: auto;
+  background: #dae6e9;
+  scrollbar-width: thin;
+  touch-action: pan-x pan-y pinch-zoom;
+  border-top: 1px solid #243e4c10;
+  border-bottom: 1px solid #243e4c10;
+}
+#rkMap {
+  display: block;
+  width: 1160px;
+  height: 680px;
+  max-width: none;
+}
+.rk-country {
+  cursor: pointer;
+  outline: none;
+}
+.rk-country .rk-country-shape {
+  stroke: #fff;
+  stroke-width: 2;
+  filter: drop-shadow(0 2px 2px #0002);
+}
+.rk-country.selected .rk-country-shape {
+  stroke: #233544;
+  stroke-width: 4;
+}
+.rk-country.target .rk-country-shape {
+  stroke: #ffe185;
+  stroke-width: 5;
+}
+.rk-country.neighbor .rk-country-shape {
+  stroke: #263c4b;
+  stroke-width: 2;
+  stroke-dasharray: 4 2;
+}
+.rk-country:focus-visible .rk-country-shape {
+  stroke: #171f26;
+  stroke-width: 5;
+}
+.rk-country text {
+  fill: #fff;
+  pointer-events: none;
+  text-anchor: middle;
+  font-family: system-ui, sans-serif;
+}
+.rk-country .rk-abbr {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.rk-country .rk-armies {
+  font-size: 18px;
+  font-weight: 800;
+}
+.rk-country .rk-owner {
+  font-size: 9px;
+}
+.rk-continent-bonuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 12px 14px;
+}
+.rk-continent-bonuses span {
+  border: 1px solid #0002;
+  background: #fff8;
+  padding: 5px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+}
+.rk-continent-bonuses span.owned {
+  font-weight: 700;
+  border-color: #213849;
+}
+.rk-country-list {
+  max-height: 580px;
+  overflow: auto;
+  padding: 12px;
+}
+.rk-country-list h3 {
+  font-size: 13px;
+  margin: 14px 0 8px;
+}
+.rk-country-list > div {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+  gap: 7px;
+}
+.rk-country-list button {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  background: #fff;
+  border: 1px solid #23354430;
+  border-radius: 10px;
+  text-align: left;
+  font-size: 12px;
+}
+.rk-country-list button.selected {
+  border: 2px solid #263744;
+}
+.rk-country-list button.target {
+  border: 2px solid #b47c12;
+}
+.rk-country-list button span {
+  flex: 1;
+}
+.rk-country-list button small {
+  display: block;
+  margin-top: 3px;
+  color: #61727d;
+}
+.rk-country-list button i {
+  font-style: normal;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+}
+#rkControls h3 {
+  font-size: 18px;
+  margin: 0 0 6px;
+}
+#rkControls .rk-muted {
+  color: #657783;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+#rkControls label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  margin: 12px 0;
+}
+.rk-command-panel select,
+.rk-command-panel input,
+.rk-setup-grid select,
+.rk-names input {
+  font: inherit;
+  color: #243b47;
+  background: #fff;
+  border: 1px solid #263c4b35;
+  border-radius: 10px;
+  min-height: 44px;
+  padding: 10px;
+  width: 100%;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.rk-command-panel button.rk-action {
+  min-height: 46px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #263d4b;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  margin-top: 8px;
+}
+.rk-command-panel button.rk-secondary {
+  background: #263d4b0c;
+  color: #263d4b;
+  border: 1px solid #263d4b25;
+}
+.rk-command-panel button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.rk-buttons {
+  display: flex;
+  gap: 8px;
+}
+.rk-amount {
+  display: flex;
+  gap: 8px;
+}
+.rk-amount input {
+  width: 80px;
+}
+.rk-amount button {
+  border: 1px solid #263c4b30;
+  background: #fff;
+  border-radius: 10px;
+  min-height: 44px;
+  padding: 8px;
+  font-size: 12px;
+  flex: 1;
+}
+.rk-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin: 8px 0;
+}
+.rk-cards button {
+  background: #fff;
+  border: 1px solid #24374735;
+  border-radius: 10px;
+  min-height: 70px;
+  padding: 8px 4px;
+  font-size: 20px;
+}
+.rk-cards button[aria-pressed="true"] {
+  border: 2px solid #b58219;
+  background: #fff8dd;
+}
+.rk-cards button small {
+  display: block;
+  font-size: 9px;
+  margin-top: 5px;
+  line-height: 1.25;
+}
+.rk-battle {
+  border-top: 1px solid #23354420;
+  margin-top: 18px;
+  padding-top: 14px;
+}
+.rk-battle:empty {
+  display: none;
+}
+.rk-battle h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+.rk-dice-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 7px 0;
+  font-size: 11px;
+}
+.rk-die {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 800;
+  background: #c24b48;
+  color: white;
+}
+.rk-die.defense {
+  background: #fff;
+  color: #233544;
+  border: 1px solid #0003;
+}
+.rk-battle p {
+  font-size: 11px;
+  line-height: 1.4;
+  color: #61727d;
+}
+.rk-history {
+  margin-top: 16px;
+  border-top: 1px solid #23354420;
+  padding-top: 10px;
+}
+.rk-history summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.rk-history ol {
+  font-size: 12px;
+  padding-left: 20px;
+  line-height: 1.5;
+  max-height: 220px;
+  overflow: auto;
+  color: #5d707b;
+}
+.rk-history li {
+  margin-bottom: 8px;
+}
+#rkStartModal .sheet,
+#rkHelpModal .sheet,
+#rkPauseModal .sheet,
+#rkHandoffModal .sheet {
+  background: #f5f3eb;
+  color: #233544;
+  --muted: #657783;
+}
+.rk-setup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.rk-setup-grid label,
+.rk-names label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.rk-names {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+.rk-note {
+  font-size: 12px;
+  margin-top: 14px !important;
+}
+.rk-rules {
+  padding-left: 22px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.rk-rules li {
+  margin-bottom: 14px;
+}
+#rkStartModal .btn:not(.primary),
+#rkPauseModal .btn:not(.primary) {
+  background: #23354412;
+  color: #233544;
+}
+#rkStartModal .row {
+  margin-top: 16px;
+}
+@media (max-width: 900px) {
+  .rk-layout {
+    grid-template-columns: 1fr;
+    padding: 0 12px 20px;
+    gap: 12px;
+  }
+  .rk-turn {
+    padding: 14px 14px 10px;
+  }
+  .rk-scoreboard {
+    padding: 2px 14px 12px;
+  }
+  .rk-command-panel {
+    padding: 16px;
+  }
+  .rk-map-viewport {
+    height: 320px;
+  }
+  .rk-topbar {
+    padding: 8px 12px;
+    gap: 6px;
+  }
+  .rk-topbar b {
+    font-size: 22px;
+  }
+  .rk-turn b {
+    font-size: 17px;
+  }
+  #rkPhase {
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+  .rk-setup-grid {
+    gap: 10px;
+  }
+}
+@media (max-width: 360px) {
+  .rk-names {
+    grid-template-columns: 1fr;
+  }
+  .rk-topbar {
+    gap: 3px;
+  }
+  .rk-topbar b {
+    font-size: 18px;
+    letter-spacing: 0;
+  }
+  .rk-turn {
+    gap: 8px;
+  }
+  .rk-tabs button {
+    padding: 8px 10px;
+  }
+}
+
+.rk-sound-options{display:flex;flex-wrap:wrap;gap:16px;margin:14px 0}.rk-sound-options label{display:flex;align-items:center;gap:8px;min-height:44px;font-size:14px}.rk-sound-options input{width:20px;height:20px}
+/* RK_CSS_END */
+
+/* APP_SUPPORT_CSS_BEGIN */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+[hidden] {
+  display: none !important;
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid #e6ac25;
+  outline-offset: 3px;
+}
+.iconbtn {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+.bbtn {
+  min-height: 48px;
+}
+.seg button,
+.picker button {
+  min-height: 44px;
+}
+.save-warning {
+  position: fixed;
+  z-index: 12000;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  max-width: 580px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: #fff2c3;
+  color: #3d2900;
+  border: 2px solid #ba7900;
+  box-shadow: 0 5px 20px #0005;
+}
+.save-warning p {
+  flex: 1;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.save-warning button {
+  width: 44px;
+  height: 44px;
+  font-size: 26px;
+  color: inherit;
+}
+html.reduced-motion *,
+html.reduced-motion *::before,
+html.reduced-motion *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+.discovery {
+  padding: 8px 16px 0;
+}
+.discovery h2 {
+  font-size: 16px;
+  margin: 16px 0 8px;
+}
+.discovery-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.discovery-head button {
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 13px;
+  background: #ffffff15;
+  border-radius: 12px;
+}
+.game-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #ffffff30;
+  border-radius: 14px;
+  background: #ffffff0d;
+  padding: 0 12px;
+  min-height: 48px;
+}
+.game-search input {
+  font: inherit;
+  color: var(--ink);
+  min-width: 0;
+  width: 100%;
+  padding: 12px 0;
+  background: none;
+  border: 0;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.game-search input::placeholder {
+  color: var(--muted);
+}
+.game-search button {
+  width: 44px;
+  height: 44px;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.category-filters {
+  display: flex;
+  gap: 6px;
+  overflow: auto;
+  padding: 12px 2px 8px;
+  scrollbar-width: thin;
+}
+.category-filters button {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 10px 14px;
+  background: #ffffff12;
+  border: 1px solid #ffffff20;
+  border-radius: 99px;
+  font-size: 13px;
+}
+.category-filters button[aria-pressed="true"] {
+  background: var(--accent);
+  color: #332500;
+  border-color: var(--accent);
+  font-weight: 700;
+}
+.discovery-row {
+  display: flex;
+  gap: 8px;
+  overflow: auto;
+  padding: 3px 2px 6px;
+}
+.discovery-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  min-height: 58px;
+  padding: 10px 12px;
+  border: 1px solid #ffffff25;
+  border-radius: 14px;
+  background: #ffffff0d;
+  text-align: left;
+  font-size: 14px;
+  max-width: 240px;
+}
+.discovery-card img {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  flex-shrink: 0;
+}
+.discovery-card span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.discovery-card small {
+  font-size: 11px;
+  color: var(--muted);
+}
+.favorites-empty {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+.game-results {
+  padding: 8px 18px 0;
+  color: var(--muted);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.game-results button {
+  min-height: 44px;
+  text-decoration: underline;
+}
+.no-games {
+  padding: 24px;
+  text-align: center;
+  color: var(--muted);
+}
+.favorite-choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.favorite-choices button {
+  min-height: 52px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid #ffffff30;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+.favorite-choices button[aria-pressed="true"] {
+  background: #f2c14e25;
+  border-color: var(--accent);
+}
+.favorite-choices img {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+}
+html.light .game-search,
+html.light .category-filters button,
+html.light .discovery-card,
+html.light .discovery-head button {
+  background: #fff;
+  border-color: #0002;
+}
+html.light .category-filters button[aria-pressed="true"] {
+  background: var(--accent);
+}
+html.light #favoritesModal .sheet {
+  background: #f7f5ef;
+  color: #1b2b22;
+  --muted: #5d6f63;
+}
+html.light .favorite-choices button {
+  border-color: #0002;
+}
+@media (max-width: 360px) {
+  .discovery {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .favorite-choices {
+    grid-template-columns: 1fr;
+  }
+}
+/* APP_SUPPORT_CSS_END */
 </style>
 </head>
 <body>
@@ -1825,6 +2681,7 @@ html.big-text .vd-info b{font-size:21px}html.big-text .vd-info small{font-size:1
       </div>
       <span class="badge">Doorgaan</span>
     </button>
+    <button class="tile" id="tileRk"><div class="art"></div><div><h2>Wereldmacht</h2><p>Verover de wereld · tegen de computer of samen</p></div><span class="badge">Doorgaan</span></button>
   </div>
   <div class="menu-links"><button id="statBtn">📊 Statistieken</button><button id="trophyBtn">🏆 Trofeeën</button><button id="scBtn">📌 Snelkoppelingen</button><button id="fbBtn">💬 Feedback</button></div>
   <div class="version">Versie __VERSION__ · <button id="aboutBtn">Over deze app</button> · <button id="checkUpd">Controleren op updates</button></div>
@@ -2184,6 +3041,80 @@ html.big-text .vd-info b{font-size:21px}html.big-text .vd-info small{font-size:1
     <div id="vdToast"></div>
   </div>
 </section>
+
+<!-- RK_SCREEN_BEGIN -->
+<section id="rk" class="screen" aria-label="Wereldmacht">
+  <div class="rk-topbar">
+    <button
+      id="rkBack"
+      class="iconbtn"
+      aria-label="Wereldmacht opslaan en naar het menu"
+    >
+      ‹
+    </button>
+    <div><b>Wereldmacht</b><small id="rkRound">Wereldverovering</small></div>
+    <button id="rkPause" class="iconbtn" aria-label="Wereldmacht pauzeren">Ⅱ</button>
+    <button id="rkHelp" class="iconbtn" aria-label="Spelregels van Wereldmacht">
+      ?
+    </button>
+    <button id="rkNew" class="iconbtn" aria-label="Nieuw Wereldmacht-spel">↻</button>
+  </div>
+  <div class="rk-turn">
+    <span id="rkPlayerBadge"></span>
+    <div>
+      <b id="rkPlayerName"></b>
+      <p id="rkInstruction"></p>
+    </div>
+    <span id="rkPhase"></span>
+  </div>
+  <div
+    id="rkScoreboard"
+    class="rk-scoreboard"
+    aria-label="Spelers en aantallen landen"
+  ></div>
+  <div class="rk-layout">
+    <div class="rk-board-panel">
+      <div class="rk-map-tools">
+        <div class="rk-tabs" aria-label="Weergave van het bord">
+          <button id="rkMapTab" aria-pressed="true">Kaart</button
+          ><button id="rkListTab" aria-pressed="false">Landenlijst</button>
+        </div>
+        <div id="rkZoomTools">
+          <button id="rkZoomOut" aria-label="Kaart uitzoomen">−</button
+          ><button id="rkZoomIn" aria-label="Kaart inzoomen">+</button>
+        </div>
+      </div>
+      <p id="rkMapTip" class="rk-map-tip">
+        Schuif de kaart om alle landen te zien. Kies een eigen land en daarna
+        een buur om aan te vallen.
+      </p>
+      <div
+        id="rkMapViewport"
+        class="rk-map-viewport"
+        tabindex="0"
+        aria-label="Wereldkaart. Gebruik de pijltjestoetsen om de kaart te schuiven, of kies de landenlijst."
+      >
+        <svg
+          id="rkMap"
+          viewBox="0 0 1160 680"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-label="Wereldmacht-wereldkaart met 42 landen"
+        ></svg>
+      </div>
+      <div id="rkCountryList" class="rk-country-list" hidden></div>
+      <div id="rkContinentBonuses" class="rk-continent-bonuses"></div>
+    </div>
+    <aside class="rk-command-panel" aria-label="Spelacties">
+      <div id="rkControls"></div>
+      <div id="rkBattle" class="rk-battle"></div>
+      <details class="rk-history">
+        <summary>Beurtverslag</summary>
+        <ol id="rkHistory"></ol>
+      </details>
+    </aside>
+  </div>
+</section>
+<!-- RK_SCREEN_END -->
 
 <!-- ============ MODALS ============ -->
 <div class="modal" id="msStartModal">
@@ -2555,6 +3486,134 @@ html.big-text .vd-info b{font-size:21px}html.big-text .vd-info small{font-size:1
   </div>
 </div>
 
+<!-- RK_MODALS_BEGIN -->
+<div id="rkStartModal" class="modal">
+  <div class="sheet">
+    <h3>🌍 Wereldmacht · Wereldverovering</h3>
+    <p>
+      Verover alle 42 landen. Speel tegen de computer of geef het toestel door
+      aan je medespelers. De startlanden en legers worden automatisch verdeeld.
+    </p>
+    <button
+      id="rkResume"
+      class="btn primary"
+      style="width: 100%; margin-bottom: 16px"
+      hidden
+    >
+      Verder spelen
+    </button>
+    <div class="rk-setup-grid">
+      <label
+        >Spelers<select id="rkPlayerCount">
+          <option value="2">2 spelers</option>
+          <option value="3" selected>3 spelers</option>
+          <option value="4">4 spelers</option>
+          <option value="5">5 spelers</option>
+          <option value="6">6 spelers</option>
+        </select></label
+      >
+      <label
+        >Mensen op dit toestel<select id="rkHumanCount">
+          <option value="1">1 mens</option>
+          <option value="2">2 mensen</option>
+          <option value="3">3 mensen</option>
+        </select></label
+      >
+      <label
+        >Niveau computer<select id="rkDifficulty">
+          <option value="easy">Makkelijk</option>
+          <option value="normal" selected>Normaal</option>
+          <option value="strong">Sterk</option>
+        </select></label
+      >
+      <label
+        >Computertempo<select id="rkTempo">
+          <option value="normal">Rustig</option>
+          <option value="fast">Snel</option>
+        </select></label
+      >
+    </div>
+    <div class="rk-sound-options"><label><input id="rkSound" type="checkbox" checked> Geluidseffecten</label><label><input id="rkMusic" type="checkbox" checked> Achtergrondmuziek</label></div><div id="rkNames" class="rk-names"></div>
+    <p class="rk-note">
+      Bij twee spelers worden de landen tussen jullie verdeeld; er zijn geen
+      neutrale legers.
+    </p>
+    <div class="row">
+      <button id="rkStartMenu" class="btn">Menu</button
+      ><button id="rkStart" class="btn primary">Nieuw spel starten</button>
+    </div>
+  </div>
+</div>
+<div id="rkHelpModal" class="modal">
+  <div class="sheet">
+    <h3>Zo speel je Wereldmacht</h3>
+    <ol class="rk-rules">
+      <li>
+        <b>Versterken.</b> Je krijgt minimaal 3 legers, of één per drie landen
+        als dat meer is. Een compleet continent geeft extra legers. Plaats alle
+        versterkingen in je eigen landen.
+      </li>
+      <li>
+        <b>Aanvallen.</b> Kies een eigen land met minstens 2 legers en een
+        aangrenzend vijandelijk land. Je gooit maximaal 3 dobbelstenen; de
+        verdediger gebruikt maximaal 2. Vergelijk de hoogste worpen, daarna de
+        tweede. Bij gelijkspel wint de verdediger. Eén leger blijft altijd
+        achter.
+      </li>
+      <li>
+        <b>Veroveren.</b> Als het laatste vijandelijke leger verdwijnt, kies je
+        de bezetting: minstens het aantal dobbelstenen van de laatste aanval. Je
+        kunt meerdere landen per beurt veroveren.
+      </li>
+      <li>
+        <b>Verplaatsen.</b> Na het aanvallen mag je één keer legers verplaatsen
+        tussen eigen landen die via eigen landen verbonden zijn. Dit mag je
+        overslaan.
+      </li>
+      <li>
+        <b>Kaarten.</b> Na een beurt waarin je een land verovert, krijg je één
+        kaart. Ruil drie gelijke of drie verschillende symbolen; jokers
+        vervangen elk symbool. Sets leveren 4, 6, 8, 10, 12, 15 en daarna steeds
+        5 extra legers op. Een eigen land op een ingeruilde kaart krijgt 2 extra
+        legers. Bij 5 kaarten moet je aan het begin van je beurt ruilen. Na
+        uitschakeling neem je de kaarten over; bij 6 of meer ruil en plaats je
+        direct, daarna val je verder aan.
+      </li>
+    </ol>
+    <p>
+      De stippellijnen verbinden continenten. Alaska en Kamtsjatka zijn ook
+      buren. Elk spelersnummer blijft zichtbaar, zodat je geen kleuren hoeft te
+      onderscheiden.
+    </p>
+    <button class="btn primary" data-close style="width: 100%">
+      Verder spelen
+    </button>
+  </div>
+</div>
+<div id="rkPauseModal" class="modal center">
+  <div class="sheet">
+    <h3>Wereldmacht staat op pauze</h3>
+    <p>Je spel wordt na elke actie opgeslagen.</p>
+    <div class="row">
+      <button id="rkPauseMenu" class="btn">Naar menu</button
+      ><button id="rkContinue" class="btn primary">Verder spelen</button>
+    </div>
+  </div>
+</div>
+<div id="rkHandoffModal" class="modal center">
+  <div class="sheet">
+    <h3 id="rkHandoffTitle">Volgende speler</h3>
+    <p>
+      Geef het toestel door. Je kaarten blijven verborgen totdat je je beurt
+      opent.
+    </p>
+    <button id="rkBeginTurn" class="btn primary" style="width: 100%">
+      Mijn beurt bekijken
+    </button>
+  </div>
+</div>
+<!-- RK_MODALS_END -->
+
 <div class="modal" id="zsStartModal">
   <div class="sheet">
     <h3>⚓ Zeeslag</h3>
@@ -2829,24 +3888,966 @@ html.big-text .vd-info b{font-size:21px}html.big-text .vd-info small{font-size:1
   </div>
 </div>
 
+<!-- APP_SUPPORT_HTML_BEGIN -->
+<div id="saveWarning" class="save-warning" role="alert" hidden>
+  <p>
+    Je voortgang kon niet worden opgeslagen. Maak een back-up voordat je de app
+    sluit.
+  </p>
+  <button id="dismissSaveWarning" aria-label="Opslagwaarschuwing sluiten">
+    ×
+  </button>
+</div>
+<div
+  id="appAnnouncement"
+  class="visually-hidden"
+  role="status"
+  aria-live="polite"
+  aria-atomic="true"
+></div>
+<div id="favoritesModal" class="modal">
+  <div class="sheet">
+    <h3 id="favoritesTitle">⭐ Kies je favorieten</h3>
+    <p>
+      Tik op een spel om het vast te zetten. Favorieten staan bovenaan in je
+      menu.
+    </p>
+    <div id="favoriteChoices" class="favorite-choices"></div>
+    <button
+      class="btn primary"
+      data-close
+      style="width: 100%; margin-top: 16px"
+    >
+      Klaar
+    </button>
+  </div>
+</div>
+<!-- APP_SUPPORT_HTML_END -->
 <script>
+
+/* APP_SUPPORT_JS_BEGIN */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === "object" && module.exports) module.exports = api;
+  else root.RenePersistence = api;
+})(globalThis, function () {
+  "use strict";
+  const FORMAT = "renes-spelletjes-backup";
+  const MAX_BYTES = 8 * 1024 * 1024;
+  const games = [
+    "air",
+    "bh",
+    "bs",
+    "bv",
+    "gg",
+    "kb",
+    "kj",
+    "kp",
+    "ls",
+    "mj",
+    "ms",
+    "patience",
+    "pf",
+    "rk",
+    "rs",
+    "sd",
+    "sm",
+    "td",
+    "wb",
+    "wq",
+    "vd",
+    "zs",
+  ];
+  const allowed = new Set(
+    games
+      .flatMap((g) =>
+        ["save", "settings", "stats", "progress"].map((k) => `${g}.${k}`),
+      )
+      .concat([
+        "app.cfg",
+        "app.errors",
+        "app.fbQueue",
+        "app.profile",
+        "app.profiles",
+        "app.today",
+        "app.updatedTo",
+        "bs.tips",
+        "patience.v14",
+        "playtime",
+        "recent",
+        "rs.data",
+        "trophies.seen",
+        "vd.run",
+      ]),
+  );
+  const object = (x) =>
+    x !== null &&
+    typeof x === "object" &&
+    !Array.isArray(x) &&
+    Object.getPrototypeOf(x) === Object.prototype;
+  const profileId = (x) =>
+    typeof x === "string" && /^p[a-z0-9]+$/i.test(x) && x.length <= 40;
+  const numbers = (v, length, min = 0, max = Number.MAX_SAFE_INTEGER) =>
+    Array.isArray(v) &&
+    (length == null || v.length === length) &&
+    v.every((n) => Number.isFinite(n) && n >= min && n <= max);
+  function validLegacySave(name, v) {
+    const array = (x, length) =>
+      Array.isArray(x) && (length == null || x.length === length);
+    const num = (x) => Number.isFinite(x) && x >= 0;
+    switch (name) {
+      case "wq.save":
+        return (
+          v.v === 1 &&
+          object(v.cfg) &&
+          Array.isArray(v.qs) &&
+          v.qs.length > 0 &&
+          v.qs.length <= 1000 &&
+          v.qs.every(
+            (q) =>
+              object(q) &&
+              typeof q.c === "string" &&
+              /^[A-Z]{2}$/.test(q.c) &&
+              typeof q.t === "string" &&
+              q.t.length < 30 &&
+              (!q.o ||
+                (Array.isArray(q.o) &&
+                  q.o.every(
+                    (c) => typeof c === "string" && /^[A-Z]{2}$/.test(c),
+                  ))),
+          )
+        );
+      case "patience.save":
+        return (
+          object(v.S) &&
+          array(v.S.stock) &&
+          array(v.S.waste) &&
+          array(v.S.f, 4) &&
+          v.S.f.every(Array.isArray) &&
+          array(v.S.t, 7) &&
+          v.S.t.every(Array.isArray) &&
+          array(v.S.up) &&
+          num(v.moves) &&
+          num(v.elapsed) &&
+          array(v.history)
+        );
+      case "kj.save":
+        return (
+          array(v.hands, 4) &&
+          v.hands.every(Array.isArray) &&
+          array(v.trick) &&
+          numbers(v.pts, 2) &&
+          numbers(v.roem, 2) &&
+          array(v.log) &&
+          typeof v.phase === "string" &&
+          num(v.round)
+        );
+      case "td.save":
+        return (
+          ["weide", "woestijn", "sneeuw", "vulkaan"].includes(v.map) &&
+          array(v.towers) &&
+          num(v.wave) &&
+          num(v.gold) &&
+          num(v.lives) &&
+          object(v.cd)
+        );
+      case "zs.save":
+        return (
+          array(v.boards, 2) &&
+          v.boards.every(
+            (b) =>
+              object(b) &&
+              array(b.ships) &&
+              array(b.shots, 10) &&
+              b.shots.every((row) => numbers(row, 10, 0, 3)),
+          ) &&
+          numbers(v.shots, 2) &&
+          numbers(v.hits, 2) &&
+          typeof v.phase === "string"
+        );
+      case "bs.save":
+        return (
+          object(v.S) &&
+          typeof v.S.g === "string" &&
+          v.S.g.length < 20000 &&
+          array(v.S.pal) &&
+          num(v.S.shots) &&
+          object(v.G) &&
+          ["lvl", "end"].includes(v.G.mode)
+        );
+      case "ls.save":
+        return (
+          object(v.G) &&
+          array(v.G.undo) &&
+          object(v.C) &&
+          array(v.C.T) &&
+          v.C.T.every(Array.isArray) &&
+          array(v.C.hid, v.C.T.length) &&
+          num(v.G.moves)
+        );
+      case "bh.save":
+        return (
+          object(v.G) &&
+          array(v.G.undo) &&
+          object(v.C) &&
+          array(v.C.gone) &&
+          array(v.C.bays) &&
+          array(v.C.cols, v.C.gone.length) &&
+          num(v.G.moves)
+        );
+      case "mj.save":
+        return (
+          typeof v.lay === "string" &&
+          numbers(v.faces, null, -1, 200) &&
+          array(v.undo) &&
+          num(v.time) &&
+          num(v.hints) &&
+          num(v.shuffles)
+        );
+      case "wb.save":
+        return (
+          array(v.board, 225) &&
+          array(v.racks, 2) &&
+          v.racks.every(Array.isArray) &&
+          array(v.bag) &&
+          numbers(v.scores, 2) &&
+          typeof v.bonus === "string" &&
+          v.bonus.length === 225 &&
+          array(v.hist)
+        );
+      case "sm.save":
+        return (
+          v.v === 1 &&
+          array(v.p) &&
+          v.p.length >= 16 &&
+          array(v.hole) &&
+          array(v.jelly) &&
+          array(v.ice) &&
+          num(v.score) &&
+          num(v.moves)
+        );
+      case "bv.save":
+        return (
+          numbers(v.grid, 220, 0, 7) &&
+          array(v.queue) &&
+          num(v.score) &&
+          num(v.lines) &&
+          object(v.cur)
+        );
+      case "sd.save":
+        return (
+          numbers(v.puz, 81, 0, 9) &&
+          numbers(v.sol, 81, 1, 9) &&
+          numbers(v.val, 81, 0, 9) &&
+          numbers(v.notes, 81, 0, 1023) &&
+          num(v.time)
+        );
+      case "ms.save":
+        return (
+          Number.isInteger(v.rows) &&
+          v.rows >= 1 &&
+          v.rows <= 40 &&
+          Number.isInteger(v.cols) &&
+          v.cols >= 1 &&
+          v.cols <= 40 &&
+          numbers(v.mine, v.rows * v.cols, 0, 1) &&
+          numbers(v.adj, v.rows * v.cols, 0, 8) &&
+          numbers(v.st, v.rows * v.cols, 0, 3) &&
+          num(v.mines) &&
+          v.mines < v.rows * v.cols &&
+          num(v.time)
+        );
+      default:
+        return false;
+    }
+  }
+  const keyInfo = (key) => {
+    const match = /^p_(p[a-z0-9]+)\.(.+)$/i.exec(key);
+    const name = match ? match[2] : key;
+    return {
+      name,
+      valid:
+        key.length < 100 &&
+        allowed.has(name) &&
+        !(match && name.startsWith("app.")),
+    };
+  };
+  function safeTree(value, depth = 0) {
+    if (depth > 40) return false;
+    if (value === null || ["string", "boolean"].includes(typeof value))
+      return true;
+    if (typeof value === "number") return Number.isFinite(value);
+    if (Array.isArray(value))
+      return (
+        value.length < 100000 && value.every((v) => safeTree(v, depth + 1))
+      );
+    return (
+      object(value) &&
+      Object.entries(value).every(
+        ([k, v]) =>
+          !["__proto__", "prototype", "constructor"].includes(k) &&
+          safeTree(v, depth + 1),
+      )
+    );
+  }
+  function validValue(name, value) {
+    if (!safeTree(value)) return false;
+    if (value === null)
+      return name.endsWith(".save") || name === "app.updatedTo";
+    if (name === "app.profile") return profileId(value);
+    if (name === "patience.v14") return typeof value === "boolean";
+    if (["recent", "trophies.seen"].includes(name))
+      return (
+        Array.isArray(value) &&
+        value.every((x) => typeof x === "string" && x.length < 100)
+      );
+    if (["app.errors", "app.fbQueue"].includes(name))
+      return Array.isArray(value) && value.every(object);
+    if (name === "app.profiles")
+      return (
+        Array.isArray(value) &&
+        value.length > 0 &&
+        value.length <= 100 &&
+        value.every(
+          (p) =>
+            object(p) &&
+            profileId(p.id) &&
+            typeof p.name === "string" &&
+            p.name.length > 0 &&
+            p.name.length <= 40 &&
+            typeof p.avatar === "string" &&
+            p.avatar.length < 100,
+        ) &&
+        new Set(value.map((p) => p.id)).size === value.length
+      );
+    if (!object(value)) return false;
+    if (name === "app.cfg") {
+      for (const k of ["order", "hidden", "pinned"])
+        if (
+          k in value &&
+          (!Array.isArray(value[k]) ||
+            !value[k].every((x) => typeof x === "string"))
+        )
+          return false;
+      if ("pin" in value && value.pin !== null && typeof value.pin !== "string")
+        return false;
+      for (const k of ["mute", "vibrate", "awake", "colorblind"])
+        if (k in value && typeof value[k] !== "boolean") return false;
+      for (const [k, values] of Object.entries({
+        theme: ["auto", "donker", "licht"],
+        text: ["normaal", "groot"],
+        layout: ["raster", "lijst"],
+        motion: ["auto", "reduce", "full"],
+        update: ["auto", "wifi", "manual"],
+        music: ["uit", "zacht", "normaal"],
+        sfxVol: ["uit", "zacht", "normaal", "hard"],
+      }))
+        if (k in value && !values.includes(value[k])) return false;
+      if (
+        "limit" in value &&
+        (!Number.isFinite(value.limit) || value.limit < 0)
+      )
+        return false;
+    }
+    if (name === "playtime")
+      return Object.values(value).every((v) => Number.isFinite(v) && v >= 0);
+    if (name === "app.today")
+      return (
+        typeof value.date === "string" &&
+        /^\d{4}-\d{2}-\d{2}$/.test(value.date) &&
+        Number.isFinite(value.sec) &&
+        value.sec >= 0
+      );
+    if (name === "rk.settings")
+      return (
+        (!("players" in value) ||
+          (Number.isInteger(value.players) &&
+            value.players >= 2 &&
+            value.players <= 6)) &&
+        (!("humans" in value) ||
+          (Number.isInteger(value.humans) &&
+            value.humans >= 1 &&
+            value.humans <= (value.players || 6))) &&
+        (!("difficulty" in value) ||
+          ["easy", "normal", "strong"].includes(value.difficulty)) &&
+        (!("tempo" in value) || ["normal", "fast"].includes(value.tempo)) &&
+        (!("sound" in value) || typeof value.sound === "boolean") &&
+        (!("music" in value) || typeof value.music === "boolean")
+      );
+    if (name === "rk.save")
+      return (
+        typeof globalThis.ReneRiskEngine === "object" &&
+        globalThis.ReneRiskEngine.validState(value)
+      );
+    if (name.endsWith(".save")) {
+      return validLegacySave(name, value);
+    }
+    return true;
+  }
+  function validateBackup(raw, currentVersion) {
+    if (
+      typeof raw !== "string" ||
+      new TextEncoder().encode(raw).length > MAX_BYTES
+    )
+      throw new Error("Het back-upbestand is te groot of ongeldig.");
+    let backup;
+    try {
+      backup = JSON.parse(raw);
+    } catch {
+      throw new Error("Dit bestand bevat geen geldige back-up.");
+    }
+    if (
+      !object(backup) ||
+      backup.format !== FORMAT ||
+      !object(backup.data) ||
+      !Object.keys(backup.data).length
+    )
+      throw new Error("Dit is geen geldige back-up van Rene’s spelletjes.");
+    if (
+      typeof backup.version !== "string" ||
+      !/^\d+\.\d+(?:\.\d+)?$/.test(backup.version) ||
+      (backup.schemaVersion != null && backup.schemaVersion !== 1)
+    )
+      throw new Error("Deze back-upversie wordt niet ondersteund.");
+    const version = (v) => v.split(".").map(Number);
+    const incoming = version(backup.version),
+      current = version(currentVersion);
+    for (let i = 0; i < 3; i++) {
+      if ((incoming[i] || 0) > (current[i] || 0))
+        throw new Error(
+          "Deze back-up komt uit een nieuwere app. Werk de app eerst bij.",
+        );
+      if ((incoming[i] || 0) < (current[i] || 0)) break;
+    }
+    if (
+      typeof backup.date !== "string" ||
+      !Number.isFinite(Date.parse(backup.date))
+    )
+      throw new Error("De datum in deze back-up is ongeldig.");
+    for (const [key, rawValue] of Object.entries(backup.data)) {
+      const info = keyInfo(key);
+      if (!info.valid || typeof rawValue !== "string")
+        throw new Error("De back-up bevat onbekende of ongeldige gegevens.");
+      let value;
+      try {
+        value = JSON.parse(rawValue);
+      } catch {
+        throw new Error(`De gegevens voor ${info.name} zijn beschadigd.`);
+      }
+      if (!validValue(info.name, value))
+        throw new Error(`De gegevens voor ${info.name} zijn ongeldig.`);
+    }
+    if (backup.data["app.profile"] && backup.data["app.profiles"]) {
+      const active = JSON.parse(backup.data["app.profile"]);
+      if (!JSON.parse(backup.data["app.profiles"]).some((p) => p.id === active))
+        throw new Error("De actieve speler ontbreekt in deze back-up.");
+    }
+    return backup;
+  }
+  function snapshot(storage) {
+    const result = {};
+    for (let i = 0; i < storage.length; i++) {
+      const key = storage.key(i);
+      if (keyInfo(key).valid) result[key] = storage.getItem(key);
+    }
+    return result;
+  }
+  function createBackup(storage, version) {
+    return JSON.stringify({
+      format: FORMAT,
+      schemaVersion: 1,
+      version,
+      date: new Date().toISOString(),
+      data: snapshot(storage),
+    });
+  }
+  function restore(storage, data) {
+    const before = snapshot(storage);
+    try {
+      // Write before deleting: if a write fails, old entries are still available for rollback.
+      for (const [key, value] of Object.entries(data))
+        storage.setItem(key, value);
+      for (const key of Object.keys(before))
+        if (!(key in data)) storage.removeItem(key);
+    } catch (cause) {
+      let rolledBack = true;
+      for (const key of Object.keys(data))
+        if (!(key in before))
+          try {
+            storage.removeItem(key);
+          } catch {
+            rolledBack = false;
+          }
+      for (const [key, value] of Object.entries(before))
+        try {
+          storage.setItem(key, value);
+        } catch {
+          rolledBack = false;
+        }
+      const error = new Error(
+        rolledBack
+          ? "Terugzetten mislukt. Je eerdere voortgang is behouden."
+          : "Terugzetten mislukt. Niet alle eerdere gegevens konden worden hersteld. Bewaar je back-up en sluit de app nog niet.",
+      );
+      error.cause = cause;
+      error.rolledBack = rolledBack;
+      throw error;
+    }
+  }
+  function createStore(storage, onFailure = () => {}, onRecovery = () => {}) {
+    let prefix = "";
+    try {
+      const id = JSON.parse(storage.getItem("app.profile"));
+      if (profileId(id) && id !== "p0") prefix = `p_${id}.`;
+    } catch {}
+    const failed = new Set();
+    const fullKey = (key) => (key.startsWith("app.") ? key : prefix + key);
+    function write(key, value, deleting, explicit = false) {
+      key = explicit ? key : fullKey(key);
+      try {
+        if (deleting) storage.removeItem(key);
+        else storage.setItem(key, JSON.stringify(value));
+        failed.delete(key);
+        if (!failed.size) onRecovery();
+        return true;
+      } catch (error) {
+        failed.add(key);
+        onFailure({ key, error });
+        return false;
+      }
+    }
+    return {
+      get(key, fallback) {
+        try {
+          const raw = storage.getItem(fullKey(key));
+          if (
+            raw == null &&
+            /^(bs|ls|bh)\.settings$/.test(key) &&
+            JSON.parse(storage.getItem("app.cfg") || "{}").colorblind
+          )
+            return { ...fallback, cb: true };
+          return raw == null ? fallback : JSON.parse(raw);
+        } catch {
+          return fallback;
+        }
+      },
+      set: (key, value) => write(key, value, false),
+      del: (key) => write(key, null, true),
+      prefix: () => prefix,
+      setColorblind(enabled) {
+        let profiles = [];
+        try {
+          profiles = JSON.parse(storage.getItem("app.profiles")) || [];
+        } catch {}
+        if (!Array.isArray(profiles)) profiles = [];
+        const ids = new Set(["p0", ...profiles.map((p) => p.id)]);
+        for (const id of ids)
+          for (const game of ["bs", "ls", "bh"]) {
+            const key = (id === "p0" ? "" : `p_${id}.`) + game + ".settings";
+            let options = {};
+            try {
+              options = JSON.parse(storage.getItem(key)) || {};
+            } catch {}
+            write(key, { ...options, cb: enabled }, false, true);
+          }
+      },
+    };
+  }
+  return {
+    validateBackup,
+    createBackup,
+    restore,
+    snapshot,
+    createStore,
+    validValue,
+    keyInfo,
+    MAX_BYTES,
+  };
+});
+
+(function () {
+  "use strict";
+  const $ = (selector) => document.querySelector(selector);
+  const escape = (value) =>
+    String(value).replace(
+      /[&<>"']/g,
+      (c) =>
+        ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;",
+        })[c],
+    );
+  const categories = {
+    cards: ["patience", "klaverjas", "wb"],
+    puzzles: ["sd", "ms", "mj", "ls", "bh", "sm", "kb", "wq"],
+    action: ["td", "airhockey", "pf", "rs", "bs", "kp", "bv", "gg", "vd"],
+    strategy: ["rk", "td", "zs", "klaverjas", "wb"],
+    multiplayer: ["rk", "airhockey", "zs", "wb", "vd"],
+  };
+  function announce(text) {
+    const live = $("#appAnnouncement");
+    if (!live) return;
+    live.textContent = "";
+    setTimeout(() => {
+      live.textContent = text;
+    }, 30);
+  }
+  function saveFailure() {
+    const warning = $("#saveWarning");
+    if (warning) warning.hidden = false;
+  }
+  function saveRecovery() {
+    const warning = $("#saveWarning");
+    if (warning) warning.hidden = true;
+  }
+  function initAccessibility(games = []) {
+    let current = null;
+    const openers = new WeakMap(),
+      remembered = new WeakMap();
+    const visible = (el) =>
+      el &&
+      el.isConnected &&
+      !el.closest("[hidden],[inert]") &&
+      el.getClientRects().length > 0;
+    const focusables = (el) =>
+      [
+        ...el.querySelectorAll(
+          'button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex="0"]',
+        ),
+      ].filter(visible);
+    function dialogs() {
+      return [...document.querySelectorAll(".modal.show,.overlay.show")].filter(
+        (el) => el.getClientRects().length,
+      );
+    }
+    function sync() {
+      const open = dialogs();
+      const next = open.at(-1) || null;
+      if (next !== current) {
+        const previous = current;
+        current = next;
+        if (next) openers.set(next, document.activeElement);
+        document.querySelectorAll(".screen").forEach((el) => {
+          el.inert = !!next || !el.classList.contains("active");
+        });
+        document.querySelectorAll(".modal,.overlay").forEach((el) => {
+          el.inert = el !== next;
+        });
+        if (next) {
+          next.setAttribute("role", "dialog");
+          next.setAttribute("aria-modal", "true");
+          next.tabIndex = -1;
+          const heading = next.querySelector("h3,h2");
+          if (heading) {
+            if (!heading.id) heading.id = `${next.id}Heading`;
+            next.setAttribute("aria-labelledby", heading.id);
+          } else next.setAttribute("aria-label", "Spelvenster");
+          (focusables(next)[0] || next).focus({ preventScroll: true });
+        } else if (previous) {
+          const opener = openers.get(previous);
+          if (visible(opener)) opener.focus({ preventScroll: true });
+          else $(".screen.active button")?.focus({ preventScroll: true });
+        }
+      } else {
+        document.querySelectorAll(".screen").forEach((el) => {
+          el.inert = !!next || !el.classList.contains("active");
+        });
+        if (next && !next.contains(document.activeElement)) {
+          const previous = remembered.get(next);
+          const replacement = previous?.id
+            ? document.getElementById(previous.id)
+            : previous?.dataset.app
+              ? [...next.querySelectorAll("[data-app]")].find(
+                  (el) =>
+                    el.dataset.app === previous.dataset.app &&
+                    el.dataset.val === previous.dataset.val,
+                )
+              : null;
+          (replacement || focusables(next)[0] || next).focus({
+            preventScroll: true,
+          });
+        }
+      }
+    }
+    document.querySelectorAll(".modal,.overlay").forEach((el) => {
+      el.setAttribute("role", "dialog");
+      el.setAttribute("aria-modal", "true");
+      const heading = el.querySelector("h3,h2");
+      if (heading) {
+        if (!heading.id) heading.id = `${el.id}Heading`;
+        el.setAttribute("aria-labelledby", heading.id);
+      }
+    });
+    const observer = new MutationObserver(sync);
+    document.querySelectorAll(".modal,.overlay").forEach((el) =>
+      observer.observe(el, {
+        attributes: true,
+        attributeFilter: ["class"],
+        childList: true,
+        subtree: true,
+      }),
+    );
+    document
+      .querySelectorAll(".screen")
+      .forEach((el) =>
+        observer.observe(el, { attributes: true, attributeFilter: ["class"] }),
+      );
+    document.addEventListener(
+      "keydown",
+      (event) => {
+        if (event.key === "Escape" && current) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          window.appBack?.();
+          sync();
+        } else if (event.key === "Tab" && current) {
+          const items = focusables(current),
+            first = items[0],
+            last = items.at(-1);
+          if (!items.length) {
+            event.preventDefault();
+            current.focus();
+          } else if (
+            (event.shiftKey &&
+              (document.activeElement === first ||
+                !current.contains(document.activeElement))) ||
+            (!event.shiftKey &&
+              (document.activeElement === last ||
+                !current.contains(document.activeElement)))
+          ) {
+            event.preventDefault();
+            (event.shiftKey ? last : first).focus();
+          }
+          event.stopImmediatePropagation();
+        }
+      },
+      true,
+    );
+    document.addEventListener("focusin", (event) => {
+      if (current?.contains(event.target))
+        remembered.set(current, event.target);
+      if (
+        current &&
+        !current.contains(event.target) &&
+        !$("#saveWarning")?.contains(event.target)
+      )
+        (focusables(current)[0] || current).focus({ preventScroll: true });
+    });
+    document
+      .querySelectorAll('[id$="Toast"],#toast,#menuToast')
+      .forEach((el) => {
+        el.setAttribute("role", "status");
+        el.setAttribute("aria-live", "polite");
+        el.setAttribute("aria-atomic", "true");
+      });
+    document.querySelectorAll("canvas").forEach((el) => {
+      const screen = el.closest(".screen");
+      const name = games.find((game) => game.id === screen?.id)?.label;
+      if (!el.getAttribute("aria-label"))
+        el.setAttribute(
+          "aria-label",
+          `Spelbord${name ? " van " + name : ""}. Gebruik de spelknoppen om te spelen.`,
+        );
+    });
+    $("#dismissSaveWarning")?.addEventListener("click", () => {
+      $("#saveWarning").hidden = true;
+    });
+    sync();
+  }
+  function createDiscovery(api) {
+    const games = api.games,
+      config = api.config;
+    let query = "",
+      category = "all";
+    const block = document.createElement("div");
+    block.className = "discovery";
+    block.innerHTML = `<div class="game-search"><span aria-hidden="true">⌕</span><label class="visually-hidden" for="gameSearch">Zoek een spel</label><input id="gameSearch" type="search" placeholder="Zoek een spel…" autocomplete="off"><button id="clearGameSearch" aria-label="Zoekopdracht wissen" hidden>×</button></div>
+      <nav class="category-filters" aria-label="Soort spel">${[
+        ["all", "Alle spellen"],
+        ["cards", "Kaarten & woorden"],
+        ["puzzles", "Puzzels"],
+        ["action", "Actie"],
+        ["strategy", "Strategie"],
+        ["multiplayer", "Samen spelen"],
+      ]
+        .map(
+          ([id, label]) =>
+            `<button data-category="${id}" aria-pressed="${id === "all"}">${label}</button>`,
+        )
+        .join("")}</nav>
+      <section id="favoritesSection" aria-labelledby="favoritesHeading"><div class="discovery-head"><h2 id="favoritesHeading">⭐ Favorieten</h2><button id="chooseFavorites">Kiezen</button></div><div id="favoritesRow" class="discovery-row"></div><p id="favoritesEmpty" class="favorites-empty">Zet je favoriete spellen hier vast met ‘Kiezen’.</p></section>
+      <section id="dailySection" aria-labelledby="dailyHeading"><h2 id="dailyHeading">📅 Vandaag</h2><div id="dailyRow" class="discovery-row"></div></section>`;
+    $("#menu .games").before(block);
+    const count = document.createElement("div");
+    count.className = "game-results";
+    count.innerHTML =
+      '<span id="gameCount" role="status" aria-live="polite"></span><button id="resetGameFilters" hidden>Alles tonen</button>';
+    block.after(count);
+    const empty = document.createElement("p");
+    empty.className = "no-games";
+    empty.id = "noGames";
+    empty.hidden = true;
+    empty.textContent =
+      "Geen spellen gevonden. Probeer een andere zoekopdracht of categorie.";
+    $("#menu .games").after(empty);
+    const normal = (value) =>
+      value
+        .toLocaleLowerCase("nl-NL")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    const card = (g, extra = "", daily = false) =>
+      `<button class="discovery-card" data-${daily ? "daily" : "open"}="${g.id}"><img src="${api.icon(g)}" alt=""><span><b>${escape(g.label)}</b>${extra ? `<small>${escape(extra)}</small>` : ""}</span></button>`;
+    function render() {
+      const needle = normal(query.trim());
+      let total = 0;
+      for (const g of games) {
+        const tile = $("#" + g.tile);
+        const match =
+          !config.hidden.includes(g.id) &&
+          (category === "all" || categories[category].includes(g.id)) &&
+          (!needle ||
+            normal(`${g.label} ${tile.textContent}`).includes(needle));
+        tile.hidden = !match;
+        if (match) total++;
+      }
+      $("#gameCount").textContent =
+        `${total} ${total === 1 ? "spel" : "spellen"}`;
+      $("#noGames").hidden = total !== 0;
+      $("#clearGameSearch").hidden = !query;
+      $("#resetGameFilters").hidden = !query && category === "all";
+      $("#favoritesRow").innerHTML = games
+        .filter(
+          (g) => config.pinned.includes(g.id) && !config.hidden.includes(g.id),
+        )
+        .map((g) => card(g))
+        .join("");
+      $("#favoritesEmpty").hidden = !!$("#favoritesRow").children.length;
+      const today = new Date();
+      const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+      $("#dailyRow").innerHTML = ["mj", "bh", "ls", "wq"]
+        .filter((id) => !config.hidden.includes(id))
+        .map((id) => {
+          const g = games.find((g) => g.id === id),
+            stats = api.storage.get(`${id}.stats`, {});
+          const completed = stats.daily && stats.daily[date] != null;
+          return card(
+            g,
+            completed
+              ? "✓ Vandaag voltooid"
+              : id === "mj"
+                ? "Dezelfde puzzel voor iedereen"
+                : id === "wq"
+                  ? "Dagquiz · 10 vragen"
+                  : id === "bh"
+                    ? "Dagrit · vanaf level 9"
+                    : "Dagpuzzel · vanaf level 11",
+            true,
+          );
+        })
+        .join("");
+      $("#dailySection").hidden = !$("#dailyRow").children.length;
+      block
+        .querySelectorAll("[data-category]")
+        .forEach((el) =>
+          el.setAttribute(
+            "aria-pressed",
+            String(el.dataset.category === category),
+          ),
+        );
+    }
+    $("#gameSearch").addEventListener("input", (event) => {
+      query = event.target.value;
+      render();
+    });
+    $("#clearGameSearch").addEventListener("click", () => {
+      query = "";
+      $("#gameSearch").value = "";
+      render();
+      $("#gameSearch").focus();
+    });
+    $("#resetGameFilters").addEventListener("click", () => {
+      query = "";
+      category = "all";
+      $("#gameSearch").value = "";
+      render();
+    });
+    block.addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      if (!button) return;
+      if (button.dataset.category) {
+        category = button.dataset.category;
+        render();
+      } else if (button.dataset.open) api.open(button.dataset.open);
+      else if (button.dataset.daily) {
+        const id = button.dataset.daily;
+        api.open(id);
+        if ($("#" + id)?.classList.contains("active")) {
+          // Use the existing game's daily entry: unlock rules and new-game confirmation stay intact.
+          $("#" + id + "Daily")?.click();
+        }
+      }
+    });
+    function choices() {
+      $("#favoriteChoices").innerHTML = games
+        .filter((g) => !config.hidden.includes(g.id))
+        .map(
+          (g) =>
+            `<button data-favorite="${g.id}" aria-pressed="${config.pinned.includes(g.id)}"><img src="${api.icon(g)}" alt=""><span>${escape(g.label)}</span><span aria-hidden="true">${config.pinned.includes(g.id) ? "★" : "☆"}</span></button>`,
+        )
+        .join("");
+    }
+    $("#chooseFavorites").addEventListener("click", () => {
+      choices();
+      api.modal("favoritesModal");
+    });
+    $("#favoriteChoices").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-favorite]");
+      if (!button) return;
+      const id = button.dataset.favorite;
+      config.pinned = config.pinned.includes(id)
+        ? config.pinned.filter((x) => x !== id)
+        : [...config.pinned, id];
+      api.saveConfig();
+      api.refreshMenu();
+      choices();
+      $('#favoriteChoices [data-favorite="' + id + '"]').focus();
+    });
+    render();
+    return { render };
+  }
+  function applyMotion(config) {
+    const reduce =
+      config.motion === "reduce" ||
+      (config.motion !== "full" &&
+        matchMedia("(prefers-reduced-motion: reduce)").matches);
+    document.documentElement.classList.toggle("reduced-motion", reduce);
+  }
+  window.ReneEnhancements = {
+    announce,
+    saveFailure,
+    saveRecovery,
+    initAccessibility,
+    createDiscovery,
+    applyMotion,
+  };
+})();
+/* APP_SUPPORT_JS_END */
 (() => {
 'use strict';
 const $ = s => document.querySelector(s);
 // Keys starting with "app." belong to the device; everything else belongs to the active player profile.
 let FRESH_INSTALL = false; try { FRESH_INSTALL = localStorage.length === 0; } catch (e) {}
 const store = (() => {
-  let pfx = '';
-  try { const a = JSON.parse(localStorage.getItem('app.profile')); if (a && a !== 'p0') pfx = 'p_' + a + '.'; } catch (e) {}
-  const K = k => k.startsWith('app.') ? k : pfx + k;
-  return {
-    get(k, d) { try { const v = localStorage.getItem(K(k)); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
-    set(k, v) { try { localStorage.setItem(K(k), JSON.stringify(v)); } catch (e) {} },
-    del(k) { try { localStorage.removeItem(K(k)); } catch (e) {} },
-    prefix: () => pfx
-  };
+  // Accessing localStorage itself can throw when storage is disabled.
+  let storage;
+  try { storage = localStorage; }
+  catch (_) { storage = { getItem() { return null; }, setItem() { throw new Error('Opslag is niet beschikbaar'); }, removeItem() {} }; }
+  return RenePersistence.createStore(storage, ReneEnhancements.saveFailure, ReneEnhancements.saveRecovery);
 })();
-const APP_DEFAULTS = { theme: 'auto', text: 'normaal', layout: 'raster', mute: false, music: 'normaal', sfxVol: 'normaal', vibrate: true, awake: true, update: 'auto', limit: 0, pin: null, order: [], hidden: [], pinned: [], seen: null };
+const APP_DEFAULTS = { theme: 'auto', motion: 'auto', colorblind: false, text: 'normaal', layout: 'raster', mute: false, music: 'normaal', sfxVol: 'normaal', vibrate: true, awake: true, update: 'auto', limit: 0, pin: null, order: [], hidden: [], pinned: [], seen: null };
 const appCfg = Object.assign({}, APP_DEFAULTS, store.get('app.cfg', {}));
 const saveApp = () => store.set('app.cfg', appCfg);
 const native = (fn, ...a) => { try { if (window.Android && Android[fn]) { Android[fn](...a); return true; } } catch (e) {} return false; };
@@ -3389,6 +5390,16 @@ const Music = (() => {
       });
       melody(a, { chords: ch, root: K + 12, scale: 'dorian', lo: 66, hi: 81, rhythm: 'sparse', rest: .2 }).forEach(n => a.bell(a.at(n.b, n.s), n.m, .14, n.m % 2 ? .25 : -.25, 1.4, 'vdb'));
     } },
+    // Wereldmacht: original quiet strategy score, warm pads and slow bell phrases.
+    rk: {bpm:62,bars:8,seed:1459,rev:3,revAmt:.35,fn(a){
+      const roots=[50,55,57,53,50,58,55,50];
+      roots.forEach((root,b)=>{
+        const chord=a.chord(root+12,b===5?'M7':'m7',62);
+        a.pad(a.at(b),chord,a.bar,.35,{cut:850,vol:.07,a:1,r:1.5});
+        a.bass(a.at(b),root-12,a.bar*.9,.3,'sub');
+        [0,6,12].forEach((step,k)=>a.bell(a.at(b,step),chord[k%chord.length]+12,.12,k===1?.2:-.2,1.5,'rk'));
+      });
+    }},
     // Card games: relaxed lounge jazz
     cards: { bpm: 84, bars: 8, seed: 101, swing: .6, gain: .7, fn(a) {
       const K = 53, ch = [[2, 'm7'], [7, '7'], [0, 'M7'], [9, 'm7'], [2, 'm7'], [7, '7'], [4, 'm7'], [9, '7']];
@@ -3438,7 +5449,7 @@ const Music = (() => {
 const Sfx = (() => {
   let ac = null, out = null, rev = null, musBus = null, sr = 44100, voices = 0;
   // ---- music player: one looping track per screen, crossfaded, ducked under big jingles ----
-  const DEF = { vd: 'vdm', wq: 'wq', bs: 'bs', ls: 'ls', bh: 'bh', mj: 'mj', wb: 'wb', kp: 'kp', sm: 'sm', bv: 'bv', sd: 'sd', kb: 'kb', gg: 'gg', ms: 'ms', patience: 'cards', klaverjas: 'cards', airhockey: 'air', td: 'td', pf: 'pf0', rs: 'rs', zs: 'zs' };
+  const DEF = { rk: 'rk', vd: 'vdm', wq: 'wq', bs: 'bs', ls: 'ls', bh: 'bh', mj: 'mj', wb: 'wb', kp: 'kp', sm: 'sm', bv: 'bv', sd: 'sd', kb: 'kb', gg: 'gg', ms: 'ms', patience: 'cards', klaverjas: 'cards', airhockey: 'air', td: 'td', pf: 'pf0', rs: 'rs', zs: 'zs' };
   const want = {}, gates = {}, mCache = new Map(), DUCK = new Set(['zsSink', 'win', 'lose', 'pfWin', 'boss', 'spec', 'goal', 'against', 'meteor', 'bossdie', 'cardWin', 'wave', 'clear', 'leak', 'natLose', 'kbWin', 'kbBossDie']);
   let mNow = null, mBusy = null, duckUntil = 0;
   const level = () => appCfg.mute ? 0 : ({ uit: 0, zacht: .28, normaal: .5 }[appCfg.music] ?? .5);
@@ -3938,6 +5949,11 @@ const Sfx = (() => {
     vdNo: [() => { const d = buf(.4); tone(d, 0, 311, 277, .1, .1, .2, .006, .2); return d; }, .1, .24, 1],
     vdVs: [() => { const d = buf(1.4); wash(d, 0, .5, 300, 2400, .45, .2, .1, 1.2, 'bp'); tone(d, .45, 110, 45, .3, .3, .9, .004, .6); bell(d, .46, 784, .14, .8); return d; }, .35, .5, 1],
     vdCrunch: [() => { const d = buf(.3); wash(d, 0, .18, 2400, 1400, .3, .004, .04, 2, 'bp'); tone(d, 0, 520, 300, .03, .03, .2, .003); return d; }, .05, .3, 2],
+    rkPlace: [() => { const d=buf(1.5); [660].forEach((f,i)=>{tone(d,i*.075,f,f,0,.2,.17,.006,.1);bell(d,i*.075,f*2,.045,.28);});return d;},.22,.24,1],
+    rkDice: [() => { const d=buf(1.5); [392, 440].forEach((f,i)=>{tone(d,i*.075,f,f,0,.2,.17,.006,.1);bell(d,i*.075,f*2,.045,.28);});return d;},.22,.24,1],
+    rkCapture: [() => { const d=buf(1.5); [523, 659, 784].forEach((f,i)=>{tone(d,i*.075,f,f,0,.2,.17,.006,.1);bell(d,i*.075,f*2,.045,.28);});return d;},.22,.24,1],
+    rkTrade: [() => { const d=buf(1.5); [587, 740].forEach((f,i)=>{tone(d,i*.075,f,f,0,.2,.17,.006,.1);bell(d,i*.075,f*2,.045,.28);});return d;},.22,.24,1],
+    rkWin: [() => { const d=buf(1.5); [523, 659, 784, 1046].forEach((f,i)=>{tone(d,i*.075,f,f,0,.2,.17,.006,.1);bell(d,i*.075,f*2,.045,.28);});return d;},.22,.24,1],
     // airhockey
     hit:     [() => { const d = buf(.15), b1 = biq('bp', 2300 + Math.random() * 400, 6), b2 = biq('bp', 900, 4); for (let i = 0; i < d.length; i++) { const t = i / sr, x = wn(); d[i] = b1(x) * Math.exp(-t / .006) * 2.5 + b2(x) * Math.exp(-t / .018) * 1.2 + Math.sin(TAU * 680 * t) * Math.exp(-t / .01) * .3; } return d; }, .06, .6, 3],
     wall:    [() => { const d = buf(.2), lp = biq('lp', 700, .8), b = biq('bp', 330, 3); for (let i = 0; i < d.length; i++) { const t = i / sr, x = wn(); d[i] = lp(x) * Math.exp(-t / .012) * 1.5 + b(x) * Math.exp(-t / .03) * 1.5; } return d; }, .06, .35, 2],
@@ -4104,12 +6120,12 @@ function show(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
   current = id;
   keepAwake(id !== 'menu' && appCfg.awake);
-  native('setBarColor', id === 'menu' ? '#123f2c' : id === 'airhockey' ? '#14202e' : id === 'klaverjas' ? (TABLES[settings.table] || TABLES.groen)[1] : id === 'td' ? '#1a3220' : id === 'pf' ? '#18202e' : id === 'rs' ? '#1a2230' : id === 'zs' ? '#0b2238' : id === 'vd' ? '#120c1e' : id === 'wq' ? '#0f3556' : id === 'bs' ? '#1f3f8a' : id === 'ls' ? '#231a4f' : id === 'bh' ? '#1d5a78' : id === 'mj' ? '#13261d' : id === 'wb' ? '#18222a' : id === 'kp' ? '#1f4f7a' : id === 'sm' ? '#3a1752' : id === 'bv' ? '#141133' : id === 'sd' ? '#1c2c3c' : id === 'kb' ? '#1d3324' : id === 'gg' ? '#22171c' : id === 'ms' ? '#173525' : (TABLES[settings.table] || TABLES.groen)[1]);
+  native('setBarColor', id === 'menu' ? '#123f2c' : id === 'airhockey' ? '#14202e' : id === 'klaverjas' ? (TABLES[settings.table] || TABLES.groen)[1] : id === 'td' ? '#1a3220' : id === 'pf' ? '#18202e' : id === 'rs' ? '#1a2230' : id === 'zs' ? '#0b2238' : id === 'rk' ? '#233544' : id === 'vd' ? '#120c1e' : id === 'wq' ? '#0f3556' : id === 'bs' ? '#1f3f8a' : id === 'ls' ? '#231a4f' : id === 'bh' ? '#1d5a78' : id === 'mj' ? '#13261d' : id === 'wb' ? '#18222a' : id === 'kp' ? '#1f4f7a' : id === 'sm' ? '#3a1752' : id === 'bv' ? '#141133' : id === 'sd' ? '#1c2c3c' : id === 'kb' ? '#1d3324' : id === 'gg' ? '#22171c' : id === 'ms' ? '#173525' : (TABLES[settings.table] || TABLES.groen)[1]);
 }
 // a game's own dialogs may only appear while that game is on screen (late timers can otherwise pop them up over the menu)
-const MODAL_GAME = { vd: 'vd', wq: 'wq', bs: 'bs', ls: 'ls', bh: 'bh', mj: 'mj', wb: 'wb', kp: 'kp', sm: 'sm', bv: 'bv', ah: 'airhockey', kj: 'klaverjas', td: 'td', pf: 'pf', rs: 'rs', zs: 'zs', sd: 'sd', kb: 'kb', gg: 'gg', ms: 'ms' };
+const MODAL_GAME = { rk: 'rk', vd: 'vd', wq: 'wq', bs: 'bs', ls: 'ls', bh: 'bh', mj: 'mj', wb: 'wb', kp: 'kp', sm: 'sm', bv: 'bv', ah: 'airhockey', kj: 'klaverjas', td: 'td', pf: 'pf', rs: 'rs', zs: 'zs', sd: 'sd', kb: 'kb', gg: 'gg', ms: 'ms' };
 function openModal(id) {
-  const m = id.match(/^(vd|wq|bs|ls|bh|mj|wb|kp|sm|bv|ah|kj|td|pf|rs|zs|sd|kb|gg|ms)[A-Z]/);
+  const m = id.match(/^(rk|vd|wq|bs|ls|bh|mj|wb|kp|sm|bv|ah|kj|td|pf|rs|zs|sd|kb|gg|ms)[A-Z]/);
   if (m && current !== MODAL_GAME[m[1]]) return;
   if (id === 'winModal' && current !== 'patience') return;
   $('#' + id).classList.add('show');
@@ -4134,7 +6150,7 @@ document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click
 const STICKY = id => /(Start|End|Win|Res)Modal$/.test(id) || id === 'winModal' || id === 'askModal';
 document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', e => { if (e.target === m && !STICKY(m.id)) closeModals(); }));
 
-const LEAVE = { patience: () => Patience.leave(), airhockey: () => AirHockey.leave(), klaverjas: () => Klaverjas.leave(), td: () => TowerDefense.leave(), pf: () => Springvos.leave(), rs: () => Sprinter.leave(), zs: () => Zeeslag.leave(), sd: () => Sudoku.leave(), kb: () => Gnomes.leave(), gg: () => Goldmine.leave(), ms: () => Mines.leave(), vd: () => Vuistduel.leave(), wq: () => Wereldquiz.leave(), bs: () => Bellenschieter.leave(), ls: () => Kleurbuisjes.leave(), bh: () => Bushalte.leave(), mj: () => Mahjong.leave(), wb: () => Woordbord.leave(), kp: () => Katapult.leave(), sm: () => Snoepmix.leave(), bv: () => Blokval.leave() };
+const LEAVE = { patience: () => Patience.leave(), airhockey: () => AirHockey.leave(), klaverjas: () => Klaverjas.leave(), td: () => TowerDefense.leave(), pf: () => Springvos.leave(), rs: () => Sprinter.leave(), zs: () => Zeeslag.leave(), sd: () => Sudoku.leave(), kb: () => Gnomes.leave(), gg: () => Goldmine.leave(), ms: () => Mines.leave(), rk: () => Wereldmacht.leave(), vd: () => Vuistduel.leave(), wq: () => Wereldquiz.leave(), bs: () => Bellenschieter.leave(), ls: () => Kleurbuisjes.leave(), bh: () => Bushalte.leave(), mj: () => Mahjong.leave(), wb: () => Woordbord.leave(), kp: () => Katapult.leave(), sm: () => Snoepmix.leave(), bv: () => Blokval.leave() };
 window.appBack = () => {
   if ($('#limitOverlay').classList.contains('show')) { $('#limitMenu').click(); return true; }
   if ($('#errOverlay').classList.contains('show')) { $('#errMenu').click(); return true; }
@@ -9775,6 +11791,1578 @@ const Zeeslag = (() => {
   return { enter, leave, hasSave: () => !!store.get('zs.save', null) };
 })();
 $('#tileZs').addEventListener('click', () => Zeeslag.enter());
+/* RK_JS_BEGIN */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === "object" && module.exports) module.exports = api;
+  else root.ReneRiskEngine = api;
+})(globalThis, function () {
+  "use strict";
+  const continents = [
+    { id: "na", name: "Noord-Amerika", bonus: 5, color: "#d9b56a" },
+    { id: "sa", name: "Zuid-Amerika", bonus: 2, color: "#b5c980" },
+    { id: "eu", name: "Europa", bonus: 5, color: "#9cbad0" },
+    { id: "af", name: "Afrika", bonus: 3, color: "#dfad86" },
+    { id: "as", name: "Azië", bonus: 7, color: "#c6b1d7" },
+    { id: "au", name: "Oceanië", bonus: 2, color: "#c5cfa5" },
+  ];
+  const entries = [
+    ["alaska", "Alaska", "na", 70, 135, "ALA"],
+    ["nw", "Noordwestterritoria", "na", 180, 110, "NWT"],
+    ["greenland", "Groenland", "na", 365, 70, "GRL"],
+    ["alberta", "Alberta", "na", 145, 210, "ALB"],
+    ["ontario", "Ontario", "na", 250, 185, "ONT"],
+    ["quebec", "Quebec", "na", 350, 165, "QUE"],
+    ["westus", "Westelijke VS", "na", 160, 305, "WVS"],
+    ["eastus", "Oostelijke VS", "na", 280, 280, "OVS"],
+    ["central", "Midden-Amerika", "na", 225, 385, "MAM"],
+    ["venezuela", "Venezuela", "sa", 340, 390, "VEN"],
+    ["peru", "Peru", "sa", 315, 475, "PER"],
+    ["brazil", "Brazilië", "sa", 420, 470, "BRA"],
+    ["argentina", "Argentinië", "sa", 350, 565, "ARG"],
+    ["iceland", "IJsland", "eu", 485, 105, "IJS"],
+    ["scandinavia", "Scandinavië", "eu", 610, 100, "SCA"],
+    ["ukraine", "Oekraïne", "eu", 720, 165, "OEK"],
+    ["britain", "Groot-Brittannië", "eu", 505, 200, "GBR"],
+    ["northeu", "Noord-Europa", "eu", 605, 195, "NEU"],
+    ["westeu", "West-Europa", "eu", 515, 285, "WEU"],
+    ["southeu", "Zuid-Europa", "eu", 635, 290, "ZEU"],
+    ["northaf", "Noord-Afrika", "af", 525, 390, "NAF"],
+    ["egypt", "Egypte", "af", 650, 385, "EGY"],
+    ["eastaf", "Oost-Afrika", "af", 685, 470, "OAF"],
+    ["congo", "Congo", "af", 575, 480, "CON"],
+    ["southaf", "Zuid-Afrika", "af", 590, 575, "ZAF"],
+    ["madagascar", "Madagaskar", "af", 710, 570, "MAD"],
+    ["ural", "Oeral", "as", 805, 125, "OER"],
+    ["siberia", "Siberië", "as", 880, 75, "SIB"],
+    ["yakutsk", "Jakoetsk", "as", 980, 60, "JAK"],
+    ["kamchatka", "Kamtsjatka", "as", 1080, 120, "KAM"],
+    ["irkutsk", "Irkoetsk", "as", 940, 165, "IRK"],
+    ["mongolia", "Mongolië", "as", 935, 260, "MON"],
+    ["japan", "Japan", "as", 1090, 290, "JAP"],
+    ["afghan", "Afghanistan", "as", 775, 245, "AFG"],
+    ["middleeast", "Midden-Oosten", "as", 730, 345, "MOO"],
+    ["india", "India", "as", 845, 350, "IND"],
+    ["china", "China", "as", 930, 350, "CHI"],
+    ["siam", "Siam", "as", 935, 440, "SIA"],
+    ["indonesia", "Indonesië", "au", 930, 530, "INO"],
+    ["newguinea", "Nieuw-Guinea", "au", 1085, 490, "NGU"],
+    ["westaus", "West-Australië", "au", 965, 620, "WAU"],
+    ["eastaus", "Oost-Australië", "au", 1090, 605, "OAU"],
+  ];
+  const edges = [
+    "alaska nw",
+    "alaska alberta",
+    "alaska kamchatka",
+    "nw alberta",
+    "nw ontario",
+    "nw greenland",
+    "greenland ontario",
+    "greenland quebec",
+    "greenland iceland",
+    "alberta ontario",
+    "alberta westus",
+    "ontario quebec",
+    "ontario westus",
+    "ontario eastus",
+    "quebec eastus",
+    "westus eastus",
+    "westus central",
+    "eastus central",
+    "central venezuela",
+    "venezuela peru",
+    "venezuela brazil",
+    "peru brazil",
+    "peru argentina",
+    "brazil argentina",
+    "brazil northaf",
+    "iceland britain",
+    "iceland scandinavia",
+    "scandinavia britain",
+    "scandinavia northeu",
+    "scandinavia ukraine",
+    "britain northeu",
+    "britain westeu",
+    "northeu westeu",
+    "northeu southeu",
+    "northeu ukraine",
+    "westeu southeu",
+    "westeu northaf",
+    "southeu ukraine",
+    "southeu northaf",
+    "southeu egypt",
+    "southeu middleeast",
+    "northaf egypt",
+    "northaf eastaf",
+    "northaf congo",
+    "egypt eastaf",
+    "egypt middleeast",
+    "eastaf middleeast",
+    "eastaf congo",
+    "eastaf southaf",
+    "eastaf madagascar",
+    "congo southaf",
+    "southaf madagascar",
+    "ukraine ural",
+    "ukraine afghan",
+    "ukraine middleeast",
+    "ural siberia",
+    "ural china",
+    "ural afghan",
+    "siberia yakutsk",
+    "siberia irkutsk",
+    "siberia mongolia",
+    "siberia china",
+    "yakutsk irkutsk",
+    "yakutsk kamchatka",
+    "kamchatka irkutsk",
+    "kamchatka mongolia",
+    "kamchatka japan",
+    "irkutsk mongolia",
+    "mongolia japan",
+    "mongolia china",
+    "afghan china",
+    "afghan india",
+    "afghan middleeast",
+    "middleeast india",
+    "india china",
+    "india siam",
+    "china siam",
+    "siam indonesia",
+    "indonesia newguinea",
+    "indonesia westaus",
+    "newguinea westaus",
+    "newguinea eastaus",
+    "westaus eastaus",
+  ].map((pair) => pair.split(" "));
+  const territories = entries.map(([id, name, continent, x, y, short]) => ({
+    id,
+    name,
+    continent,
+    x,
+    y,
+    short,
+    neighbors: [],
+  }));
+  const byId = Object.fromEntries(territories.map((t, i) => [t.id, i]));
+  for (const [a, b] of edges) {
+    territories[byId[a]].neighbors.push(byId[b]);
+    territories[byId[b]].neighbors.push(byId[a]);
+  }
+  const COLORS = [
+    "#b63838",
+    "#2766b0",
+    "#947000",
+    "#207653",
+    "#7d47a0",
+    "#ad5523",
+  ];
+  const integer = (n, min, max = Number.MAX_SAFE_INTEGER) =>
+    Number.isSafeInteger(n) && n >= min && n <= max;
+  const clone = (s) => JSON.parse(JSON.stringify(s));
+  function assert(condition, message) {
+    if (!condition) throw new Error(message);
+  }
+  function random(s) {
+    let seed = s.rng >>> 0;
+    seed ^= seed << 13;
+    seed ^= seed >>> 17;
+    seed ^= seed << 5;
+    s.rng = seed >>> 0;
+    return s.rng / 4294967296;
+  }
+  function shuffle(s, array) {
+    array = array.slice();
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(random(s) * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+  function owned(s, player = s.current) {
+    return s.territories
+      .map((t, i) => (t.owner === player ? i : -1))
+      .filter((i) => i >= 0);
+  }
+  function bonus(s, player = s.current) {
+    const countries = owned(s, player);
+    return continents.filter((c) =>
+      territories
+        .filter((t) => t.continent === c.id)
+        .every((t) => s.territories[byId[t.id]].owner === player),
+    );
+  }
+  function reinforcements(s, player = s.current) {
+    return (
+      Math.max(3, Math.floor(owned(s, player).length / 3)) +
+      bonus(s, player).reduce((n, c) => n + c.bonus, 0)
+    );
+  }
+  function addLog(s, message) {
+    s.log.unshift(message);
+    s.log = s.log.slice(0, 80);
+  }
+  function cardSymbol(card) {
+    return card >= 42 ? 3 : card % 3;
+  }
+  function validSet(cards) {
+    if (cards.length !== 3 || new Set(cards).size !== 3) return false;
+    const symbols = cards.map(cardSymbol).filter((n) => n !== 3);
+    return (
+      new Set(symbols).size === 1 ||
+      new Set(symbols).size === symbols.length ||
+      !symbols.length
+    );
+  }
+  function findSet(s, player = s.current) {
+    const cards = s.players[player].cards;
+    let best = null,
+      bestScore = -1;
+    for (let a = 0; a < cards.length; a++)
+      for (let b = a + 1; b < cards.length; b++)
+        for (let c = b + 1; c < cards.length; c++) {
+          const set = [cards[a], cards[b], cards[c]];
+          if (validSet(set)) {
+            const score = set.some(
+              (id) => id < 42 && s.territories[id].owner === player,
+            )
+              ? 1
+              : 0;
+            if (score > bestScore) {
+              best = set;
+              bestScore = score;
+            }
+          }
+        }
+    return best;
+  }
+  function connected(s, from, to, player = s.current) {
+    if (
+      !integer(from, 0, 41) ||
+      !integer(to, 0, 41) ||
+      s.territories[from].owner !== player ||
+      s.territories[to].owner !== player
+    )
+      return false;
+    const seen = new Set([from]),
+      queue = [from];
+    for (let k = 0; k < queue.length; k++) {
+      const current = queue[k];
+      if (current === to) return true;
+      for (const next of territories[current].neighbors)
+        if (!seen.has(next) && s.territories[next].owner === player) {
+          seen.add(next);
+          queue.push(next);
+        }
+    }
+    return false;
+  }
+  function newGame(players, seed = Date.now()) {
+    assert(
+      Array.isArray(players) && players.length >= 2 && players.length <= 6,
+      "Kies 2 tot en met 6 spelers.",
+    );
+    const s = {
+      version: 1,
+      rng: seed >>> 0 || 1,
+      players: players.map((p, i) => ({
+        name:
+          String(p.name || `Speler ${i + 1}`)
+            .trim()
+            .slice(0, 24) || `Speler ${i + 1}`,
+        ai: !!p.ai,
+        color: COLORS[i],
+        cards: [],
+      })),
+      territories: [],
+      current: 0,
+      phase: "reinforce",
+      pool: 0,
+      round: 1,
+      turn: 1,
+      conquered: false,
+      fortified: false,
+      pending: null,
+      winner: null,
+      sets: 0,
+      deck: [],
+      discard: [],
+      log: [],
+      lastBattle: null,
+      resumeAttack: false,
+    };
+    const order = shuffle(
+      s,
+      territories.map((_, i) => i),
+    );
+    for (let i = 0; i < 42; i++)
+      s.territories[order[i]] = { owner: i % players.length, armies: 1 };
+    const initial = [0, 0, 40, 35, 30, 25, 20][players.length];
+    for (let player = 0; player < players.length; player++) {
+      const countries = owned(s, player);
+      for (let n = countries.length; n < initial; n++)
+        s.territories[countries[Math.floor(random(s) * countries.length)]]
+          .armies++;
+    }
+    s.deck = shuffle(
+      s,
+      Array.from({ length: 44 }, (_, i) => i),
+    );
+    s.pool = reinforcements(s);
+    addLog(
+      s,
+      `${s.players[0].name} begint met ${s.pool} versterkingen. De startlegers zijn automatisch verdeeld.`,
+    );
+    return s;
+  }
+  function finishCapture(s) {
+    const previous = s.pending.defender;
+    s.pending = null;
+    if (!owned(s, previous).length) {
+      s.players[s.current].cards.push(...s.players[previous].cards);
+      s.players[previous].cards = [];
+      addLog(
+        s,
+        `${s.players[previous].name} is uitgeschakeld. De kaarten gaan naar ${s.players[s.current].name}.`,
+      );
+    }
+    if (owned(s).length === 42) {
+      s.winner = s.current;
+      s.phase = "won";
+      s.pool = 0;
+      s.resumeAttack = false;
+      addLog(s, `${s.players[s.current].name} heeft de wereld veroverd!`);
+    } else if (s.players[s.current].cards.length >= 6) {
+      s.phase = "reinforce";
+      s.resumeAttack = true;
+      s.pool = 0;
+      addLog(
+        s,
+        "Ruil eerst een set kaarten en plaats de extra legers, daarna kun je verder aanvallen.",
+      );
+    }
+  }
+  function nextTurn(s) {
+    if (s.conquered) {
+      if (!s.deck.length) {
+        s.deck = shuffle(s, s.discard);
+        s.discard = [];
+      }
+      if (s.deck.length) {
+        s.players[s.current].cards.push(s.deck.pop());
+        addLog(
+          s,
+          `${s.players[s.current].name} krijgt een kaart voor het veroveren van een land.`,
+        );
+      }
+    }
+    const old = s.current;
+    do {
+      s.current = (s.current + 1) % s.players.length;
+    } while (!owned(s).length);
+    if (s.current <= old) s.round++;
+    s.turn++;
+    s.phase = "reinforce";
+    s.pool = reinforcements(s);
+    s.conquered = false;
+    s.fortified = false;
+    s.lastBattle = null;
+    s.resumeAttack = false;
+    addLog(
+      s,
+      `${s.players[s.current].name} is aan de beurt: ${s.pool} versterkingen.`,
+    );
+  }
+  function apply(state, action) {
+    assert(validState(state), "De opgeslagen Wereldmacht-gegevens zijn ongeldig.");
+    const s = clone(state),
+      player = s.players[s.current],
+      name = player.name;
+    assert(s.phase !== "won", "Dit spel is al afgelopen.");
+    if (s.pending)
+      assert(
+        action.type === "occupy",
+        "Kies eerst hoeveel legers het veroverde land bezetten.",
+      );
+    const territory = (id) => {
+      assert(integer(id, 0, 41), "Kies een geldig land.");
+      return s.territories[id];
+    };
+    if (action.type === "reinforce") {
+      assert(
+        s.phase === "reinforce",
+        "Je kunt nu geen versterkingen plaatsen.",
+      );
+      const target = territory(action.to);
+      assert(
+        target.owner === s.current,
+        "Plaats versterkingen in een eigen land.",
+      );
+      assert(
+        integer(action.amount, 1, s.pool),
+        "Kies een geldig aantal versterkingen.",
+      );
+      target.armies += action.amount;
+      s.pool -= action.amount;
+      addLog(
+        s,
+        `${name} plaatst ${action.amount} ${action.amount === 1 ? "leger" : "legers"} in ${territories[action.to].name}.`,
+      );
+    } else if (action.type === "trade") {
+      assert(
+        s.phase === "reinforce",
+        "Ruil je kaarten tijdens het versterken.",
+      );
+      assert(
+        Array.isArray(action.cards) &&
+          action.cards.every((c) => player.cards.includes(c)) &&
+          validSet(action.cards),
+        "Kies drie gelijke symbolen of drie verschillende; jokers mogen meedoen.",
+      );
+      const value = [4, 6, 8, 10, 12, 15][s.sets] || 15 + (s.sets - 5) * 5;
+      s.sets++;
+      s.pool += value;
+      player.cards = player.cards.filter((c) => !action.cards.includes(c));
+      s.discard.push(...action.cards);
+      const extra = action.cards.find(
+        (id) => id < 42 && s.territories[id].owner === s.current,
+      );
+      if (extra != null) s.territories[extra].armies += 2;
+      addLog(
+        s,
+        `${name} ruilt kaarten voor ${value} versterkingen${extra != null ? ` en 2 legers in ${territories[extra].name}` : ""}.`,
+      );
+    } else if (action.type === "advance") {
+      if (s.phase === "reinforce") {
+        assert(s.pool === 0, "Plaats eerst al je versterkingen.");
+        assert(
+          player.cards.length < (s.resumeAttack ? 6 : 5),
+          "Ruil eerst een set kaarten.",
+        );
+        s.phase = "attack";
+        s.resumeAttack = false;
+      } else if (s.phase === "attack") s.phase = "fortify";
+      else throw new Error("Sluit je beurt af met ‘Beurt beëindigen’.");
+    } else if (action.type === "attack") {
+      assert(
+        s.phase === "attack",
+        "Je kunt alleen aanvallen in de aanvalsfase.",
+      );
+      const from = territory(action.from),
+        to = territory(action.to);
+      assert(
+        from.owner === s.current && to.owner !== s.current,
+        "Val vanuit een eigen land een tegenstander aan.",
+      );
+      assert(
+        territories[action.from].neighbors.includes(action.to),
+        "Deze landen grenzen niet aan elkaar.",
+      );
+      assert(
+        integer(action.dice, 1, Math.min(3, from.armies - 1)),
+        "Laat minimaal één leger achter en kies maximaal 3 dobbelstenen.",
+      );
+      const defender = to.owner,
+        attack = Array.from(
+          { length: action.dice },
+          () => 1 + Math.floor(random(s) * 6),
+        ).sort((a, b) => b - a),
+        defend = Array.from(
+          { length: Math.min(2, to.armies) },
+          () => 1 + Math.floor(random(s) * 6),
+        ).sort((a, b) => b - a);
+      let attackLoss = 0,
+        defendLoss = 0;
+      for (let i = 0; i < Math.min(attack.length, defend.length); i++) {
+        if (attack[i] > defend[i]) defendLoss++;
+        else attackLoss++;
+      }
+      from.armies -= attackLoss;
+      to.armies -= defendLoss;
+      s.lastBattle = {
+        from: action.from,
+        to: action.to,
+        attack,
+        defend,
+        attackLoss,
+        defendLoss,
+      };
+      addLog(
+        s,
+        `${territories[action.from].name} → ${territories[action.to].name}: aanvaller −${attackLoss}, verdediger −${defendLoss}.`,
+      );
+      if (to.armies === 0) {
+        to.owner = s.current;
+        to.armies = action.dice;
+        from.armies -= action.dice;
+        s.conquered = true;
+        s.pending = {
+          from: action.from,
+          to: action.to,
+          min: action.dice,
+          max: from.armies + action.dice - 1,
+          defender,
+        };
+        addLog(
+          s,
+          `${name} verovert ${territories[action.to].name}. Kies de bezetting.`,
+        );
+      }
+    } else if (action.type === "occupy") {
+      assert(s.pending, "Er is geen veroverd land om te bezetten.");
+      assert(
+        integer(action.amount, s.pending.min, s.pending.max),
+        "Kies een geldig aantal legers voor de bezetting.",
+      );
+      const extra = action.amount - s.pending.min;
+      s.territories[s.pending.from].armies -= extra;
+      s.territories[s.pending.to].armies += extra;
+      finishCapture(s);
+    } else if (action.type === "fortify") {
+      assert(
+        s.phase === "fortify" && !s.fortified,
+        "Je mag één verplaatsing doen aan het einde van je beurt.",
+      );
+      const from = territory(action.from),
+        to = territory(action.to);
+      assert(
+        action.from !== action.to && connected(s, action.from, action.to),
+        "Verplaats tussen eigen landen via een aaneengesloten route.",
+      );
+      assert(
+        integer(action.amount, 1, from.armies - 1),
+        "Laat minimaal één leger achter.",
+      );
+      from.armies -= action.amount;
+      to.armies += action.amount;
+      s.fortified = true;
+      addLog(
+        s,
+        `${name} verplaatst ${action.amount} legers van ${territories[action.from].name} naar ${territories[action.to].name}.`,
+      );
+    } else if (action.type === "endTurn") {
+      assert(
+        s.phase === "fortify",
+        "Rond eerst het versterken en aanvallen af.",
+      );
+      nextTurn(s);
+    } else throw new Error("Onbekende spelactie.");
+    assert(validState(s), "De spelactie leverde ongeldige gegevens op.");
+    return s;
+  }
+  function validState(s) {
+    if (
+      !s ||
+      s.version !== 1 ||
+      !Array.isArray(s.players) ||
+      s.players.length < 2 ||
+      s.players.length > 6 ||
+      !Array.isArray(s.territories) ||
+      s.territories.length !== 42
+    )
+      return false;
+    const count = s.players.length;
+    if (
+      !s.players.every(
+        (p) =>
+          p &&
+          typeof p.name === "string" &&
+          p.name.length > 0 &&
+          p.name.length <= 24 &&
+          typeof p.ai === "boolean" &&
+          typeof p.color === "string" &&
+          COLORS.includes(p.color) &&
+          Array.isArray(p.cards),
+      )
+    )
+      return false;
+    if (
+      !s.territories.every(
+        (t) =>
+          t && integer(t.owner, 0, count - 1) && integer(t.armies, 1, 100000),
+      )
+    )
+      return false;
+    if (
+      !integer(s.current, 0, count - 1) ||
+      !["reinforce", "attack", "fortify", "won"].includes(s.phase) ||
+      !integer(s.pool, 0, 100000) ||
+      !integer(s.rng, 1, 4294967295) ||
+      !integer(s.round, 1) ||
+      !integer(s.turn, 1) ||
+      !integer(s.sets, 0) ||
+      !Array.isArray(s.deck) ||
+      !Array.isArray(s.discard) ||
+      !Array.isArray(s.log) ||
+      !s.log.every((x) => typeof x === "string") ||
+      typeof s.conquered !== "boolean" ||
+      typeof s.fortified !== "boolean" ||
+      typeof s.resumeAttack !== "boolean"
+    )
+      return false;
+    if (
+      s.winner !== null &&
+      (!integer(s.winner, 0, count - 1) ||
+        s.phase !== "won" ||
+        owned(s, s.winner).length !== 42)
+    )
+      return false;
+    if (s.phase === "won" && s.winner === null) return false;
+    if (!owned(s).length) return false;
+    if (s.phase !== "reinforce" && s.pool !== 0) return false;
+    const cards = [
+      ...s.deck,
+      ...s.discard,
+      ...s.players.flatMap((p) => p.cards),
+    ];
+    if (
+      cards.length !== 44 ||
+      new Set(cards).size !== 44 ||
+      !cards.every((c) => integer(c, 0, 43))
+    )
+      return false;
+    if (s.pending) {
+      const p = s.pending;
+      if (
+        s.phase !== "attack" ||
+        !integer(p.from, 0, 41) ||
+        !integer(p.to, 0, 41) ||
+        p.from === p.to ||
+        !territories[p.from].neighbors.includes(p.to) ||
+        !integer(p.defender, 0, count - 1) ||
+        p.defender === s.current ||
+        !integer(p.min, 1, 3) ||
+        !integer(p.max, p.min, 100000) ||
+        s.territories[p.from].owner !== s.current ||
+        s.territories[p.to].owner !== s.current ||
+        s.territories[p.to].armies !== p.min ||
+        s.territories[p.from].armies + s.territories[p.to].armies - 1 !== p.max
+      )
+        return false;
+    }
+    if (
+      s.lastBattle &&
+      (!integer(s.lastBattle.from, 0, 41) ||
+        !integer(s.lastBattle.to, 0, 41) ||
+        !Array.isArray(s.lastBattle.attack) ||
+        !Array.isArray(s.lastBattle.defend) ||
+        !s.lastBattle.attack.every((n) => integer(n, 1, 6)) ||
+        !s.lastBattle.defend.every((n) => integer(n, 1, 6)))
+    )
+      return false;
+    return true;
+  }
+  function frontier(s, player = s.current) {
+    return owned(s, player).filter((i) =>
+      territories[i].neighbors.some((n) => s.territories[n].owner !== player),
+    );
+  }
+  function chooseAction(s, difficulty = "normal") {
+    if (s.phase === "won") return null;
+    if (s.pending) {
+      const threat = (i) =>
+        territories[i].neighbors
+          .filter((n) => s.territories[n].owner !== s.current)
+          .reduce((sum, n) => sum + s.territories[n].armies, 0);
+      const behind = threat(s.pending.from),
+        ahead = threat(s.pending.to);
+      // Keep a border guard instead of marching the whole army away from an enemy stack.
+      const share =
+        behind === 0
+          ? s.pending.max
+          : ahead === 0
+            ? s.pending.min
+            : Math.round((s.pending.max * ahead) / (behind + ahead));
+      return {
+        type: "occupy",
+        amount: Math.max(s.pending.min, Math.min(s.pending.max, share)),
+      };
+    }
+    if (s.phase === "reinforce") {
+      const set = findSet(s);
+      if (set) return { type: "trade", cards: set };
+      if (s.pool) {
+        const border = frontier(s),
+          candidates = border.length ? border : owned(s);
+        const strength = (i) => {
+          const enemies = territories[i].neighbors.filter(
+            (n) => s.territories[n].owner !== s.current,
+          );
+          const weakest = enemies.length
+            ? Math.min(...enemies.map((n) => s.territories[n].armies))
+            : 0;
+          const continent = territories.filter(
+            (t) => t.continent === territories[i].continent,
+          );
+          const fraction =
+            continent.filter(
+              (t) => s.territories[byId[t.id]].owner === s.current,
+            ).length / continent.length;
+          return s.territories[i].armies - weakest + fraction * 6;
+        };
+        const to =
+          difficulty === "easy"
+            ? candidates[s.rng % candidates.length]
+            : candidates.reduce((a, b) => (strength(a) >= strength(b) ? a : b));
+        return { type: "reinforce", to, amount: s.pool };
+      }
+      return { type: "advance" };
+    }
+    if (s.phase === "attack") {
+      const candidates = [];
+      for (const from of frontier(s))
+        for (const to of territories[from].neighbors) {
+          const a = s.territories[from],
+            d = s.territories[to];
+          if (d.owner === s.current) continue;
+          const ratio =
+            difficulty === "easy" ? 1.05 : difficulty === "strong" ? 1.35 : 1.6;
+          if (a.armies >= 4 && a.armies - 1 >= d.armies * ratio) {
+            const region = territories.filter(
+                (t) => t.continent === territories[to].continent,
+              ),
+              remaining = region.filter(
+                (t) => s.territories[byId[t.id]].owner !== s.current,
+              ).length;
+            const elimination = owned(s, d.owner).length === 1 ? 10 : 0;
+            candidates.push({
+              from,
+              to,
+              score: a.armies - d.armies + 6 / remaining + elimination,
+            });
+          }
+        }
+      if (candidates.length) {
+        candidates.sort((a, b) => b.score - a.score);
+        return {
+          type: "attack",
+          from: candidates[0].from,
+          to: candidates[0].to,
+          dice: Math.min(3, s.territories[candidates[0].from].armies - 1),
+        };
+      }
+      return { type: "advance" };
+    }
+    if (s.phase === "fortify" && !s.fortified) {
+      const borders = frontier(s);
+      for (const from of owned(s)
+        .filter((i) => !borders.includes(i) && s.territories[i].armies > 1)
+        .sort((a, b) => s.territories[b].armies - s.territories[a].armies)) {
+        const targets = borders.filter((to) => connected(s, from, to));
+        if (targets.length) {
+          const to = targets.reduce((a, b) =>
+            s.territories[a].armies >= s.territories[b].armies ? a : b,
+          );
+          return {
+            type: "fortify",
+            from,
+            to,
+            amount: s.territories[from].armies - 1,
+          };
+        }
+      }
+    }
+    return { type: "endTurn" };
+  }
+  return {
+    territories,
+    continents,
+    edges,
+    byId,
+    COLORS,
+    newGame,
+    apply,
+    validState,
+    owned,
+    bonus,
+    reinforcements,
+    connected,
+    validSet,
+    findSet,
+    cardSymbol,
+    chooseAction,
+  };
+});
+
+(function () {
+  "use strict";
+  const E = window.ReneRiskEngine,
+    $ = (id) => document.getElementById(id),
+    esc = (x) =>
+      String(x).replace(
+        /[&<>"']/g,
+        (c) =>
+          ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+          })[c],
+      );
+  const phases = {
+    reinforce: "Versterken",
+    attack: "Aanvallen",
+    fortify: "Verplaatsen",
+    won: "Gewonnen",
+  };
+  const symbols = ["♟", "♞", "♜", "★"];
+  function create(api) {
+    let state = api.storage.get("rk.save", null),
+      active = false,
+      selected = null,
+      target = null,
+      cards = [],
+      handoff = false,
+      botTimer = null,
+      battleTimer = null,
+      autoBattle = null,
+      zoom = 1,
+      lastTurn = 0,
+      diceChoice = null;
+    const storedInvalid = state !== null && !E.validState(state);
+    if (storedInvalid) state = null;
+    let settings = Object.assign(
+      { players: 3, humans: 1, difficulty: "normal", tempo: "normal", sound: true, music: true },
+      api.storage.get("rk.settings", {}),
+    );
+    api.music?.(() => settings.music !== false);
+    function sound(name) { if (settings.sound !== false) api.sfx?.(name); }
+    const isHuman = () => state && !state.players[state.current].ai;
+    const blocked = () =>
+      !state || !isHuman() || handoff || state.phase === "won";
+    const modalOpen = () =>
+      !!document.querySelector(".modal.show,.overlay.show");
+    function stop() {
+      clearTimeout(botTimer);
+      clearTimeout(battleTimer);
+      botTimer = null;
+      battleTimer = null;
+      autoBattle = null;
+    }
+    function save() {
+      if (active && state && !window.__noSave)
+        api.storage.set("rk.save", state);
+    }
+    function apply(action) {
+      try {
+        const previousTurn = state.turn;
+        state = E.apply(state, action);
+        if (state.winner !== null && !state.statsRecorded) {
+          const stats = api.storage.get("rk.stats", { played: 0, won: 0 });
+          stats.finished = (stats.finished || 0) + 1;
+          if (!state.players[state.winner].ai) stats.won = (stats.won || 0) + 1;
+          api.storage.set("rk.stats", stats);
+          state.statsRecorded = true;
+        }
+        save();
+        if (action.type === "attack") sound(state.pending ? "rkCapture" : "rkDice");
+        else if (action.type === "trade") sound("rkTrade");
+        else if (action.type === "reinforce" || action.type === "fortify") sound("rkPlace");
+        if (state.winner !== null) sound("rkWin");
+        if (state.turn !== previousTurn) {
+          selected = null;
+          target = null;
+          cards = [];
+          diceChoice = null;
+          checkHandoff();
+        }
+        if (state.pending) {
+          selected = state.pending.from;
+          target = state.pending.to;
+        }
+        if (state.winner !== null) stop();
+        render();
+        if (isHuman() && !handoff)
+          window.ReneEnhancements.announce(state.log[0]);
+        schedule();
+        return true;
+      } catch (error) {
+        stop();
+        api.toast(error.message, 3500);
+        return false;
+      }
+    }
+    function checkHandoff() {
+      if (!state) return;
+      handoff = state.players.filter((p) => !p.ai).length > 1 && isHuman();
+      if (handoff) {
+        $("rkHandoffTitle").textContent =
+          `Beurt van ${state.players[state.current].name}`;
+        api.modal("rkHandoffModal");
+      }
+    }
+    function schedule() {
+      if (
+        botTimer ||
+        !active ||
+        document.hidden ||
+        modalOpen() ||
+        !state ||
+        state.phase === "won" ||
+        isHuman()
+      )
+        return;
+      botTimer = setTimeout(
+        () => {
+          botTimer = null;
+          if (!active || document.hidden || modalOpen()) return;
+          const action = E.chooseAction(state, settings.difficulty);
+          if (action) apply(action);
+        },
+        settings.tempo === "fast" ? 65 : 280,
+      );
+    }
+    function choose(id) {
+      if (!state || blocked() || state.pending) return;
+      const t = state.territories[id];
+      if (
+        state.phase === "attack" &&
+        t.owner !== state.current &&
+        selected !== null &&
+        state.territories[selected].owner === state.current
+      ) {
+        if (!E.territories[selected].neighbors.includes(id)) {
+          api.toast("Deze landen grenzen niet aan elkaar.");
+          return;
+        }
+        target = id;
+      } else if (
+        state.phase === "fortify" &&
+        t.owner === state.current &&
+        selected !== null &&
+        selected !== id &&
+        state.territories[selected].owner === state.current
+      ) {
+        if (!E.connected(state, selected, id)) {
+          api.toast("Verplaatsen kan alleen via eigen landen.");
+          return;
+        }
+        target = id;
+      } else {
+        selected = id;
+        target = null;
+        diceChoice = null;
+      }
+      stop();
+      render();
+    }
+    const hulls = [
+      [
+        "na",
+        "M28 102 165 35 285 75 422 28 443 138 388 242 325 333 267 433 183 405 108 314 78 229 22 171Z",
+        170,
+        50,
+      ],
+      [
+        "sa",
+        "M266 358 373 333 463 422 468 506 386 647 312 610 279 499Z",
+        350,
+        650,
+      ],
+      ["eu", "M445 68 640 32 752 90 763 245 682 343 511 334 458 250Z", 553, 42],
+      [
+        "af",
+        "M481 342 642 327 726 405 741 574 651 648 550 632 511 522Z",
+        600,
+        654,
+      ],
+      [
+        "as",
+        "M751 65 908 16 1122 35 1143 177 1118 359 1000 482 878 469 791 399 690 342 747 244Z",
+        909,
+        20,
+      ],
+      ["au", "M868 486 1098 453 1140 574 1127 662 925 660 879 580Z", 1029, 665],
+    ];
+    function drawMap() {
+      $("rkMap").innerHTML =
+        `<defs><pattern id="rkSea" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="15" cy="15" r="1" fill="#708b9917"/></pattern></defs><rect width="1160" height="680" fill="#dce8eb"/><rect width="1160" height="680" fill="url(#rkSea)"/>` +
+        hulls
+          .map(([id, path, x, y]) => {
+            const c = E.continents.find((c) => c.id === id);
+            return `<path d="${path}" fill="${c.color}" fill-opacity=".35" stroke="#fff" stroke-opacity=".8" stroke-width="3"/><text x="${x}" y="${y}" fill="#344d5b" font-family="system-ui" font-size="12" font-weight="700" text-anchor="middle" letter-spacing="1">${c.name.toUpperCase()} +${c.bonus}</text>`;
+          })
+          .join("") +
+        E.edges
+          .map(([a, b]) => {
+            const from = E.territories[E.byId[a]],
+              to = E.territories[E.byId[b]],
+              sea = from.continent !== to.continent;
+            if (
+              (a === "alaska" && b === "kamchatka") ||
+              (b === "alaska" && a === "kamchatka")
+            )
+              return '<path d="M70 135H0M1080 120H1160" stroke="#567786" stroke-width="2" stroke-dasharray="5 5"/><text x="14" y="120" fill="#567786" font-size="13">↔</text><text x="1140" y="105" fill="#567786" font-size="13">↔</text>';
+            return `<path class="rk-route" data-route="${E.byId[a]}-${E.byId[b]}" d="M${from.x} ${from.y}L${to.x} ${to.y}" stroke="#345766" stroke-opacity="${sea ? 0.55 : 0.17}" stroke-width="${sea ? 2 : 1.5}" ${sea ? 'stroke-dasharray="5 5"' : ""}/>`;
+          })
+          .join("") +
+        E.territories
+          .map(
+            (t, i) =>
+              `<g class="rk-country" data-country="${i}" role="button" tabindex="0" transform="translate(${t.x} ${t.y})"><title>${t.name}</title><path class="rk-country-shape" d="M-31-22 0-35 31-22 31 21 0 35-31 21Z"/><text class="rk-abbr" y="-16">${t.short}</text><text class="rk-armies" y="6"></text><text class="rk-owner" y="23"></text></g>`,
+          )
+          .join("");
+    }
+    function updateMap() {
+      const focusedCountry = $("rkCountryList").contains(
+        document.activeElement,
+      )
+        ? document.activeElement.dataset.country
+        : null;
+      $("rkMap")
+        .querySelectorAll("[data-country]")
+        .forEach((node) => {
+          const i = Number(node.dataset.country),
+            t = state.territories[i],
+            p = state.players[t.owner];
+          node.querySelector("path").setAttribute("fill", p.color);
+          node.querySelector(".rk-armies").textContent = t.armies;
+          node.querySelector(".rk-owner").textContent =
+            `SPELER ${t.owner + 1}`;
+          node.setAttribute(
+            "aria-label",
+            `${E.territories[i].name}, speler ${t.owner + 1}, ${p.name}, ${t.armies} legers`,
+          );
+          node.setAttribute(
+            "aria-pressed",
+            String(i === selected || i === target),
+          );
+          node.classList.toggle("selected", i === selected);
+          node.classList.toggle("target", i === target);
+          node.classList.toggle(
+            "neighbor",
+            selected !== null && E.territories[selected].neighbors.includes(i),
+          );
+        });
+      $("rkCountryList").innerHTML = E.continents
+        .map(
+          (c) =>
+            `<h3>${c.name} · +${c.bonus}</h3><div>${E.territories
+              .map((t, i) => {
+                if (t.continent !== c.id) return "";
+                const country = state.territories[i],
+                  p = state.players[country.owner];
+                return `<button data-country="${i}" class="${i === selected ? "selected" : i === target ? "target" : ""}" aria-pressed="${i === selected || i === target}"><i style="background:${p.color}">${country.owner + 1}</i><span>${t.name}<small>${esc(p.name)}</small></span><b>${country.armies}</b><span class="visually-hidden">legers</span></button>`;
+              })
+              .join("")}</div>`,
+        )
+        .join("");
+      if (focusedCountry != null)
+        $("rkCountryList")
+          .querySelector(`[data-country="${focusedCountry}"]`)
+          ?.focus({ preventScroll: true });
+      const ownedBonuses = E.bonus(state).map((c) => c.id);
+      $("rkContinentBonuses").innerHTML = E.continents
+        .map(
+          (c) =>
+            `<span class="${ownedBonuses.includes(c.id) ? "owned" : ""}">${c.name} +${c.bonus}${ownedBonuses.includes(c.id) ? " ✓" : ""}</span>`,
+        )
+        .join("");
+    }
+    function options(indices, value) {
+      return (
+        '<option value="">Kies een land</option>' +
+        indices
+          .map(
+            (i) =>
+              `<option value="${i}" ${i === value ? "selected" : ""}>${E.territories[i].name} (${state.territories[i].armies})</option>`,
+          )
+          .join("")
+      );
+    }
+    function amount(max, value = 1, min = 1) {
+      return `<label>Aantal legers<div class="rk-amount"><input id="rkAmount" type="number" inputmode="numeric" min="${min}" max="${max}" value="${value}"><button data-action="all" data-max="${max}">Alle ${max}</button></div></label>`;
+    }
+    function button(label, action, disabled = false, secondary = false) {
+      return `<button id="rkAction${action}" class="rk-action ${secondary ? "rk-secondary" : ""}" data-action="${action}" ${disabled ? "disabled" : ""}>${label}</button>`;
+    }
+    function renderControls() {
+      const focused = document.activeElement?.id,
+        wasInControls = $("rkControls").contains(document.activeElement),
+        selection = selected !== null ? state.territories[selected] : null;
+      const own = selection && selection.owner === state.current,
+        canAct = !blocked();
+      let html = "";
+      if (state.phase === "won")
+        html = `<h3>🏆 ${esc(state.players[state.winner].name)} wint!</h3><p class="rk-muted">Alle 42 landen zijn veroverd in ${state.round} rondes.</p>${button("Nieuw spel", "new")}${button("Naar menu", "menu", false, true)}`;
+      else if (handoff)
+        html = `<h3>Geef het toestel door</h3><p class="rk-muted">De kaarten en acties van ${esc(state.players[state.current].name)} blijven verborgen.</p>${button("Mijn beurt bekijken", "handoff")}`;
+      else if (!isHuman())
+        html = `<h3>${esc(state.players[state.current].name)} speelt</h3><p class="rk-muted">De computer ${state.phase === "reinforce" ? "plaatst versterkingen" : state.phase === "attack" ? "bekijkt de grenzen" : "rondt de beurt af"}. Je kunt op elk moment pauzeren of naar het menu gaan.</p>${button("Pauze", "pause", false, true)}`;
+      else if (state.pending)
+        html = `<h3>Land veroverd!</h3><p class="rk-muted">${E.territories[state.pending.to].name} is van jou. Er moeten minstens ${state.pending.min} legers heen; één leger blijft achter in ${E.territories[state.pending.from].name}.</p>${amount(state.pending.max, state.pending.min, state.pending.min)}${button("Bezetting bevestigen", "occupy")}`;
+      else {
+        html = `<h3>${selection ? E.territories[selected].name : "Kies een eigen land"}</h3><p class="rk-muted">${selection ? `${esc(state.players[selection.owner].name)} · ${selection.armies} legers` : "Tik op de kaart of kies hieronder een land."}</p><label>${state.phase === "reinforce" ? "Land voor versterkingen" : "Vanuit"}<select id="rkFrom">${options(E.owned(state), own ? selected : null)}</select></label>`;
+        if (state.phase === "reinforce") {
+          html += `<p class="rk-muted"><b>${state.pool}</b> versterkingen over${E.bonus(state).length ? " · inclusief continentbonus" : ""}.</p>`;
+          if (state.pool)
+            html +=
+              amount(state.pool, Math.min(state.pool, 3)) +
+              button("Legers plaatsen", "reinforce", !own);
+          const hand = state.players[state.current].cards,
+            required = hand.length >= (state.resumeAttack ? 6 : 5);
+          if (hand.length) {
+            if (!cards.length) cards = E.findSet(state) || [];
+            html += `<h4>Kaarten (${hand.length})${required ? " · ruilen verplicht" : ""}</h4><div class="rk-cards">${hand.map((id) => `<button id="rkCard${id}" data-card="${id}" aria-pressed="${cards.includes(id)}" aria-label="${id < 42 ? E.territories[id].name : "Joker"}, ${["infanterie", "cavalerie", "artillerie", "joker"][E.cardSymbol(id)]}${cards.includes(id) ? ", geselecteerd" : ""}">${symbols[E.cardSymbol(id)]}<small>${id < 42 ? E.territories[id].name : "Joker"}</small></button>`).join("")}</div>${button("Geselecteerde set ruilen", "trade", !E.validSet(cards))}`;
+          }
+          html += button(
+            state.resumeAttack ? "Verder aanvallen" : "Naar aanvallen",
+            "advance",
+            state.pool > 0 || required,
+            true,
+          );
+        } else if (state.phase === "attack") {
+          const enemies = own
+            ? E.territories[selected].neighbors.filter(
+                (i) => state.territories[i].owner !== state.current,
+              )
+            : [];
+          if (target !== null && !enemies.includes(target)) target = null;
+          html += `<label>Aangrenzend vijandelijk land<select id="rkTarget">${options(enemies, target)}</select></label><label>Dobbelstenen<select id="rkDice">${[
+            1, 2, 3,
+          ]
+            .filter((n) => own && n < selection.armies)
+            .map(
+              (n) =>
+                `<option value="${n}" ${n === Math.min(diceChoice || 3, selection.armies - 1) ? "selected" : ""}>${n} ${n === 1 ? "dobbelsteen" : "dobbelstenen"}</option>`,
+            )
+            .join("")}</select></label>`;
+          const invalid = !own || selection.armies < 2 || target === null;
+          html += `<div class="rk-buttons">${button("Eén worp", "attack", invalid)}${button(autoBattle ? "Stop" : "Doorvechten", autoBattle ? "stop" : "blitz", invalid, true)}</div>${button("Aanvallen afronden", "advance", false, true)}`;
+        } else if (state.phase === "fortify") {
+          if (!state.fortified) {
+            const targets = own
+              ? E.owned(state).filter(
+                  (i) => i !== selected && E.connected(state, selected, i),
+                )
+              : [];
+            if (target !== null && !targets.includes(target)) target = null;
+            html += `<label>Naar verbonden eigen land<select id="rkTarget">${options(targets, target)}</select></label>`;
+            if (own && selection.armies > 1)
+              html += amount(selection.armies - 1, 1);
+            html += button(
+              "Legers verplaatsen",
+              "fortify",
+              !own || selection.armies < 2 || target === null,
+            );
+          } else
+            html += '<p class="rk-muted">Je hebt je verplaatsing gedaan.</p>';
+          html += button("Beurt beëindigen", "endTurn");
+        }
+      }
+      $("rkControls").innerHTML = html;
+      if (focused && $(focused) && $("rkControls").contains($(focused)))
+        $(focused).focus({ preventScroll: true });
+      else if (wasInControls)
+        $("rkControls")
+          .querySelector("button:not(:disabled),select,input")
+          ?.focus({ preventScroll: true });
+      $("rkControls")
+        .querySelectorAll("button[data-card]")
+        .forEach((b) => {
+          b.disabled = !canAct;
+        });
+    }
+    function render() {
+      if (!state) return;
+      const p = state.players[state.current];
+      $("rkRound").textContent =
+        `Ronde ${state.round} · ${state.players.length} spelers`;
+      $("rkPlayerName").textContent =
+        state.phase === "won"
+          ? `${state.players[state.winner].name} heeft gewonnen`
+          : p.name;
+      $("rkPlayerBadge").style.background = p.color;
+      $("rkPlayerBadge").textContent = state.current + 1;
+      $("rkPhase").textContent = phases[state.phase];
+      $("rkInstruction").textContent = state.pending
+        ? "Kies hoeveel legers het veroverde land bezetten."
+        : state.phase === "reinforce"
+          ? `Plaats ${state.pool} versterkingen in je eigen landen.`
+          : state.phase === "attack"
+            ? "Kies een eigen land en een vijandelijke buur. Eén leger blijft achter."
+            : state.phase === "fortify"
+              ? "Verplaats één keer via eigen landen, of beëindig je beurt."
+              : "De wereld is veroverd.";
+      $("rkScoreboard").innerHTML = state.players
+        .map(
+          (p, i) =>
+            `<div class="rk-score ${i === state.current ? "active" : ""} ${E.owned(state, i).length ? "" : "out"}"><span style="background:${p.color}">${i + 1}</span><div><b>${esc(p.name)}${p.ai ? " 🤖" : ""}</b><small>${E.owned(state, i).length} landen · ${p.cards.length} kaarten${E.owned(state, i).length ? "" : " · uitgeschakeld"}</small></div></div>`,
+        )
+        .join("");
+      updateMap();
+      renderControls();
+      const b = state.lastBattle;
+      $("rkBattle").innerHTML = b
+        ? `<h4>${E.territories[b.from].name} → ${E.territories[b.to].name}</h4><div class="rk-dice-row"><span>Aanval</span>${b.attack.map((n) => `<span class="rk-die">${n}</span>`).join("")}</div><div class="rk-dice-row"><span>Verdediging</span>${b.defend.map((n) => `<span class="rk-die defense">${n}</span>`).join("")}</div><p>Aanvaller verliest ${b.attackLoss}, verdediger ${b.defendLoss}. Bij gelijke worpen wint de verdediger.</p>`
+        : "";
+      $("rkHistory").innerHTML = state.log
+        .map((text) => `<li>${esc(text)}</li>`)
+        .join("");
+      if (state.turn !== lastTurn) {
+        lastTurn = state.turn;
+        window.ReneEnhancements.announce(
+          `Beurt van ${p.name}. ${phases[state.phase]}. ${state.pool} versterkingen.`,
+        );
+      }
+    }
+    function startBlitz() {
+      autoBattle = { from: selected, to: target, turn: state.turn };
+      const tick = () => {
+        battleTimer = null;
+        if (
+          !autoBattle ||
+          !active ||
+          document.hidden ||
+          modalOpen() ||
+          state.turn !== autoBattle.turn ||
+          state.phase !== "attack" ||
+          state.pending ||
+          state.territories[autoBattle.from].armies < 2 ||
+          state.territories[autoBattle.to].owner === state.current
+        ) {
+          stop();
+          renderControls();
+          return;
+        }
+        const pair = autoBattle;
+        if (
+          apply({
+            type: "attack",
+            from: pair.from,
+            to: pair.to,
+            dice: Math.min(
+              diceChoice || 3,
+              state.territories[pair.from].armies - 1,
+            ),
+          }) &&
+          autoBattle
+        )
+          battleTimer = setTimeout(tick, 220);
+      };
+      tick();
+    }
+    function leave() {
+      stop();
+      save();
+      active = false;
+      api.close();
+      api.menu();
+    }
+    function setupNames() {
+      const total = Number($("rkPlayerCount").value),
+        previous = Number($("rkHumanCount").value) || 1;
+      $("rkHumanCount").innerHTML = Array.from(
+        { length: total },
+        (_, i) =>
+          `<option value="${i + 1}">${i + 1} ${i ? "mensen" : "mens"}</option>`,
+      ).join("");
+      $("rkHumanCount").value = Math.min(previous, total);
+      const saved = [...$("rkNames").querySelectorAll("input")].map(
+        (i) => i.value,
+      );
+      const profile = (api.storage.get("app.profiles", []) || []).find(
+        (p) => p.id === api.storage.get("app.profile", "p0"),
+      );
+      $("rkNames").innerHTML = Array.from(
+        { length: Number($("rkHumanCount").value) },
+        (_, i) =>
+          `<label>Naam speler ${i + 1}<input id="rkName${i}" maxlength="24" value="${esc(saved[i] || (!i && profile?.name) || `Speler ${i + 1}`)}"></label>`,
+      ).join("");
+    }
+    function showStart() {
+      stop();
+      $("rkResume").hidden = !state;
+      $("rkPlayerCount").value = settings.players;
+      setupNames();
+      $("rkHumanCount").value = Math.min(
+        settings.humans,
+        Number($("rkPlayerCount").value),
+      );
+      setupNames();
+      $("rkDifficulty").value = settings.difficulty;
+      $("rkTempo").value = settings.tempo;
+      $("rkSound").checked = settings.sound !== false;
+      $("rkMusic").checked = settings.music !== false;
+      api.modal("rkStartModal");
+    }
+    function enter() {
+      api.close();
+      api.enter();
+      if (!api.isActive()) return;
+      active = true;
+      fitMap();
+      if (state) {
+        render();
+        if (isHuman() && state.players.filter((p) => !p.ai).length > 1)
+          checkHandoff();
+        schedule();
+      } else {
+        showStart();
+        if (storedInvalid)
+          api.toast(
+            "Het opgeslagen Wereldmacht-spel is beschadigd. Je gegevens blijven bewaard totdat je een nieuw spel start.",
+            4500,
+          );
+      }
+    }
+    drawMap();
+    $("rkBack").addEventListener("click", leave);
+    $("rkStartMenu").addEventListener("click", leave);
+    $("rkPauseMenu").addEventListener("click", leave);
+    $("rkPause").addEventListener("click", () => {
+      stop();
+      save();
+      api.modal("rkPauseModal");
+    });
+    $("rkContinue").addEventListener("click", () => {
+      api.close();
+      schedule();
+    });
+    $("rkHelp").addEventListener("click", () => {
+      stop();
+      api.modal("rkHelpModal");
+    });
+    $("rkNew").addEventListener("click", showStart);
+    $("rkResume").addEventListener("click", () => {
+      api.close();
+      render();
+      checkHandoff();
+      schedule();
+    });
+    $("rkPlayerCount").addEventListener("change", setupNames);
+    $("rkHumanCount").addEventListener("change", setupNames);
+    for (const [id,key] of [["rkSound","sound"],["rkMusic","music"]]) $(id).addEventListener("change", () => {
+      settings[key] = $(id).checked;
+      api.storage.set("rk.settings", settings);
+      api.refreshSound?.();
+    });
+    $("rkStart").addEventListener("click", async () => {
+      if (
+        state &&
+        state.phase !== "won" &&
+        !(await api.confirm(
+          "Nieuw Wereldmacht-spel?",
+          "Je huidige Wereldmacht-spel wordt vervangen.",
+          "Nieuw spel",
+        ))
+      ) {
+        api.modal("rkStartModal");
+        return;
+      }
+      settings = {
+        players: Number($("rkPlayerCount").value),
+        humans: Number($("rkHumanCount").value),
+        difficulty: $("rkDifficulty").value,
+        tempo: $("rkTempo").value,
+        sound: $("rkSound").checked,
+        music: $("rkMusic").checked,
+      };
+      const players = Array.from({ length: settings.players }, (_, i) => ({
+        name:
+          i < settings.humans
+            ? $("rkName" + i).value
+            : `Computer ${i - settings.humans + 1}`,
+        ai: i >= settings.humans,
+      }));
+      state = E.newGame(players);
+      selected = null;
+      target = null;
+      cards = [];
+      lastTurn = 0;
+      handoff = false;
+      api.storage.set("rk.settings", settings);
+      const stats = api.storage.get("rk.stats", { played: 0, won: 0 });
+      stats.played = (stats.played || 0) + 1;
+      api.storage.set("rk.stats", stats);
+      save();
+      api.close();
+      render();
+      checkHandoff();
+      schedule();
+    });
+    function beginTurn() {
+      handoff = false;
+      api.close();
+      render();
+      schedule();
+    }
+    $("rkBeginTurn").addEventListener("click", beginTurn);
+    function changeView(list) {
+      $("rkCountryList").hidden = !list;
+      $("rkMapViewport").hidden = list;
+      $("rkZoomTools").hidden = list;
+      $("rkMapTip").hidden = list;
+      $("rkMapTab").setAttribute("aria-pressed", String(!list));
+      $("rkListTab").setAttribute("aria-pressed", String(list));
+    }
+    $("rkMapTab").addEventListener("click", () => changeView(false));
+    $("rkListTab").addEventListener("click", () => changeView(true));
+    const resizeMap = () => {
+      $("rkMap").style.width = `${1160 * zoom}px`;
+      $("rkMap").style.height = `${680 * zoom}px`;
+    };
+    function fitMap() {
+      const width = $("rkMapViewport").clientWidth;
+      if (width >= 700) {
+        zoom = Math.min(1, width / 1160);
+        resizeMap();
+        $("rkMapViewport").style.height = `${680 * zoom}px`;
+      } else {
+        $("rkMapViewport").style.height = "";
+        zoom = 1;
+        resizeMap();
+      }
+    }
+    $("rkZoomIn").addEventListener("click", () => {
+      zoom = Math.min(1.7, zoom + 0.15);
+      resizeMap();
+    });
+    $("rkZoomOut").addEventListener("click", () => {
+      zoom = Math.max(0.8, zoom - 0.15);
+      resizeMap();
+    });
+    $("rk").addEventListener("click", (event) => {
+      const country = event.target.closest("[data-country]");
+      if (country) {
+        choose(Number(country.dataset.country));
+        return;
+      }
+      const card = event.target.closest("[data-card]");
+      if (card) {
+        const id = Number(card.dataset.card);
+        cards = cards.includes(id)
+          ? cards.filter((c) => c !== id)
+          : cards.length < 3
+            ? [...cards, id]
+            : [id];
+        renderControls();
+        return;
+      }
+      const b = event.target.closest("[data-action]");
+      if (!b || b.disabled) return;
+      const type = b.dataset.action,
+        amount = Number($("rkAmount")?.value);
+      if (type === "all") {
+        $("rkAmount").value = b.dataset.max;
+        return;
+      }
+      if (type === "new") {
+        showStart();
+        return;
+      }
+      if (type === "menu") {
+        leave();
+        return;
+      }
+      if (type === "handoff") {
+        beginTurn();
+        return;
+      }
+      if (type === "pause") {
+        stop();
+        save();
+        api.modal("rkPauseModal");
+        return;
+      }
+      if (blocked()) return;
+      if (type === "blitz") {
+        startBlitz();
+        return;
+      }
+      if (type === "stop") {
+        stop();
+        renderControls();
+        return;
+      }
+      stop();
+      if (type === "attack")
+        apply({
+          type,
+          from: selected,
+          to: target,
+          dice: Number($("rkDice")?.value),
+        });
+      else if (type === "reinforce") apply({ type, to: selected, amount });
+      else if (type === "fortify")
+        apply({ type, from: selected, to: target, amount });
+      else if (type === "occupy") apply({ type, amount });
+      else if (type === "trade") {
+        const selection = cards.slice();
+        cards = [];
+        apply({ type, cards: selection });
+      } else apply({ type });
+    });
+    $("rk").addEventListener("change", (event) => {
+      if (event.target.id === "rkFrom") {
+        selected =
+          event.target.value === "" ? null : Number(event.target.value);
+        target = null;
+        stop();
+        render();
+      }
+      if (event.target.id === "rkTarget") {
+        target = event.target.value === "" ? null : Number(event.target.value);
+        stop();
+        updateMap();
+        renderControls();
+      }
+      if (event.target.id === "rkDice")
+        diceChoice = Number(event.target.value);
+    });
+    $("rkMap").addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        const node = event.target.closest("[data-country]");
+        if (node) {
+          event.preventDefault();
+          choose(Number(node.dataset.country));
+        }
+      }
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        stop();
+        save();
+      } else schedule();
+    });
+    window.addEventListener("pagehide", () => {
+      stop();
+      save();
+    });
+    const watcher = new MutationObserver(() => {
+      if (modalOpen()) {
+        clearTimeout(botTimer);
+        clearTimeout(battleTimer);
+        botTimer = null;
+        battleTimer = null;
+        autoBattle = null;
+      } else schedule();
+    });
+    document
+      .querySelectorAll(".modal,.overlay")
+      .forEach((el) =>
+        watcher.observe(el, { attributes: true, attributeFilter: ["class"] }),
+      );
+    return {
+      enter,
+      leave,
+      hasSave: () => E.validState(api.storage.get("rk.save", null)),
+      save,
+    };
+  }
+  window.ReneRisk = { create };
+})();
+
+const Wereldmacht = window.ReneRisk.create({
+  storage: store, config: appCfg, enter: () => show('rk'), isActive: () => current === 'rk',
+  menu: () => { show('menu'); refreshMenu(); }, close: closeModals, modal: openModal,
+  confirm: askConfirm, toast: menuToast, sfx: name => Sfx.play(name),
+  music: predicate => Sfx.gate('rk', predicate), refreshSound: () => Sfx.refresh(),
+});
+$('#tileRk').addEventListener('click', () => window.openGame('rk'));
+/* RK_JS_END */
+
 /* ================================================================
    VUISTDUEL – an original 2D one-on-one fighting game: eight fighters, specials and supers, arcade ladder with a
    boss, versus on one phone, versus the computer and training. Cartoon fun: hits make stars, nobody gets hurt.
@@ -25363,6 +28951,7 @@ const GAMES = [
   { id: 'pf', label: 'Springvos', emoji: '🦊', bg: ['#7ec8f0', '#3f8fc4'], enter: () => Springvos.enter(), tile: 'tilePf' },
   { id: 'rs', label: 'Spoorsprinter', emoji: '🏃', bg: ['#e0583f', '#9e2a1d'], enter: () => Sprinter.enter(), tile: 'tileRs' },
   { id: 'zs', label: 'Zeeslag', emoji: '⚓', bg: ['#2a6fb5', '#123d6b'], enter: () => Zeeslag.enter(), tile: 'tileZs' },
+  {id:'rk',label:'Wereldmacht',emoji:'🌍',bg:['#5e91a0','#203d50'],enter:()=>Wereldmacht.enter(),tile:'tileRk'},
   { id: 'vd', label: 'Vuistduel', emoji: '🥊', bg: ['#ff6a4a', '#3a1260'], enter: () => Vuistduel.enter(), tile: 'tileVd' },
 
   { id: 'wq', label: 'Wereldquiz', emoji: '🌍', bg: ['#3fa9e8', '#0f2f57'], enter: () => Wereldquiz.enter(), tile: 'tileWq' },
@@ -25390,7 +28979,7 @@ const GAMES = [
   { id: 'gg', label: 'Goudgraver', emoji: '⛏️', bg: ['#a0602e', '#4a2a1a'], enter: () => Goldmine.enter(), tile: 'tileGg' },
   { id: 'ms', label: 'Mijnenveger', emoji: '💣', bg: ['#8bcb4b', '#3f7d2a'], enter: () => Mines.enter(), tile: 'tileMs' },
 ];
-const SCREEN_GAME = { vd: 'vd', wq: 'wq', bs: 'bs', ls: 'ls', bh: 'bh', mj: 'mj', wb: 'wb', kp: 'kp', sm: 'sm', bv: 'bv', sd: 'sd', kb: 'kb', gg: 'gg', ms: 'ms', patience: 'patience', klaverjas: 'klaverjas', td: 'td', airhockey: 'airhockey', pf: 'pf', rs: 'rs', zs: 'zs' };
+const SCREEN_GAME = { rk: 'rk', vd: 'vd', wq: 'wq', bs: 'bs', ls: 'ls', bh: 'bh', mj: 'mj', wb: 'wb', kp: 'kp', sm: 'sm', bv: 'bv', sd: 'sd', kb: 'kb', gg: 'gg', ms: 'ms', patience: 'patience', klaverjas: 'klaverjas', td: 'td', airhockey: 'airhockey', pf: 'pf', rs: 'rs', zs: 'zs' };
 /* ================================================================
    GAME ICONS – one consistent, hand-drawn vector icon per game
    (used for the menu tiles, shortcuts, statistics and settings)
@@ -25541,6 +29130,7 @@ const GameIcons = (() => {
       body: '<ellipse cx="250" cy="462" rx="170" ry="22" fill="#000" opacity=".22"/><g filter="url(#sh)"><circle cx="246" cy="282" r="172" fill="url(#wqSea)"/></g><clipPath id="wqClip"><circle cx="246" cy="282" r="172"/></clipPath><g clip-path="url(#wqClip)"><g fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="4"><ellipse cx="246" cy="282" rx="80" ry="172"/><ellipse cx="246" cy="282" rx="150" ry="172"/><path d="M246 110V454M74 282H418M90 200H402M90 364H402"/></g><g fill="url(#wqLand)" stroke="#2f7a3a" stroke-opacity=".35" stroke-width="3"><path d="M196 168C222 150 262 154 284 168C298 178 290 196 270 200C252 204 240 214 222 212C204 210 186 196 186 184C186 176 190 172 196 168Z"/><path d="M206 236C236 224 280 232 296 262C310 290 296 312 288 338C280 368 262 400 246 404C234 404 228 380 222 356C216 334 196 318 188 296C180 272 184 246 206 236Z"/><path d="M298 168C336 148 400 156 428 186C440 204 426 224 404 232C384 240 360 236 344 246C326 254 308 240 302 222C296 206 286 182 298 168Z"/><path d="M360 300C378 292 404 298 410 318C414 336 398 350 380 348C364 346 350 330 352 316C353 308 355 303 360 300Z"/><path d="M60 180C88 168 120 178 132 204C142 228 128 252 110 262C96 270 98 296 108 318C118 342 112 372 96 392C80 380 66 340 62 300C58 262 46 210 60 180Z"/></g><ellipse cx="190" cy="196" rx="120" ry="80" fill="url(#wqGloss)" transform="rotate(-28 190 196)"/></g><circle cx="246" cy="282" r="172" fill="none" stroke="#fff" stroke-opacity=".38" stroke-width="6"/><g filter="url(#sh2)"><path d="M346 236L372 50" stroke="#7a5230" stroke-width="10" stroke-linecap="round"/><clipPath id="wqFlg"><path d="M370 60C398 44 428 72 462 56L452 140C420 156 394 126 360 142Z"/></clipPath><g clip-path="url(#wqFlg)"><rect x="350" y="30" width="130" height="58" fill="#e8343f"/><rect x="350" y="86" width="130" height="28" fill="#fff"/><rect x="350" y="112" width="130" height="60" fill="#2a5db8"/><path d="M370 60C398 44 428 72 462 56L460 74C428 90 398 62 368 78Z" fill="#fff" opacity=".25"/></g><circle cx="373" cy="46" r="11" fill="url(#wqKnob)"/><circle cx="343" cy="246" r="13" fill="#ff4d3a" stroke="#fff" stroke-width="4"/></g>' + spark(96, 104, 1.1, '#fff6c8') + spark(452, 400, .8, '#fff') + spark(66, 420, .6, '#fff') + '' },
     vd: { bg: ['#ff6a4a', '#3a1260'], defs: rg('vdRed', '#ff8a7a', '#c8161e') + rg('vdBlue', '#8ac4ff', '#1d4fc0'),
       body: '<circle cx="256" cy="230" r="150" fill="#ffd23a" opacity=".35"/><path transform="rotate(0 256 230)" d="M256 230L246 40H266Z" fill="#fff6c8" opacity=".55"/><path transform="rotate(30 256 230)" d="M256 230L246 40H266Z" fill="#fff6c8" opacity=".55"/><path transform="rotate(60 256 230)" d="M256 230L246 40H266Z" fill="#fff6c8" opacity=".55"/><path transform="rotate(90 256 230)" d="M256 230L246 40H266Z" fill="#fff6c8" opacity=".55"/><path transform="rotate(120 256 230)" d="M256 230L246 40H266Z" fill="#fff6c8" opacity=".55"/><path transform="rotate(150 256 230)" d="M256 230L246 40H266Z" fill="#fff6c8" opacity=".55"/><path transform="rotate(180 256 230)" d="M256 230L246 40H266Z" fill="#fff6c8" opacity=".55"/><path transform="rotate(210 256 230)" d="M256 230L246 40H266Z" fill="#fff6c8" opacity=".55"/><path transform="rotate(240 256 230)" d="M256 230L246 40H266Z" fill="#fff6c8" opacity=".55"/><path transform="rotate(270 256 230)" d="M256 230L246 40H266Z" fill="#fff6c8" opacity=".55"/><path transform="rotate(300 256 230)" d="M256 230L246 40H266Z" fill="#fff6c8" opacity=".55"/><path transform="rotate(330 256 230)" d="M256 230L246 40H266Z" fill="#fff6c8" opacity=".55"/><path d="M256 120L284 196 364 190 300 240 330 316 256 272 182 316 212 240 148 190 228 196Z" fill="#fff3a0" stroke="#e8902a" stroke-width="6"/><g transform="translate(178 300) rotate(-38) scale(1.05)" filter="url(#sh)"><path d="M-62 40C-92 10-96-60-60-96C-30-126 30-128 60-104C92-78 96-20 76 22C70 34 62 44 52 52L-40 58C-50 54-56 48-62 40Z" fill="url(#vdRed)" stroke="#2a1020" stroke-width="7"/><path d="M-64 0C-96-6-104 30-84 44C-72 52-56 48-46 40" fill="url(#vdRed)" stroke="#2a1020" stroke-width="7"/><path d="M-30-80C0-96 40-92 58-70" stroke="#fff" stroke-opacity=".45" stroke-width="12" fill="none" stroke-linecap="round"/><rect x="-50" y="52" width="104" height="70" rx="16" fill="#f4f1ea" stroke="#2a1020" stroke-width="7"/><path d="M-46 76H50M-46 98H50" stroke="#2a1020" stroke-opacity=".25" stroke-width="5"/></g><g transform="translate(334 300) scale(-1.05 1.05) rotate(-38)" filter="url(#sh)"><path d="M-62 40C-92 10-96-60-60-96C-30-126 30-128 60-104C92-78 96-20 76 22C70 34 62 44 52 52L-40 58C-50 54-56 48-62 40Z" fill="url(#vdBlue)" stroke="#2a1020" stroke-width="7"/><path d="M-64 0C-96-6-104 30-84 44C-72 52-56 48-46 40" fill="url(#vdBlue)" stroke="#2a1020" stroke-width="7"/><path d="M-30-80C0-96 40-92 58-70" stroke="#fff" stroke-opacity=".45" stroke-width="12" fill="none" stroke-linecap="round"/><rect x="-50" y="52" width="104" height="70" rx="16" fill="#f4f1ea" stroke="#2a1020" stroke-width="7"/><path d="M-46 76H50M-46 98H50" stroke="#2a1020" stroke-opacity=".25" stroke-width="5"/></g>' + spark(84, 96, 1.2, '#fff6c8') + spark(436, 110, .9, '#fff') + spark(448, 420, .7, '#fff') + '' },
+    rk: {bg:['#79b7c9','#224a62'],defs:'<radialGradient id="rkglobe"><stop stop-color="#9ed4d8"/><stop offset="1" stop-color="#468a9c"/></radialGradient>',body:'<circle cx="256" cy="265" r="173" fill="url(#rkglobe)" stroke="#ffffffaa" stroke-width="10"/><g fill="none" stroke="#fff6" stroke-width="7"><ellipse cx="256" cy="265" rx="84" ry="173"/><path d="M85 265H427M112 177H400M112 353H400"/></g><g fill="#235866" stroke="#def2d599" stroke-width="4"><path d="M114 183 160 133 209 146 213 189 178 210 165 261 143 246Z"/><path d="M184 280 233 294 248 327 211 399 179 358Z"/><path d="M267 194 305 168 351 198 394 185 422 264 376 280 343 242 314 282 277 265Z"/><path d="M290 293 326 305 339 350 303 397 280 350Z"/></g><path d="M139 97V175M367 317V402" stroke="#fff" stroke-width="5"/><path d="M141 98 210 117 141 139ZM369 319 430 338 369 362Z" fill="#f2c14e"/>'},
     app: { bg: ['#2a1c6e', '#05040f'], fg: .6, defs: "<radialGradient id=\"bgA\" cx=\".5\" cy=\".42\" r=\".75\"><stop offset=\"0\" stop-color=\"#2a1c6e\"/><stop offset=\".6\" stop-color=\"#120c38\"/><stop offset=\"1\" stop-color=\"#05040f\"/></radialGradient><linearGradient id=\"padA\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#ff3ec9\"/><stop offset=\".5\" stop-color=\"#8b5cff\"/><stop offset=\"1\" stop-color=\"#22d3ee\"/></linearGradient>\n      <filter id=\"glowA\" x=\"-40%\" y=\"-40%\" width=\"180%\" height=\"180%\"><feGaussianBlur stdDeviation=\"16\"/></filter>",
       bgSvg: "<rect width=\"512\" height=\"512\" fill=\"url(#bgA)\"/><g stroke=\"#7b5cff\" stroke-opacity=\".18\" stroke-width=\"2\"><path d=\"M0 330H512\"/><path d=\"M0 334H512\"/><path d=\"M0 346H512\"/><path d=\"M0 366H512\"/><path d=\"M0 394H512\"/><path d=\"M0 430H512\"/><path d=\"M0 474H512\"/><path d=\"M0 526H512\"/><path d=\"M0 586H512\"/><path d=\"M256 300L-400 512\"/><path d=\"M256 300L-290 512\"/><path d=\"M256 300L-180 512\"/><path d=\"M256 300L-70 512\"/><path d=\"M256 300L40 512\"/><path d=\"M256 300L150 512\"/><path d=\"M256 300L260 512\"/><path d=\"M256 300L370 512\"/><path d=\"M256 300L480 512\"/><path d=\"M256 300L590 512\"/><path d=\"M256 300L700 512\"/><path d=\"M256 300L810 512\"/><path d=\"M256 300L920 512\"/></g>",
       body: "<g transform=\"translate(256 270) scale(.86) translate(-256 -270) rotate(-8 256 290)\">\n        <g stroke-linecap=\"round\" opacity=\".9\"><path d=\"M30 200H120\" stroke=\"#22d3ee\" stroke-width=\"10\"/><path d=\"M10 250H95\" stroke=\"#ff3ec9\" stroke-width=\"10\"/><path d=\"M40 300H100\" stroke=\"#8b5cff\" stroke-width=\"8\"/></g>\n        <path d=\"M150 178H362C420 178 452 222 460 280L470 340C478 392 436 420 404 392L372 360C360 348 344 342 326 342H186C168 342 152 348 140 360L108 392C76 420 34 392 42 340L52 280C60 222 92 178 150 178Z\" fill=\"url(#padA)\" filter=\"url(#glowA)\" opacity=\".85\"/>\n        <path d=\"M150 178H362C420 178 452 222 460 280L470 340C478 392 436 420 404 392L372 360C360 348 344 342 326 342H186C168 342 152 348 140 360L108 392C76 420 34 392 42 340L52 280C60 222 92 178 150 178Z\" fill=\"url(#padA)\"/>\n        <path d=\"M150 178H362C420 178 452 222 460 280L470 340C478 392 436 420 404 392L372 360C360 348 344 342 326 342H186C168 342 152 348 140 360L108 392C76 420 34 392 42 340L52 280C60 222 92 178 150 178Z\" fill=\"none\" stroke=\"#fff\" stroke-opacity=\".55\" stroke-width=\"5\"/>\n        <path d=\"M150 186H362C400 186 430 206 444 236 380 222 140 222 70 238 84 206 114 186 150 186Z\" fill=\"#fff\" opacity=\".22\"/>\n        <path d=\"M144 236H164V256H184V276H164V296H144V276H124V256H144Z\" fill=\"#0b0920\" opacity=\".85\" transform=\"translate(-6 0) scale(1.15) translate(-20 -40)\"/>\n        <g><circle cx=\"356\" cy=\"246\" r=\"15\" fill=\"#0b0920\"/><circle cx=\"388\" cy=\"272\" r=\"15\" fill=\"#0b0920\"/><circle cx=\"324\" cy=\"272\" r=\"15\" fill=\"#0b0920\"/><circle cx=\"356\" cy=\"298\" r=\"15\" fill=\"#0b0920\"/>\n        <circle cx=\"356\" cy=\"246\" r=\"9\" fill=\"#22d3ee\"/><circle cx=\"388\" cy=\"272\" r=\"9\" fill=\"#ff3ec9\"/><circle cx=\"324\" cy=\"272\" r=\"9\" fill=\"#ffd23f\"/><circle cx=\"356\" cy=\"298\" r=\"9\" fill=\"#7cff6b\"/></g>\n      </g>" },
@@ -25644,6 +29234,7 @@ iconsReady.then(updateShortcuts);
    play-time limit, parental PIN, backup, what's new, error recovery
    ================================================================ */
 const Shell = (() => {
+  let discovery = null;
   const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const seg = (key, ch) => `<div class="seg">` + ch.map(([v, l]) => `<button data-app="${key}" data-val='${JSON.stringify(v)}' class="${appCfg[key] === v ? 'on' : ''}">${l}</button>`).join('') + `</div>`;
   const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
@@ -25655,6 +29246,7 @@ const Shell = (() => {
     const light = appCfg.theme === 'licht' || (appCfg.theme === 'auto' && mq && mq.matches);
     document.documentElement.classList.toggle('light', light);
     document.documentElement.classList.toggle('big-text', appCfg.text === 'groot');
+    ReneEnhancements.applyMotion(appCfg);
     document.documentElement.classList.toggle('compact', appCfg.layout === 'raster');
     $('#muteBtn').textContent = appCfg.mute || (appCfg.music === 'uit' && appCfg.sfxVol === 'uit') ? '🔇' : appCfg.music === 'uit' ? '🔔' : appCfg.sfxVol === 'uit' ? '🎵' : '🔊';
     native('setBarColor', light && current === 'menu' ? '#e9efe9' : '#123f2c');
@@ -25671,6 +29263,7 @@ const Shell = (() => {
     const last = store.get('recent', []).find(id => GAMES.some(g => g.id === id) && !appCfg.hidden.includes(id)), g = GAMES.find(x => x.id === last), cb = $('#continueBtn');
     if (g) { cb.hidden = false; cb.innerHTML = `<img src="${gameIcon(g)}" alt=""><span><small>Verder waar je was</small><b>${g.label}</b></span><i>▶</i>`; cb.dataset.game = g.id; } else cb.hidden = true;
     const p = currentProfile(); $('#profBtn').innerHTML = `<span>${esc(p.avatar)}</span>${esc(p.name)}`;
+    discovery?.render();
   }
   $('#continueBtn').addEventListener('click', () => openGame($('#continueBtn').dataset.game));
 
@@ -25777,9 +29370,9 @@ const Shell = (() => {
 
   /* ---------- statistics ---------- */
   function readStats() {
-    const g = k => store.get(k, {}) || {}, ps = g('patience.stats'), ks = g('kj.stats'), as = g('air.stats'), ts = g('td.stats'), pp = g('pf.progress'), rd = g('rs.data'), zs = g('zs.stats'), vd = g('vd.stats'), wq = g('wq.stats'), bs = g('bs.stats'), ls = g('ls.stats'), bh = g('bh.stats'), mj = g('mj.stats'), wb = g('wb.stats'), kp = g('kp.progress'), sm = g('sm.progress'), bv = g('bv.stats'), sd = g('sd.stats'), kb = g('kb.progress'), gg = g('gg.progress'), ms = g('ms.stats');
+    const g = k => store.get(k, {}) || {}, ps = g('patience.stats'), ks = g('kj.stats'), as = g('air.stats'), ts = g('td.stats'), pp = g('pf.progress'), rd = g('rs.data'), zs = g('zs.stats'), rk = g('rk.stats'), vd = g('vd.stats'), wq = g('wq.stats'), bs = g('bs.stats'), ls = g('ls.stats'), bh = g('bh.stats'), mj = g('mj.stats'), wb = g('wb.stats'), kp = g('kp.progress'), sm = g('sm.progress'), bv = g('bv.stats'), sd = g('sd.stats'), kb = g('kb.progress'), gg = g('gg.progress'), ms = g('ms.stats');
     const tulips = Object.values(pp.best || {}).reduce((a, b) => a + (b.tulips || []).length, 0), stars = Object.values(ts.stars || {}).reduce((a, b) => a + b, 0);
-    return { ps, ks, as, ts, pp, rd, zs, vd, wq, bs, ls, bh, mj, wb, kp, sm, bv, sd, kb, gg, ms, tulips, stars, pfDone: Object.keys(pp.best || {}).length, chal: Object.keys(ts.challenges || {}).length, tdBest: Math.max(0, ...Object.values(ts.best || {})) };
+    return { ps, ks, as, ts, pp, rd, zs, rk, vd, wq, bs, ls, bh, mj, wb, kp, sm, bv, sd, kb, gg, ms, tulips, stars, pfDone: Object.keys(pp.best || {}).length, chal: Object.keys(ts.challenges || {}).length, tdBest: Math.max(0, ...Object.values(ts.best || {})) };
   }
   function renderStats() {
     const S = readStats(), pt = store.get('playtime', {}), max = Math.max(60, ...Object.values(pt)), total = Object.values(pt).reduce((a, b) => a + b, 0);
@@ -25805,6 +29398,7 @@ const Shell = (() => {
       ['bs', `${Object.keys(S.bs.stars || {}).length}/60 levels · ${Object.values(S.bs.stars || {}).reduce((a, b) => a + b, 0)} ★${S.bs.endBest ? ' · record ' + Number(S.bs.endBest).toLocaleString('nl-NL') : ''}`],
       ['wq', `${S.wq.played || 0} quizzen · ${S.wq.flags || 0} vlaggen, ${S.wq.caps || 0} hoofdsteden en ${S.wq.maps || 0} landen op de kaart gekend`],
       ['vd', `${S.vd.wins || 0} van ${S.vd.fights || 0} gevechten gewonnen · ${S.vd.clears || 0}× toernooi gewonnen${S.vd.bestTime ? ' · beste tijd ' + Math.floor(S.vd.bestTime / 60) + ':' + String(S.vd.bestTime % 60).padStart(2, '0') : ''}`],
+            ['rk',`${S.rk.won||0} van ${S.rk.played||0} gewonnen` ],
       /*STATROWS*/];
     $('#statBody').innerHTML = `<div class="stats"><div class="stat"><b>${fmtMin(total)}</b><small>Totale speeltijd</small></div><div class="stat"><b>${fmtMin((store.get('app.today', {}).date === today() ? store.get('app.today', {}).sec : 0) || 0)}</b><small>Vandaag</small></div><div class="stat"><b>${unlockedTrophies().length}/${TROPHIES.length}</b><small>Trofeeën</small></div></div>` +
       rows.map(([id, txt]) => { const g = GAMES.find(x => x.id === id), t = pt[id] || 0; return `<div class="st-row"><img src="${gameIcon(g)}" alt=""><div><b>${g.label}</b><small>${txt}</small><i style="width:${Math.round(t / max * 100)}%"></i></div><em>${fmtMin(t)}</em></div>`; }).join('');
@@ -25881,6 +29475,8 @@ const Shell = (() => {
     ['vd3', '💥', 'Superfinale', 'Win in Vuistduel een ronde met een supertechniek', S => (S.vd.superKO || 0) >= 1],
     ['vd4', '🥊', 'Alleskunner van de ring', 'Win in Vuistduel met elke vechter', S => ['dex', 'truus', 'moer', 'sol', 'bram', 'kiki', 'sjaak', 'nevel'].every(k => (S.vd.winsBy || {})[k])],
     ['vd5', '🎩', 'Nevel verdreven', 'Versla Graaf Nevel in het Arcade-toernooi op Moeilijk', S => !!S.vd.bossHard],
+    ['rk1','🌍','Wereldveroveraar','Win een spel Wereldmacht',S=>(S.rk.won||0)>=1],
+    ['rk2','🏆','Groot strateeg','Win vijf spellen Wereldmacht',S=>(S.rk.won||0)>=5],
     ['all', '🎮', 'Alleskunner', `Speel alle ${GAMES.length} spellen`, () => GAMES.every(g => (store.get('playtime', {})[g.id] || 0) > 0)],
     ['hr', '⏱️', 'Doorzetter', 'Speel in totaal een uur', () => Object.values(store.get('playtime', {})).reduce((a, b) => a + b, 0) >= 3600]];
   const unlockedTrophies = () => { const S = readStats(); return TROPHIES.filter(t => { try { return t[4](S); } catch (e) { return false; } }).map(t => t[0]); };
@@ -25912,6 +29508,8 @@ const Shell = (() => {
       <div class="opt-section">Weergave</div>
       <div class="opt"><div class="opt-label">Thema</div>${seg('theme', [['auto', 'Automatisch'], ['donker', 'Donker'], ['licht', 'Licht']])}</div>
       <div class="opt"><div class="opt-label">Tekst en knoppen</div>${seg('text', [['normaal', 'Normaal'], ['groot', 'Groot']])}</div>
+      <div class="opt"><div class="opt-label">Beweging</div>${seg('motion', [['auto', 'Volg toestel'], ['reduce', 'Minder'], ['full', 'Normaal']])}<div class="hint">Minder menu-, venster- en kaartanimaties.</div></div>
+      <div class="opt"><div class="opt-label">Kleurenhulp in alle kleurpuzzels</div>${seg('colorblind', [[false, 'Uit'], [true, 'Aan']])}<div class="hint">Symbolen in Bushalte, Kleurbuisjes en Bellenschieter. Na wijzigen wordt het menu opnieuw geopend.</div></div>
       <div class="opt"><div class="opt-label">Menu</div>${seg('layout', [['raster', '▦ Raster'], ['lijst', '☰ Lijst']])}</div>
       <div class="opt-section">Spellen in het menu <small>📌 vastzetten · 👁 tonen</small></div>
       <div id="setOrder">${ord.map((id, i) => { const g = GAMES.find(x => x.id === id), hid = appCfg.hidden.includes(id), pin = appCfg.pinned.includes(id); return `<div class="ord-row${hid ? ' off' : ''}" data-g="${id}"><img src="${gameIcon(g)}" alt=""><b>${g.label}</b><button data-o="pin" class="${pin ? 'on' : ''}" aria-label="Vastzetten">📌</button><button data-o="hide" aria-label="Verbergen">${hid ? '🚫' : '👁'}</button><button data-o="up" ${i === 0 ? 'disabled' : ''}>▲</button><button data-o="down" ${i === ord.length - 1 ? 'disabled' : ''}>▼</button></div>`; }).join('')}</div>
@@ -25927,11 +29525,12 @@ const Shell = (() => {
       <div class="opt-section">Over</div>
       <div class="row"><button class="btn small" data-s="about">ℹ️ Over deze app</button><button class="btn small" data-s="news">✨ Wat is er nieuw</button></div><div class="row"><button class="btn small" data-s="feedback">💬 Feedback geven</button></div>`;
   }
-  const WIPE = { patience: ['patience.stats', 'patience.save'], klaverjas: ['kj.stats', 'kj.save'], td: ['td.stats', 'td.save'], airhockey: ['air.stats'], pf: ['pf.progress'], rs: ['rs.data'], zs: ['zs.stats', 'zs.save'], vd: ['vd.stats', 'vd.run', 'vd.settings'], wq: ['wq.stats', 'wq.save', 'wq.settings'], bs: ['bs.stats', 'bs.save', 'bs.settings', 'bs.tips'], ls: ['ls.stats', 'ls.save', 'ls.settings'], bh: ['bh.stats', 'bh.save', 'bh.settings'], mj: ['mj.stats', 'mj.save', 'mj.settings'], wb: ['wb.stats', 'wb.save', 'wb.settings'], kp: ['kp.progress', 'kp.settings'], sm: ['sm.progress', 'sm.save', 'sm.settings'], bv: ['bv.stats', 'bv.save'], sd: ['sd.stats', 'sd.save'], kb: ['kb.progress'], gg: ['gg.progress'], ms: ['ms.stats', 'ms.save'] };
+  const WIPE = { patience: ['patience.stats', 'patience.save'], klaverjas: ['kj.stats', 'kj.save'], td: ['td.stats', 'td.save'], airhockey: ['air.stats'], pf: ['pf.progress'], rs: ['rs.data'], zs: ['zs.stats', 'zs.save'], rk: ['rk.save', 'rk.stats', 'rk.settings'], vd: ['vd.stats', 'vd.run', 'vd.settings'], wq: ['wq.stats', 'wq.save', 'wq.settings'], bs: ['bs.stats', 'bs.save', 'bs.settings', 'bs.tips'], ls: ['ls.stats', 'ls.save', 'ls.settings'], bh: ['bh.stats', 'bh.save', 'bh.settings'], mj: ['mj.stats', 'mj.save', 'mj.settings'], wb: ['wb.stats', 'wb.save', 'wb.settings'], kp: ['kp.progress', 'kp.settings'], sm: ['sm.progress', 'sm.save', 'sm.settings'], bv: ['bv.stats', 'bv.save'], sd: ['sd.stats', 'sd.save'], kb: ['kb.progress'], gg: ['gg.progress'], ms: ['ms.stats', 'ms.save'] };
   $('#setModal').addEventListener('click', async e => {
     const segB = e.target.closest('button[data-app]'), o = e.target.closest('button[data-o]'), sb = e.target.closest('button[data-s]'), w = e.target.closest('button[data-wipe]');
     if (segB) {
       const k = segB.dataset.app; appCfg[k] = JSON.parse(segB.dataset.val); saveApp();
+      if (k === 'colorblind') { store.setColorblind(appCfg.colorblind); reloadApp(350); }
       if (k === 'update') native('setUpdateMode', appCfg.update);
       if (k === 'limit') warned = false;
       applyLook(); renderSettings(); return;
@@ -25979,11 +29578,14 @@ const Shell = (() => {
 
   /* ---------- backup ---------- */
   function backup() {
-    const data = {}; for (const k of Object.keys(localStorage)) data[k] = localStorage.getItem(k);
-    const json = JSON.stringify({ format: 'renes-spelletjes-backup', version: APP_VERSION, date: new Date().toISOString(), data });
+    let json;
+    try { json = RenePersistence.createBackup(localStorage, APP_VERSION); }
+    catch (_) { menuToast('Back-up maken is niet mogelijk: opslag is niet beschikbaar.', 3500); return; }
     const name = `renes-spelletjes-${today()}.json`;
     if (native('saveFile', name, json)) return;
-    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' })); a.download = name; a.click(); menuToast('💾 Back-up gedownload', 1500);
+    const a = document.createElement('a'), url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+    a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    menuToast('💾 Back-up gedownload', 1500);
   }
   window.onBackupSaved = ok => menuToast(ok ? '💾 Back-up opgeslagen' : 'Back-up niet opgeslagen', 2000);
   async function restore() {
@@ -25994,14 +29596,13 @@ const Shell = (() => {
   }
   window.onBackupLoaded = async text => {
     if (text == null) return;
-    let o; try { o = JSON.parse(text); } catch (e) { o = null; }
-    if (!o || o.format !== 'renes-spelletjes-backup' || typeof o.data !== 'object') { menuToast('Dit is geen geldige back-up van Rene\'s spelletjes', 3000); return; }
-    const entries = Object.entries(o.data).filter(([k, v]) => typeof k === 'string' && typeof v === 'string' && k.length < 100);
-    if (!(await askConfirm('Back-up terugzetten?', `Back-up van ${new Date(o.date).toLocaleString('nl-NL')} terugzetten? Alle huidige voortgang wordt vervangen.`, 'Terugzetten'))) return;
+    let backup;
+    try { backup = RenePersistence.validateBackup(text, APP_VERSION); }
+    catch (error) { menuToast(error.message, 3500); return; }
+    if (!(await askConfirm('Back-up terugzetten?', `Back-up van ${new Date(backup.date).toLocaleString('nl-NL')} terugzetten? Alle huidige voortgang wordt vervangen.`, 'Terugzetten'))) return;
     window.__noSave = true;
-    const old = Object.keys(localStorage).map(k => [k, localStorage.getItem(k)]);
-    try { localStorage.clear(); for (const [k, v] of entries) localStorage.setItem(k, v); }
-    catch (e) { localStorage.clear(); for (const [k, v] of old) { try { localStorage.setItem(k, v); } catch (_) {} } window.__noSave = false; menuToast('Terugzetten mislukt (te weinig ruimte); er is niets veranderd', 3500); return; }
+    try { RenePersistence.restore(localStorage, backup.data); }
+    catch (error) { window.__noSave = false; menuToast(error.message, 5000); return; }
     menuToast('✅ Back-up teruggezet', 1500); reloadApp(800);
   };
 
@@ -26095,6 +29696,9 @@ const Shell = (() => {
 
   function init() {
     native('setUpdateMode', appCfg.update);
+    discovery = ReneEnhancements.createDiscovery({games: GAMES, config: appCfg, storage: store, icon: gameIcon, open: window.openGame, modal: openModal, saveConfig: saveApp, refreshMenu: applyMenu});
+    ReneEnhancements.initAccessibility(GAMES);
+    matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', () => ReneEnhancements.applyMotion(appCfg));
     applyLook(); checkTrophies();
     setTimeout(() => showNews(false), 700);
   }
@@ -26102,7 +29706,7 @@ const Shell = (() => {
 })();
 
 Shell.init();
-function refreshMenu() { $('#tileVd').classList.toggle('has-save', Vuistduel.hasSave()); $('#tileWq').classList.toggle('has-save', Wereldquiz.hasSave()); $('#tileBs').classList.toggle('has-save', Bellenschieter.hasSave()); $('#tileLs').classList.toggle('has-save', Kleurbuisjes.hasSave()); $('#tileBh').classList.toggle('has-save', Bushalte.hasSave()); $('#tileMj').classList.toggle('has-save', Mahjong.hasSave()); $('#tileWb').classList.toggle('has-save', Woordbord.hasSave()); $('#tileKp').classList.toggle('has-save', Katapult.hasSave()); $('#tileSm').classList.toggle('has-save', Snoepmix.hasSave()); $('#tileBv').classList.toggle('has-save', Blokval.hasSave()); $('#tileSd').classList.toggle('has-save', Sudoku.hasSave()); $('#tileKb').classList.toggle('has-save', Gnomes.hasSave()); $('#tileGg').classList.toggle('has-save', Goldmine.hasSave()); $('#tilePatience').classList.toggle('has-save', Patience.hasSave()); $('#tileKj').classList.toggle('has-save', Klaverjas.hasSave()); $('#tileTd').classList.toggle('has-save', TowerDefense.hasSave()); $('#tileZs').classList.toggle('has-save', Zeeslag.hasSave()); $('#tileMs').classList.toggle('has-save', Mines.hasSave()); }
+function refreshMenu() { $('#tileRk').classList.toggle('has-save', Wereldmacht.hasSave()); $('#tileVd').classList.toggle('has-save', Vuistduel.hasSave()); $('#tileWq').classList.toggle('has-save', Wereldquiz.hasSave()); $('#tileBs').classList.toggle('has-save', Bellenschieter.hasSave()); $('#tileLs').classList.toggle('has-save', Kleurbuisjes.hasSave()); $('#tileBh').classList.toggle('has-save', Bushalte.hasSave()); $('#tileMj').classList.toggle('has-save', Mahjong.hasSave()); $('#tileWb').classList.toggle('has-save', Woordbord.hasSave()); $('#tileKp').classList.toggle('has-save', Katapult.hasSave()); $('#tileSm').classList.toggle('has-save', Snoepmix.hasSave()); $('#tileBv').classList.toggle('has-save', Blokval.hasSave()); $('#tileSd').classList.toggle('has-save', Sudoku.hasSave()); $('#tileKb').classList.toggle('has-save', Gnomes.hasSave()); $('#tileGg').classList.toggle('has-save', Goldmine.hasSave()); $('#tilePatience').classList.toggle('has-save', Patience.hasSave()); $('#tileKj').classList.toggle('has-save', Klaverjas.hasSave()); $('#tileTd').classList.toggle('has-save', TowerDefense.hasSave()); $('#tileZs').classList.toggle('has-save', Zeeslag.hasSave()); $('#tileMs').classList.toggle('has-save', Mines.hasSave()); }
 $('#tilePatience').addEventListener('click', () => Patience.enter());
 window.addEventListener('pagehide', () => { if (!window.__noSave) Patience.save(); });
 refreshMenu();

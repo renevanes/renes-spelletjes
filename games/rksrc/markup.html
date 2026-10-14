@@ -1,0 +1,196 @@
+<section id="rk" class="screen" aria-label="Wereldmacht">
+  <div class="rk-topbar">
+    <button
+      id="rkBack"
+      class="iconbtn"
+      aria-label="Wereldmacht opslaan en naar het menu"
+    >
+      ‹
+    </button>
+    <div><b>Wereldmacht</b><small id="rkRound">Wereldverovering</small></div>
+    <button id="rkPause" class="iconbtn" aria-label="Wereldmacht pauzeren">Ⅱ</button>
+    <button id="rkHelp" class="iconbtn" aria-label="Spelregels van Wereldmacht">
+      ?
+    </button>
+    <button id="rkNew" class="iconbtn" aria-label="Nieuw Wereldmacht-spel">↻</button>
+  </div>
+  <div class="rk-turn">
+    <span id="rkPlayerBadge"></span>
+    <div>
+      <b id="rkPlayerName"></b>
+      <p id="rkInstruction"></p>
+    </div>
+    <span id="rkPhase"></span>
+  </div>
+  <div
+    id="rkScoreboard"
+    class="rk-scoreboard"
+    aria-label="Spelers en aantallen landen"
+  ></div>
+  <div class="rk-layout">
+    <div class="rk-board-panel">
+      <div class="rk-map-tools">
+        <div class="rk-tabs" aria-label="Weergave van het bord">
+          <button id="rkMapTab" aria-pressed="true">Kaart</button
+          ><button id="rkListTab" aria-pressed="false">Landenlijst</button>
+        </div>
+        <div id="rkZoomTools">
+          <button id="rkZoomOut" aria-label="Kaart uitzoomen">−</button
+          ><button id="rkZoomIn" aria-label="Kaart inzoomen">+</button>
+        </div>
+      </div>
+      <p id="rkMapTip" class="rk-map-tip">
+        Schuif de kaart om alle landen te zien. Kies een eigen land en daarna
+        een buur om aan te vallen.
+      </p>
+      <div
+        id="rkMapViewport"
+        class="rk-map-viewport"
+        tabindex="0"
+        aria-label="Wereldkaart. Gebruik de pijltjestoetsen om de kaart te schuiven, of kies de landenlijst."
+      >
+        <svg
+          id="rkMap"
+          viewBox="0 0 1160 680"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-label="Wereldmacht-wereldkaart met 42 landen"
+        ></svg>
+      </div>
+      <div id="rkCountryList" class="rk-country-list" hidden></div>
+      <div id="rkContinentBonuses" class="rk-continent-bonuses"></div>
+    </div>
+    <aside class="rk-command-panel" aria-label="Spelacties">
+      <div id="rkControls"></div>
+      <div id="rkBattle" class="rk-battle"></div>
+      <details class="rk-history">
+        <summary>Beurtverslag</summary>
+        <ol id="rkHistory"></ol>
+      </details>
+    </aside>
+  </div>
+</section>
+<div id="rkStartModal" class="modal">
+  <div class="sheet">
+    <h3>🌍 Wereldmacht · Wereldverovering</h3>
+    <p>
+      Verover alle 42 landen. Speel tegen de computer of geef het toestel door
+      aan je medespelers. De startlanden en legers worden automatisch verdeeld.
+    </p>
+    <button
+      id="rkResume"
+      class="btn primary"
+      style="width: 100%; margin-bottom: 16px"
+      hidden
+    >
+      Verder spelen
+    </button>
+    <div class="rk-setup-grid">
+      <label
+        >Spelers<select id="rkPlayerCount">
+          <option value="2">2 spelers</option>
+          <option value="3" selected>3 spelers</option>
+          <option value="4">4 spelers</option>
+          <option value="5">5 spelers</option>
+          <option value="6">6 spelers</option>
+        </select></label
+      >
+      <label
+        >Mensen op dit toestel<select id="rkHumanCount">
+          <option value="1">1 mens</option>
+          <option value="2">2 mensen</option>
+          <option value="3">3 mensen</option>
+        </select></label
+      >
+      <label
+        >Niveau computer<select id="rkDifficulty">
+          <option value="easy">Makkelijk</option>
+          <option value="normal" selected>Normaal</option>
+          <option value="strong">Sterk</option>
+        </select></label
+      >
+      <label
+        >Computertempo<select id="rkTempo">
+          <option value="normal">Rustig</option>
+          <option value="fast">Snel</option>
+        </select></label
+      >
+    </div>
+    <div class="rk-sound-options"><label><input id="rkSound" type="checkbox" checked> Geluidseffecten</label><label><input id="rkMusic" type="checkbox" checked> Achtergrondmuziek</label></div><div id="rkNames" class="rk-names"></div>
+    <p class="rk-note">
+      Bij twee spelers worden de landen tussen jullie verdeeld; er zijn geen
+      neutrale legers.
+    </p>
+    <div class="row">
+      <button id="rkStartMenu" class="btn">Menu</button
+      ><button id="rkStart" class="btn primary">Nieuw spel starten</button>
+    </div>
+  </div>
+</div>
+<div id="rkHelpModal" class="modal">
+  <div class="sheet">
+    <h3>Zo speel je Wereldmacht</h3>
+    <ol class="rk-rules">
+      <li>
+        <b>Versterken.</b> Je krijgt minimaal 3 legers, of één per drie landen
+        als dat meer is. Een compleet continent geeft extra legers. Plaats alle
+        versterkingen in je eigen landen.
+      </li>
+      <li>
+        <b>Aanvallen.</b> Kies een eigen land met minstens 2 legers en een
+        aangrenzend vijandelijk land. Je gooit maximaal 3 dobbelstenen; de
+        verdediger gebruikt maximaal 2. Vergelijk de hoogste worpen, daarna de
+        tweede. Bij gelijkspel wint de verdediger. Eén leger blijft altijd
+        achter.
+      </li>
+      <li>
+        <b>Veroveren.</b> Als het laatste vijandelijke leger verdwijnt, kies je
+        de bezetting: minstens het aantal dobbelstenen van de laatste aanval. Je
+        kunt meerdere landen per beurt veroveren.
+      </li>
+      <li>
+        <b>Verplaatsen.</b> Na het aanvallen mag je één keer legers verplaatsen
+        tussen eigen landen die via eigen landen verbonden zijn. Dit mag je
+        overslaan.
+      </li>
+      <li>
+        <b>Kaarten.</b> Na een beurt waarin je een land verovert, krijg je één
+        kaart. Ruil drie gelijke of drie verschillende symbolen; jokers
+        vervangen elk symbool. Sets leveren 4, 6, 8, 10, 12, 15 en daarna steeds
+        5 extra legers op. Een eigen land op een ingeruilde kaart krijgt 2 extra
+        legers. Bij 5 kaarten moet je aan het begin van je beurt ruilen. Na
+        uitschakeling neem je de kaarten over; bij 6 of meer ruil en plaats je
+        direct, daarna val je verder aan.
+      </li>
+    </ol>
+    <p>
+      De stippellijnen verbinden continenten. Alaska en Kamtsjatka zijn ook
+      buren. Elk spelersnummer blijft zichtbaar, zodat je geen kleuren hoeft te
+      onderscheiden.
+    </p>
+    <button class="btn primary" data-close style="width: 100%">
+      Verder spelen
+    </button>
+  </div>
+</div>
+<div id="rkPauseModal" class="modal center">
+  <div class="sheet">
+    <h3>Wereldmacht staat op pauze</h3>
+    <p>Je spel wordt na elke actie opgeslagen.</p>
+    <div class="row">
+      <button id="rkPauseMenu" class="btn">Naar menu</button
+      ><button id="rkContinue" class="btn primary">Verder spelen</button>
+    </div>
+  </div>
+</div>
+<div id="rkHandoffModal" class="modal center">
+  <div class="sheet">
+    <h3 id="rkHandoffTitle">Volgende speler</h3>
+    <p>
+      Geef het toestel door. Je kaarten blijven verborgen totdat je je beurt
+      opent.
+    </p>
+    <button id="rkBeginTurn" class="btn primary" style="width: 100%">
+      Mijn beurt bekijken
+    </button>
+  </div>
+</div>

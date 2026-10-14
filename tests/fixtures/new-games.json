@@ -1,0 +1,146 @@
+{
+  "wq.save": {
+    "cfg": {
+      "mode": "vlag",
+      "dir": {
+        "vlag": "fn",
+        "hoofd": "cc"
+      },
+      "cont": "W",
+      "lvl": 1,
+      "len": "10",
+      "typing": false,
+      "extra": false
+    },
+    "qs": [
+      {
+        "t": "fn",
+        "c": "PE",
+        "rep": 0,
+        "o": [
+          "PE",
+          "CO",
+          "BR",
+          "VE"
+        ]
+      },
+      {
+        "t": "fn",
+        "c": "PK",
+        "rep": 0,
+        "o": [
+          "PK",
+          "ID",
+          "VN",
+          "AF"
+        ]
+      },
+      {
+        "t": "fn",
+        "c": "ZA",
+        "rep": 0,
+        "o": [
+          "TN",
+          "NG",
+          "EG",
+          "ZA"
+        ]
+      },
+      {
+        "t": "fn",
+        "c": "BE",
+        "rep": 0,
+        "o": [
+          "BE",
+          "IT",
+          "IS",
+          "SE"
+        ]
+      },
+      {
+        "t": "fn",
+        "c": "MA",
+        "rep": 0,
+        "o": [
+          "MA",
+          "ZA",
+          "ET",
+          "MG"
+        ]
+      },
+      {
+        "t": "fn",
+        "c": "CZ",
+        "rep": 0,
+        "o": [
+          "ES",
+          "RU",
+          "CZ",
+          "NL"
+        ]
+      },
+      {
+        "t": "fn",
+        "c": "IS",
+        "rep": 0,
+        "o": [
+          "IS",
+          "CH",
+          "GB",
+          "PL"
+        ]
+      },
+      {
+        "t": "fn",
+        "c": "CN",
+        "rep": 0,
+        "o": [
+          "AF",
+          "CN",
+          "SA",
+          "KR"
+        ]
+      },
+      {
+        "t": "fn",
+        "c": "BR",
+        "rep": 0,
+        "o": [
+          "AR",
+          "BR",
+          "CL",
+          "PE"
+        ]
+      },
+      {
+        "t": "fn",
+        "c": "HU",
+        "rep": 0,
+        "o": [
+          "HU",
+          "AT",
+          "IT",
+          "IE"
+        ]
+      }
+    ],
+    "i": 0,
+    "main": 10,
+    "done": 0,
+    "score": 0,
+    "streak": 0,
+    "best": 0,
+    "ok": 0,
+    "okMain": 0,
+    "bad": 0,
+    "log": [],
+    "phase": "ask",
+    "ans": null,
+    "t0": 1791993937430,
+    "time": 0,
+    "last": 1791993937430,
+    "clock": null,
+    "over": false,
+    "v": 1
+  }
+}
