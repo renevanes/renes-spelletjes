@@ -1347,12 +1347,19 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
             : state.phase === "fortify"
               ? "Verplaats één keer via eigen landen, of beëindig je beurt."
               : "De wereld is veroverd.";
+      const scoreScroll = $("rkScoreboard").scrollTop, scoreLeft = $("rkScoreboard").scrollLeft;
       $("rkScoreboard").innerHTML = state.players
         .map(
           (p, i) =>
             `<div style="--player:${p.color}" class="rk-score ${i === state.current ? "active" : ""} ${E.owned(state, i).length ? "" : "out"}"><span style="background:${p.color}">${i + 1}</span><div><b>${esc(p.name)}${p.ai ? " · CPU" : ""}</b><small>${state.territories.filter(t=>t.owner===i).reduce((n,t)=>n+t.armies,0)} legers · ${E.owned(state, i).length}/${E.victoryTarget(state)} gebieden${E.owned(state, i).length ? "" : " · uitgeschakeld"}</small></div></div>`,
         )
         .join("");
+      const rail = $("rkScoreboard"), currentScore = rail.querySelector(".rk-score.active");
+      rail.scrollTop = scoreScroll; rail.scrollLeft = scoreLeft;
+      if (currentScore && state.turn !== lastTurn) {
+        if (rail.scrollHeight > rail.clientHeight) rail.scrollTop = Math.max(0, currentScore.offsetTop + currentScore.offsetHeight - rail.clientHeight);
+        if (rail.scrollWidth > rail.clientWidth) rail.scrollLeft = Math.max(0, currentScore.offsetLeft + currentScore.offsetWidth - rail.clientWidth);
+      }
       updateMap();
       renderControls();
       const b = state.lastBattle;

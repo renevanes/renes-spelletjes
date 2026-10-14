@@ -1811,6 +1811,8 @@ html.big-text #rk .rk-continent-bonuses button{min-height:44px}html.big-text .rk
 
 .rk-dock-collapsed .rk-command-title>span{display:none}
 .rk-dock-collapsed .rk-command-title h3{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+@media(max-height:550px) and (orientation:landscape){.rk-scoreboard{max-height:calc(100% - 222px);overflow-y:auto;scrollbar-width:thin}.rk-score{flex-shrink:0}}
 /* RK_CSS_END */
 
 /* APP_SUPPORT_CSS_BEGIN */
@@ -2655,6 +2657,7 @@ html.light .favorite-choices button {
   <div
     id="rkScoreboard"
     class="rk-scoreboard"
+    tabindex="0"
     aria-label="Spelers en aantallen landen"
   ></div>
   <div class="rk-layout">
@@ -12725,12 +12728,19 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
             : state.phase === "fortify"
               ? "Verplaats één keer via eigen landen, of beëindig je beurt."
               : "De wereld is veroverd.";
+      const scoreScroll = $("rkScoreboard").scrollTop, scoreLeft = $("rkScoreboard").scrollLeft;
       $("rkScoreboard").innerHTML = state.players
         .map(
           (p, i) =>
             `<div style="--player:${p.color}" class="rk-score ${i === state.current ? "active" : ""} ${E.owned(state, i).length ? "" : "out"}"><span style="background:${p.color}">${i + 1}</span><div><b>${esc(p.name)}${p.ai ? " · CPU" : ""}</b><small>${state.territories.filter(t=>t.owner===i).reduce((n,t)=>n+t.armies,0)} legers · ${E.owned(state, i).length}/${E.victoryTarget(state)} gebieden${E.owned(state, i).length ? "" : " · uitgeschakeld"}</small></div></div>`,
         )
         .join("");
+      const rail = $("rkScoreboard"), currentScore = rail.querySelector(".rk-score.active");
+      rail.scrollTop = scoreScroll; rail.scrollLeft = scoreLeft;
+      if (currentScore && state.turn !== lastTurn) {
+        if (rail.scrollHeight > rail.clientHeight) rail.scrollTop = Math.max(0, currentScore.offsetTop + currentScore.offsetHeight - rail.clientHeight);
+        if (rail.scrollWidth > rail.clientWidth) rail.scrollLeft = Math.max(0, currentScore.offsetLeft + currentScore.offsetWidth - rail.clientWidth);
+      }
       updateMap();
       renderControls();
       const b = state.lastBattle;

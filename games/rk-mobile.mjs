@@ -4,6 +4,7 @@ const browser = await appBrowser();
 try {
   const {page:p,context,errors} = await appPage(browser);
   await p.locator('#tileRk').click();
+  await p.locator('#rkPlayerCount').selectOption('6');
   await p.locator('#rkGoal').selectOption('domination');
   await p.locator('#rkCardMode').selectOption('fixed');
   await p.locator('#rkStart').click();
@@ -12,6 +13,14 @@ try {
   assert.equal(await p.locator('#rkOwnership').getAttribute('aria-pressed'),'true');
   assert.match(await p.locator('#rkRound').innerText(),/70%/);
   assert.ok(await p.locator('#rk').evaluate(el=>el.classList.contains('rk-dock-collapsed')));
+  await p.setViewportSize({width:915,height:412});
+  await p.waitForTimeout(100);
+  const railBox = await p.locator('#rkScoreboard').boundingBox(), zoomBox = await p.locator('#rkWorldView').boundingBox();
+  assert.ok(railBox.y+railBox.height <= zoomBox.y, 'Six-player rail must leave the zoom controls clear');
+  assert.ok(await p.locator('#rkScoreboard').evaluate(el=>el.scrollHeight>el.clientHeight),'All six players remain reachable by scrolling');
+  await p.locator('#rkScoreboard').evaluate(el=>el.scrollTop=el.scrollHeight);
+  assert.equal(await p.locator('#rkScoreboard .rk-score').count(),6);
+  await p.setViewportSize({width:390,height:844});
   const own=start.territories.findIndex(t=>t.owner===0);
   await p.locator(`#rkMap [data-marker="${own}"]`).click();
   const total=Number(await p.locator('#rkAmount').inputValue());

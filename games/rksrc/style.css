@@ -181,3 +181,5 @@ html.big-text #rk .rk-continent-bonuses button{min-height:44px}html.big-text .rk
 
 .rk-dock-collapsed .rk-command-title>span{display:none}
 .rk-dock-collapsed .rk-command-title h3{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+@media(max-height:550px) and (orientation:landscape){.rk-scoreboard{max-height:calc(100% - 222px);overflow-y:auto;scrollbar-width:thin}.rk-score{flex-shrink:0}}
