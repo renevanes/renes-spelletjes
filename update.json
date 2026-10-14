@@ -1,11 +1,12 @@
 {
-  "versionCode": 57,
-  "versionName": "1.56",
+  "versionCode": 58,
+  "versionName": "1.57",
   "nativeLevel": 10,
-  "notes": "Wereldquiz: kies nu bovenaan duidelijk waar je wilt spelen \u2013 de hele wereld of alleen Europa, Afrika, Azi\u00eb, Noord-Amerika, Zuid-Amerika of Oceani\u00eb. Je keuze staat op de Start-knop en bovenin tijdens het spelen",
+  "notes": "Achter de schermen: de app wordt nu automatisch getest, gebouwd en gepubliceerd vanuit GitHub, zodat meerdere helpers tegelijk aan nieuwe spellen en verbeteringen kunnen werken.",
   "web": "web/index.html",
-  "webSha256": "4b013969908c636d9e0db39c17403e9ccd3b0fe5ef2c7afe0544426e8b66a450",
-  "webSig": "MEQCIAf60sS+gKNhu56rsHRSgdhar8PUZe3dHP9odyEmm9YuAiA+/Jh+JRWKUOu0lfnniRxx9Vt9foulm6UCEMzjyfJO8Q==",
+  "webSha256": "8ebd049fd124166d3549de17572d92383e6b1c214e52417a69bc2a0f22a6d95a",
+  "webSig": "MEYCIQClbrjQy8nieOEuB/VDbxa1RMCeAGZP4gAuTWdHcvDG3gIhALLUlUum9NeGrEUeS7iV3cjdp/htVL10VVlaD6DQk464",
   "apk": "apk/Renes-spelletjes.apk",
-  "feedbackUrl": ""
+  "feedbackUrl": "",
+  "nativeHash": "868c49cd1860d93b8a2b49f23297b94778fdd61fa43d3522bab705c591930865"
 }
