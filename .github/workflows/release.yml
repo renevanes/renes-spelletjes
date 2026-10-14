@@ -49,7 +49,9 @@ jobs:
           echo "ok=true" >> "$GITHUB_OUTPUT"
       - name: Android SDK (preinstalled on the runner)
         if: steps.keys.outputs.ok == 'true'
-        run: echo "::notice::Android SDK – build-tools $(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1), platform $(ls "$ANDROID_HOME/platforms" | sort -V | tail -1)"
+        run: |
+          ls "$ANDROID_HOME/platforms/android-36/android.jar" >/dev/null 2>&1 || yes | timeout 300 "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" > /dev/null || true
+          echo "::notice::Android SDK – build-tools $(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1), platforms $(ls "$ANDROID_HOME/platforms" | tr '\n' ' ')"
       - name: Build, sign and write the release
         if: steps.keys.outputs.ok == 'true'
         timeout-minutes: 12

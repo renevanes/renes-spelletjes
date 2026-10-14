@@ -20,7 +20,9 @@ B=build/apk; rm -rf "$B"; mkdir -p "$B/res" "$B/gen" "$B/classes" "$B/dex" "$B/a
 
 if [ -n "${ANDROID_HOME:-}" ] && [ -d "$ANDROID_HOME/build-tools" ]; then
   BT="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
-  PLAT="$(ls -d "$ANDROID_HOME"/platforms/android-* | sort -V | tail -1)"
+  # a stable platform: android-36 (= targetSdk) if present, otherwise the highest numeric one – never a preview/beta
+  PLAT="$ANDROID_HOME/platforms/android-36"
+  [ -f "$PLAT/android.jar" ] || PLAT="$(ls -d "$ANDROID_HOME"/platforms/android-* | grep -E '/android-[0-9]+$' | sort -V | tail -1)"
   AAPT2="$BT/aapt2"; ANDROID_JAR="$PLAT/android.jar"; D8=("$BT/d8"); MODE=sdk
 elif [ -n "${LOCAL_TOOLS:-}" ]; then
   AAPT2="$LOCAL_TOOLS/node_modules/aaptjs3/bin/x64/linux/aapt2"; ANDROID_JAR="$LOCAL_TOOLS/ap/android-36/android.jar"
