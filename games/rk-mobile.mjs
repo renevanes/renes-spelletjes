@@ -1,8 +1,19 @@
 import assert from 'node:assert/strict';
-import { appBrowser, appPage } from '../tests/browser-util.mjs';
+import { createServer } from 'node:http';
+import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { appBrowser, appPage, appURL } from '../tests/browser-util.mjs';
+// A real origin keeps the reload checks independent of Chromium's file-URL storage handling.
+const html = await readFile(fileURLToPath(appURL));
+const server = createServer((req,res)=>{
+  if (req.url === '/favicon.ico') { res.writeHead(204); res.end(); return; }
+  res.writeHead(200, {'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}); res.end(html);
+});
+await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const browser = await appBrowser();
 try {
   const {page:p,context,errors} = await appPage(browser);
+  await p.goto(`http://127.0.0.1:${server.address().port}/`);
   await p.locator('#tileRk').click();
   await p.locator('#rkPlayerCount').selectOption('6');
   await p.locator('#rkGoal').selectOption('domination');
@@ -34,8 +45,12 @@ try {
   await p.locator('#rkDockToggle').click();
   assert.equal(await p.locator('#rkActionadvance').isVisible(),false);
   await p.locator('#rkDockToggle').click();
-  await p.locator('#rkBack').click();await p.reload();await p.locator('#tileRk').click();
-  assert.deepEqual(await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')).rules),start.rules);
+  const beforeReload = await p.evaluate(()=>localStorage.getItem('rk.save'));
+  await p.locator('#rkBack').click();
+  assert.equal(await p.evaluate(()=>localStorage.getItem('rk.save')),beforeReload);
+  await p.reload();await p.locator('#tileRk').click();
+  assert.equal(await p.evaluate(()=>localStorage.getItem('rk.save')),beforeReload,'Reload must retain the complete game, including rules, armies and RNG');
+  assert.equal(await p.locator('#rkStartModal').isVisible(),false);
 
   // A blitz with one committed troop must leave all other troops in reserve.
   await p.evaluate(()=>{
@@ -75,4 +90,4 @@ try {
   assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')).players[0].cards.length),2);
   assert.deepEqual(errors,[]);await context.close();
   console.log('Risk mobile: direct troop sliders, reserves, fair blitz, fixed cards, short mode, folding and resume passed');
-} finally { await browser.close(); }
+} finally { await browser.close(); await new Promise(resolve=>server.close(resolve)); }
