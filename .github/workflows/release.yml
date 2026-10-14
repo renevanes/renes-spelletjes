@@ -27,9 +27,11 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - name: Build web bundle and test
+        timeout-minutes: 12
         run: |
           python3 tools/build_web.py
           npm test
+          echo "::notice::Tests geslaagd"
       - name: Unlock signing keys
         id: keys
         env:
@@ -40,16 +42,23 @@ jobs:
             echo "ok=false" >> "$GITHUB_OUTPUT"; exit 0
           fi
           mkdir -p keys
-          openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in secrets/signing.tar.gz.enc -pass env:SIGNING_PASSPHRASE | tar xz -C keys
+          if ! openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in secrets/signing.tar.gz.enc -pass env:SIGNING_PASSPHRASE | tar xz -C keys; then
+            echo "::error::Sleutels ontsleutelen mislukt: klopt het geheim SIGNING_PASSPHRASE?"; exit 1
+          fi
+          echo "::notice::Sleutels ontgrendeld"
           echo "ok=true" >> "$GITHUB_OUTPUT"
-      - name: Android SDK packages
+      - name: Android SDK (preinstalled on the runner)
         if: steps.keys.outputs.ok == 'true'
-        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" > /dev/null
+        run: echo "::notice::Android SDK – build-tools $(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1), platform $(ls "$ANDROID_HOME/platforms" | sort -V | tail -1)"
       - name: Build, sign and write the release
         if: steps.keys.outputs.ok == 'true'
-        run: python3 tools/release.py
+        timeout-minutes: 12
+        run: |
+          python3 tools/release.py || { echo "::error::Bouwen/ondertekenen mislukt (zie log van deze stap)"; exit 1; }
+          echo "::notice::Release gebouwd: v$(head -1 build/release.txt)"
       - name: Publish
         if: steps.keys.outputs.ok == 'true'
+        timeout-minutes: 5
         run: |
           V="$(head -1 build/release.txt)"
           git config user.name "renes-spelletjes-release"
@@ -57,7 +66,7 @@ jobs:
           git add -A update.json web apk changelog.json changes
           git commit -m "Versie $V [skip ci]" -m "$(tail -n +2 build/release.txt)"
           for i in 1 2 3 4 5; do
-            git push origin HEAD:main && exit 0
+            git push origin HEAD:main && { echo "::notice::Gepubliceerd: v$V"; exit 0; }
             sleep $((i * 3)); git pull --rebase origin main
           done
           exit 1
