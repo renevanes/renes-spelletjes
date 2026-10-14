@@ -1,0 +1,1 @@
+Wereldmacht heeft nu een herkenbare wereldkaart met echte kustlijnen, aaneengesloten speelgebieden, continentkleuren en gekleurde legerfiches. De hele wereld is meteen zichtbaar; je kunt een continent vergroten, met twee vingers zoomen en de kaart op het hele scherm bekijken. Gebieden kies je rechtstreeks op de kaart en gevechten tonen dobbelstenen met ogen.

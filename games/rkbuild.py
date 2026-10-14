@@ -9,7 +9,7 @@ src=ROOT/'rksrc'
 read=lambda name:(src/name).read_text()
 markup=read('markup.html')
 cut=markup.index('<div id="rkStartModal"')
-js=read('core.js')+'\n'+read('ui.js')+'''\nconst Wereldmacht = window.ReneRisk.create({
+js=read('core.js')+'\nwindow.ReneWereldMap = '+read('map.json').strip()+';\n'+read('map.js')+'\n'+read('ui.js')+'''\nconst Wereldmacht = window.ReneRisk.create({
   storage: store, config: appCfg, enter: () => show('rk'), isActive: () => current === 'rk',
   menu: () => { show('menu'); refreshMenu(); }, close: closeModals, modal: openModal,
   confirm: askConfirm, toast: menuToast, sfx: name => Sfx.play(name),

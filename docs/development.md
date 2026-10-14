@@ -17,6 +17,8 @@ Wereldmacht (`rk`) heeft een eigen kaart met 42 landen, twee tot zes spelers, dr
 
 Bewerk het spel in `games/rksrc/` en bouw het pakket met `python games/rkbuild.py`. Installeer een nieuw pakket met `python games/addgame.py games/rk.json`; dat hulpmiddel weigert een tweede installatie. Bij een bestaande installatie werkt `rkbuild.py` alleen de gemarkeerde spelcode, stijl en opmaak bij.
 
+De geografische kaart staat in `games/rksrc/map.json`; de kaartbediening staat in `map.js`. De 42 spelgebieden behouden hun vaste ids, waardoor bestaande opgeslagen spellen compatibel blijven. De kaart gebruikt de bestaande Natural Earth-kustlijnen van Wereldquiz (publiek domein) met eigen gebiedsgrenzen. Alleen bij aanpassen van de geografie: installeer Shapely 2.x en draai `python games/rkmap.py` om de kaart opnieuw te genereren. De normale appbouw heeft Shapely niet nodig.
+
 De gedeelde opslag-, menu- en toegankelijkheidshulpen staan in `tools/lib/`. Na een wijziging daar werkt `python tools/install_app_improvements.py` alleen de gemarkeerde kopieën in de appbron bij. Voor nieuwe spellen moeten de back-upsleutels en opgeslagen-spelschema's ook worden toegevoegd aan `persistence.js`.
 
 De build behoudt de bestaande Content Security Policy en maakt één offline HTML-bestand. De CI bouwt en test branches en PR's. Na samenvoegen op `main` regelt de Release-workflow versies, ondertekening, webbundel en APK; bewerk de gepubliceerde bestanden nooit met de hand. Native zoomgedrag moet aanvullend op een Android-toestel worden beoordeeld.
