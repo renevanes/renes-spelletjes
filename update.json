@@ -1,11 +1,11 @@
 {
-  "versionCode": 55,
-  "versionName": "1.54",
+  "versionCode": 56,
+  "versionName": "1.55",
   "nativeLevel": 10,
-  "notes": "Nieuw spel: Wereldquiz \ud83c\udf0d \u2013 raad vlaggen en hoofdsteden, herken landen op de kaart of wijs ze zelf aan (met inzoomen). Per werelddeel en niveau, met typen of meerkeuze, tegen de klok, een dagquiz, een atlas om te leren en een voortgangskaart. Fouten komen vanzelf terug zodat je ze leert",
+  "notes": "Nieuw spel: Vuistduel \ud83e\udd4a \u2013 een vechtspel met 8 eigen vechters (o.a. kickbokser Dex uit Rotterdam, karate-oma Truus, robot Moer en ninja Kiki), elk met speciale aanvallen en een supertechniek. Arcade-toernooi met eindbaas, met z'n twee\u00ebn op \u00e9\u00e9n telefoon, tegen de computer en een trainingsmodus. 8 arena's, van de Rotterdamse haven tot de polder. Speel liggend; met 'Makkelijke specials' krijg je een aparte Speciaal-knop",
   "web": "web/index.html",
-  "webSha256": "b653bc7517d240d345b3cbaadcd3a0dbd2e79cfbee4738a03b75e2c4a44d201f",
-  "webSig": "MEYCIQDs4FtYLvVRLxBYNzJCUWQNBFDcJqiLVAi+0v5ulkYAiAIhAPKR5d4BIsVlY+u989E09DKPkQbZP+pAb6n7b8Y+YzAs",
+  "webSha256": "d0c1f389bd4b6819a4842002b418411f32cc37c9abc2c543e549c84cde8c7849",
+  "webSig": "MEQCICbwUxoFs1uYvy2PRzeyvnWctH0JRVt0PKarhN/ZOyEfAiAM9ObUXcX6+YuVZjMSGcKJDWQzBOaBFXziwkeCCSckZw==",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": ""
 }
