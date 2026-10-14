@@ -20,7 +20,7 @@
       <b id="rkPlayerName"></b>
       <p id="rkInstruction"></p>
     </div>
-    <span id="rkPhase"></span>
+    <div class="rk-phase-track" aria-label="Beurtfasen"><span id="rkPhase"></span><div id="rkPhaseSteps"><span data-phase="reinforce">1 Versterken</span><span data-phase="attack">2 Aanvallen</span><span data-phase="fortify">3 Verplaatsen</span></div></div>
   </div>
   <div
     id="rkScoreboard"
@@ -29,16 +29,17 @@
   ></div>
   <div class="rk-layout">
     <div id="rkBoardPanel" class="rk-board-panel">
-      <div class="rk-map-tools">
+      <details id="rkViewMenu" class="rk-view-menu"><summary aria-label="Kaartweergave instellen">☷ Kaart</summary><div class="rk-map-tools">
         <div class="rk-tabs" aria-label="Weergave van het bord">
           <button id="rkMapTab" aria-pressed="true">Wereldkaart</button>
           <button id="rkListTab" aria-pressed="false">Landenlijst</button>
         </div>
         <button id="rkExpandMap" class="rk-map-button" aria-pressed="false">⛶ Grote kaart</button>
       </div>
+      <button id="rkOwnership" class="rk-map-button" aria-pressed="true" aria-label="Toon gebieden in spelerskleuren">Spelerskleuren</button>
+      </details>
       <div id="rkZoomTools" class="rk-map-toolbar">
         <button id="rkWorldView" class="rk-map-button" aria-label="De volledige wereldkaart tonen">⌖ Wereld</button>
-        <button id="rkOwnership" class="rk-map-button" aria-pressed="false" aria-label="Toon gebieden in spelerskleuren">Spelerskleuren</button>
         <div class="rk-zoom-group">
           <button id="rkZoomOut" aria-label="Kaart uitzoomen">−</button>
           <output id="rkZoomLabel" aria-label="Kaartvergroting">100%</output>
@@ -52,22 +53,22 @@
       <div id="rkCountryList" class="rk-country-list" hidden></div>
       <div class="rk-map-status"><span id="rkMapTurn"></span><span id="rkMapSelection">Kies een eigen gebied op de kaart</span><button id="rkToActions" class="rk-map-button" hidden>Spelacties →</button></div>
       <div id="rkContinentBonuses" class="rk-continent-bonuses" aria-label="Continentbonussen en continentvergroting"></div>
-    </div>
-    <aside class="rk-command-panel" aria-label="Spelacties">
+    <aside class="rk-command-panel" aria-label="Spelacties"><button id="rkDockToggle" class="rk-dock-toggle" aria-label="Spelacties inklappen" aria-expanded="true">⌄</button>
       <div id="rkControls"></div>
-      <div id="rkBattle" class="rk-battle"></div>
       <details class="rk-history">
-        <summary>Beurtverslag</summary>
+        <summary>Dobbelstenen en beurtverslag</summary>
+        <div id="rkBattle" class="rk-battle"></div>
         <ol id="rkHistory"></ol>
       </details>
     </aside>
+    </div>
   </div>
 </section>
 <div id="rkStartModal" class="modal">
   <div class="sheet">
     <h3>🌍 Wereldmacht · Wereldverovering</h3>
     <p>
-      Verover alle 42 gebieden op de wereldkaart. Speel tegen de computer of geef het toestel door
+      Verover de wereld op een kaart met 42 gebieden. Speel tegen de computer of geef het toestel door
       aan je medespelers. De startlanden en legers worden automatisch verdeeld.
     </p>
     <button
@@ -108,6 +109,8 @@
           <option value="fast">Snel</option>
         </select></label
       >
+      <label>Speldoel<select id="rkGoal"><option value="world">Wereldverovering · alle 42</option><option value="domination">Snelle verovering · 70% (30)</option></select></label>
+      <label>Kaartbonussen<select id="rkCardMode"><option value="progressive">Oplopend · 4, 6, 8…</option><option value="fixed">Vast · 4 / 6 / 8 / 10</option></select></label>
     </div>
     <div class="rk-sound-options"><label><input id="rkSound" type="checkbox" checked> Geluidseffecten</label><label><input id="rkMusic" type="checkbox" checked> Achtergrondmuziek</label></div><div id="rkNames" class="rk-names"></div>
     <p class="rk-note">
@@ -150,13 +153,14 @@
         <b>Kaarten.</b> Na een beurt waarin je een land verovert, krijg je één
         kaart. Ruil drie gelijke of drie verschillende symbolen; jokers
         vervangen elk symbool. Sets leveren 4, 6, 8, 10, 12, 15 en daarna steeds
-        5 extra legers op. Een eigen land op een ingeruilde kaart krijgt 2 extra
+        5 extra legers op. Met vaste bonussen krijg je 4 voor infanterie, 6 voor cavalerie, 8 voor artillerie of 10 voor drie verschillende symbolen. Een eigen land op een ingeruilde kaart krijgt 2 extra
         legers. Bij 5 kaarten moet je aan het begin van je beurt ruilen. Na
         uitschakeling neem je de kaarten over; bij 6 of meer ruil en plaats je
         direct, daarna val je verder aan.
       </li>
     </ol>
     <p>
+      Gebruik de schuif om legers te plaatsen, te verplaatsen of achter te houden bij een blitzaanval. De blitz gebruikt dezelfde dobbelregels als één worp; de getoonde kans geldt voor maximaal drie aanvalsdobbelstenen. Bij snelle verovering win je na het bezetten van 30 gebieden.
       De stippellijnen verbinden continenten. Alaska en Kamtsjatka zijn ook
       buren. Elk spelersnummer blijft zichtbaar, zodat je geen kleuren hoeft te
       onderscheiden.

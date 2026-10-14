@@ -61,10 +61,12 @@ try {
   await p.reload();
   await p.locator('#tileRk').click();
   assert.deepEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('rk.save'))), saved);
+  if (!(await p.locator('#rkListTab').isVisible())) await p.locator('#rkViewMenu > summary').click();
   await p.locator('#rkListTab').click();
   await p.locator('#rkCountryList [data-country="0"]').focus();
   await p.keyboard.press('Enter');
   assert.equal(await p.evaluate(() => document.activeElement.dataset.country), '0');
+  if (!(await p.locator('#rkMapTab').isVisible())) await p.locator('#rkViewMenu > summary').click();
   await p.locator('#rkMapTab').click();
   await p.locator('#rkWorldView').click();
   const mapsamples = await p.evaluate(() => {
@@ -79,8 +81,10 @@ try {
   // Selecting a piece on the geographic map must select that same game territory.
   await p.locator('#rkMap [data-marker="0"]').click();
   assert.equal(await p.locator('#rkFrom').inputValue(), '0');
+  if (!(await p.locator('#rkExpandMap').isVisible())) await p.locator('#rkViewMenu > summary').click();
   await p.locator('#rkExpandMap').click();
   await p.setViewportSize({width:915,height:412});
+  await p.waitForFunction(() => { const el = document.getElementById("rkMapViewport"); return el.scrollWidth <= el.clientWidth+1 && el.scrollHeight <= el.clientHeight+1; });
   assert.ok(await p.locator('#rkMapViewport').evaluate(el => el.scrollWidth <= el.clientWidth+1 && el.scrollHeight <= el.clientHeight+1));
   await p.locator('[data-continent="eu"]').click();
   assert.ok(parseInt(await p.locator('#rkZoomLabel').innerText()) > 100);
@@ -91,9 +95,12 @@ try {
   assert.equal(await p.locator('#rkExpandMap').getAttribute('aria-pressed'),'false');
   await p.setViewportSize({width:390,height:844});
   await p.locator('#rkWorldView').click();
+  if (!(await p.locator('#rkOwnership').isVisible())) await p.locator('#rkViewMenu > summary').click();
   await p.locator('#rkOwnership').click();
-  assert.equal(await p.locator('#rkOwnership').getAttribute('aria-pressed'),'true');
+  assert.equal(await p.locator('#rkOwnership').getAttribute('aria-pressed'),'false');
+  if (!(await p.locator('#rkOwnership').isVisible())) await p.locator('#rkViewMenu > summary').click();
   await p.locator('#rkOwnership').click();
+  if (await p.locator('#rkViewMenu').evaluate(el => el.open)) await p.locator('#rkViewMenu > summary').click();
   const touch = await context.newCDPSession(p), box = await p.locator('#rkMapViewport').boundingBox();
   const centerY = box.y+box.height/2;
   await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:box.x+box.width*.35,y:centerY,id:1},{x:box.x+box.width*.65,y:centerY,id:2}]});

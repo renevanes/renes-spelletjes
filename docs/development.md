@@ -10,6 +10,7 @@ npm test
 node --test tests/persistence.test.cjs games/rk.test.cjs
 node tests/improvements.mjs
 node games/rk1.mjs
+node games/rk-mobile.mjs
 node games/rkfuzz.mjs
 ```
 
@@ -22,3 +23,5 @@ De geografische kaart staat in `games/rksrc/map.json`; de kaartbediening staat i
 De gedeelde opslag-, menu- en toegankelijkheidshulpen staan in `tools/lib/`. Na een wijziging daar werkt `python tools/install_app_improvements.py` alleen de gemarkeerde kopieën in de appbron bij. Voor nieuwe spellen moeten de back-upsleutels en opgeslagen-spelschema's ook worden toegevoegd aan `persistence.js`.
 
 De build behoudt de bestaande Content Security Policy en maakt één offline HTML-bestand. De CI bouwt en test branches en PR's. Na samenvoegen op `main` regelt de Release-workflow versies, ondertekening, webbundel en APK; bewerk de gepubliceerde bestanden nooit met de hand. Native zoomgedrag moet aanvullend op een Android-toestel worden beoordeeld.
+
+Wereldmacht gebruikt een kaart die het speelveld vult, met gebieden in spelerskleuren en legerfiches. Spelacties verschijnen bij het gekozen gebied; de schuifregelaars werken ook met het toetsenbord. De inklapbare bediening, kaartweergaven en landenlijst blijven beschikbaar in staande en liggende stand. Blitz rolt maximaal drie eerlijke dobbelstenen en stopt zodra de gekozen aanvalslegers op zijn; de kansberekening gebruikt alle mogelijke dobbeluitkomsten (tot 200 tegen 200 legers). Nieuwe spellen bieden wereldverovering (42 gebieden) of snelle verovering (30), met oplopende of vaste kaartbonussen. Bestaande spellen zonder `rules` behouden wereldverovering en oplopende bonussen. Alle spelvormen werken lokaal, tegen de computer of samen op één toestel.

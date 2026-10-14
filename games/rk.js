@@ -230,11 +230,11 @@
         for (let c = b + 1; c < cards.length; c++) {
           const set = [cards[a], cards[b], cards[c]];
           if (validSet(set)) {
-            const score = set.some(
+            const score = tradeValue(s, set) * 10 + (set.some(
               (id) => id < 42 && s.territories[id].owner === player,
             )
-              ? 1
-              : 0;
+              ? 2
+              : 0);
             if (score > bestScore) {
               best = set;
               bestScore = score;
@@ -264,13 +264,17 @@
     }
     return false;
   }
-  function newGame(players, seed = Date.now()) {
+  function newGame(players, seed = Date.now(), options = {}) {
     assert(
       Array.isArray(players) && players.length >= 2 && players.length <= 6,
       "Kies 2 tot en met 6 spelers.",
     );
     const s = {
       version: 1,
+      rules: {
+        goal: options.goal === "domination" ? "domination" : "world",
+        cards: options.cards === "fixed" ? "fixed" : "progressive",
+      },
       rng: seed >>> 0 || 1,
       players: players.map((p, i) => ({
         name:
@@ -333,12 +337,12 @@
         `${s.players[previous].name} is uitgeschakeld. De kaarten gaan naar ${s.players[s.current].name}.`,
       );
     }
-    if (owned(s).length === 42) {
+    if (owned(s).length >= victoryTarget(s)) {
       s.winner = s.current;
       s.phase = "won";
       s.pool = 0;
       s.resumeAttack = false;
-      addLog(s, `${s.players[s.current].name} heeft de wereld veroverd!`);
+      addLog(s, `${s.players[s.current].name} wint met ${owned(s).length} gebieden!`);
     } else if (s.players[s.current].cards.length >= 6) {
       s.phase = "reinforce";
       s.resumeAttack = true;
@@ -426,7 +430,7 @@
           validSet(action.cards),
         "Kies drie gelijke symbolen of drie verschillende; jokers mogen meedoen.",
       );
-      const value = [4, 6, 8, 10, 12, 15][s.sets] || 15 + (s.sets - 5) * 5;
+      const value = tradeValue(s, action.cards);
       s.sets++;
       s.pool += value;
       player.cards = player.cards.filter((c) => !action.cards.includes(c));
@@ -568,6 +572,9 @@
       s.territories.length !== 42
     )
       return false;
+    if (s.rules !== undefined && (!s.rules || typeof s.rules !== "object" || Array.isArray(s.rules) ||
+      !["world", "domination"].includes(s.rules.goal) ||
+      !["progressive", "fixed"].includes(s.rules.cards))) return false;
     const count = s.players.length;
     if (
       !s.players.every(
@@ -611,7 +618,7 @@
       s.winner !== null &&
       (!integer(s.winner, 0, count - 1) ||
         s.phase !== "won" ||
-        owned(s, s.winner).length !== 42)
+        owned(s, s.winner).length < victoryTarget(s))
     )
       return false;
     if (s.phase === "won" && s.winner === null) return false;
@@ -658,6 +665,39 @@
     )
       return false;
     return true;
+  }
+  function victoryTarget(s) { return s.rules?.goal === "domination" ? 30 : 42; }
+  function tradeValue(s, cards) {
+    if (s.rules?.cards !== "fixed") return [4, 6, 8, 10, 12, 15][s.sets] || 15 + (s.sets - 5) * 5;
+    const symbols = cards.map(cardSymbol).filter(n => n !== 3);
+    // A joker takes the most valuable valid place in the selected set.
+    if (new Set(symbols).size > 1) return 10;
+    if (symbols.length < 2) return 10;
+    return [4, 6, 8][symbols[0]];
+  }
+  let rollOutcomes;
+  function battleOdds(attackers, defenders) {
+    if (!integer(attackers, 0, 200) || !integer(defenders, 0, 200)) return null;
+    if (!rollOutcomes) {
+      rollOutcomes = {};
+      for (let a = 1; a <= 3; a++) for (let d = 1; d <= 2; d++) {
+        const counts = new Map(), total = 6 ** (a + d);
+        for (let n = 0; n < total; n++) {
+          let number = n;
+          const dice = Array.from({length:a+d}, () => { const value = number % 6 + 1; number = Math.floor(number/6); return value; });
+          const attack = dice.slice(0,a).sort((x,y)=>y-x), defend = dice.slice(a).sort((x,y)=>y-x);
+          let lost = 0;
+          for (let k=0;k<Math.min(a,d);k++) if (attack[k] <= defend[k]) lost++;
+          counts.set(lost, (counts.get(lost)||0)+1);
+        }
+        rollOutcomes[`${a},${d}`] = [...counts].map(([lost,count])=>[lost,Math.min(a,d)-lost,count/total]);
+      }
+    }
+    const table = Array.from({length:attackers+1},()=>new Float64Array(defenders+1));
+    for (let a=0;a<=attackers;a++) table[a][0]=1;
+    for (let a=1;a<=attackers;a++) for (let d=1;d<=defenders;d++)
+      for (const [al,dl,p] of rollOutcomes[`${Math.min(3,a)},${Math.min(2,d)}`]) table[a][d] += p*table[a-al][d-dl];
+    return table[attackers][defenders];
   }
   function frontier(s, player = s.current) {
     return owned(s, player).filter((i) =>
@@ -788,6 +828,9 @@
     findSet,
     cardSymbol,
     chooseAction,
+    victoryTarget,
+    tradeValue,
+    battleOdds,
   };
 });
 
@@ -801,7 +844,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
   const names = [ ["na", 275, 68], ["sa", 437, 712], ["eu", 736, 93], ["af", 712, 620], ["as", 1163, 64], ["au", 1190, 665] ];
   function create({ engine: E, data: M, onSelect, onActions }) {
     const viewport = $("rkMapViewport"), svg = $("rkMap"), surface = $("rkMapSurface");
-    let zoom = 1, scale = 1, expanded = false, ownership = false, state = null, selection = {}, frame = 0, lastWidth = 0, lastHeight = 0;
+    let zoom = 1, scale = 1, expanded = false, ownership = true, state = null, selection = {}, frame = 0, lastWidth = 0, lastHeight = 0;
     const pointers = new Map();
     let gesture = null, moved = false;
     const regions = M.regions.map((g, i) => { if (g.id !== E.territories[i].id) throw new Error("Kaartindeling komt niet overeen met de spelregels"); return g; });
@@ -815,14 +858,14 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     }).join("");
     svg.setAttribute("viewBox", `0 0 ${M.width} ${M.height}`);
     svg.setAttribute("data-geographic", "natural-earth");
-    svg.innerHTML = `<defs><linearGradient id="rkOcean" x2="0" y2="1"><stop stop-color="#dbe8e6"/><stop offset="1" stop-color="#b7d1d6"/></linearGradient><pattern id="rkPaper" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="1" cy="2" r=".55" fill="#50645b" opacity=".08"/></pattern><marker id="rkAttackArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0L10,5L0,10Z" fill="#862f23"/></marker></defs>
+    svg.innerHTML = `<defs><linearGradient id="rkOcean" x2="0" y2="1"><stop stop-color="#123a52"/><stop offset=".5" stop-color="#247c98"/><stop offset="1" stop-color="#164c64"/></linearGradient><pattern id="rkPaper" width="9" height="9" patternUnits="userSpaceOnUse"><path d="M0 9L9 0" stroke="#9dd6e6" stroke-width=".4" opacity=".06"/></pattern>${E.COLORS.map((color,i)=>`<linearGradient id="rkLand${i}" x2=".2" y2="1"><stop stop-color="${mix(color,.38)}"/><stop offset="1" stop-color="${mix(color,.05)}"/></linearGradient>`).join("")}<marker id="rkAttackArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0L10,5L0,10Z" fill="#ffe3a0"/></marker></defs>
       <rect width="${M.width}" height="${M.height}" rx="12" fill="url(#rkOcean)"/><rect width="${M.width}" height="${M.height}" fill="url(#rkPaper)"/>
       <path d="${M.graticule}" class="rk-graticule"/><path d="${M.neutral}" class="rk-neutral-land"/>
       <g class="rk-ocean-labels"><text x="130" y="430">GROTE OCEAAN</text><text x="585" y="405">ATLANTISCHE</text><text x="585" y="426">OCEAAN</text><text x="1020" y="550">INDISCHE OCEAAN</text></g>
-      <g class="rk-land-regions">${regions.map((g, i) => `<g class="rk-country" data-country="${i}" role="button" tabindex="0"><title>${E.territories[i].name}</title><path class="rk-country-shape" d="${g.path}" fill="${palette[E.territories[i].continent]}" fill-rule="evenodd"/></g>`).join("")}</g>
+      <g class="rk-land-shadow" transform="translate(2 5)">${regions.map(g=>`<path d="${g.path}" fill-rule="evenodd"/>`).join("")}</g><g class="rk-land-regions">${regions.map((g, i) => `<g class="rk-country" data-country="${i}" role="button" tabindex="0"><title>${E.territories[i].name}</title><path class="rk-country-shape" d="${g.path}" fill="${palette[E.territories[i].continent]}" fill-rule="evenodd"/></g>`).join("")}</g>
       <g class="rk-sea-routes">${routeMarkup}</g><path id="rkBattleRoute" class="rk-battle-route" marker-end="url(#rkAttackArrow)"/>
       <g class="rk-region-labels">${regions.map((g, i) => { const [x, y] = g.anchor; const words = g.label.includes("-") ? g.label.split("-") : [g.label]; const [lx,ly] = ({ britain:[x+20,y-43], northeu:[x+34,y-31], westeu:[x-48,y-15], southeu:[x+45,y+7] })[g.id] || [x,y-(words.length>1?38:25)]; return `<text data-label="${i}" x="${lx}" y="${ly}" text-anchor="middle">${words.map((w, n) => `<tspan x="${lx}" dy="${n ? 12 : 0}">${esc(w)}</tspan>`).join("")}</text>`; }).join("")}</g>
-      <g class="rk-army-markers">${regions.map((g, i) => `<g data-marker="${i}" data-country-marker="${i}" transform="translate(${g.anchor.join(" ")})"><circle class="rk-marker-halo" r="19"/><circle class="rk-marker-disc" r="15"/><text class="rk-armies" y="5" text-anchor="middle"></text><text class="rk-owner" x="13" y="18" text-anchor="middle"></text></g>`).join("")}</g>
+      <g class="rk-army-markers">${regions.map((g, i) => `<g data-marker="${i}" data-country-marker="${i}" transform="translate(${g.anchor.join(" ")})"><circle class="rk-marker-halo" r="20"/><ellipse class="rk-marker-base" cy="4" rx="16" ry="15"/><circle class="rk-marker-disc" r="15"/><text class="rk-armies" y="5" text-anchor="middle"></text><text class="rk-owner" x="13" y="18" text-anchor="middle"></text></g>`).join("")}</g>
       <g class="rk-continent-labels">${names.map(([id, x, y]) => { const c = E.continents.find(c => c.id === id); return `<text x="${x}" y="${y}" text-anchor="middle">${esc(c.name.toUpperCase())} · +${c.bonus}</text>`; }).join("")}</g>
       <g class="rk-compass" transform="translate(118 664)"><circle r="30"/><path d="M0,-37L8,0L0,37L-8,0ZM-37,0L0,8L37,0L0,-8Z"/><text y="-44" text-anchor="middle">N</text></g><text class="rk-map-credit" x="1421" y="742" text-anchor="end">Kustlijnen: Natural Earth · speelgebieden: Wereldmacht</text>`;
     const shapes = [...svg.querySelectorAll(".rk-country")], markers = [...svg.querySelectorAll("[data-marker]")];
@@ -870,7 +913,8 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       $("rkExpandMap").setAttribute("aria-pressed", String(expanded));
       $("rkExpandMap").textContent = expanded ? "↙ Terug" : "⛶ Grote kaart";
       // Keep keyboard/screen-reader navigation in the visible board while it fills the screen.
-      $("rk").querySelectorAll(".rk-topbar,.rk-turn,.rk-scoreboard,.rk-command-panel").forEach(el => { el.inert = expanded; });
+      $("rk").querySelectorAll(".rk-topbar,.rk-turn,.rk-scoreboard").forEach(el => { el.inert = expanded; });
+      $("rkViewMenu").open = false;
       fit();
     }
     function update(next, choice) {
@@ -878,13 +922,13 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       const { selected, target, handoff } = choice;
       shapes.forEach((node, i) => {
         const t = state.territories[i], p = state.players[t.owner];
-        node.querySelector("path").setAttribute("fill", ownership ? mix(p.color, .50) : palette[E.territories[i].continent]);
+        node.querySelector("path").setAttribute("fill", ownership ? `url(#rkLand${E.COLORS.indexOf(p.color)})` : palette[E.territories[i].continent]);
         node.setAttribute("aria-label", `${E.territories[i].name}, ${p.name}, ${t.armies} legers`);
         node.setAttribute("aria-pressed", String(i === selected || i === target));
         node.classList.toggle("selected", i === selected); node.classList.toggle("target", i === target);
         node.classList.toggle("neighbor", selected !== null && E.territories[selected].neighbors.includes(i));
         const marker = markers[i];
-        marker.querySelector(".rk-marker-disc").setAttribute("fill", p.color);
+        marker.querySelector(".rk-marker-disc").setAttribute("fill", mix(p.color,.18));
         marker.querySelector(".rk-armies").textContent = t.armies;
         marker.querySelector(".rk-armies").style.fontSize = t.armies > 999 ? "11px" : t.armies > 99 ? "14px" : "18px";
         marker.querySelector(".rk-owner").textContent = t.owner + 1;
@@ -901,11 +945,12 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       $("rkToActions").hidden = selected === null || p.ai || handoff;
       $("rkToActions").textContent = state.pending ? "Legers bezetten →" : state.phase === "reinforce" ? "Legers plaatsen →" : state.phase === "attack" ? "Aanvallen →" : "Spelacties →";
     }
+    $("rkOwnership").setAttribute("aria-pressed", "true");
     $("rkZoomIn").addEventListener("click", () => zoomAt(zoom*1.5));
     $("rkZoomOut").addEventListener("click", () => zoomAt(zoom/1.5));
     $("rkWorldView").addEventListener("click", fit);
     $("rkExpandMap").addEventListener("click", () => expand());
-    $("rkOwnership").addEventListener("click", () => { ownership = !ownership; $("rkOwnership").setAttribute("aria-pressed", String(ownership)); if (state) update(state, selection); });
+    $("rkOwnership").addEventListener("click", () => { ownership = !ownership; $("rkViewMenu").open = false; $("rkOwnership").setAttribute("aria-pressed", String(ownership)); if (state) update(state, selection); });
     $("rkToActions").addEventListener("click", () => { if (expanded) expand(false); onActions(); });
     viewport.addEventListener("wheel", event => {
       if (!event.ctrlKey) return;
@@ -958,7 +1003,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       if (event.detail === 0) { const hit = event.target.closest("[data-country],[data-country-marker]"); if (hit) onSelect(Number(hit.dataset.country ?? hit.dataset.countryMarker)); }
     });
     $("rk").addEventListener("keydown", event => {
-      if (event.key === "Escape" && expanded && !document.querySelector(".modal.show")) { event.preventDefault(); event.stopPropagation(); expand(false); $("rkExpandMap").focus(); }
+      if (event.key === "Escape" && expanded && !document.querySelector(".modal.show")) { event.preventDefault(); event.stopPropagation(); expand(false); $("rkViewMenu").querySelector("summary").focus(); }
       if (event.key === "Tab" && expanded && !document.querySelector(".modal.show")) {
         const items = [...$("rkBoardPanel").querySelectorAll('button:not(:disabled),[tabindex="0"]')].filter(el => !el.closest('[hidden],[inert]') && el.getClientRects().length);
         if ((event.shiftKey && document.activeElement === items[0]) || (!event.shiftKey && document.activeElement === items.at(-1))) { event.preventDefault(); (event.shiftKey ? items.at(-1) : items[0]).focus(); }
@@ -1004,11 +1049,12 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       battleTimer = null,
       autoBattle = null,
       lastTurn = 0,
-      diceChoice = null;
+      diceChoice = null,
+      commitChoice = null;
     const storedInvalid = state !== null && !E.validState(state);
     if (storedInvalid) state = null;
     let settings = Object.assign(
-      { players: 3, humans: 1, difficulty: "normal", tempo: "normal", sound: true, music: true },
+      { players: 3, humans: 1, difficulty: "normal", tempo: "normal", sound: true, music: true, goal: "world", cardMode: "progressive" },
       api.storage.get("rk.settings", {}),
     );
     api.music?.(() => settings.music !== false);
@@ -1031,7 +1077,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     }
     function apply(action) {
       try {
-        const previousTurn = state.turn;
+        const previousTurn = state.turn, previousCapture = state.pending;
         state = E.apply(state, action);
         if (state.winner !== null && !state.statsRecorded) {
           const stats = api.storage.get("rk.stats", { played: 0, won: 0 });
@@ -1050,7 +1096,15 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
           target = null;
           cards = [];
           diceChoice = null;
+          commitChoice = null;
           checkHandoff();
+        }
+        if (action.type === "occupy" && previousCapture) {
+          selected = previousCapture.to; target = null; diceChoice = null; commitChoice = null;
+        }
+        if (state.pending || state.winner !== null) {
+          $("rk").classList.remove("rk-dock-collapsed");
+          $("rkDockToggle").setAttribute("aria-expanded", "true");
         }
         if (state.pending) {
           selected = state.pending.from;
@@ -1100,6 +1154,9 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     }
     function choose(id) {
       if (!state || blocked() || state.pending) return;
+      $("rk").classList.remove("rk-dock-collapsed");
+      $("rkDockToggle").setAttribute("aria-expanded", "true");
+      $("rkViewMenu").open = false;
       const t = state.territories[id];
       if (
         state.phase === "attack" &&
@@ -1128,6 +1185,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
         selected = id;
         target = null;
         diceChoice = null;
+        commitChoice = null;
       }
       stop();
       render();
@@ -1135,6 +1193,8 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     const board = window.ReneWereldBoard.create({
       engine: E, data: window.ReneWereldMap, onSelect: choose,
       onActions: () => {
+        $("rk").classList.remove("rk-dock-collapsed");
+        $("rkDockToggle").setAttribute("aria-expanded", "true");
         $("rkControls").scrollIntoView({ block: "start", behavior: "auto" });
         $("rkControls").querySelector("button:not(:disabled),select,input")?.focus({ preventScroll: true });
       },
@@ -1183,7 +1243,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       );
     }
     function amount(max, value = 1, min = 1) {
-      return `<label>Aantal legers<div class="rk-amount"><input id="rkAmount" type="number" inputmode="numeric" min="${min}" max="${max}" value="${value}"><button data-action="all" data-max="${max}">Alle ${max}</button></div></label>`;
+      return `<div class="rk-troops"><label for="rkAmount">Aantal legers</label><div class="rk-amount"><button data-action="less" aria-label="Eén leger minder">−</button><input id="rkAmount" aria-label="Aantal legers" type="number" inputmode="numeric" min="${min}" max="${max}" value="${value}"><button data-action="more" aria-label="Eén leger meer">+</button><button data-action="all" data-max="${max}">Max</button></div><input id="rkAmountRange" aria-label="Aantal legers met schuifregelaar" type="range" min="${min}" max="${max}" value="${value}"></div>`;
     }
     function button(label, action, disabled = false, secondary = false) {
       return `<button id="rkAction${action}" class="rk-action ${secondary ? "rk-secondary" : ""}" data-action="${action}" ${disabled ? "disabled" : ""}>${label}</button>`;
@@ -1199,75 +1259,60 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
         selection = selected !== null ? state.territories[selected] : null;
       const own = selection && selection.owner === state.current,
         canAct = !blocked();
+      const handOpen = $("rkControls").querySelector(".rk-card-hand")?.open,
+        accessibleOpen = $("rkControls").querySelector(".rk-accessible")?.open;
+      const mustTrade = !handoff && isHuman() && state.phase === "reinforce" && state.players[state.current].cards.length >= (state.resumeAttack ? 6 : 5);
+      if (state.pending || state.winner !== null || mustTrade) {
+        $("rk").classList.remove("rk-dock-collapsed");
+        $("rkDockToggle").setAttribute("aria-expanded", "true");
+      }
       let html = "";
       if (state.phase === "won")
-        html = `<h3>🏆 ${esc(state.players[state.winner].name)} wint!</h3><p class="rk-muted">Alle 42 landen zijn veroverd in ${state.round} rondes.</p>${button("Nieuw spel", "new")}${button("Naar menu", "menu", false, true)}`;
+        html = `<h3>🏆 ${esc(state.players[state.winner].name)} wint!</h3><p class="rk-muted">${E.owned(state, state.winner).length} gebieden veroverd in ${state.round} rondes.</p>${button("Nieuw spel", "new")}${button("Naar menu", "menu", false, true)}`;
       else if (handoff)
         html = `<h3>Geef het toestel door</h3><p class="rk-muted">De kaarten en acties van ${esc(state.players[state.current].name)} blijven verborgen.</p>${button("Mijn beurt bekijken", "handoff")}`;
       else if (!isHuman())
         html = `<h3>${esc(state.players[state.current].name)} speelt</h3><p class="rk-muted">De computer ${state.phase === "reinforce" ? "plaatst versterkingen" : state.phase === "attack" ? "bekijkt de grenzen" : "rondt de beurt af"}. Je kunt op elk moment pauzeren of naar het menu gaan.</p>${button("Pauze", "pause", false, true)}`;
       else if (state.pending)
-        html = `<h3>Land veroverd!</h3><p class="rk-muted">${E.territories[state.pending.to].name} is van jou. Er moeten minstens ${state.pending.min} legers heen; één leger blijft achter in ${E.territories[state.pending.from].name}.</p>${amount(state.pending.max, state.pending.min, state.pending.min)}${button("Bezetting bevestigen", "occupy")}`;
+        html = `<h3>Land veroverd!</h3><p class="rk-muted">${E.territories[state.pending.to].name} is van jou. Er moeten minstens ${state.pending.min} legers heen; één leger blijft achter in ${E.territories[state.pending.from].name}.</p>${amount(state.pending.max, state.pending.max, state.pending.min)}${button("Bezetting bevestigen", "occupy")}`;
       else {
-        html = `<h3>${selection ? E.territories[selected].name : "Kies een eigen land"}</h3><p class="rk-muted">${selection ? `${esc(state.players[selection.owner].name)} · ${selection.armies} legers` : "Tik op de kaart of kies hieronder een land."}</p><label>${state.phase === "reinforce" ? "Land voor versterkingen" : "Vanuit"}<select id="rkFrom">${options(E.owned(state), own ? selected : null)}</select></label>`;
+        const hand = state.players[state.current].cards,
+          required = hand.length >= (state.resumeAttack ? 6 : 5);
+        html = `<div class="rk-command-title"><h3>${selection ? E.territories[selected].name : phases[state.phase]}</h3><span>${selection ? `${selection.armies} legers` : `${state.pool || E.owned(state).length} ${state.pool ? "versterkingen" : "gebieden"}`}</span></div>`;
+        if (!own) html += `<p class="rk-muted">${selection ? `${esc(state.players[selection.owner].name)} bezit dit gebied. Kies eerst een eigen land.` : state.phase === "reinforce" ? "Tik op een eigen gebied om legers te plaatsen." : state.phase === "attack" ? "Tik op jouw leger, daarna op een vijandelijke buur." : "Tik op twee verbonden eigen gebieden."}</p>`;
+        let accessible = `<label>Vanuit<select id="rkFrom">${options(E.owned(state), own ? selected : null)}</select></label>`;
         if (state.phase === "reinforce") {
-          html += `<p class="rk-muted"><b>${state.pool}</b> versterkingen over${E.bonus(state).length ? " · inclusief continentbonus" : ""}.</p>`;
-          if (state.pool)
-            html +=
-              amount(state.pool, Math.min(state.pool, 3)) +
-              button("Legers plaatsen", "reinforce", !own);
-          const hand = state.players[state.current].cards,
-            required = hand.length >= (state.resumeAttack ? 6 : 5);
+          if (state.pool && own) html += amount(state.pool, state.pool) + button(`Plaats legers · ${state.pool} beschikbaar`, "reinforce");
           if (hand.length) {
             if (!cards.length) cards = E.findSet(state) || [];
-            html += `<h4>Kaarten (${hand.length})${required ? " · ruilen verplicht" : ""}</h4><div class="rk-cards">${hand.map((id) => `<button id="rkCard${id}" data-card="${id}" aria-pressed="${cards.includes(id)}" aria-label="${id < 42 ? E.territories[id].name : "Joker"}, ${["infanterie", "cavalerie", "artillerie", "joker"][E.cardSymbol(id)]}${cards.includes(id) ? ", geselecteerd" : ""}">${symbols[E.cardSymbol(id)]}<small>${id < 42 ? E.territories[id].name : "Joker"}</small></button>`).join("")}</div>${button("Geselecteerde set ruilen", "trade", !E.validSet(cards))}`;
+            html += `<details class="rk-card-hand" ${required || handOpen ? "open" : ""}><summary>▱ ${hand.length} kaarten${required ? " · ruilen verplicht" : " · bekijk en ruil"}</summary><div class="rk-cards">${hand.map(id => `<button id="rkCard${id}" data-card="${id}" aria-pressed="${cards.includes(id)}" aria-label="${id < 42 ? E.territories[id].name : "Joker"}, ${["infanterie", "cavalerie", "artillerie", "joker"][E.cardSymbol(id)]}">${symbols[E.cardSymbol(id)]}<small>${id < 42 ? E.territories[id].name : "Joker"}</small></button>`).join("")}</div>${button(`Ruil set · +${E.tradeValue(state, cards)} legers`, "trade", !E.validSet(cards))}</details>`;
           }
-          html += button(
-            state.resumeAttack ? "Verder aanvallen" : "Naar aanvallen",
-            "advance",
-            state.pool > 0 || required,
-            true,
-          );
+          html += button(state.resumeAttack ? "Verder aanvallen →" : "Aanvallen →", "advance", state.pool > 0 || required, true);
         } else if (state.phase === "attack") {
-          const enemies = own
-            ? E.territories[selected].neighbors.filter(
-                (i) => state.territories[i].owner !== state.current,
-              )
-            : [];
+          const enemies = own ? E.territories[selected].neighbors.filter(i => state.territories[i].owner !== state.current) : [];
           if (target !== null && !enemies.includes(target)) target = null;
-          html += `<label>Aangrenzend vijandelijk land<select id="rkTarget">${options(enemies, target)}</select></label><label>Dobbelstenen<select id="rkDice">${[
-            1, 2, 3,
-          ]
-            .filter((n) => own && n < selection.armies)
-            .map(
-              (n) =>
-                `<option value="${n}" ${n === Math.min(diceChoice || 3, selection.armies - 1) ? "selected" : ""}>${n} ${n === 1 ? "dobbelsteen" : "dobbelstenen"}</option>`,
-            )
-            .join("")}</select></label>`;
+          accessible += `<label>Vijandelijk buurland<select id="rkTarget">${options(enemies, target)}</select></label><label>Dobbelstenen<select id="rkDice">${[1,2,3].filter(n=>own && n<selection.armies).map(n=>`<option value="${n}" ${n===Math.min(diceChoice||3,selection.armies-1)?"selected":""}>${n} ${n===1?"dobbelsteen":"dobbelstenen"}</option>`).join("")}</select></label>`;
           const invalid = !own || selection.armies < 2 || target === null;
-          html += `<div class="rk-buttons">${button("Eén worp", "attack", invalid)}${button(autoBattle ? "Stop" : "Doorvechten", autoBattle ? "stop" : "blitz", invalid, true)}</div>${button("Aanvallen afronden", "advance", false, true)}`;
+          if (own && target !== null) {
+            const maximum = Math.max(1, selection.armies-1), value = Math.min(commitChoice || maximum, maximum);
+            html += `<div class="rk-matchup"><span>→ ${E.territories[target].name}</span><b>${state.territories[target].armies} legers</b></div><label class="rk-commit-label" for="rkCommitRange">Aanvalslegers <output id="rkCommitCount">${value}</output></label><input id="rkCommitRange" type="range" min="1" max="${maximum}" value="${value}" ${invalid ? "disabled" : ""}><p id="rkOdds" class="rk-odds"></p>`;
+          } else if (own) html += `<p class="rk-muted">${selection.armies > 1 ? "Tik op een vijandelijk buurland om aan te vallen." : "Er blijft altijd één leger achter. Dit gebied kan niet aanvallen."}</p>`;
+          html += `<div class="rk-buttons">${button(autoBattle ? "■ Stop blitz" : "⚡ Blitz", autoBattle ? "stop" : "blitz", invalid)}${button("⚄ Eén worp", "attack", invalid, true)}</div>${button("Verplaatsen →", "advance", false, true)}`;
         } else if (state.phase === "fortify") {
           if (!state.fortified) {
-            const targets = own
-              ? E.owned(state).filter(
-                  (i) => i !== selected && E.connected(state, selected, i),
-                )
-              : [];
+            const targets = own ? E.owned(state).filter(i=>i!==selected && E.connected(state,selected,i)) : [];
             if (target !== null && !targets.includes(target)) target = null;
-            html += `<label>Naar verbonden eigen land<select id="rkTarget">${options(targets, target)}</select></label>`;
-            if (own && selection.armies > 1)
-              html += amount(selection.armies - 1, 1);
-            html += button(
-              "Legers verplaatsen",
-              "fortify",
-              !own || selection.armies < 2 || target === null,
-            );
-          } else
-            html += '<p class="rk-muted">Je hebt je verplaatsing gedaan.</p>';
-          html += button("Beurt beëindigen", "endTurn");
+            accessible += `<label>Naar verbonden eigen land<select id="rkTarget">${options(targets,target)}</select></label>`;
+            if (own && target !== null && selection.armies > 1) html += `<div class="rk-matchup">→ ${E.territories[target].name}</div>${amount(selection.armies-1,selection.armies-1)}${button("Legers verplaatsen", "fortify")}`;
+            else if (own) html += '<p class="rk-muted">Kies een verbonden eigen gebied als bestemming.</p>';
+          } else html += '<p class="rk-muted">Je legers zijn verplaatst.</p>';
+          html += button("Beurt beëindigen ✓", "endTurn");
         }
+        html += `<details class="rk-accessible" ${accessibleOpen ? "open" : ""}><summary>Kiezen via landenlijst</summary>${accessible}</details>`;
       }
       $("rkControls").innerHTML = html;
+      updateOdds();
+      $("rk").classList.toggle("rk-has-selection", selected !== null && isHuman() && !handoff);
       if (focused && $(focused) && $("rkControls").contains($(focused)))
         $(focused).focus({ preventScroll: true });
       else if (wasInControls)
@@ -1284,14 +1329,15 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       if (!state) return;
       const p = state.players[state.current];
       $("rkRound").textContent =
-        `Ronde ${state.round} · ${state.players.length} spelers`;
+        `Ronde ${state.round} · ${state.players.length} spelers · ${E.victoryTarget(state) === 30 ? "70% veroveren" : "Wereldverovering"}`;
       $("rkPlayerName").textContent =
         state.phase === "won"
           ? `${state.players[state.winner].name} heeft gewonnen`
           : p.name;
       $("rkPlayerBadge").style.background = p.color;
       $("rkPlayerBadge").textContent = state.current + 1;
-      $("rkPhase").textContent = phases[state.phase];
+      $("rkPhase").textContent = state.pending ? "Bezetten" : phases[state.phase];
+      $("rkPhaseSteps").querySelectorAll("[data-phase]").forEach(el => { el.classList.toggle("active", el.dataset.phase === state.phase); el.setAttribute("aria-current", el.dataset.phase === state.phase ? "step" : "false"); });
       $("rkInstruction").textContent = state.pending
         ? "Kies hoeveel legers het veroverde land bezetten."
         : state.phase === "reinforce"
@@ -1304,7 +1350,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       $("rkScoreboard").innerHTML = state.players
         .map(
           (p, i) =>
-            `<div class="rk-score ${i === state.current ? "active" : ""} ${E.owned(state, i).length ? "" : "out"}"><span style="background:${p.color}">${i + 1}</span><div><b>${esc(p.name)}${p.ai ? " 🤖" : ""}</b><small>${E.owned(state, i).length} landen · ${p.cards.length} kaarten${E.owned(state, i).length ? "" : " · uitgeschakeld"}</small></div></div>`,
+            `<div style="--player:${p.color}" class="rk-score ${i === state.current ? "active" : ""} ${E.owned(state, i).length ? "" : "out"}"><span style="background:${p.color}">${i + 1}</span><div><b>${esc(p.name)}${p.ai ? " · CPU" : ""}</b><small>${state.territories.filter(t=>t.owner===i).reduce((n,t)=>n+t.armies,0)} legers · ${E.owned(state, i).length}/${E.victoryTarget(state)} gebieden${E.owned(state, i).length ? "" : " · uitgeschakeld"}</small></div></div>`,
         )
         .join("");
       updateMap();
@@ -1324,7 +1370,8 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       }
     }
     function startBlitz() {
-      autoBattle = { from: selected, to: target, turn: state.turn };
+      const committed = Number($("rkCommitRange")?.value) || state.territories[selected].armies-1;
+      autoBattle = { from: selected, to: target, turn: state.turn, reserve: state.territories[selected].armies-1-committed };
       const tick = () => {
         battleTimer = null;
         if (
@@ -1335,7 +1382,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
           state.turn !== autoBattle.turn ||
           state.phase !== "attack" ||
           state.pending ||
-          state.territories[autoBattle.from].armies < 2 ||
+          state.territories[autoBattle.from].armies <= autoBattle.reserve + 1 ||
           state.territories[autoBattle.to].owner === state.current
         ) {
           stop();
@@ -1349,13 +1396,13 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
             from: pair.from,
             to: pair.to,
             dice: Math.min(
-              diceChoice || 3,
-              state.territories[pair.from].armies - 1,
+              3,
+              state.territories[pair.from].armies - 1 - pair.reserve,
             ),
           }) &&
           autoBattle
         )
-          battleTimer = setTimeout(tick, 220);
+          battleTimer = setTimeout(tick, settings.tempo === "fast" ? 45 : 90);
       };
       tick();
     }
@@ -1400,6 +1447,8 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       setupNames();
       $("rkDifficulty").value = settings.difficulty;
       $("rkTempo").value = settings.tempo;
+      $("rkGoal").value = settings.goal;
+      $("rkCardMode").value = settings.cardMode;
       $("rkSound").checked = settings.sound !== false;
       $("rkMusic").checked = settings.music !== false;
       api.modal("rkStartModal");
@@ -1409,6 +1458,8 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       api.enter();
       if (!api.isActive()) return;
       active = true;
+      $("rk").classList.add("rk-dock-collapsed");
+      $("rkDockToggle").setAttribute("aria-expanded", "false");
       board.fit();
       if (state) {
         render();
@@ -1424,6 +1475,11 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
           );
       }
     }
+    $("rkDockToggle").addEventListener("click", () => {
+      const collapsed = $("rk").classList.toggle("rk-dock-collapsed");
+      $("rkDockToggle").setAttribute("aria-expanded", String(!collapsed));
+      $("rkDockToggle").setAttribute("aria-label", collapsed ? "Spelacties uitklappen" : "Spelacties inklappen");
+    });
     $("rkBack").addEventListener("click", leave);
     $("rkStartMenu").addEventListener("click", leave);
     $("rkPauseMenu").addEventListener("click", leave);
@@ -1472,6 +1528,8 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
         humans: Number($("rkHumanCount").value),
         difficulty: $("rkDifficulty").value,
         tempo: $("rkTempo").value,
+        goal: $("rkGoal").value,
+        cardMode: $("rkCardMode").value,
         sound: $("rkSound").checked,
         music: $("rkMusic").checked,
       };
@@ -1482,12 +1540,15 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
             : `Computer ${i - settings.humans + 1}`,
         ai: i >= settings.humans,
       }));
-      state = E.newGame(players);
+      state = E.newGame(players, Date.now(), {goal:settings.goal,cards:settings.cardMode});
       selected = null;
       target = null;
       cards = [];
       lastTurn = 0;
       handoff = false;
+      commitChoice = null;
+      $("rk").classList.add("rk-dock-collapsed");
+      $("rkDockToggle").setAttribute("aria-expanded", "false");
       api.storage.set("rk.settings", settings);
       const stats = api.storage.get("rk.stats", { played: 0, won: 0 });
       stats.played = (stats.played || 0) + 1;
@@ -1506,6 +1567,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     }
     $("rkBeginTurn").addEventListener("click", beginTurn);
     function changeView(list) {
+      $("rkViewMenu").open = false;
       $("rkCountryList").hidden = !list;
       $("rkMapViewport").hidden = list;
       $("rkZoomTools").hidden = list;
@@ -1538,8 +1600,10 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       if (!b || b.disabled) return;
       const type = b.dataset.action,
         amount = Number($("rkAmount")?.value);
-      if (type === "all") {
-        $("rkAmount").value = b.dataset.max;
+      if (["all", "less", "more"].includes(type)) {
+        const input = $("rkAmount");
+        input.value = type === "all" ? b.dataset.max : Math.max(Number(input.min), Math.min(Number(input.max), Number(input.value)+(type === "more" ? 1 : -1)));
+        $("rkAmountRange").value = input.value;
         return;
       }
       if (type === "new") {
@@ -1588,8 +1652,20 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
         apply({ type, cards: selection });
       } else apply({ type });
     });
+    function updateOdds() {
+      if (!$("rkOdds") || !state || target === null) return;
+      const value = Number($("rkCommitRange").value), odds = E.battleOdds(value, state.territories[target].armies);
+      $("rkCommitCount").textContent = value;
+      $("rkOdds").textContent = odds === null ? "Eerlijke dobbelstenen · één leger blijft achter" : `${odds > .99 ? ">99" : odds < .01 ? "<1" : Math.round(odds*100)}% kans op verovering · eerlijke dobbelstenen`;
+    }
+    $("rk").addEventListener("input", event => {
+      if (event.target.id === "rkAmountRange") $("rkAmount").value = event.target.value;
+      if (event.target.id === "rkAmount") $("rkAmountRange").value = event.target.value;
+      if (event.target.id === "rkCommitRange") { commitChoice = Number(event.target.value); updateOdds(); }
+    });
     $("rk").addEventListener("change", (event) => {
       if (event.target.id === "rkFrom") {
+        commitChoice = null;
         selected =
           event.target.value === "" ? null : Number(event.target.value);
         target = null;
