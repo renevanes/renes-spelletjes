@@ -1,11 +1,11 @@
 {
-  "versionCode": 61,
-  "versionName": "1.60",
+  "versionCode": 62,
+  "versionName": "1.61",
   "nativeLevel": 11,
-  "notes": "Wereldmacht heeft nu een herkenbare wereldkaart met echte kustlijnen, aaneengesloten speelgebieden, continentkleuren en gekleurde legerfiches. De hele wereld is meteen zichtbaar; je kunt een continent vergroten, met twee vingers zoomen en de kaart op het hele scherm bekijken. Gebieden kies je rechtstreeks op de kaart en gevechten tonen dobbelstenen met ogen.",
+  "notes": "Wereldmacht heeft nu een groot speelbord in spelerskleuren, verhoogde legerfiches en directe bediening met troepenschuiven. Blitzaanvallen tonen de veroveringskans en kunnen legers achterhouden; je kunt ook kiezen voor snelle verovering of vaste kaartbonussen. Je bestaande spel blijft beschikbaar.",
   "web": "web/index.html",
-  "webSha256": "0eb92bd19163940cb515ccf6e1be80a2edd3e423cc023b8fb309f51a3925e42b",
-  "webSig": "MEQCIAwoA0xunSHRVDdkObSQDIbmdRn8t4Tsz4v8bUKivbc2AiBNrbEbJROvgrkzmfzWhpkcT4bQZypjk0ob186+bJvL9g==",
+  "webSha256": "440abd009a9dbc4c5bd30e2ca935810b80aaeea60e96a28b67dd5817586ec6dd",
+  "webSig": "MEUCIDKMb154RVGMmBXtLsmLPwyDCXeQEzwPnfXlw8qu3xBWAiEA9HmwBBX6GreLxi6sVdZK7PsAkMhFppd8i238XXD/HHw=",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "ffe3a952b0dc233a536c58bb092cf94cbd16661ed5a1c4dc2516213283333928"
