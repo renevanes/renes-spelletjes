@@ -12,7 +12,7 @@
     let gesture = null, moved = false;
     const regions = M.regions.map((g, i) => { if (g.id !== E.territories[i].id) throw new Error("Kaartindeling komt niet overeen met de spelregels"); return g; });
     const mix = (hex, t) => "#" + [1, 3, 5].map(i => Math.round(parseInt(hex.slice(i, i + 2), 16) * (1 - t) + 246 * t).toString(16).padStart(2, "0")).join("");
-    const routeMarkup = seas.map(pair => {
+    const routeMarkup = [...new Set([...seas, ...M.seaRoutes.map(pair => pair.join(" "))])].map(pair => {
       const [a, b] = pair.split(" "), i = E.byId[a], j = E.byId[b];
       if (!E.territories[i].neighbors.includes(j)) return "";
       const [x, y] = regions[i].anchor, [tx, ty] = regions[j].anchor;

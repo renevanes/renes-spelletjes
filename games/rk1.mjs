@@ -25,6 +25,7 @@ try {
 
   // A controlled battle exercises the actual controls and automatic persistence.
   await p.evaluate(() => {
+    window.__noSave = true; // Do not let pagehide overwrite the fixture we are about to load.
     const E = ReneRiskEngine, s = E.newGame([{ name: 'Rene', ai: false }, { name: 'Computer 1', ai: true }, { name: 'Computer 2', ai: true }], 7);
     s.territories = s.territories.map(() => ({ owner: 0, armies: 3 }));
     s.territories[E.byId.nw] = { owner: 1, armies: 1 };
@@ -35,6 +36,7 @@ try {
   });
   await p.reload();
   await p.locator('#tileRk').click();
+  await p.locator('#rkStartModal').waitFor({state:'hidden'});
   await p.locator('#rkMap [data-marker="0"]').click();
   assert.equal(await p.locator('#rkFrom').inputValue(),'0');
   await p.locator('#rkAmount').fill('3');
@@ -73,6 +75,7 @@ try {
     return [['alaska',-152,64],['brazil',-55,-15],['westeu',2,47],['northeu',10,51],['northaf',3,28],['india',78,22],['japan',138,37],['westaus',120,-25]].map(([id,lon,lat]) => ({id,inside:document.querySelector(`#rkMap [data-country="${ReneRiskEngine.byId[id]}"] path`).isPointInFill(project(lon,lat))}));
   });
   assert.ok(mapsamples.every(s => s.inside), `Geographic areas must contain their real-world locations: ${JSON.stringify(mapsamples)}`);
+  assert.ok(await p.evaluate(() => ReneWereldMap.contacts.every(([a,b]) => ReneRiskEngine.territories[ReneRiskEngine.byId[a]].neighbors.includes(ReneRiskEngine.byId[b]))), 'Every drawn land border allows a legal attack');
   // Selecting a piece on the geographic map must select that same game territory.
   await p.locator('#rkMap [data-marker="0"]').click();
   assert.equal(await p.locator('#rkFrom').inputValue(), '0');
@@ -139,6 +142,7 @@ try {
 
   // AI advances while playing, then stops on pause and when leaving the game.
   await p.evaluate(() => {
+    window.__noSave = true;
     const E = ReneRiskEngine, s = E.newGame([{ name: 'Rene', ai: false }, { name: 'Computer', ai: true }], 19);
     s.current = 1; s.pool = E.reinforcements(s);
     localStorage.setItem('rk.save', JSON.stringify(s));
