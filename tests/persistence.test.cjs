@@ -1,7 +1,7 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
-const P = require("../src/persistence.js");
-globalThis.ReneRiskEngine = require("../src/risk-engine.js");
+const P = require("../tools/lib/persistence.js");
+globalThis.ReneRiskEngine = require("../games/rksrc/core.js");
 class Storage {
   constructor(data = {}) {
     this.data = { ...data };
@@ -115,9 +115,9 @@ test("failed writes warn, remain visible across other writes, and recover when t
 test("profile storage preserves global preferences and separates game saves", () => {
   const s = new Storage({ "app.profile": '"pabc"' }),
     store = P.createStore(s);
-  store.set("risk.stats", { won: 1 });
+  store.set("rk.stats", { won: 1 });
   store.set("app.cfg", { motion: "reduce" });
-  assert.equal(s.getItem("p_pabc.risk.stats"), '{"won":1}');
+  assert.equal(s.getItem("p_pabc.rk.stats"), '{"won":1}');
   assert.equal(s.getItem("app.cfg"), '{"motion":"reduce"}');
 });
 test("restore replaces only app data and preserves unrelated origin entries", () => {
@@ -146,7 +146,7 @@ test("partial restore failure rolls back changed values without clearing the who
   );
   assert.deepEqual(s.data, initial);
 });
-test("Risk backups validate the complete saved game", () => {
+test("Wereldmacht backups validate the complete saved game", () => {
   const e = globalThis.ReneRiskEngine,
     s = e.newGame(
       [
@@ -155,12 +155,12 @@ test("Risk backups validate the complete saved game", () => {
       ],
       12,
     );
-  const data = { "risk.save": JSON.stringify(s) };
+  const data = { "rk.save": JSON.stringify(s) };
   P.validateBackup(backup(data), "1.54");
   s.territories[0].owner = 100;
   assert.throws(
-    () => P.validateBackup(backup({ "risk.save": JSON.stringify(s) }), "1.54"),
-    /risk.save/,
+    () => P.validateBackup(backup({ "rk.save": JSON.stringify(s) }), "1.54"),
+    /rk.save/,
   );
 });
 test("existing game saves are accepted, and invalid board shapes are rejected", () => {
@@ -178,6 +178,13 @@ test("existing game saves are accepted, and invalid board shapes are rejected", 
   assert.throws(() =>
     P.validateBackup(backup({ "sd.save": JSON.stringify(sudoku) }), "1.54"),
   );
+});
+test("new Worldquiz saves and Vuistduel profile data remain compatible", () => {
+  const fixture = require("./fixtures/new-games.json");
+  const data = Object.fromEntries(Object.entries(fixture).map(([key, value]) => [key, JSON.stringify(value)]));
+  data["p_pabc.vd.run"] = '{"fighter":"vos","round":2}';
+  P.validateBackup(backup(data), "1.58");
+  assert.throws(() => P.validateBackup(backup({ "wq.save": '{"bad":true}' }), "1.58"));
 });
 test("shared colorblind settings preserve each profile’s other preferences", () => {
   const s = new Storage({

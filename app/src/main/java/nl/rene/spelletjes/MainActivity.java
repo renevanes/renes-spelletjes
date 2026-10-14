@@ -63,7 +63,9 @@ public class MainActivity extends Activity {
         if (Build.VERSION.SDK_INT >= 26) s.setSafeBrowsingEnabled(true);
         WebView.setWebContentsDebuggingEnabled(false);
         s.setTextZoom(100);
-        s.setSupportZoom(false);
+        s.setSupportZoom(true);
+        s.setBuiltInZoomControls(true);
+        s.setDisplayZoomControls(false);
         web.setWebViewClient(new LocalOnlyClient(this));
         web.addJavascriptInterface(new Bridge(this, root), "Android");
         root.addView(web, new FrameLayout.LayoutParams(-1, -1));

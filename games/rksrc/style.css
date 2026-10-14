@@ -1,4 +1,4 @@
-#risk {
+#rk {
   background: #f3f1e8;
   color: #233544;
   --muted: #61727d;
@@ -7,7 +7,7 @@
   overscroll-behavior: contain;
   --accent: #e8b54b;
 }
-.risk-topbar {
+.rk-topbar {
   display: flex;
   gap: 8px;
   align-items: center;
@@ -16,69 +16,71 @@
   border-bottom: 1px solid #263b4c18;
   background: #fff8;
 }
-.risk-topbar > div {
+.rk-topbar > div {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
-.risk-topbar b {
+.rk-topbar b {
   font-family: Georgia, serif;
   letter-spacing: 1px;
   font-size: 24px;
+  overflow-wrap: anywhere;
 }
-.risk-topbar small {
+.rk-topbar small {
   color: #69777c;
   font-size: 12px;
 }
-.risk-topbar .iconbtn {
+.rk-topbar .iconbtn {
   background: #2335440b;
   font-size: 22px;
 }
-.risk-topbar,
-.risk-turn,
-.risk-scoreboard {
+.rk-topbar,
+.rk-turn,
+.rk-scoreboard {
   flex-shrink: 0;
 }
-.risk-layout {
+.rk-layout {
   flex: none !important;
 }
-#riskPlayerName {
+#rkPlayerName {
   overflow-wrap: anywhere;
 }
-html.big-text #riskControls h3 {
+html.big-text #rkControls h3 {
   font-size: 21px;
 }
-html.big-text #riskControls .risk-muted,
-html.big-text .risk-turn p {
+html.big-text #rkControls .rk-muted,
+html.big-text .rk-turn p {
   font-size: 15px;
 }
-html.big-text .risk-country-list button {
+html.big-text .rk-country-list button {
   font-size: 14px;
 }
-html.big-text .risk-command-panel label {
+html.big-text .rk-command-panel label {
   font-size: 14px;
 }
-.risk-turn {
+.rk-turn {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 18px 22px 12px;
 }
-.risk-turn > div {
+.rk-turn > div {
   flex: 1;
   min-width: 0;
 }
-.risk-turn b {
+.rk-turn b {
   font-size: 20px;
 }
-.risk-turn p {
+.rk-turn p {
   margin: 4px 0 0;
   font-size: 13px;
   color: #52646c;
   line-height: 1.4;
 }
-#riskPlayerBadge {
+#rkPlayerBadge {
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -91,7 +93,7 @@ html.big-text .risk-command-panel label {
   color: #fff;
   flex-shrink: 0;
 }
-#riskPhase {
+#rkPhase {
   padding: 7px 12px;
   background: #23354410;
   border-radius: 99px;
@@ -99,13 +101,13 @@ html.big-text .risk-command-panel label {
   font-weight: 700;
   flex-shrink: 0;
 }
-.risk-scoreboard {
+.rk-scoreboard {
   display: flex;
   gap: 8px;
   overflow: auto;
   padding: 2px 22px 14px;
 }
-.risk-score {
+.rk-score {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -116,15 +118,15 @@ html.big-text .risk-command-panel label {
   font-size: 12px;
   flex-shrink: 0;
 }
-.risk-score.active {
+.rk-score.active {
   background: #fff;
   border-color: #263b4c70;
   box-shadow: 0 2px 5px #0001;
 }
-.risk-score.out {
+.rk-score.out {
   opacity: 0.5;
 }
-.risk-score span {
+.rk-score span {
   width: 25px;
   height: 25px;
   border-radius: 50%;
@@ -134,13 +136,13 @@ html.big-text .risk-command-panel label {
   color: #fff;
   font-weight: 800;
 }
-.risk-score small {
+.rk-score small {
   display: block;
   color: #61727d;
   font-size: 11px;
   margin-top: 3px;
 }
-.risk-layout {
+.rk-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 310px;
   gap: 20px;
@@ -148,46 +150,46 @@ html.big-text .risk-command-panel label {
   flex: 1;
   align-items: start;
 }
-.risk-board-panel,
-.risk-command-panel {
+.rk-board-panel,
+.rk-command-panel {
   min-width: 0;
   border: 1px solid #2537471f;
   background: #fff9;
   border-radius: 18px;
   overflow: hidden;
 }
-.risk-command-panel {
+.rk-command-panel {
   padding: 18px;
 }
-.risk-map-tools {
+.rk-map-tools {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
 }
-.risk-tabs {
+.rk-tabs {
   display: flex;
   background: #243e4c0c;
   border-radius: 10px;
   padding: 3px;
 }
-.risk-tabs button {
+.rk-tabs button {
   min-height: 44px;
   padding: 8px 14px;
   border-radius: 8px;
   font-size: 13px;
 }
-.risk-tabs button[aria-pressed="true"] {
+.rk-tabs button[aria-pressed="true"] {
   background: #fff;
   box-shadow: 0 1px 4px #0002;
   font-weight: 700;
 }
-#riskZoomTools {
+#rkZoomTools {
   display: flex;
   gap: 5px;
 }
-#riskZoomTools button {
+#rkZoomTools button {
   width: 44px;
   height: 44px;
   font-size: 21px;
@@ -195,14 +197,14 @@ html.big-text .risk-command-panel label {
   background: #fff;
   border: 1px solid #0002;
 }
-.risk-map-tip {
+.rk-map-tip {
   font-size: 12px;
   color: #61727d;
   padding: 0 16px;
   margin: 0 0 10px;
   line-height: 1.4;
 }
-.risk-map-viewport {
+.rk-map-viewport {
   height: clamp(340px, 55vh, 630px);
   overflow: auto;
   background: #dae6e9;
@@ -211,88 +213,88 @@ html.big-text .risk-command-panel label {
   border-top: 1px solid #243e4c10;
   border-bottom: 1px solid #243e4c10;
 }
-#riskMap {
+#rkMap {
   display: block;
   width: 1160px;
   height: 680px;
   max-width: none;
 }
-.risk-country {
+.rk-country {
   cursor: pointer;
   outline: none;
 }
-.risk-country .risk-country-shape {
+.rk-country .rk-country-shape {
   stroke: #fff;
   stroke-width: 2;
   filter: drop-shadow(0 2px 2px #0002);
 }
-.risk-country.selected .risk-country-shape {
+.rk-country.selected .rk-country-shape {
   stroke: #233544;
   stroke-width: 4;
 }
-.risk-country.target .risk-country-shape {
+.rk-country.target .rk-country-shape {
   stroke: #ffe185;
   stroke-width: 5;
 }
-.risk-country.neighbor .risk-country-shape {
+.rk-country.neighbor .rk-country-shape {
   stroke: #263c4b;
   stroke-width: 2;
   stroke-dasharray: 4 2;
 }
-.risk-country:focus-visible .risk-country-shape {
+.rk-country:focus-visible .rk-country-shape {
   stroke: #171f26;
   stroke-width: 5;
 }
-.risk-country text {
+.rk-country text {
   fill: #fff;
   pointer-events: none;
   text-anchor: middle;
   font-family: system-ui, sans-serif;
 }
-.risk-country .risk-abbr {
+.rk-country .rk-abbr {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 1px;
 }
-.risk-country .risk-armies {
+.rk-country .rk-armies {
   font-size: 18px;
   font-weight: 800;
 }
-.risk-country .risk-owner {
+.rk-country .rk-owner {
   font-size: 9px;
 }
-.risk-continent-bonuses {
+.rk-continent-bonuses {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   padding: 12px 14px;
 }
-.risk-continent-bonuses span {
+.rk-continent-bonuses span {
   border: 1px solid #0002;
   background: #fff8;
   padding: 5px 8px;
   border-radius: 8px;
   font-size: 11px;
 }
-.risk-continent-bonuses span.owned {
+.rk-continent-bonuses span.owned {
   font-weight: 700;
   border-color: #213849;
 }
-.risk-country-list {
+.rk-country-list {
   max-height: 580px;
   overflow: auto;
   padding: 12px;
 }
-.risk-country-list h3 {
+.rk-country-list h3 {
   font-size: 13px;
   margin: 14px 0 8px;
 }
-.risk-country-list > div {
+.rk-country-list > div {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
   gap: 7px;
 }
-.risk-country-list button {
+.rk-country-list button {
   min-height: 52px;
   display: flex;
   align-items: center;
@@ -304,21 +306,21 @@ html.big-text .risk-command-panel label {
   text-align: left;
   font-size: 12px;
 }
-.risk-country-list button.selected {
+.rk-country-list button.selected {
   border: 2px solid #263744;
 }
-.risk-country-list button.target {
+.rk-country-list button.target {
   border: 2px solid #b47c12;
 }
-.risk-country-list button span {
+.rk-country-list button span {
   flex: 1;
 }
-.risk-country-list button small {
+.rk-country-list button small {
   display: block;
   margin-top: 3px;
   color: #61727d;
 }
-.risk-country-list button i {
+.rk-country-list button i {
   font-style: normal;
   width: 25px;
   height: 25px;
@@ -329,17 +331,17 @@ html.big-text .risk-command-panel label {
   color: #fff;
   font-weight: 800;
 }
-#riskControls h3 {
+#rkControls h3 {
   font-size: 18px;
   margin: 0 0 6px;
 }
-#riskControls .risk-muted {
+#rkControls .rk-muted {
   color: #657783;
   font-size: 13px;
   line-height: 1.5;
   margin: 0 0 14px;
 }
-#riskControls label {
+#rkControls label {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -347,10 +349,10 @@ html.big-text .risk-command-panel label {
   font-weight: 700;
   margin: 12px 0;
 }
-.risk-command-panel select,
-.risk-command-panel input,
-.risk-setup-grid select,
-.risk-names input {
+.rk-command-panel select,
+.rk-command-panel input,
+.rk-setup-grid select,
+.rk-names input {
   font: inherit;
   color: #243b47;
   background: #fff;
@@ -362,7 +364,7 @@ html.big-text .risk-command-panel label {
   user-select: text;
   -webkit-user-select: text;
 }
-.risk-command-panel button.risk-action {
+.rk-command-panel button.rk-action {
   min-height: 46px;
   width: 100%;
   padding: 12px 14px;
@@ -373,27 +375,27 @@ html.big-text .risk-command-panel label {
   font-size: 14px;
   margin-top: 8px;
 }
-.risk-command-panel button.risk-secondary {
+.rk-command-panel button.rk-secondary {
   background: #263d4b0c;
   color: #263d4b;
   border: 1px solid #263d4b25;
 }
-.risk-command-panel button:disabled {
+.rk-command-panel button:disabled {
   opacity: 0.4;
   cursor: default;
 }
-.risk-buttons {
+.rk-buttons {
   display: flex;
   gap: 8px;
 }
-.risk-amount {
+.rk-amount {
   display: flex;
   gap: 8px;
 }
-.risk-amount input {
+.rk-amount input {
   width: 80px;
 }
-.risk-amount button {
+.rk-amount button {
   border: 1px solid #263c4b30;
   background: #fff;
   border-radius: 10px;
@@ -402,13 +404,13 @@ html.big-text .risk-command-panel label {
   font-size: 12px;
   flex: 1;
 }
-.risk-cards {
+.rk-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
   margin: 8px 0;
 }
-.risk-cards button {
+.rk-cards button {
   background: #fff;
   border: 1px solid #24374735;
   border-radius: 10px;
@@ -416,36 +418,36 @@ html.big-text .risk-command-panel label {
   padding: 8px 4px;
   font-size: 20px;
 }
-.risk-cards button[aria-pressed="true"] {
+.rk-cards button[aria-pressed="true"] {
   border: 2px solid #b58219;
   background: #fff8dd;
 }
-.risk-cards button small {
+.rk-cards button small {
   display: block;
   font-size: 9px;
   margin-top: 5px;
   line-height: 1.25;
 }
-.risk-battle {
+.rk-battle {
   border-top: 1px solid #23354420;
   margin-top: 18px;
   padding-top: 14px;
 }
-.risk-battle:empty {
+.rk-battle:empty {
   display: none;
 }
-.risk-battle h4 {
+.rk-battle h4 {
   margin: 0 0 8px;
   font-size: 13px;
 }
-.risk-dice-row {
+.rk-dice-row {
   display: flex;
   align-items: center;
   gap: 6px;
   margin: 7px 0;
   font-size: 11px;
 }
-.risk-die {
+.rk-die {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -457,22 +459,22 @@ html.big-text .risk-command-panel label {
   background: #c24b48;
   color: white;
 }
-.risk-die.defense {
+.rk-die.defense {
   background: #fff;
   color: #233544;
   border: 1px solid #0003;
 }
-.risk-battle p {
+.rk-battle p {
   font-size: 11px;
   line-height: 1.4;
   color: #61727d;
 }
-.risk-history {
+.rk-history {
   margin-top: 16px;
   border-top: 1px solid #23354420;
   padding-top: 10px;
 }
-.risk-history summary {
+.rk-history summary {
   min-height: 44px;
   display: flex;
   align-items: center;
@@ -480,7 +482,7 @@ html.big-text .risk-command-panel label {
   font-weight: 700;
   cursor: pointer;
 }
-.risk-history ol {
+.rk-history ol {
   font-size: 12px;
   padding-left: 20px;
   line-height: 1.5;
@@ -488,103 +490,109 @@ html.big-text .risk-command-panel label {
   overflow: auto;
   color: #5d707b;
 }
-.risk-history li {
+.rk-history li {
   margin-bottom: 8px;
 }
-#riskStartModal .sheet,
-#riskHelpModal .sheet,
-#riskPauseModal .sheet,
-#riskHandoffModal .sheet {
+#rkStartModal .sheet,
+#rkHelpModal .sheet,
+#rkPauseModal .sheet,
+#rkHandoffModal .sheet {
   background: #f5f3eb;
   color: #233544;
   --muted: #657783;
 }
-.risk-setup-grid {
+.rk-setup-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
 }
-.risk-setup-grid label,
-.risk-names label {
+.rk-setup-grid label,
+.rk-names label {
   display: flex;
   flex-direction: column;
   gap: 6px;
   font-size: 12px;
   font-weight: 700;
 }
-.risk-names {
+.rk-names {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-top: 16px;
 }
-.risk-note {
+.rk-note {
   font-size: 12px;
   margin-top: 14px !important;
 }
-.risk-rules {
+.rk-rules {
   padding-left: 22px;
   font-size: 14px;
   line-height: 1.5;
 }
-.risk-rules li {
+.rk-rules li {
   margin-bottom: 14px;
 }
-#riskStartModal .btn:not(.primary),
-#riskPauseModal .btn:not(.primary) {
+#rkStartModal .btn:not(.primary),
+#rkPauseModal .btn:not(.primary) {
   background: #23354412;
   color: #233544;
 }
-#riskStartModal .row {
+#rkStartModal .row {
   margin-top: 16px;
 }
 @media (max-width: 900px) {
-  .risk-layout {
+  .rk-layout {
     grid-template-columns: 1fr;
     padding: 0 12px 20px;
     gap: 12px;
   }
-  .risk-turn {
+  .rk-turn {
     padding: 14px 14px 10px;
   }
-  .risk-scoreboard {
+  .rk-scoreboard {
     padding: 2px 14px 12px;
   }
-  .risk-command-panel {
+  .rk-command-panel {
     padding: 16px;
   }
-  .risk-map-viewport {
+  .rk-map-viewport {
     height: 320px;
   }
-  .risk-topbar {
+  .rk-topbar {
     padding: 8px 12px;
     gap: 6px;
   }
-  .risk-topbar b {
+  .rk-topbar b {
     font-size: 22px;
   }
-  .risk-turn b {
+  .rk-turn b {
     font-size: 17px;
   }
-  #riskPhase {
+  #rkPhase {
     font-size: 11px;
     padding: 6px 8px;
   }
-  .risk-setup-grid {
+  .rk-setup-grid {
     gap: 10px;
   }
 }
 @media (max-width: 360px) {
-  .risk-names {
+  .rk-names {
     grid-template-columns: 1fr;
   }
-  .risk-topbar {
+  .rk-topbar {
     gap: 3px;
   }
-  .risk-turn {
+  .rk-topbar b {
+    font-size: 18px;
+    letter-spacing: 0;
+  }
+  .rk-turn {
     gap: 8px;
   }
-  .risk-tabs button {
+  .rk-tabs button {
     padding: 8px 10px;
   }
 }
+
+.rk-sound-options{display:flex;flex-wrap:wrap;gap:16px;margin:14px 0}.rk-sound-options label{display:flex;align-items:center;gap:8px;min-height:44px;font-size:14px}.rk-sound-options input{width:20px;height:20px}

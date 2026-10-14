@@ -1,6 +1,6 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
-const E = require("../src/risk-engine.js");
+const E = require("./rksrc/core.js");
 const players = (n) =>
   Array.from({ length: n }, (_, i) => ({ name: `Speler ${i + 1}`, ai: i > 0 }));
 function fixture() {

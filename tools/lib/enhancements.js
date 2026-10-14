@@ -15,10 +15,10 @@
     );
   const categories = {
     cards: ["patience", "klaverjas", "wb"],
-    puzzles: ["sd", "ms", "mj", "ls", "bh", "sm", "kb"],
-    action: ["td", "airhockey", "pf", "rs", "bs", "kp", "bv", "gg"],
-    strategy: ["risk", "td", "zs", "klaverjas", "wb"],
-    multiplayer: ["risk", "airhockey", "zs", "wb"],
+    puzzles: ["sd", "ms", "mj", "ls", "bh", "sm", "kb", "wq"],
+    action: ["td", "airhockey", "pf", "rs", "bs", "kp", "bv", "gg", "vd"],
+    strategy: ["rk", "td", "zs", "klaverjas", "wb"],
+    multiplayer: ["rk", "airhockey", "zs", "wb", "vd"],
   };
   function announce(text) {
     const live = $("#appAnnouncement");
@@ -115,16 +115,14 @@
       }
     });
     const observer = new MutationObserver(sync);
-    document
-      .querySelectorAll(".modal,.overlay")
-      .forEach((el) =>
-        observer.observe(el, {
-          attributes: true,
-          attributeFilter: ["class"],
-          childList: true,
-          subtree: true,
-        }),
-      );
+    document.querySelectorAll(".modal,.overlay").forEach((el) =>
+      observer.observe(el, {
+        attributes: true,
+        attributeFilter: ["class"],
+        childList: true,
+        subtree: true,
+      }),
+    );
     document
       .querySelectorAll(".screen")
       .forEach((el) =>
@@ -262,7 +260,7 @@
       $("#favoritesEmpty").hidden = !!$("#favoritesRow").children.length;
       const today = new Date();
       const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-      $("#dailyRow").innerHTML = ["mj", "bh", "ls"]
+      $("#dailyRow").innerHTML = ["mj", "bh", "ls", "wq"]
         .filter((id) => !config.hidden.includes(id))
         .map((id) => {
           const g = games.find((g) => g.id === id),
@@ -274,9 +272,11 @@
               ? "✓ Vandaag voltooid"
               : id === "mj"
                 ? "Dezelfde puzzel voor iedereen"
-                : id === "bh"
-                  ? "Dagrit · vanaf level 9"
-                  : "Dagpuzzel · vanaf level 11",
+                : id === "wq"
+                  ? "Dagquiz · 10 vragen"
+                  : id === "bh"
+                    ? "Dagrit · vanaf level 9"
+                    : "Dagpuzzel · vanaf level 11",
             true,
           );
         })

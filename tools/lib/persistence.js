@@ -20,12 +20,14 @@
     "ms",
     "patience",
     "pf",
-    "risk",
+    "rk",
     "rs",
     "sd",
     "sm",
     "td",
     "wb",
+    "wq",
+    "vd",
     "zs",
   ];
   const allowed = new Set(
@@ -47,6 +49,7 @@
         "recent",
         "rs.data",
         "trophies.seen",
+        "vd.run",
       ]),
   );
   const object = (x) =>
@@ -65,6 +68,27 @@
       Array.isArray(x) && (length == null || x.length === length);
     const num = (x) => Number.isFinite(x) && x >= 0;
     switch (name) {
+      case "wq.save":
+        return (
+          v.v === 1 &&
+          object(v.cfg) &&
+          Array.isArray(v.qs) &&
+          v.qs.length > 0 &&
+          v.qs.length <= 1000 &&
+          v.qs.every(
+            (q) =>
+              object(q) &&
+              typeof q.c === "string" &&
+              /^[A-Z]{2}$/.test(q.c) &&
+              typeof q.t === "string" &&
+              q.t.length < 30 &&
+              (!q.o ||
+                (Array.isArray(q.o) &&
+                  q.o.every(
+                    (c) => typeof c === "string" && /^[A-Z]{2}$/.test(c),
+                  ))),
+          )
+        );
       case "patience.save":
         return (
           object(v.S) &&
@@ -306,7 +330,7 @@
         Number.isFinite(value.sec) &&
         value.sec >= 0
       );
-    if (name === "risk.settings")
+    if (name === "rk.settings")
       return (
         (!("players" in value) ||
           (Number.isInteger(value.players) &&
@@ -318,9 +342,11 @@
             value.humans <= (value.players || 6))) &&
         (!("difficulty" in value) ||
           ["easy", "normal", "strong"].includes(value.difficulty)) &&
-        (!("tempo" in value) || ["normal", "fast"].includes(value.tempo))
+        (!("tempo" in value) || ["normal", "fast"].includes(value.tempo)) &&
+        (!("sound" in value) || typeof value.sound === "boolean") &&
+        (!("music" in value) || typeof value.music === "boolean")
       );
-    if (name === "risk.save")
+    if (name === "rk.save")
       return (
         typeof globalThis.ReneRiskEngine === "object" &&
         globalThis.ReneRiskEngine.validState(value)

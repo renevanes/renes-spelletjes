@@ -380,7 +380,7 @@
     );
   }
   function apply(state, action) {
-    assert(validState(state), "De opgeslagen Risk-gegevens zijn ongeldig.");
+    assert(validState(state), "De opgeslagen Wereldmacht-gegevens zijn ongeldig.");
     const s = clone(state),
       player = s.players[s.current],
       name = player.name;
