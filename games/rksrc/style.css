@@ -1,637 +1,185 @@
-#rk {
-  background: #f3f1e8;
-  color: #233544;
-  --muted: #61727d;
-  --ink: #233544;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  --accent: #e8b54b;
-}
-.rk-topbar {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  min-height: 64px;
-  padding: 8px 16px;
-  border-bottom: 1px solid #263b4c18;
-  background: #fff8;
-}
-.rk-topbar > div {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.rk-topbar b {
-  font-family: Georgia, serif;
-  letter-spacing: 1px;
-  font-size: 24px;
-  overflow-wrap: anywhere;
-}
-.rk-topbar small {
-  color: #69777c;
-  font-size: 12px;
-}
-.rk-topbar .iconbtn {
-  background: #2335440b;
-  font-size: 22px;
-}
-.rk-topbar,
-.rk-turn,
-.rk-scoreboard {
-  flex-shrink: 0;
-}
-.rk-layout {
-  flex: none !important;
-}
-#rkPlayerName {
-  overflow-wrap: anywhere;
-}
-html.big-text #rkControls h3 {
-  font-size: 21px;
-}
-html.big-text #rkControls .rk-muted,
-html.big-text .rk-turn p {
-  font-size: 15px;
-}
-html.big-text .rk-country-list button {
-  font-size: 14px;
-}
-html.big-text .rk-command-panel label {
-  font-size: 14px;
-}
-.rk-turn {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 18px 22px 12px;
-}
-.rk-turn > div {
-  flex: 1;
-  min-width: 0;
-}
-.rk-turn b {
-  font-size: 20px;
-}
-.rk-turn p {
-  margin: 4px 0 0;
-  font-size: 13px;
-  color: #52646c;
-  line-height: 1.4;
-}
-#rkPlayerBadge {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  border: 3px solid #fff;
-  box-shadow: 0 2px 6px #0002;
-  color: #fff;
-  flex-shrink: 0;
-}
-#rkPhase {
-  padding: 7px 12px;
-  background: #23354410;
-  border-radius: 99px;
-  font-size: 12px;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-.rk-scoreboard {
-  display: flex;
-  gap: 8px;
-  overflow: auto;
-  padding: 2px 22px 14px;
-}
-.rk-score {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid #263b4c22;
-  border-radius: 12px;
-  padding: 8px 12px;
-  background: #fff8;
-  font-size: 12px;
-  flex-shrink: 0;
-}
-.rk-score.active {
-  background: #fff;
-  border-color: #263b4c70;
-  box-shadow: 0 2px 5px #0001;
-}
-.rk-score.out {
-  opacity: 0.5;
-}
-.rk-score span {
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-weight: 800;
-}
-.rk-score small {
-  display: block;
-  color: #61727d;
-  font-size: 11px;
-  margin-top: 3px;
-}
-.rk-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 310px;
-  gap: 20px;
-  padding: 0 22px 26px;
-  flex: 1;
-  align-items: start;
-}
-.rk-board-panel,
-.rk-command-panel {
-  min-width: 0;
-  border: 1px solid #2537471f;
-  background: #fff9;
-  border-radius: 18px;
-  overflow: hidden;
-}
-.rk-command-panel {
-  padding: 18px;
-}
-.rk-map-tools {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding: 8px 10px;
-}
-.rk-tabs {
-  display: flex;
-  background: #243e4c0c;
-  border-radius: 10px;
-  padding: 3px;
-}
-.rk-tabs button {
-  min-height: 44px;
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 13px;
-}
-.rk-tabs button[aria-pressed="true"] {
-  background: #fff;
-  box-shadow: 0 1px 4px #0002;
-  font-weight: 700;
-}
-#rkZoomTools {
-  display: flex;
-  gap: 5px;
-}
-.rk-zoom-group button {
-  width: 44px;
-  height: 44px;
-  font-size: 21px;
-  border-radius: 10px;
-  background: #fff;
-  border: 1px solid #0002;
-}
-.rk-zoom-group { display:flex; align-items:center; gap:3px; margin-left:auto; }
-.rk-zoom-group output { font-size:11px; min-width:35px; text-align:center; color:#4b625f; }
-.rk-map-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding:0 10px 6px; }
-.rk-map-button { min-height:44px; padding:8px 10px; border-radius:9px; border:1px solid #23354425; background:#fff8; color:#233544; font-size:12px; }
-.rk-map-button[aria-pressed="true"] { background:#e5bf65; border-color:#ab8134; }
-.rk-map-tip {
-  font-size: 12px;
-  color: #61727d;
-  padding: 0 16px;
-  margin: 0 0 10px;
-  line-height: 1.4;
-}
-.rk-map-viewport {
-  aspect-ratio: 1440 / 760;
-  width:100%;
-  overflow: auto;
-  background: #dae6e9;
-  scrollbar-width: thin;
-  touch-action: none;
-  border-top: 1px solid #243e4c10;
-  border-bottom: 1px solid #243e4c10;
-}
-#rkMap {
-  position:absolute;
-  display: block;
-  width: 1440px;
-  height: 760px;
-  max-width: none;
-}
-#rkMapSurface { position:relative; min-width:100%; min-height:100%; }
-.rk-country {
-  cursor: pointer;
-  outline: none;
-}
-.rk-country .rk-country-shape {
-  stroke: #536950;
-  stroke-width: .7;
-  vector-effect: non-scaling-stroke;
-}
-.rk-country.selected .rk-country-shape {
-  stroke: #233544;
-  stroke-width: 2.5;
-  filter: drop-shadow(0 0 4px #ffef94);
-}
-.rk-country.target .rk-country-shape {
-  stroke: #9e3729;
-  stroke-width: 2.5;
-}
-.rk-country.neighbor .rk-country-shape {
-  stroke: #263c4b;
-  stroke-width: 1.3;
-}
-.rk-country:focus-visible .rk-country-shape {
-  stroke: #171f26;
-  stroke-width: 2.5;
-}
-.rk-army-markers { cursor:pointer; }
-.rk-army-markers text {
-  fill:#fff;
-  pointer-events: none;
-  text-anchor: middle;
-  font-family: system-ui, sans-serif;
-}
-.rk-armies {
-  font-size: 18px;
-  font-weight: 800;
-}
-.rk-owner { font-size:10px; font-weight:800; paint-order:stroke; stroke:#284138; stroke-width:3; }
-.rk-marker-disc { stroke:#fffae3; stroke-width:2; }
-.rk-marker-halo { fill:none; stroke:none; }
-.rk-army-markers .selected .rk-marker-halo { fill:#fff8bb; stroke:#4a452f; stroke-width:2; }
-.rk-army-markers .target .rk-marker-halo { fill:#ffefb7; stroke:#9e3729; stroke-width:3; }
-.rk-region-labels { pointer-events:none; display:none; font:700 12px Georgia,serif; fill:#273a32; paint-order:stroke; stroke:#fff7db; stroke-width:3; stroke-linejoin:round; }
-.rk-map-detail .rk-region-labels { display:block; }
-.rk-graticule { fill:none; stroke:#718f93; stroke-width:1; opacity:.23; }
-.rk-neutral-land { fill:#c3ccbd; stroke:#718371; stroke-width:.6; vector-effect:non-scaling-stroke; }
-.rk-sea-route { fill:none; stroke:#516b74; stroke-width:1.6; stroke-dasharray:5 5; opacity:.5; pointer-events:none; }
-.rk-sea-route.active { stroke:#644729; stroke-width:2.5; opacity:1; }
-.rk-battle-route { fill:none; stroke:#862f23; stroke-width:3; pointer-events:none; }
-.rk-continent-labels { font:700 18px Georgia,serif; letter-spacing:1.4px; fill:#334c43; pointer-events:none; }
-.rk-ocean-labels { font:italic 15px Georgia,serif; text-anchor:middle; letter-spacing:3px; fill:#64858b; pointer-events:none; }
-.rk-compass { stroke:#516b64; fill:#f7edcc; stroke-width:1.5; opacity:.7; pointer-events:none; }
-.rk-compass text { fill:#516b64; stroke:none; font:700 15px Georgia,serif; }
-.rk-map-credit { font:11px system-ui,sans-serif; fill:#4c7378; pointer-events:none; }
-.rk-map-status { display:flex; align-items:center; flex-wrap:wrap; gap:6px 10px; padding:8px 10px; border-top:1px solid #243e4c20; font-size:12px; }
-#rkMapTurn { display:none; }
-#rkMapSelection { flex:1; min-width:110px; font-weight:600; }
-#rkToActions { font-weight:700; background:#263d4b; color:#fff; }
-.rk-continent-bonuses {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 12px 14px;
-}
-.rk-continent-bonuses button {
-  border: 1px solid #0002;
-  background: #fff8;
-  min-height:44px;
-  padding: 7px 8px;
-  border-radius: 8px;
-  font-size: 12px;
-  border-left:5px solid var(--continent);
-}
-.rk-continent-bonuses button.owned {
-  font-weight: 700;
-  border-color: #213849;
-}
-.rk-country-list {
-  max-height: 580px;
-  overflow: auto;
-  padding: 12px;
-}
-.rk-country-list h3 {
-  font-size: 13px;
-  margin: 14px 0 8px;
-}
-.rk-country-list > div {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
-  gap: 7px;
-}
-.rk-country-list button {
-  min-height: 52px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 10px;
-  background: #fff;
-  border: 1px solid #23354430;
-  border-radius: 10px;
-  text-align: left;
-  font-size: 12px;
-}
-.rk-country-list button.selected {
-  border: 2px solid #263744;
-}
-.rk-country-list button.target {
-  border: 2px solid #b47c12;
-}
-.rk-country-list button span {
-  flex: 1;
-}
-.rk-country-list button small {
-  display: block;
-  margin-top: 3px;
-  color: #61727d;
-}
-.rk-country-list button i {
-  font-style: normal;
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-weight: 800;
-}
-#rkControls h3 {
-  font-size: 18px;
-  margin: 0 0 6px;
-}
-#rkControls .rk-muted {
-  color: #657783;
-  font-size: 13px;
-  line-height: 1.5;
-  margin: 0 0 14px;
-}
-#rkControls label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 700;
-  margin: 12px 0;
-}
-.rk-command-panel select,
-.rk-command-panel input,
-.rk-setup-grid select,
-.rk-names input {
-  font: inherit;
-  color: #243b47;
-  background: #fff;
-  border: 1px solid #263c4b35;
-  border-radius: 10px;
-  min-height: 44px;
-  padding: 10px;
-  width: 100%;
-  user-select: text;
-  -webkit-user-select: text;
-}
-.rk-command-panel button.rk-action {
-  min-height: 46px;
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: #263d4b;
-  color: #fff;
-  font-weight: 700;
-  font-size: 14px;
-  margin-top: 8px;
-}
-.rk-command-panel button.rk-secondary {
-  background: #263d4b0c;
-  color: #263d4b;
-  border: 1px solid #263d4b25;
-}
-.rk-command-panel button:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-.rk-buttons {
-  display: flex;
-  gap: 8px;
-}
-.rk-amount {
-  display: flex;
-  gap: 8px;
-}
-.rk-amount input {
-  width: 80px;
-}
-.rk-amount button {
-  border: 1px solid #263c4b30;
-  background: #fff;
-  border-radius: 10px;
-  min-height: 44px;
-  padding: 8px;
-  font-size: 12px;
-  flex: 1;
-}
-.rk-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  margin: 8px 0;
-}
-.rk-cards button {
-  background: #fff;
-  border: 1px solid #24374735;
-  border-radius: 10px;
-  min-height: 70px;
-  padding: 8px 4px;
-  font-size: 20px;
-}
-.rk-cards button[aria-pressed="true"] {
-  border: 2px solid #b58219;
-  background: #fff8dd;
-}
-.rk-cards button small {
-  display: block;
-  font-size: 9px;
-  margin-top: 5px;
-  line-height: 1.25;
-}
-.rk-battle {
-  border-top: 1px solid #23354420;
-  margin-top: 18px;
-  padding-top: 14px;
-}
-.rk-battle:empty {
-  display: none;
-}
-.rk-battle h4 {
-  margin: 0 0 8px;
-  font-size: 13px;
-}
-.rk-dice-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 7px 0;
-  font-size: 11px;
-}
-.rk-die {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  font-size: 16px;
-  font-weight: 800;
-  background: #c24b48;
-  color: white;
-}
-.rk-die.defense {
-  background: #fff;
-  color: #233544;
-  border: 1px solid #0003;
-}
-.rk-die svg { width:24px; height:24px; fill:currentColor; }
-.rk-battle p {
-  font-size: 11px;
-  line-height: 1.4;
-  color: #61727d;
-}
-.rk-history {
-  margin-top: 16px;
-  border-top: 1px solid #23354420;
-  padding-top: 10px;
-}
-.rk-history summary {
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.rk-history ol {
-  font-size: 12px;
-  padding-left: 20px;
-  line-height: 1.5;
-  max-height: 220px;
-  overflow: auto;
-  color: #5d707b;
-}
-.rk-history li {
-  margin-bottom: 8px;
-}
-#rkStartModal .sheet,
-#rkHelpModal .sheet,
-#rkPauseModal .sheet,
-#rkHandoffModal .sheet {
-  background: #f5f3eb;
-  color: #233544;
-  --muted: #657783;
-}
-.rk-setup-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-.rk-setup-grid label,
-.rk-names label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 700;
-}
-.rk-names {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 16px;
-}
-.rk-note {
-  font-size: 12px;
-  margin-top: 14px !important;
-}
-.rk-rules {
-  padding-left: 22px;
-  font-size: 14px;
-  line-height: 1.5;
-}
-.rk-rules li {
-  margin-bottom: 14px;
-}
-#rkStartModal .btn:not(.primary),
-#rkPauseModal .btn:not(.primary) {
-  background: #23354412;
-  color: #233544;
-}
-#rkStartModal .row {
-  margin-top: 16px;
-}
-@media (max-width: 900px) {
-  .rk-layout {
-    grid-template-columns: 1fr;
-    padding: 0 12px 20px;
-    gap: 12px;
-  }
-  .rk-turn {
-    padding: 10px 14px 8px;
-  }
-  .rk-scoreboard {
-    padding: 2px 14px 8px;
-  }
-  .rk-command-panel {
-    padding: 16px;
-  }
-  .rk-topbar {
-    padding: 8px 12px;
-    gap: 6px;
-  }
-  .rk-topbar b {
-    font-size: 22px;
-  }
-  .rk-turn b {
-    font-size: 17px;
-  }
-  #rkPhase {
-    font-size: 11px;
-    padding: 6px 8px;
-  }
-  .rk-setup-grid {
-    gap: 10px;
-  }
-}
-.rk-expanded .rk-board-panel { position:fixed; inset:0; z-index:500; display:flex; flex-direction:column; border-radius:0; background:#f3f1e8; padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom); }
-.rk-expanded .rk-map-tools,.rk-expanded .rk-map-toolbar,.rk-expanded .rk-map-status,.rk-expanded .rk-continent-bonuses { flex-shrink:0; }
-.rk-expanded .rk-map-viewport { flex:1; min-height:0; aspect-ratio:auto; }
-.rk-expanded .rk-map-tip { display:none; }
-.rk-expanded #rkMapTurn { display:block; font-weight:700; border-left:4px solid var(--player); padding-left:6px; }
-.rk-expanded .rk-country-list { flex:1; max-height:none; }
-html.big-text .rk-expanded .rk-continent-bonuses button { min-height:44px; font-size:12px; }
-@media (max-height:500px) and (orientation:landscape) {
-  .rk-expanded .rk-map-tools { padding:3px 8px; }
-  .rk-expanded .rk-map-toolbar { position:absolute; top:6px; right:150px; padding:0; }
-  .rk-expanded #rkOwnership { display:none; }
-  .rk-expanded .rk-continent-bonuses { padding:3px 8px; gap:4px; }
-  .rk-expanded .rk-continent-bonuses button { min-height:36px; padding:4px 8px; font-size:11px; }
-  .rk-expanded .rk-map-status { padding:3px 8px; min-height:30px; }
-  .rk-expanded #rkToActions { min-height:34px; }
-}
-@media (max-width: 360px) {
-  .rk-names {
-    grid-template-columns: 1fr;
-  }
-  .rk-topbar {
-    gap: 3px;
-  }
-  .rk-topbar b {
-    font-size: 18px;
-    letter-spacing: 0;
-  }
-  .rk-turn {
-    gap: 8px;
-  }
-  .rk-tabs button {
-    padding: 8px 10px;
-  }
+#rk{--muted:#a8c6d4;--ink:#eff8fc;--accent:#ffd276;background:#123a52;color:var(--ink);overflow:hidden;overscroll-behavior:contain}
+#rk button:focus-visible,#rk input:focus-visible,#rk select:focus-visible,#rk summary:focus-visible{outline:3px solid #ffe09a;outline-offset:2px}
+.rk-topbar{height:60px;min-height:60px;display:flex;align-items:center;gap:8px;padding:6px 14px;background:#0b263dee;border-bottom:1px solid #b1d7e624;z-index:3}
+.rk-topbar>div{flex:1;min-width:0;display:flex;flex-direction:column}
+.rk-topbar b{font-size:22px;letter-spacing:1px;text-transform:uppercase;font-weight:900}
+.rk-topbar small{font-size:11px;color:#a8c6d4}
+.rk-topbar .iconbtn{width:44px;height:44px;min-width:44px;border-radius:50%;border:1px solid #a8c6d446;background:#ffffff0c;font-size:21px;color:#eff8fc}
+.rk-layout{position:absolute;inset:60px 0 68px;min-height:0}
+.rk-board-panel{position:absolute;inset:0;overflow:hidden;background:#164c64}
+.rk-map-tools{position:absolute;top:8px;left:10px;display:flex;align-items:center;gap:8px;z-index:2}
+.rk-tabs{display:flex;background:#0b263de8;border:1px solid #a8c6d43a;border-radius:12px;padding:2px}
+.rk-tabs button{min-height:40px;padding:7px 10px;border-radius:9px;font-size:12px}
+.rk-tabs button[aria-pressed=true]{background:#396581;font-weight:700}
+.rk-map-button{min-height:44px;padding:7px 10px;border-radius:10px;background:#0b263de8;border:1px solid #a8c6d43a;color:#eff8fc;font-size:12px}
+.rk-map-button[aria-pressed=true]{border-color:#81b6c9;background:#28516a}
+.rk-map-toolbar{position:absolute;top:8px;right:10px;display:flex;gap:5px;align-items:center;z-index:2}
+.rk-zoom-group{display:flex;align-items:center;background:#0b263de8;border:1px solid #a8c6d43a;border-radius:10px}
+.rk-zoom-group button{width:44px;height:44px;font-size:22px}
+.rk-zoom-group output{font-size:11px;width:35px;text-align:center}
+.rk-map-tip{position:absolute;bottom:57px;left:12px;right:12px;text-align:center;color:#c4e1ed;font-size:11px;pointer-events:none;opacity:.7}
+.rk-map-viewport{position:absolute;inset:60px 165px 56px 0;overflow:auto;scrollbar-width:thin;touch-action:none;background:#164c64}
+#rkMapSurface{position:relative;min-width:100%;min-height:100%}
+#rkMap{position:absolute;display:block;max-width:none}
+.rk-land-shadow{fill:#092c3c;stroke:#092c3c;stroke-width:6;stroke-linejoin:round;pointer-events:none}
+.rk-country{cursor:pointer;outline:none}
+.rk-country-shape{stroke:#102d37;stroke-width:1;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.rk-country.neighbor .rk-country-shape{stroke:#afd7e3;stroke-width:1.1}
+.rk-country.selected .rk-country-shape,.rk-country:focus-visible .rk-country-shape{stroke:#fff0b2;stroke-width:3}
+.rk-country.target .rk-country-shape{stroke:#ffbf82;stroke-width:3}
+.rk-army-markers{cursor:pointer}
+.rk-army-markers text{pointer-events:none;text-anchor:middle;font-family:system-ui,sans-serif;fill:#fff;paint-order:stroke;stroke:#102534;stroke-width:1}
+.rk-armies{font-weight:900;font-size:18px}
+.rk-owner{font-size:10px;font-weight:800;stroke-width:3}
+.rk-marker-disc{stroke:#c8e8f0;stroke-width:1.5}
+.rk-marker-base{fill:#0d2835;stroke:#0d2835;stroke-width:2}
+.rk-marker-halo{fill:none;stroke:none}
+.rk-army-markers .selected .rk-marker-halo{stroke:#fff2a9;stroke-width:3;fill:#ffe59944}
+.rk-army-markers .target .rk-marker-halo{stroke:#ffc78c;stroke-width:3;fill:#ffab7a44}
+.rk-region-labels{pointer-events:none;display:none;font:700 12px system-ui,sans-serif;fill:#eff8fc;paint-order:stroke;stroke:#143244;stroke-width:3;stroke-linejoin:round}
+.rk-map-detail .rk-region-labels{display:block}
+.rk-graticule{fill:none;stroke:#8dcede;stroke-width:1;opacity:.13}
+.rk-neutral-land{fill:#416c7c;stroke:#234f64;stroke-width:.6;vector-effect:non-scaling-stroke}
+.rk-sea-route{fill:none;stroke:#cae8f2;stroke-width:2;stroke-dasharray:4 5;opacity:.5;pointer-events:none}
+.rk-sea-route.active{stroke:#fff0b5;stroke-width:3;opacity:1}
+.rk-battle-route{fill:none;stroke:#ffe3a0;stroke-width:4;pointer-events:none}
+.rk-continent-labels{font:700 16px system-ui,sans-serif;letter-spacing:1.6px;fill:#b0d6e3;pointer-events:none}
+.rk-ocean-labels{font:11px system-ui,sans-serif;text-anchor:middle;letter-spacing:4px;fill:#80b7cc;pointer-events:none;opacity:.6}
+.rk-compass{display:none}
+.rk-map-credit{font:9px system-ui,sans-serif;fill:#84b5c6;pointer-events:none}
+.rk-scoreboard{position:absolute;top:130px;right:10px;width:145px;display:flex;flex-direction:column;gap:7px;z-index:2}
+.rk-score{display:flex;align-items:center;gap:8px;border:1px solid #a8c6d440;border-right:4px solid var(--player);border-radius:12px;background:#0b263de8;padding:8px;font-size:11px;min-width:0}
+.rk-score.active{border-color:#ffe09a;background:#173d55;box-shadow:0 0 0 1px #ffe09a55}
+.rk-score.out{opacity:.45}
+.rk-score>span{display:flex;justify-content:center;align-items:center;flex-shrink:0;width:28px;height:28px;border:2px solid #d9edf5;border-radius:50%;color:#fff;font-weight:900}
+.rk-score>div{min-width:0;flex:1}
+.rk-score b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rk-score small{display:block;font-size:10px;line-height:1.4;color:#a8c6d4;margin-top:3px}
+.rk-turn{position:absolute;bottom:0;left:0;right:0;height:68px;display:flex;align-items:center;gap:10px;padding:8px 16px;background:#0b263df5;border-top:1px solid #81b6c933;z-index:3}
+#rkPlayerBadge{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:42px;height:42px;border:3px solid #d0e8f2;border-radius:50%;font-weight:900;color:#fff;box-shadow:0 3px 0 #0004}
+.rk-turn>div:not(.rk-phase-track){flex:1;min-width:0}
+#rkPlayerName{display:block;font-size:15px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#rkInstruction{font-size:11px;line-height:1.3;color:#a8c6d4;margin:3px 0 0}
+.rk-phase-track{flex-shrink:0;text-align:right}
+#rkPhase{display:block;font-size:15px;font-weight:800;color:#ffe09a}
+#rkPhaseSteps{display:flex;gap:6px;margin-top:4px;font-size:10px;color:#779bad}
+#rkPhaseSteps .active{color:#ffe09a}
+.rk-continent-bonuses{position:absolute;bottom:7px;left:10px;right:10px;display:flex;gap:5px;z-index:2;overflow-x:auto;scrollbar-width:none}
+.rk-continent-bonuses button{min-height:44px;padding:7px 10px;border:1px solid #a8c6d43a;border-bottom:3px solid var(--continent);border-radius:9px;background:#0b263de8;font-size:11px;white-space:nowrap;flex-shrink:0}
+.rk-continent-bonuses button.owned{border-color:#ffe09a;color:#ffe09a}
+.rk-map-status{display:none}
+.rk-country-list{position:absolute;inset:60px 165px 55px 0;overflow:auto;padding:10px;background:#143a51}
+.rk-country-list h3{font-size:14px;margin:10px 0}
+.rk-country-list>div{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:7px}
+.rk-country-list button{min-height:52px;display:flex;align-items:center;gap:8px;padding:8px;border:1px solid #a8c6d43a;border-radius:10px;text-align:left;font-size:12px;background:#1b475f}
+.rk-country-list button.selected{border:2px solid #ffe09a}
+.rk-country-list button.target{border:2px solid #ffc78c}
+.rk-country-list button>span{flex:1}
+.rk-country-list small{display:block;margin-top:3px;color:#a8c6d4;font-size:11px}
+.rk-country-list i{font-style:normal;width:25px;height:25px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800}
+.rk-command-panel{position:absolute;bottom:62px;left:12px;width:320px;max-width:calc(100% - 24px);max-height:60%;overflow-y:auto;padding:14px;border:1px solid #8bb6c966;border-radius:16px;background:#102e43f5;box-shadow:0 10px 24px #061b2855;z-index:2}
+.rk-command-title{display:flex;align-items:center;gap:10px;padding-right:28px}
+#rkControls h3{font-size:16px;margin:0 0 4px;overflow-wrap:anywhere}
+.rk-command-title h3{flex:1}
+.rk-command-title>span{font-size:11px;color:#b7d4e1;white-space:nowrap}
+#rkControls .rk-muted{font-size:12px;color:#b7d4e1;line-height:1.4;margin:5px 0 8px}
+.rk-dock-toggle{position:absolute;top:3px;right:3px;min-width:44px;min-height:44px;font-size:23px;z-index:1}
+.rk-dock-collapsed .rk-command-panel{max-height:52px;overflow:hidden;padding-right:40px}
+.rk-dock-collapsed #rkControls> :not(:first-child),.rk-dock-collapsed .rk-history{display:none}
+.rk-dock-collapsed .rk-dock-toggle{transform:rotate(180deg)}
+#rkControls label{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;margin:8px 0}
+.rk-command-panel select,.rk-command-panel input:not([type=range]),.rk-setup-grid select,.rk-names input{font:inherit;min-height:44px;color:#eff8fc;background:#1e4a63;border:1px solid #a8c6d45a;border-radius:9px;padding:8px;width:100%;user-select:text;-webkit-user-select:text}
+.rk-command-panel input[type=range]{display:block;width:100%;min-height:32px;margin:0;accent-color:#ffd276;cursor:pointer}
+.rk-action{min-height:44px;width:100%;padding:9px 10px;border-radius:10px;background:#ffd276;color:#162e3d;font-weight:800;font-size:13px;margin-top:6px}
+.rk-action.rk-secondary{border:1px solid #a8c6d446;background:#294e65;color:#eff8fc}
+.rk-command-panel button:disabled{opacity:.4;cursor:default}
+.rk-buttons{display:flex;gap:8px}
+.rk-troops{margin-top:7px;display:grid;grid-template-columns:1fr 172px;gap:2px 8px;align-items:center}
+.rk-troops>label{margin:0!important}
+.rk-troops>input[type=range]{grid-column:1/-1}
+.rk-amount{display:flex;gap:3px}
+.rk-command-panel .rk-amount input{width:48px;padding:4px;text-align:center;font-weight:800}
+.rk-amount button{background:#294e65;border:1px solid #a8c6d43a;border-radius:8px;min-height:44px;min-width:36px;padding:4px;font-size:14px}
+.rk-matchup{display:flex;justify-content:space-between;gap:8px;color:#ffe09a;font-size:13px;margin:5px 0}
+#rkControls label.rk-commit-label{flex-direction:row;justify-content:space-between;margin-bottom:0}
+.rk-odds{margin:0 0 4px;font-size:11px;color:#b7d4e1}
+.rk-accessible summary,.rk-history summary,.rk-card-hand summary{min-height:44px;padding:12px 0;font-size:11px;color:#b7d4e1;cursor:pointer}
+.rk-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}
+.rk-cards button{border:1px solid #a8c6d440;border-radius:9px;background:#294e65;min-height:70px;padding:6px 3px;font-size:24px}
+.rk-cards button[aria-pressed=true]{border:2px solid #ffe09a;background:#55533e}
+.rk-cards small{display:block;font-size:10px}
+.rk-battle h4{font-size:12px;margin:6px 0}
+.rk-battle p,.rk-history ol{font-size:11px;color:#a8c6d4;line-height:1.4}
+.rk-history ol{padding-left:18px;max-height:200px;overflow:auto}
+.rk-history li{margin-bottom:6px}
+.rk-dice-row{display:flex;align-items:center;gap:6px;margin:4px 0}
+.rk-dice-row>span:first-child{font-size:11px;width:70px}
+.rk-die{width:24px;height:24px;border-radius:5px;display:inline-flex;background:#bf4d4a;border:1px solid #ffd7d2;box-shadow:0 2px 0 #561b20}
+.rk-die.defense{background:#4085b8;border-color:#c8eaff;box-shadow:0 2px 0 #173953}
+.rk-die svg{width:24px;height:24px;fill:#fff}
+#rkStartModal .sheet,#rkHelpModal .sheet,#rkPauseModal .sheet,#rkHandoffModal .sheet{background:#12344b;color:#eff8fc;--muted:#a8c6d4}
+#rkStartModal .btn:not(.primary),#rkPauseModal .btn:not(.primary){background:#294e65;color:#eff8fc}
+.rk-setup-grid,.rk-names{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rk-setup-grid label,.rk-names label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:700;min-width:0}
+.rk-names{margin-top:14px}
+.rk-note{font-size:12px;margin-top:14px!important}
+.rk-rules{padding-left:22px;font-size:14px;line-height:1.5}
+.rk-rules li{margin-bottom:14px}
+.rk-sound-options{display:flex;flex-wrap:wrap;gap:16px;margin:14px 0}
+.rk-sound-options label{display:flex;align-items:center;gap:8px;min-height:44px;font-size:14px}
+.rk-sound-options input{width:20px;height:20px}
+#rkStartModal .row{margin-top:16px}
+.rk-expanded .rk-board-panel{position:fixed;inset:0;z-index:500;padding:0}
+.rk-expanded .rk-map-viewport,.rk-expanded .rk-country-list{right:0}
+.rk-expanded .rk-map-status{display:none}
+.rk-expanded .rk-map-tip{display:none}
+@media(max-width:650px) and (orientation:portrait){
+ .rk-topbar{height:58px;min-height:58px;padding:6px 8px;gap:5px}.rk-topbar b{font-size:18px;letter-spacing:.4px}.rk-topbar small{font-size:9px}
+ .rk-layout{inset:112px 0 80px}.rk-scoreboard{top:61px;left:8px;right:8px;width:auto;flex-direction:row;overflow:auto;gap:5px;padding-bottom:3px}.rk-score{flex-shrink:0;padding:5px 7px;max-width:150px}.rk-score>span{width:25px;height:25px}.rk-score small{font-size:9px;margin:0}
+ .rk-map-tools{top:7px;left:8px;right:8px;justify-content:space-between}.rk-map-toolbar{top:60px;left:8px;right:8px}.rk-map-toolbar .rk-zoom-group{margin-left:auto}.rk-tabs button{padding:7px 8px}.rk-map-button{padding:6px 8px;font-size:11px}
+ .rk-map-viewport,.rk-country-list{inset:111px 0 56px}.rk-has-selection .rk-map-viewport{bottom:240px;min-height:110px}
+ .rk-command-panel{left:8px;bottom:60px;width:calc(100% - 16px);max-width:none;max-height:230px;padding:11px 13px}.rk-command-panel:has(#rkControls>.rk-muted){max-height:170px}.rk-command-title h3{font-size:15px}.rk-has-selection .rk-command-panel{max-height:230px}
+ .rk-continent-bonuses{left:8px;right:8px;bottom:7px}.rk-map-tip{display:none}
+ .rk-turn{height:80px;padding:7px 10px;gap:8px}.rk-turn .rk-phase-track{max-width:145px}#rkPhaseSteps{flex-wrap:wrap;justify-content:flex-end;gap:3px 6px;font-size:9px}#rkPhase{font-size:13px}#rkPlayerName{font-size:13px}#rkInstruction{font-size:10px}
+ .rk-expanded .rk-map-viewport{top:111px;bottom:56px}.rk-expanded.rk-has-selection .rk-map-viewport{bottom:240px}
+}
+@media(max-height:550px) and (orientation:landscape){
+ .rk-topbar{height:48px;min-height:48px;padding:2px 10px}.rk-topbar b{font-size:18px}.rk-topbar small{font-size:10px}.rk-layout{inset:48px 0 55px}
+ .rk-scoreboard{top:108px;right:6px;width:112px;gap:4px}.rk-score{padding:4px;gap:5px}.rk-score>span{width:23px;height:23px}.rk-score small{font-size:9px}.rk-score b{font-size:10px}
+ .rk-map-viewport,.rk-country-list{inset:54px 126px 48px 0}.rk-map-tools{top:5px;left:7px}.rk-map-toolbar{top:5px;right:7px}.rk-map-tip{display:none}
+ .rk-command-panel{bottom:53px;left:7px;width:270px;padding:9px 12px;max-height:calc(100% - 60px)}
+ .rk-continent-bonuses{bottom:4px;left:7px;right:126px}.rk-continent-bonuses button{min-height:40px;padding:5px 8px;font-size:10px}
+ .rk-turn{height:55px;padding:5px 12px}#rkPlayerBadge{width:35px;height:35px}#rkPlayerName{font-size:13px}#rkInstruction{font-size:10px}#rkPhase{font-size:13px}
+ .rk-expanded .rk-command-panel{max-height:calc(100% - 60px)}
+}
+html.big-text #rkControls h3{font-size:19px}html.big-text #rkControls .rk-muted,html.big-text .rk-command-panel label{font-size:14px}
+html.big-text .rk-country-list button{font-size:14px}html.big-text #rkInstruction{font-size:12px}html.big-text .rk-score small{font-size:11px}html.big-text .rk-scoreboard{gap:4px}
+html.big-text #rk .rk-continent-bonuses button{min-height:44px}html.big-text .rk-command-panel{max-height:65%}
+@media(max-width:360px){.rk-topbar b{font-size:16px}.rk-topbar{gap:3px}.rk-topbar .iconbtn{width:40px;min-width:40px}.rk-tabs button{font-size:11px}.rk-names{grid-template-columns:1fr}.rk-setup-grid{gap:8px}}
+/* Keep the world visible; extra map controls open only when requested. */
+.rk-view-menu{position:absolute;top:8px;left:10px;z-index:4;border:1px solid #a8c6d446;background:#0b263df5;border-radius:12px;max-width:calc(100% - 20px)}
+.rk-view-menu>summary{min-height:44px;display:flex;align-items:center;padding:8px 12px;cursor:pointer;font-size:12px;font-weight:700;list-style:none}
+.rk-view-menu>summary::-webkit-details-marker{display:none}
+.rk-view-menu .rk-map-tools{position:static;padding:0 8px 8px;flex-wrap:wrap}
+.rk-view-menu>#rkOwnership{margin:0 8px 8px}
+.rk-dock-collapsed .rk-map-viewport{bottom:56px}
+.rk-dock-collapsed .rk-command-panel{max-height:52px;width:240px;max-width:calc(100% - 24px)}
+@media(max-width:650px) and (orientation:portrait){
+ .rk-view-menu{top:7px;left:8px}.rk-map-toolbar{top:7px;left:auto;right:8px}.rk-map-viewport,.rk-country-list{top:60px;bottom:240px}
+ .rk-has-selection .rk-map-viewport{top:60px}.rk-dock-collapsed .rk-map-viewport{bottom:130px}
+ .rk-map-toolbar #rkWorldView{font-size:11px;padding:6px}.rk-view-menu[open]{right:8px}.rk-view-menu[open]~.rk-map-toolbar{z-index:1}
+ .rk-dock-collapsed .rk-command-panel{width:calc(100% - 16px);max-width:none}
+ .rk-expanded .rk-map-viewport{top:60px;bottom:240px}.rk-expanded.rk-dock-collapsed .rk-map-viewport{bottom:130px}
+}
+@media(max-height:550px) and (orientation:landscape){
+ .rk-layout{inset:0}.rk-map-viewport,.rk-country-list{inset:0 126px 32px 0}.rk-dock-collapsed .rk-map-viewport{bottom:32px}
+ .rk-view-menu{top:54px;left:7px}.rk-map-toolbar{top:auto;bottom:64px;right:7px;flex-direction:column}.rk-map-toolbar #rkWorldView{width:100%}
+ .rk-scoreboard{top:56px}.rk-score{padding:4px}.rk-continent-bonuses{bottom:58px;right:126px}
+ .rk-command-panel{bottom:108px;max-height:calc(100% - 165px)}.rk-dock-collapsed .rk-command-panel{max-height:52px}
+ .rk-expanded .rk-view-menu{top:7px}.rk-expanded .rk-continent-bonuses{bottom:7px;right:126px}.rk-expanded .rk-command-panel{bottom:58px;max-height:calc(100% - 115px)}.rk-expanded .rk-map-toolbar{bottom:58px}
 }
 
-.rk-sound-options{display:flex;flex-wrap:wrap;gap:16px;margin:14px 0}.rk-sound-options label{display:flex;align-items:center;gap:8px;min-height:44px;font-size:14px}.rk-sound-options input{width:20px;height:20px}
+.rk-dock-collapsed .rk-command-title>span{display:none}
+.rk-dock-collapsed .rk-command-title h3{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+@media(max-height:550px) and (orientation:landscape){.rk-scoreboard{max-height:calc(100% - 222px);overflow-y:auto;scrollbar-width:thin}.rk-score{flex-shrink:0}}

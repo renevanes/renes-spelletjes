@@ -343,6 +343,8 @@
         (!("difficulty" in value) ||
           ["easy", "normal", "strong"].includes(value.difficulty)) &&
         (!("tempo" in value) || ["normal", "fast"].includes(value.tempo)) &&
+        (!("goal" in value) || ["world", "domination"].includes(value.goal)) &&
+        (!("cardMode" in value) || ["progressive", "fixed"].includes(value.cardMode)) &&
         (!("sound" in value) || typeof value.sound === "boolean") &&
         (!("music" in value) || typeof value.music === "boolean")
       );

@@ -1628,643 +1628,191 @@ html.big-text .vd-info b{font-size:21px}html.big-text .vd-info small{font-size:1
 .vdh-inputs b{color:#ffd23a}
 
 /* RK_CSS_BEGIN */
-#rk {
-  background: #f3f1e8;
-  color: #233544;
-  --muted: #61727d;
-  --ink: #233544;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  --accent: #e8b54b;
-}
-.rk-topbar {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  min-height: 64px;
-  padding: 8px 16px;
-  border-bottom: 1px solid #263b4c18;
-  background: #fff8;
-}
-.rk-topbar > div {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.rk-topbar b {
-  font-family: Georgia, serif;
-  letter-spacing: 1px;
-  font-size: 24px;
-  overflow-wrap: anywhere;
-}
-.rk-topbar small {
-  color: #69777c;
-  font-size: 12px;
-}
-.rk-topbar .iconbtn {
-  background: #2335440b;
-  font-size: 22px;
-}
-.rk-topbar,
-.rk-turn,
-.rk-scoreboard {
-  flex-shrink: 0;
-}
-.rk-layout {
-  flex: none !important;
-}
-#rkPlayerName {
-  overflow-wrap: anywhere;
-}
-html.big-text #rkControls h3 {
-  font-size: 21px;
-}
-html.big-text #rkControls .rk-muted,
-html.big-text .rk-turn p {
-  font-size: 15px;
-}
-html.big-text .rk-country-list button {
-  font-size: 14px;
-}
-html.big-text .rk-command-panel label {
-  font-size: 14px;
-}
-.rk-turn {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 18px 22px 12px;
-}
-.rk-turn > div {
-  flex: 1;
-  min-width: 0;
-}
-.rk-turn b {
-  font-size: 20px;
-}
-.rk-turn p {
-  margin: 4px 0 0;
-  font-size: 13px;
-  color: #52646c;
-  line-height: 1.4;
-}
-#rkPlayerBadge {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  border: 3px solid #fff;
-  box-shadow: 0 2px 6px #0002;
-  color: #fff;
-  flex-shrink: 0;
-}
-#rkPhase {
-  padding: 7px 12px;
-  background: #23354410;
-  border-radius: 99px;
-  font-size: 12px;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-.rk-scoreboard {
-  display: flex;
-  gap: 8px;
-  overflow: auto;
-  padding: 2px 22px 14px;
-}
-.rk-score {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid #263b4c22;
-  border-radius: 12px;
-  padding: 8px 12px;
-  background: #fff8;
-  font-size: 12px;
-  flex-shrink: 0;
-}
-.rk-score.active {
-  background: #fff;
-  border-color: #263b4c70;
-  box-shadow: 0 2px 5px #0001;
-}
-.rk-score.out {
-  opacity: 0.5;
-}
-.rk-score span {
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-weight: 800;
-}
-.rk-score small {
-  display: block;
-  color: #61727d;
-  font-size: 11px;
-  margin-top: 3px;
-}
-.rk-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 310px;
-  gap: 20px;
-  padding: 0 22px 26px;
-  flex: 1;
-  align-items: start;
-}
-.rk-board-panel,
-.rk-command-panel {
-  min-width: 0;
-  border: 1px solid #2537471f;
-  background: #fff9;
-  border-radius: 18px;
-  overflow: hidden;
-}
-.rk-command-panel {
-  padding: 18px;
-}
-.rk-map-tools {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding: 8px 10px;
-}
-.rk-tabs {
-  display: flex;
-  background: #243e4c0c;
-  border-radius: 10px;
-  padding: 3px;
-}
-.rk-tabs button {
-  min-height: 44px;
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 13px;
-}
-.rk-tabs button[aria-pressed="true"] {
-  background: #fff;
-  box-shadow: 0 1px 4px #0002;
-  font-weight: 700;
-}
-#rkZoomTools {
-  display: flex;
-  gap: 5px;
-}
-.rk-zoom-group button {
-  width: 44px;
-  height: 44px;
-  font-size: 21px;
-  border-radius: 10px;
-  background: #fff;
-  border: 1px solid #0002;
-}
-.rk-zoom-group { display:flex; align-items:center; gap:3px; margin-left:auto; }
-.rk-zoom-group output { font-size:11px; min-width:35px; text-align:center; color:#4b625f; }
-.rk-map-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding:0 10px 6px; }
-.rk-map-button { min-height:44px; padding:8px 10px; border-radius:9px; border:1px solid #23354425; background:#fff8; color:#233544; font-size:12px; }
-.rk-map-button[aria-pressed="true"] { background:#e5bf65; border-color:#ab8134; }
-.rk-map-tip {
-  font-size: 12px;
-  color: #61727d;
-  padding: 0 16px;
-  margin: 0 0 10px;
-  line-height: 1.4;
-}
-.rk-map-viewport {
-  aspect-ratio: 1440 / 760;
-  width:100%;
-  overflow: auto;
-  background: #dae6e9;
-  scrollbar-width: thin;
-  touch-action: none;
-  border-top: 1px solid #243e4c10;
-  border-bottom: 1px solid #243e4c10;
-}
-#rkMap {
-  position:absolute;
-  display: block;
-  width: 1440px;
-  height: 760px;
-  max-width: none;
-}
-#rkMapSurface { position:relative; min-width:100%; min-height:100%; }
-.rk-country {
-  cursor: pointer;
-  outline: none;
-}
-.rk-country .rk-country-shape {
-  stroke: #536950;
-  stroke-width: .7;
-  vector-effect: non-scaling-stroke;
-}
-.rk-country.selected .rk-country-shape {
-  stroke: #233544;
-  stroke-width: 2.5;
-  filter: drop-shadow(0 0 4px #ffef94);
-}
-.rk-country.target .rk-country-shape {
-  stroke: #9e3729;
-  stroke-width: 2.5;
-}
-.rk-country.neighbor .rk-country-shape {
-  stroke: #263c4b;
-  stroke-width: 1.3;
-}
-.rk-country:focus-visible .rk-country-shape {
-  stroke: #171f26;
-  stroke-width: 2.5;
-}
-.rk-army-markers { cursor:pointer; }
-.rk-army-markers text {
-  fill:#fff;
-  pointer-events: none;
-  text-anchor: middle;
-  font-family: system-ui, sans-serif;
-}
-.rk-armies {
-  font-size: 18px;
-  font-weight: 800;
-}
-.rk-owner { font-size:10px; font-weight:800; paint-order:stroke; stroke:#284138; stroke-width:3; }
-.rk-marker-disc { stroke:#fffae3; stroke-width:2; }
-.rk-marker-halo { fill:none; stroke:none; }
-.rk-army-markers .selected .rk-marker-halo { fill:#fff8bb; stroke:#4a452f; stroke-width:2; }
-.rk-army-markers .target .rk-marker-halo { fill:#ffefb7; stroke:#9e3729; stroke-width:3; }
-.rk-region-labels { pointer-events:none; display:none; font:700 12px Georgia,serif; fill:#273a32; paint-order:stroke; stroke:#fff7db; stroke-width:3; stroke-linejoin:round; }
-.rk-map-detail .rk-region-labels { display:block; }
-.rk-graticule { fill:none; stroke:#718f93; stroke-width:1; opacity:.23; }
-.rk-neutral-land { fill:#c3ccbd; stroke:#718371; stroke-width:.6; vector-effect:non-scaling-stroke; }
-.rk-sea-route { fill:none; stroke:#516b74; stroke-width:1.6; stroke-dasharray:5 5; opacity:.5; pointer-events:none; }
-.rk-sea-route.active { stroke:#644729; stroke-width:2.5; opacity:1; }
-.rk-battle-route { fill:none; stroke:#862f23; stroke-width:3; pointer-events:none; }
-.rk-continent-labels { font:700 18px Georgia,serif; letter-spacing:1.4px; fill:#334c43; pointer-events:none; }
-.rk-ocean-labels { font:italic 15px Georgia,serif; text-anchor:middle; letter-spacing:3px; fill:#64858b; pointer-events:none; }
-.rk-compass { stroke:#516b64; fill:#f7edcc; stroke-width:1.5; opacity:.7; pointer-events:none; }
-.rk-compass text { fill:#516b64; stroke:none; font:700 15px Georgia,serif; }
-.rk-map-credit { font:11px system-ui,sans-serif; fill:#4c7378; pointer-events:none; }
-.rk-map-status { display:flex; align-items:center; flex-wrap:wrap; gap:6px 10px; padding:8px 10px; border-top:1px solid #243e4c20; font-size:12px; }
-#rkMapTurn { display:none; }
-#rkMapSelection { flex:1; min-width:110px; font-weight:600; }
-#rkToActions { font-weight:700; background:#263d4b; color:#fff; }
-.rk-continent-bonuses {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 12px 14px;
-}
-.rk-continent-bonuses button {
-  border: 1px solid #0002;
-  background: #fff8;
-  min-height:44px;
-  padding: 7px 8px;
-  border-radius: 8px;
-  font-size: 12px;
-  border-left:5px solid var(--continent);
-}
-.rk-continent-bonuses button.owned {
-  font-weight: 700;
-  border-color: #213849;
-}
-.rk-country-list {
-  max-height: 580px;
-  overflow: auto;
-  padding: 12px;
-}
-.rk-country-list h3 {
-  font-size: 13px;
-  margin: 14px 0 8px;
-}
-.rk-country-list > div {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
-  gap: 7px;
-}
-.rk-country-list button {
-  min-height: 52px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 10px;
-  background: #fff;
-  border: 1px solid #23354430;
-  border-radius: 10px;
-  text-align: left;
-  font-size: 12px;
-}
-.rk-country-list button.selected {
-  border: 2px solid #263744;
-}
-.rk-country-list button.target {
-  border: 2px solid #b47c12;
-}
-.rk-country-list button span {
-  flex: 1;
-}
-.rk-country-list button small {
-  display: block;
-  margin-top: 3px;
-  color: #61727d;
-}
-.rk-country-list button i {
-  font-style: normal;
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-weight: 800;
-}
-#rkControls h3 {
-  font-size: 18px;
-  margin: 0 0 6px;
-}
-#rkControls .rk-muted {
-  color: #657783;
-  font-size: 13px;
-  line-height: 1.5;
-  margin: 0 0 14px;
-}
-#rkControls label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 700;
-  margin: 12px 0;
-}
-.rk-command-panel select,
-.rk-command-panel input,
-.rk-setup-grid select,
-.rk-names input {
-  font: inherit;
-  color: #243b47;
-  background: #fff;
-  border: 1px solid #263c4b35;
-  border-radius: 10px;
-  min-height: 44px;
-  padding: 10px;
-  width: 100%;
-  user-select: text;
-  -webkit-user-select: text;
-}
-.rk-command-panel button.rk-action {
-  min-height: 46px;
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: #263d4b;
-  color: #fff;
-  font-weight: 700;
-  font-size: 14px;
-  margin-top: 8px;
-}
-.rk-command-panel button.rk-secondary {
-  background: #263d4b0c;
-  color: #263d4b;
-  border: 1px solid #263d4b25;
-}
-.rk-command-panel button:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-.rk-buttons {
-  display: flex;
-  gap: 8px;
-}
-.rk-amount {
-  display: flex;
-  gap: 8px;
-}
-.rk-amount input {
-  width: 80px;
-}
-.rk-amount button {
-  border: 1px solid #263c4b30;
-  background: #fff;
-  border-radius: 10px;
-  min-height: 44px;
-  padding: 8px;
-  font-size: 12px;
-  flex: 1;
-}
-.rk-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  margin: 8px 0;
-}
-.rk-cards button {
-  background: #fff;
-  border: 1px solid #24374735;
-  border-radius: 10px;
-  min-height: 70px;
-  padding: 8px 4px;
-  font-size: 20px;
-}
-.rk-cards button[aria-pressed="true"] {
-  border: 2px solid #b58219;
-  background: #fff8dd;
-}
-.rk-cards button small {
-  display: block;
-  font-size: 9px;
-  margin-top: 5px;
-  line-height: 1.25;
-}
-.rk-battle {
-  border-top: 1px solid #23354420;
-  margin-top: 18px;
-  padding-top: 14px;
-}
-.rk-battle:empty {
-  display: none;
-}
-.rk-battle h4 {
-  margin: 0 0 8px;
-  font-size: 13px;
-}
-.rk-dice-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 7px 0;
-  font-size: 11px;
-}
-.rk-die {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  font-size: 16px;
-  font-weight: 800;
-  background: #c24b48;
-  color: white;
-}
-.rk-die.defense {
-  background: #fff;
-  color: #233544;
-  border: 1px solid #0003;
-}
-.rk-die svg { width:24px; height:24px; fill:currentColor; }
-.rk-battle p {
-  font-size: 11px;
-  line-height: 1.4;
-  color: #61727d;
-}
-.rk-history {
-  margin-top: 16px;
-  border-top: 1px solid #23354420;
-  padding-top: 10px;
-}
-.rk-history summary {
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.rk-history ol {
-  font-size: 12px;
-  padding-left: 20px;
-  line-height: 1.5;
-  max-height: 220px;
-  overflow: auto;
-  color: #5d707b;
-}
-.rk-history li {
-  margin-bottom: 8px;
-}
-#rkStartModal .sheet,
-#rkHelpModal .sheet,
-#rkPauseModal .sheet,
-#rkHandoffModal .sheet {
-  background: #f5f3eb;
-  color: #233544;
-  --muted: #657783;
-}
-.rk-setup-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-.rk-setup-grid label,
-.rk-names label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 700;
-}
-.rk-names {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 16px;
-}
-.rk-note {
-  font-size: 12px;
-  margin-top: 14px !important;
-}
-.rk-rules {
-  padding-left: 22px;
-  font-size: 14px;
-  line-height: 1.5;
-}
-.rk-rules li {
-  margin-bottom: 14px;
-}
-#rkStartModal .btn:not(.primary),
-#rkPauseModal .btn:not(.primary) {
-  background: #23354412;
-  color: #233544;
-}
-#rkStartModal .row {
-  margin-top: 16px;
-}
-@media (max-width: 900px) {
-  .rk-layout {
-    grid-template-columns: 1fr;
-    padding: 0 12px 20px;
-    gap: 12px;
-  }
-  .rk-turn {
-    padding: 10px 14px 8px;
-  }
-  .rk-scoreboard {
-    padding: 2px 14px 8px;
-  }
-  .rk-command-panel {
-    padding: 16px;
-  }
-  .rk-topbar {
-    padding: 8px 12px;
-    gap: 6px;
-  }
-  .rk-topbar b {
-    font-size: 22px;
-  }
-  .rk-turn b {
-    font-size: 17px;
-  }
-  #rkPhase {
-    font-size: 11px;
-    padding: 6px 8px;
-  }
-  .rk-setup-grid {
-    gap: 10px;
-  }
-}
-.rk-expanded .rk-board-panel { position:fixed; inset:0; z-index:500; display:flex; flex-direction:column; border-radius:0; background:#f3f1e8; padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom); }
-.rk-expanded .rk-map-tools,.rk-expanded .rk-map-toolbar,.rk-expanded .rk-map-status,.rk-expanded .rk-continent-bonuses { flex-shrink:0; }
-.rk-expanded .rk-map-viewport { flex:1; min-height:0; aspect-ratio:auto; }
-.rk-expanded .rk-map-tip { display:none; }
-.rk-expanded #rkMapTurn { display:block; font-weight:700; border-left:4px solid var(--player); padding-left:6px; }
-.rk-expanded .rk-country-list { flex:1; max-height:none; }
-html.big-text .rk-expanded .rk-continent-bonuses button { min-height:44px; font-size:12px; }
-@media (max-height:500px) and (orientation:landscape) {
-  .rk-expanded .rk-map-tools { padding:3px 8px; }
-  .rk-expanded .rk-map-toolbar { position:absolute; top:6px; right:150px; padding:0; }
-  .rk-expanded #rkOwnership { display:none; }
-  .rk-expanded .rk-continent-bonuses { padding:3px 8px; gap:4px; }
-  .rk-expanded .rk-continent-bonuses button { min-height:36px; padding:4px 8px; font-size:11px; }
-  .rk-expanded .rk-map-status { padding:3px 8px; min-height:30px; }
-  .rk-expanded #rkToActions { min-height:34px; }
-}
-@media (max-width: 360px) {
-  .rk-names {
-    grid-template-columns: 1fr;
-  }
-  .rk-topbar {
-    gap: 3px;
-  }
-  .rk-topbar b {
-    font-size: 18px;
-    letter-spacing: 0;
-  }
-  .rk-turn {
-    gap: 8px;
-  }
-  .rk-tabs button {
-    padding: 8px 10px;
-  }
+#rk{--muted:#a8c6d4;--ink:#eff8fc;--accent:#ffd276;background:#123a52;color:var(--ink);overflow:hidden;overscroll-behavior:contain}
+#rk button:focus-visible,#rk input:focus-visible,#rk select:focus-visible,#rk summary:focus-visible{outline:3px solid #ffe09a;outline-offset:2px}
+.rk-topbar{height:60px;min-height:60px;display:flex;align-items:center;gap:8px;padding:6px 14px;background:#0b263dee;border-bottom:1px solid #b1d7e624;z-index:3}
+.rk-topbar>div{flex:1;min-width:0;display:flex;flex-direction:column}
+.rk-topbar b{font-size:22px;letter-spacing:1px;text-transform:uppercase;font-weight:900}
+.rk-topbar small{font-size:11px;color:#a8c6d4}
+.rk-topbar .iconbtn{width:44px;height:44px;min-width:44px;border-radius:50%;border:1px solid #a8c6d446;background:#ffffff0c;font-size:21px;color:#eff8fc}
+.rk-layout{position:absolute;inset:60px 0 68px;min-height:0}
+.rk-board-panel{position:absolute;inset:0;overflow:hidden;background:#164c64}
+.rk-map-tools{position:absolute;top:8px;left:10px;display:flex;align-items:center;gap:8px;z-index:2}
+.rk-tabs{display:flex;background:#0b263de8;border:1px solid #a8c6d43a;border-radius:12px;padding:2px}
+.rk-tabs button{min-height:40px;padding:7px 10px;border-radius:9px;font-size:12px}
+.rk-tabs button[aria-pressed=true]{background:#396581;font-weight:700}
+.rk-map-button{min-height:44px;padding:7px 10px;border-radius:10px;background:#0b263de8;border:1px solid #a8c6d43a;color:#eff8fc;font-size:12px}
+.rk-map-button[aria-pressed=true]{border-color:#81b6c9;background:#28516a}
+.rk-map-toolbar{position:absolute;top:8px;right:10px;display:flex;gap:5px;align-items:center;z-index:2}
+.rk-zoom-group{display:flex;align-items:center;background:#0b263de8;border:1px solid #a8c6d43a;border-radius:10px}
+.rk-zoom-group button{width:44px;height:44px;font-size:22px}
+.rk-zoom-group output{font-size:11px;width:35px;text-align:center}
+.rk-map-tip{position:absolute;bottom:57px;left:12px;right:12px;text-align:center;color:#c4e1ed;font-size:11px;pointer-events:none;opacity:.7}
+.rk-map-viewport{position:absolute;inset:60px 165px 56px 0;overflow:auto;scrollbar-width:thin;touch-action:none;background:#164c64}
+#rkMapSurface{position:relative;min-width:100%;min-height:100%}
+#rkMap{position:absolute;display:block;max-width:none}
+.rk-land-shadow{fill:#092c3c;stroke:#092c3c;stroke-width:6;stroke-linejoin:round;pointer-events:none}
+.rk-country{cursor:pointer;outline:none}
+.rk-country-shape{stroke:#102d37;stroke-width:1;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.rk-country.neighbor .rk-country-shape{stroke:#afd7e3;stroke-width:1.1}
+.rk-country.selected .rk-country-shape,.rk-country:focus-visible .rk-country-shape{stroke:#fff0b2;stroke-width:3}
+.rk-country.target .rk-country-shape{stroke:#ffbf82;stroke-width:3}
+.rk-army-markers{cursor:pointer}
+.rk-army-markers text{pointer-events:none;text-anchor:middle;font-family:system-ui,sans-serif;fill:#fff;paint-order:stroke;stroke:#102534;stroke-width:1}
+.rk-armies{font-weight:900;font-size:18px}
+.rk-owner{font-size:10px;font-weight:800;stroke-width:3}
+.rk-marker-disc{stroke:#c8e8f0;stroke-width:1.5}
+.rk-marker-base{fill:#0d2835;stroke:#0d2835;stroke-width:2}
+.rk-marker-halo{fill:none;stroke:none}
+.rk-army-markers .selected .rk-marker-halo{stroke:#fff2a9;stroke-width:3;fill:#ffe59944}
+.rk-army-markers .target .rk-marker-halo{stroke:#ffc78c;stroke-width:3;fill:#ffab7a44}
+.rk-region-labels{pointer-events:none;display:none;font:700 12px system-ui,sans-serif;fill:#eff8fc;paint-order:stroke;stroke:#143244;stroke-width:3;stroke-linejoin:round}
+.rk-map-detail .rk-region-labels{display:block}
+.rk-graticule{fill:none;stroke:#8dcede;stroke-width:1;opacity:.13}
+.rk-neutral-land{fill:#416c7c;stroke:#234f64;stroke-width:.6;vector-effect:non-scaling-stroke}
+.rk-sea-route{fill:none;stroke:#cae8f2;stroke-width:2;stroke-dasharray:4 5;opacity:.5;pointer-events:none}
+.rk-sea-route.active{stroke:#fff0b5;stroke-width:3;opacity:1}
+.rk-battle-route{fill:none;stroke:#ffe3a0;stroke-width:4;pointer-events:none}
+.rk-continent-labels{font:700 16px system-ui,sans-serif;letter-spacing:1.6px;fill:#b0d6e3;pointer-events:none}
+.rk-ocean-labels{font:11px system-ui,sans-serif;text-anchor:middle;letter-spacing:4px;fill:#80b7cc;pointer-events:none;opacity:.6}
+.rk-compass{display:none}
+.rk-map-credit{font:9px system-ui,sans-serif;fill:#84b5c6;pointer-events:none}
+.rk-scoreboard{position:absolute;top:130px;right:10px;width:145px;display:flex;flex-direction:column;gap:7px;z-index:2}
+.rk-score{display:flex;align-items:center;gap:8px;border:1px solid #a8c6d440;border-right:4px solid var(--player);border-radius:12px;background:#0b263de8;padding:8px;font-size:11px;min-width:0}
+.rk-score.active{border-color:#ffe09a;background:#173d55;box-shadow:0 0 0 1px #ffe09a55}
+.rk-score.out{opacity:.45}
+.rk-score>span{display:flex;justify-content:center;align-items:center;flex-shrink:0;width:28px;height:28px;border:2px solid #d9edf5;border-radius:50%;color:#fff;font-weight:900}
+.rk-score>div{min-width:0;flex:1}
+.rk-score b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rk-score small{display:block;font-size:10px;line-height:1.4;color:#a8c6d4;margin-top:3px}
+.rk-turn{position:absolute;bottom:0;left:0;right:0;height:68px;display:flex;align-items:center;gap:10px;padding:8px 16px;background:#0b263df5;border-top:1px solid #81b6c933;z-index:3}
+#rkPlayerBadge{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:42px;height:42px;border:3px solid #d0e8f2;border-radius:50%;font-weight:900;color:#fff;box-shadow:0 3px 0 #0004}
+.rk-turn>div:not(.rk-phase-track){flex:1;min-width:0}
+#rkPlayerName{display:block;font-size:15px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#rkInstruction{font-size:11px;line-height:1.3;color:#a8c6d4;margin:3px 0 0}
+.rk-phase-track{flex-shrink:0;text-align:right}
+#rkPhase{display:block;font-size:15px;font-weight:800;color:#ffe09a}
+#rkPhaseSteps{display:flex;gap:6px;margin-top:4px;font-size:10px;color:#779bad}
+#rkPhaseSteps .active{color:#ffe09a}
+.rk-continent-bonuses{position:absolute;bottom:7px;left:10px;right:10px;display:flex;gap:5px;z-index:2;overflow-x:auto;scrollbar-width:none}
+.rk-continent-bonuses button{min-height:44px;padding:7px 10px;border:1px solid #a8c6d43a;border-bottom:3px solid var(--continent);border-radius:9px;background:#0b263de8;font-size:11px;white-space:nowrap;flex-shrink:0}
+.rk-continent-bonuses button.owned{border-color:#ffe09a;color:#ffe09a}
+.rk-map-status{display:none}
+.rk-country-list{position:absolute;inset:60px 165px 55px 0;overflow:auto;padding:10px;background:#143a51}
+.rk-country-list h3{font-size:14px;margin:10px 0}
+.rk-country-list>div{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:7px}
+.rk-country-list button{min-height:52px;display:flex;align-items:center;gap:8px;padding:8px;border:1px solid #a8c6d43a;border-radius:10px;text-align:left;font-size:12px;background:#1b475f}
+.rk-country-list button.selected{border:2px solid #ffe09a}
+.rk-country-list button.target{border:2px solid #ffc78c}
+.rk-country-list button>span{flex:1}
+.rk-country-list small{display:block;margin-top:3px;color:#a8c6d4;font-size:11px}
+.rk-country-list i{font-style:normal;width:25px;height:25px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800}
+.rk-command-panel{position:absolute;bottom:62px;left:12px;width:320px;max-width:calc(100% - 24px);max-height:60%;overflow-y:auto;padding:14px;border:1px solid #8bb6c966;border-radius:16px;background:#102e43f5;box-shadow:0 10px 24px #061b2855;z-index:2}
+.rk-command-title{display:flex;align-items:center;gap:10px;padding-right:28px}
+#rkControls h3{font-size:16px;margin:0 0 4px;overflow-wrap:anywhere}
+.rk-command-title h3{flex:1}
+.rk-command-title>span{font-size:11px;color:#b7d4e1;white-space:nowrap}
+#rkControls .rk-muted{font-size:12px;color:#b7d4e1;line-height:1.4;margin:5px 0 8px}
+.rk-dock-toggle{position:absolute;top:3px;right:3px;min-width:44px;min-height:44px;font-size:23px;z-index:1}
+.rk-dock-collapsed .rk-command-panel{max-height:52px;overflow:hidden;padding-right:40px}
+.rk-dock-collapsed #rkControls> :not(:first-child),.rk-dock-collapsed .rk-history{display:none}
+.rk-dock-collapsed .rk-dock-toggle{transform:rotate(180deg)}
+#rkControls label{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;margin:8px 0}
+.rk-command-panel select,.rk-command-panel input:not([type=range]),.rk-setup-grid select,.rk-names input{font:inherit;min-height:44px;color:#eff8fc;background:#1e4a63;border:1px solid #a8c6d45a;border-radius:9px;padding:8px;width:100%;user-select:text;-webkit-user-select:text}
+.rk-command-panel input[type=range]{display:block;width:100%;min-height:32px;margin:0;accent-color:#ffd276;cursor:pointer}
+.rk-action{min-height:44px;width:100%;padding:9px 10px;border-radius:10px;background:#ffd276;color:#162e3d;font-weight:800;font-size:13px;margin-top:6px}
+.rk-action.rk-secondary{border:1px solid #a8c6d446;background:#294e65;color:#eff8fc}
+.rk-command-panel button:disabled{opacity:.4;cursor:default}
+.rk-buttons{display:flex;gap:8px}
+.rk-troops{margin-top:7px;display:grid;grid-template-columns:1fr 172px;gap:2px 8px;align-items:center}
+.rk-troops>label{margin:0!important}
+.rk-troops>input[type=range]{grid-column:1/-1}
+.rk-amount{display:flex;gap:3px}
+.rk-command-panel .rk-amount input{width:48px;padding:4px;text-align:center;font-weight:800}
+.rk-amount button{background:#294e65;border:1px solid #a8c6d43a;border-radius:8px;min-height:44px;min-width:36px;padding:4px;font-size:14px}
+.rk-matchup{display:flex;justify-content:space-between;gap:8px;color:#ffe09a;font-size:13px;margin:5px 0}
+#rkControls label.rk-commit-label{flex-direction:row;justify-content:space-between;margin-bottom:0}
+.rk-odds{margin:0 0 4px;font-size:11px;color:#b7d4e1}
+.rk-accessible summary,.rk-history summary,.rk-card-hand summary{min-height:44px;padding:12px 0;font-size:11px;color:#b7d4e1;cursor:pointer}
+.rk-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}
+.rk-cards button{border:1px solid #a8c6d440;border-radius:9px;background:#294e65;min-height:70px;padding:6px 3px;font-size:24px}
+.rk-cards button[aria-pressed=true]{border:2px solid #ffe09a;background:#55533e}
+.rk-cards small{display:block;font-size:10px}
+.rk-battle h4{font-size:12px;margin:6px 0}
+.rk-battle p,.rk-history ol{font-size:11px;color:#a8c6d4;line-height:1.4}
+.rk-history ol{padding-left:18px;max-height:200px;overflow:auto}
+.rk-history li{margin-bottom:6px}
+.rk-dice-row{display:flex;align-items:center;gap:6px;margin:4px 0}
+.rk-dice-row>span:first-child{font-size:11px;width:70px}
+.rk-die{width:24px;height:24px;border-radius:5px;display:inline-flex;background:#bf4d4a;border:1px solid #ffd7d2;box-shadow:0 2px 0 #561b20}
+.rk-die.defense{background:#4085b8;border-color:#c8eaff;box-shadow:0 2px 0 #173953}
+.rk-die svg{width:24px;height:24px;fill:#fff}
+#rkStartModal .sheet,#rkHelpModal .sheet,#rkPauseModal .sheet,#rkHandoffModal .sheet{background:#12344b;color:#eff8fc;--muted:#a8c6d4}
+#rkStartModal .btn:not(.primary),#rkPauseModal .btn:not(.primary){background:#294e65;color:#eff8fc}
+.rk-setup-grid,.rk-names{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rk-setup-grid label,.rk-names label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:700;min-width:0}
+.rk-names{margin-top:14px}
+.rk-note{font-size:12px;margin-top:14px!important}
+.rk-rules{padding-left:22px;font-size:14px;line-height:1.5}
+.rk-rules li{margin-bottom:14px}
+.rk-sound-options{display:flex;flex-wrap:wrap;gap:16px;margin:14px 0}
+.rk-sound-options label{display:flex;align-items:center;gap:8px;min-height:44px;font-size:14px}
+.rk-sound-options input{width:20px;height:20px}
+#rkStartModal .row{margin-top:16px}
+.rk-expanded .rk-board-panel{position:fixed;inset:0;z-index:500;padding:0}
+.rk-expanded .rk-map-viewport,.rk-expanded .rk-country-list{right:0}
+.rk-expanded .rk-map-status{display:none}
+.rk-expanded .rk-map-tip{display:none}
+@media(max-width:650px) and (orientation:portrait){
+ .rk-topbar{height:58px;min-height:58px;padding:6px 8px;gap:5px}.rk-topbar b{font-size:18px;letter-spacing:.4px}.rk-topbar small{font-size:9px}
+ .rk-layout{inset:112px 0 80px}.rk-scoreboard{top:61px;left:8px;right:8px;width:auto;flex-direction:row;overflow:auto;gap:5px;padding-bottom:3px}.rk-score{flex-shrink:0;padding:5px 7px;max-width:150px}.rk-score>span{width:25px;height:25px}.rk-score small{font-size:9px;margin:0}
+ .rk-map-tools{top:7px;left:8px;right:8px;justify-content:space-between}.rk-map-toolbar{top:60px;left:8px;right:8px}.rk-map-toolbar .rk-zoom-group{margin-left:auto}.rk-tabs button{padding:7px 8px}.rk-map-button{padding:6px 8px;font-size:11px}
+ .rk-map-viewport,.rk-country-list{inset:111px 0 56px}.rk-has-selection .rk-map-viewport{bottom:240px;min-height:110px}
+ .rk-command-panel{left:8px;bottom:60px;width:calc(100% - 16px);max-width:none;max-height:230px;padding:11px 13px}.rk-command-panel:has(#rkControls>.rk-muted){max-height:170px}.rk-command-title h3{font-size:15px}.rk-has-selection .rk-command-panel{max-height:230px}
+ .rk-continent-bonuses{left:8px;right:8px;bottom:7px}.rk-map-tip{display:none}
+ .rk-turn{height:80px;padding:7px 10px;gap:8px}.rk-turn .rk-phase-track{max-width:145px}#rkPhaseSteps{flex-wrap:wrap;justify-content:flex-end;gap:3px 6px;font-size:9px}#rkPhase{font-size:13px}#rkPlayerName{font-size:13px}#rkInstruction{font-size:10px}
+ .rk-expanded .rk-map-viewport{top:111px;bottom:56px}.rk-expanded.rk-has-selection .rk-map-viewport{bottom:240px}
+}
+@media(max-height:550px) and (orientation:landscape){
+ .rk-topbar{height:48px;min-height:48px;padding:2px 10px}.rk-topbar b{font-size:18px}.rk-topbar small{font-size:10px}.rk-layout{inset:48px 0 55px}
+ .rk-scoreboard{top:108px;right:6px;width:112px;gap:4px}.rk-score{padding:4px;gap:5px}.rk-score>span{width:23px;height:23px}.rk-score small{font-size:9px}.rk-score b{font-size:10px}
+ .rk-map-viewport,.rk-country-list{inset:54px 126px 48px 0}.rk-map-tools{top:5px;left:7px}.rk-map-toolbar{top:5px;right:7px}.rk-map-tip{display:none}
+ .rk-command-panel{bottom:53px;left:7px;width:270px;padding:9px 12px;max-height:calc(100% - 60px)}
+ .rk-continent-bonuses{bottom:4px;left:7px;right:126px}.rk-continent-bonuses button{min-height:40px;padding:5px 8px;font-size:10px}
+ .rk-turn{height:55px;padding:5px 12px}#rkPlayerBadge{width:35px;height:35px}#rkPlayerName{font-size:13px}#rkInstruction{font-size:10px}#rkPhase{font-size:13px}
+ .rk-expanded .rk-command-panel{max-height:calc(100% - 60px)}
+}
+html.big-text #rkControls h3{font-size:19px}html.big-text #rkControls .rk-muted,html.big-text .rk-command-panel label{font-size:14px}
+html.big-text .rk-country-list button{font-size:14px}html.big-text #rkInstruction{font-size:12px}html.big-text .rk-score small{font-size:11px}html.big-text .rk-scoreboard{gap:4px}
+html.big-text #rk .rk-continent-bonuses button{min-height:44px}html.big-text .rk-command-panel{max-height:65%}
+@media(max-width:360px){.rk-topbar b{font-size:16px}.rk-topbar{gap:3px}.rk-topbar .iconbtn{width:40px;min-width:40px}.rk-tabs button{font-size:11px}.rk-names{grid-template-columns:1fr}.rk-setup-grid{gap:8px}}
+/* Keep the world visible; extra map controls open only when requested. */
+.rk-view-menu{position:absolute;top:8px;left:10px;z-index:4;border:1px solid #a8c6d446;background:#0b263df5;border-radius:12px;max-width:calc(100% - 20px)}
+.rk-view-menu>summary{min-height:44px;display:flex;align-items:center;padding:8px 12px;cursor:pointer;font-size:12px;font-weight:700;list-style:none}
+.rk-view-menu>summary::-webkit-details-marker{display:none}
+.rk-view-menu .rk-map-tools{position:static;padding:0 8px 8px;flex-wrap:wrap}
+.rk-view-menu>#rkOwnership{margin:0 8px 8px}
+.rk-dock-collapsed .rk-map-viewport{bottom:56px}
+.rk-dock-collapsed .rk-command-panel{max-height:52px;width:240px;max-width:calc(100% - 24px)}
+@media(max-width:650px) and (orientation:portrait){
+ .rk-view-menu{top:7px;left:8px}.rk-map-toolbar{top:7px;left:auto;right:8px}.rk-map-viewport,.rk-country-list{top:60px;bottom:240px}
+ .rk-has-selection .rk-map-viewport{top:60px}.rk-dock-collapsed .rk-map-viewport{bottom:130px}
+ .rk-map-toolbar #rkWorldView{font-size:11px;padding:6px}.rk-view-menu[open]{right:8px}.rk-view-menu[open]~.rk-map-toolbar{z-index:1}
+ .rk-dock-collapsed .rk-command-panel{width:calc(100% - 16px);max-width:none}
+ .rk-expanded .rk-map-viewport{top:60px;bottom:240px}.rk-expanded.rk-dock-collapsed .rk-map-viewport{bottom:130px}
+}
+@media(max-height:550px) and (orientation:landscape){
+ .rk-layout{inset:0}.rk-map-viewport,.rk-country-list{inset:0 126px 32px 0}.rk-dock-collapsed .rk-map-viewport{bottom:32px}
+ .rk-view-menu{top:54px;left:7px}.rk-map-toolbar{top:auto;bottom:64px;right:7px;flex-direction:column}.rk-map-toolbar #rkWorldView{width:100%}
+ .rk-scoreboard{top:56px}.rk-score{padding:4px}.rk-continent-bonuses{bottom:58px;right:126px}
+ .rk-command-panel{bottom:108px;max-height:calc(100% - 165px)}.rk-dock-collapsed .rk-command-panel{max-height:52px}
+ .rk-expanded .rk-view-menu{top:7px}.rk-expanded .rk-continent-bonuses{bottom:7px;right:126px}.rk-expanded .rk-command-panel{bottom:58px;max-height:calc(100% - 115px)}.rk-expanded .rk-map-toolbar{bottom:58px}
 }
 
-.rk-sound-options{display:flex;flex-wrap:wrap;gap:16px;margin:14px 0}.rk-sound-options label{display:flex;align-items:center;gap:8px;min-height:44px;font-size:14px}.rk-sound-options input{width:20px;height:20px}
+.rk-dock-collapsed .rk-command-title>span{display:none}
+.rk-dock-collapsed .rk-command-title h3{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+@media(max-height:550px) and (orientation:landscape){.rk-scoreboard{max-height:calc(100% - 222px);overflow-y:auto;scrollbar-width:thin}.rk-score{flex-shrink:0}}
 /* RK_CSS_END */
 
 /* APP_SUPPORT_CSS_BEGIN */
@@ -3104,25 +2652,27 @@ html.light .favorite-choices button {
       <b id="rkPlayerName"></b>
       <p id="rkInstruction"></p>
     </div>
-    <span id="rkPhase"></span>
+    <div class="rk-phase-track" aria-label="Beurtfasen"><span id="rkPhase"></span><div id="rkPhaseSteps"><span data-phase="reinforce">1 Versterken</span><span data-phase="attack">2 Aanvallen</span><span data-phase="fortify">3 Verplaatsen</span></div></div>
   </div>
   <div
     id="rkScoreboard"
     class="rk-scoreboard"
+    tabindex="0"
     aria-label="Spelers en aantallen landen"
   ></div>
   <div class="rk-layout">
     <div id="rkBoardPanel" class="rk-board-panel">
-      <div class="rk-map-tools">
+      <details id="rkViewMenu" class="rk-view-menu"><summary aria-label="Kaartweergave instellen">☷ Kaart</summary><div class="rk-map-tools">
         <div class="rk-tabs" aria-label="Weergave van het bord">
           <button id="rkMapTab" aria-pressed="true">Wereldkaart</button>
           <button id="rkListTab" aria-pressed="false">Landenlijst</button>
         </div>
         <button id="rkExpandMap" class="rk-map-button" aria-pressed="false">⛶ Grote kaart</button>
       </div>
+      <button id="rkOwnership" class="rk-map-button" aria-pressed="true" aria-label="Toon gebieden in spelerskleuren">Spelerskleuren</button>
+      </details>
       <div id="rkZoomTools" class="rk-map-toolbar">
         <button id="rkWorldView" class="rk-map-button" aria-label="De volledige wereldkaart tonen">⌖ Wereld</button>
-        <button id="rkOwnership" class="rk-map-button" aria-pressed="false" aria-label="Toon gebieden in spelerskleuren">Spelerskleuren</button>
         <div class="rk-zoom-group">
           <button id="rkZoomOut" aria-label="Kaart uitzoomen">−</button>
           <output id="rkZoomLabel" aria-label="Kaartvergroting">100%</output>
@@ -3136,15 +2686,15 @@ html.light .favorite-choices button {
       <div id="rkCountryList" class="rk-country-list" hidden></div>
       <div class="rk-map-status"><span id="rkMapTurn"></span><span id="rkMapSelection">Kies een eigen gebied op de kaart</span><button id="rkToActions" class="rk-map-button" hidden>Spelacties →</button></div>
       <div id="rkContinentBonuses" class="rk-continent-bonuses" aria-label="Continentbonussen en continentvergroting"></div>
-    </div>
-    <aside class="rk-command-panel" aria-label="Spelacties">
+    <aside class="rk-command-panel" aria-label="Spelacties"><button id="rkDockToggle" class="rk-dock-toggle" aria-label="Spelacties inklappen" aria-expanded="true">⌄</button>
       <div id="rkControls"></div>
-      <div id="rkBattle" class="rk-battle"></div>
       <details class="rk-history">
-        <summary>Beurtverslag</summary>
+        <summary>Dobbelstenen en beurtverslag</summary>
+        <div id="rkBattle" class="rk-battle"></div>
         <ol id="rkHistory"></ol>
       </details>
     </aside>
+    </div>
   </div>
 </section>
 <!-- RK_SCREEN_END -->
@@ -3524,7 +3074,7 @@ html.light .favorite-choices button {
   <div class="sheet">
     <h3>🌍 Wereldmacht · Wereldverovering</h3>
     <p>
-      Verover alle 42 gebieden op de wereldkaart. Speel tegen de computer of geef het toestel door
+      Verover de wereld op een kaart met 42 gebieden. Speel tegen de computer of geef het toestel door
       aan je medespelers. De startlanden en legers worden automatisch verdeeld.
     </p>
     <button
@@ -3565,6 +3115,8 @@ html.light .favorite-choices button {
           <option value="fast">Snel</option>
         </select></label
       >
+      <label>Speldoel<select id="rkGoal"><option value="world">Wereldverovering · alle 42</option><option value="domination">Snelle verovering · 70% (30)</option></select></label>
+      <label>Kaartbonussen<select id="rkCardMode"><option value="progressive">Oplopend · 4, 6, 8…</option><option value="fixed">Vast · 4 / 6 / 8 / 10</option></select></label>
     </div>
     <div class="rk-sound-options"><label><input id="rkSound" type="checkbox" checked> Geluidseffecten</label><label><input id="rkMusic" type="checkbox" checked> Achtergrondmuziek</label></div><div id="rkNames" class="rk-names"></div>
     <p class="rk-note">
@@ -3607,13 +3159,14 @@ html.light .favorite-choices button {
         <b>Kaarten.</b> Na een beurt waarin je een land verovert, krijg je één
         kaart. Ruil drie gelijke of drie verschillende symbolen; jokers
         vervangen elk symbool. Sets leveren 4, 6, 8, 10, 12, 15 en daarna steeds
-        5 extra legers op. Een eigen land op een ingeruilde kaart krijgt 2 extra
+        5 extra legers op. Met vaste bonussen krijg je 4 voor infanterie, 6 voor cavalerie, 8 voor artillerie of 10 voor drie verschillende symbolen. Een eigen land op een ingeruilde kaart krijgt 2 extra
         legers. Bij 5 kaarten moet je aan het begin van je beurt ruilen. Na
         uitschakeling neem je de kaarten over; bij 6 of meer ruil en plaats je
         direct, daarna val je verder aan.
       </li>
     </ol>
     <p>
+      Gebruik de schuif om legers te plaatsen, te verplaatsen of achter te houden bij een blitzaanval. De blitz gebruikt dezelfde dobbelregels als één worp; de getoonde kans geldt voor maximaal drie aanvalsdobbelstenen. Bij snelle verovering win je na het bezetten van 30 gebieden.
       De stippellijnen verbinden continenten. Alaska en Kamtsjatka zijn ook
       buren. Elk spelersnummer blijft zichtbaar, zodat je geen kleuren hoeft te
       onderscheiden.
@@ -4304,6 +3857,8 @@ html.light .favorite-choices button {
         (!("difficulty" in value) ||
           ["easy", "normal", "strong"].includes(value.difficulty)) &&
         (!("tempo" in value) || ["normal", "fast"].includes(value.tempo)) &&
+        (!("goal" in value) || ["world", "domination"].includes(value.goal)) &&
+        (!("cardMode" in value) || ["progressive", "fixed"].includes(value.cardMode)) &&
         (!("sound" in value) || typeof value.sound === "boolean") &&
         (!("music" in value) || typeof value.music === "boolean")
       );
@@ -12056,11 +11611,11 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
         for (let c = b + 1; c < cards.length; c++) {
           const set = [cards[a], cards[b], cards[c]];
           if (validSet(set)) {
-            const score = set.some(
+            const score = tradeValue(s, set) * 10 + (set.some(
               (id) => id < 42 && s.territories[id].owner === player,
             )
-              ? 1
-              : 0;
+              ? 2
+              : 0);
             if (score > bestScore) {
               best = set;
               bestScore = score;
@@ -12090,13 +11645,17 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
     }
     return false;
   }
-  function newGame(players, seed = Date.now()) {
+  function newGame(players, seed = Date.now(), options = {}) {
     assert(
       Array.isArray(players) && players.length >= 2 && players.length <= 6,
       "Kies 2 tot en met 6 spelers.",
     );
     const s = {
       version: 1,
+      rules: {
+        goal: options.goal === "domination" ? "domination" : "world",
+        cards: options.cards === "fixed" ? "fixed" : "progressive",
+      },
       rng: seed >>> 0 || 1,
       players: players.map((p, i) => ({
         name:
@@ -12159,12 +11718,12 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
         `${s.players[previous].name} is uitgeschakeld. De kaarten gaan naar ${s.players[s.current].name}.`,
       );
     }
-    if (owned(s).length === 42) {
+    if (owned(s).length >= victoryTarget(s)) {
       s.winner = s.current;
       s.phase = "won";
       s.pool = 0;
       s.resumeAttack = false;
-      addLog(s, `${s.players[s.current].name} heeft de wereld veroverd!`);
+      addLog(s, `${s.players[s.current].name} wint met ${owned(s).length} gebieden!`);
     } else if (s.players[s.current].cards.length >= 6) {
       s.phase = "reinforce";
       s.resumeAttack = true;
@@ -12252,7 +11811,7 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
           validSet(action.cards),
         "Kies drie gelijke symbolen of drie verschillende; jokers mogen meedoen.",
       );
-      const value = [4, 6, 8, 10, 12, 15][s.sets] || 15 + (s.sets - 5) * 5;
+      const value = tradeValue(s, action.cards);
       s.sets++;
       s.pool += value;
       player.cards = player.cards.filter((c) => !action.cards.includes(c));
@@ -12394,6 +11953,9 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
       s.territories.length !== 42
     )
       return false;
+    if (s.rules !== undefined && (!s.rules || typeof s.rules !== "object" || Array.isArray(s.rules) ||
+      !["world", "domination"].includes(s.rules.goal) ||
+      !["progressive", "fixed"].includes(s.rules.cards))) return false;
     const count = s.players.length;
     if (
       !s.players.every(
@@ -12437,7 +11999,7 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
       s.winner !== null &&
       (!integer(s.winner, 0, count - 1) ||
         s.phase !== "won" ||
-        owned(s, s.winner).length !== 42)
+        owned(s, s.winner).length < victoryTarget(s))
     )
       return false;
     if (s.phase === "won" && s.winner === null) return false;
@@ -12484,6 +12046,39 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
     )
       return false;
     return true;
+  }
+  function victoryTarget(s) { return s.rules?.goal === "domination" ? 30 : 42; }
+  function tradeValue(s, cards) {
+    if (s.rules?.cards !== "fixed") return [4, 6, 8, 10, 12, 15][s.sets] || 15 + (s.sets - 5) * 5;
+    const symbols = cards.map(cardSymbol).filter(n => n !== 3);
+    // A joker takes the most valuable valid place in the selected set.
+    if (new Set(symbols).size > 1) return 10;
+    if (symbols.length < 2) return 10;
+    return [4, 6, 8][symbols[0]];
+  }
+  let rollOutcomes;
+  function battleOdds(attackers, defenders) {
+    if (!integer(attackers, 0, 200) || !integer(defenders, 0, 200)) return null;
+    if (!rollOutcomes) {
+      rollOutcomes = {};
+      for (let a = 1; a <= 3; a++) for (let d = 1; d <= 2; d++) {
+        const counts = new Map(), total = 6 ** (a + d);
+        for (let n = 0; n < total; n++) {
+          let number = n;
+          const dice = Array.from({length:a+d}, () => { const value = number % 6 + 1; number = Math.floor(number/6); return value; });
+          const attack = dice.slice(0,a).sort((x,y)=>y-x), defend = dice.slice(a).sort((x,y)=>y-x);
+          let lost = 0;
+          for (let k=0;k<Math.min(a,d);k++) if (attack[k] <= defend[k]) lost++;
+          counts.set(lost, (counts.get(lost)||0)+1);
+        }
+        rollOutcomes[`${a},${d}`] = [...counts].map(([lost,count])=>[lost,Math.min(a,d)-lost,count/total]);
+      }
+    }
+    const table = Array.from({length:attackers+1},()=>new Float64Array(defenders+1));
+    for (let a=0;a<=attackers;a++) table[a][0]=1;
+    for (let a=1;a<=attackers;a++) for (let d=1;d<=defenders;d++)
+      for (const [al,dl,p] of rollOutcomes[`${Math.min(3,a)},${Math.min(2,d)}`]) table[a][d] += p*table[a-al][d-dl];
+    return table[attackers][defenders];
   }
   function frontier(s, player = s.current) {
     return owned(s, player).filter((i) =>
@@ -12614,6 +12209,9 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
     findSet,
     cardSymbol,
     chooseAction,
+    victoryTarget,
+    tradeValue,
+    battleOdds,
   };
 });
 
@@ -12627,7 +12225,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
   const names = [ ["na", 275, 68], ["sa", 437, 712], ["eu", 736, 93], ["af", 712, 620], ["as", 1163, 64], ["au", 1190, 665] ];
   function create({ engine: E, data: M, onSelect, onActions }) {
     const viewport = $("rkMapViewport"), svg = $("rkMap"), surface = $("rkMapSurface");
-    let zoom = 1, scale = 1, expanded = false, ownership = false, state = null, selection = {}, frame = 0, lastWidth = 0, lastHeight = 0;
+    let zoom = 1, scale = 1, expanded = false, ownership = true, state = null, selection = {}, frame = 0, lastWidth = 0, lastHeight = 0;
     const pointers = new Map();
     let gesture = null, moved = false;
     const regions = M.regions.map((g, i) => { if (g.id !== E.territories[i].id) throw new Error("Kaartindeling komt niet overeen met de spelregels"); return g; });
@@ -12641,14 +12239,14 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     }).join("");
     svg.setAttribute("viewBox", `0 0 ${M.width} ${M.height}`);
     svg.setAttribute("data-geographic", "natural-earth");
-    svg.innerHTML = `<defs><linearGradient id="rkOcean" x2="0" y2="1"><stop stop-color="#dbe8e6"/><stop offset="1" stop-color="#b7d1d6"/></linearGradient><pattern id="rkPaper" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="1" cy="2" r=".55" fill="#50645b" opacity=".08"/></pattern><marker id="rkAttackArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0L10,5L0,10Z" fill="#862f23"/></marker></defs>
+    svg.innerHTML = `<defs><linearGradient id="rkOcean" x2="0" y2="1"><stop stop-color="#123a52"/><stop offset=".5" stop-color="#247c98"/><stop offset="1" stop-color="#164c64"/></linearGradient><pattern id="rkPaper" width="9" height="9" patternUnits="userSpaceOnUse"><path d="M0 9L9 0" stroke="#9dd6e6" stroke-width=".4" opacity=".06"/></pattern>${E.COLORS.map((color,i)=>`<linearGradient id="rkLand${i}" x2=".2" y2="1"><stop stop-color="${mix(color,.38)}"/><stop offset="1" stop-color="${mix(color,.05)}"/></linearGradient>`).join("")}<marker id="rkAttackArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0L10,5L0,10Z" fill="#ffe3a0"/></marker></defs>
       <rect width="${M.width}" height="${M.height}" rx="12" fill="url(#rkOcean)"/><rect width="${M.width}" height="${M.height}" fill="url(#rkPaper)"/>
       <path d="${M.graticule}" class="rk-graticule"/><path d="${M.neutral}" class="rk-neutral-land"/>
       <g class="rk-ocean-labels"><text x="130" y="430">GROTE OCEAAN</text><text x="585" y="405">ATLANTISCHE</text><text x="585" y="426">OCEAAN</text><text x="1020" y="550">INDISCHE OCEAAN</text></g>
-      <g class="rk-land-regions">${regions.map((g, i) => `<g class="rk-country" data-country="${i}" role="button" tabindex="0"><title>${E.territories[i].name}</title><path class="rk-country-shape" d="${g.path}" fill="${palette[E.territories[i].continent]}" fill-rule="evenodd"/></g>`).join("")}</g>
+      <g class="rk-land-shadow" transform="translate(2 5)">${regions.map(g=>`<path d="${g.path}" fill-rule="evenodd"/>`).join("")}</g><g class="rk-land-regions">${regions.map((g, i) => `<g class="rk-country" data-country="${i}" role="button" tabindex="0"><title>${E.territories[i].name}</title><path class="rk-country-shape" d="${g.path}" fill="${palette[E.territories[i].continent]}" fill-rule="evenodd"/></g>`).join("")}</g>
       <g class="rk-sea-routes">${routeMarkup}</g><path id="rkBattleRoute" class="rk-battle-route" marker-end="url(#rkAttackArrow)"/>
       <g class="rk-region-labels">${regions.map((g, i) => { const [x, y] = g.anchor; const words = g.label.includes("-") ? g.label.split("-") : [g.label]; const [lx,ly] = ({ britain:[x+20,y-43], northeu:[x+34,y-31], westeu:[x-48,y-15], southeu:[x+45,y+7] })[g.id] || [x,y-(words.length>1?38:25)]; return `<text data-label="${i}" x="${lx}" y="${ly}" text-anchor="middle">${words.map((w, n) => `<tspan x="${lx}" dy="${n ? 12 : 0}">${esc(w)}</tspan>`).join("")}</text>`; }).join("")}</g>
-      <g class="rk-army-markers">${regions.map((g, i) => `<g data-marker="${i}" data-country-marker="${i}" transform="translate(${g.anchor.join(" ")})"><circle class="rk-marker-halo" r="19"/><circle class="rk-marker-disc" r="15"/><text class="rk-armies" y="5" text-anchor="middle"></text><text class="rk-owner" x="13" y="18" text-anchor="middle"></text></g>`).join("")}</g>
+      <g class="rk-army-markers">${regions.map((g, i) => `<g data-marker="${i}" data-country-marker="${i}" transform="translate(${g.anchor.join(" ")})"><circle class="rk-marker-halo" r="20"/><ellipse class="rk-marker-base" cy="4" rx="16" ry="15"/><circle class="rk-marker-disc" r="15"/><text class="rk-armies" y="5" text-anchor="middle"></text><text class="rk-owner" x="13" y="18" text-anchor="middle"></text></g>`).join("")}</g>
       <g class="rk-continent-labels">${names.map(([id, x, y]) => { const c = E.continents.find(c => c.id === id); return `<text x="${x}" y="${y}" text-anchor="middle">${esc(c.name.toUpperCase())} · +${c.bonus}</text>`; }).join("")}</g>
       <g class="rk-compass" transform="translate(118 664)"><circle r="30"/><path d="M0,-37L8,0L0,37L-8,0ZM-37,0L0,8L37,0L0,-8Z"/><text y="-44" text-anchor="middle">N</text></g><text class="rk-map-credit" x="1421" y="742" text-anchor="end">Kustlijnen: Natural Earth · speelgebieden: Wereldmacht</text>`;
     const shapes = [...svg.querySelectorAll(".rk-country")], markers = [...svg.querySelectorAll("[data-marker]")];
@@ -12696,7 +12294,8 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       $("rkExpandMap").setAttribute("aria-pressed", String(expanded));
       $("rkExpandMap").textContent = expanded ? "↙ Terug" : "⛶ Grote kaart";
       // Keep keyboard/screen-reader navigation in the visible board while it fills the screen.
-      $("rk").querySelectorAll(".rk-topbar,.rk-turn,.rk-scoreboard,.rk-command-panel").forEach(el => { el.inert = expanded; });
+      $("rk").querySelectorAll(".rk-topbar,.rk-turn,.rk-scoreboard").forEach(el => { el.inert = expanded; });
+      $("rkViewMenu").open = false;
       fit();
     }
     function update(next, choice) {
@@ -12704,13 +12303,13 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       const { selected, target, handoff } = choice;
       shapes.forEach((node, i) => {
         const t = state.territories[i], p = state.players[t.owner];
-        node.querySelector("path").setAttribute("fill", ownership ? mix(p.color, .50) : palette[E.territories[i].continent]);
+        node.querySelector("path").setAttribute("fill", ownership ? `url(#rkLand${E.COLORS.indexOf(p.color)})` : palette[E.territories[i].continent]);
         node.setAttribute("aria-label", `${E.territories[i].name}, ${p.name}, ${t.armies} legers`);
         node.setAttribute("aria-pressed", String(i === selected || i === target));
         node.classList.toggle("selected", i === selected); node.classList.toggle("target", i === target);
         node.classList.toggle("neighbor", selected !== null && E.territories[selected].neighbors.includes(i));
         const marker = markers[i];
-        marker.querySelector(".rk-marker-disc").setAttribute("fill", p.color);
+        marker.querySelector(".rk-marker-disc").setAttribute("fill", mix(p.color,.18));
         marker.querySelector(".rk-armies").textContent = t.armies;
         marker.querySelector(".rk-armies").style.fontSize = t.armies > 999 ? "11px" : t.armies > 99 ? "14px" : "18px";
         marker.querySelector(".rk-owner").textContent = t.owner + 1;
@@ -12727,11 +12326,12 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       $("rkToActions").hidden = selected === null || p.ai || handoff;
       $("rkToActions").textContent = state.pending ? "Legers bezetten →" : state.phase === "reinforce" ? "Legers plaatsen →" : state.phase === "attack" ? "Aanvallen →" : "Spelacties →";
     }
+    $("rkOwnership").setAttribute("aria-pressed", "true");
     $("rkZoomIn").addEventListener("click", () => zoomAt(zoom*1.5));
     $("rkZoomOut").addEventListener("click", () => zoomAt(zoom/1.5));
     $("rkWorldView").addEventListener("click", fit);
     $("rkExpandMap").addEventListener("click", () => expand());
-    $("rkOwnership").addEventListener("click", () => { ownership = !ownership; $("rkOwnership").setAttribute("aria-pressed", String(ownership)); if (state) update(state, selection); });
+    $("rkOwnership").addEventListener("click", () => { ownership = !ownership; $("rkViewMenu").open = false; $("rkOwnership").setAttribute("aria-pressed", String(ownership)); if (state) update(state, selection); });
     $("rkToActions").addEventListener("click", () => { if (expanded) expand(false); onActions(); });
     viewport.addEventListener("wheel", event => {
       if (!event.ctrlKey) return;
@@ -12784,7 +12384,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       if (event.detail === 0) { const hit = event.target.closest("[data-country],[data-country-marker]"); if (hit) onSelect(Number(hit.dataset.country ?? hit.dataset.countryMarker)); }
     });
     $("rk").addEventListener("keydown", event => {
-      if (event.key === "Escape" && expanded && !document.querySelector(".modal.show")) { event.preventDefault(); event.stopPropagation(); expand(false); $("rkExpandMap").focus(); }
+      if (event.key === "Escape" && expanded && !document.querySelector(".modal.show")) { event.preventDefault(); event.stopPropagation(); expand(false); $("rkViewMenu").querySelector("summary").focus(); }
       if (event.key === "Tab" && expanded && !document.querySelector(".modal.show")) {
         const items = [...$("rkBoardPanel").querySelectorAll('button:not(:disabled),[tabindex="0"]')].filter(el => !el.closest('[hidden],[inert]') && el.getClientRects().length);
         if ((event.shiftKey && document.activeElement === items[0]) || (!event.shiftKey && document.activeElement === items.at(-1))) { event.preventDefault(); (event.shiftKey ? items.at(-1) : items[0]).focus(); }
@@ -12830,11 +12430,12 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       battleTimer = null,
       autoBattle = null,
       lastTurn = 0,
-      diceChoice = null;
+      diceChoice = null,
+      commitChoice = null;
     const storedInvalid = state !== null && !E.validState(state);
     if (storedInvalid) state = null;
     let settings = Object.assign(
-      { players: 3, humans: 1, difficulty: "normal", tempo: "normal", sound: true, music: true },
+      { players: 3, humans: 1, difficulty: "normal", tempo: "normal", sound: true, music: true, goal: "world", cardMode: "progressive" },
       api.storage.get("rk.settings", {}),
     );
     api.music?.(() => settings.music !== false);
@@ -12857,7 +12458,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     }
     function apply(action) {
       try {
-        const previousTurn = state.turn;
+        const previousTurn = state.turn, previousCapture = state.pending;
         state = E.apply(state, action);
         if (state.winner !== null && !state.statsRecorded) {
           const stats = api.storage.get("rk.stats", { played: 0, won: 0 });
@@ -12876,7 +12477,15 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
           target = null;
           cards = [];
           diceChoice = null;
+          commitChoice = null;
           checkHandoff();
+        }
+        if (action.type === "occupy" && previousCapture) {
+          selected = previousCapture.to; target = null; diceChoice = null; commitChoice = null;
+        }
+        if (state.pending || state.winner !== null) {
+          $("rk").classList.remove("rk-dock-collapsed");
+          $("rkDockToggle").setAttribute("aria-expanded", "true");
         }
         if (state.pending) {
           selected = state.pending.from;
@@ -12926,6 +12535,9 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     }
     function choose(id) {
       if (!state || blocked() || state.pending) return;
+      $("rk").classList.remove("rk-dock-collapsed");
+      $("rkDockToggle").setAttribute("aria-expanded", "true");
+      $("rkViewMenu").open = false;
       const t = state.territories[id];
       if (
         state.phase === "attack" &&
@@ -12954,6 +12566,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
         selected = id;
         target = null;
         diceChoice = null;
+        commitChoice = null;
       }
       stop();
       render();
@@ -12961,6 +12574,8 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     const board = window.ReneWereldBoard.create({
       engine: E, data: window.ReneWereldMap, onSelect: choose,
       onActions: () => {
+        $("rk").classList.remove("rk-dock-collapsed");
+        $("rkDockToggle").setAttribute("aria-expanded", "true");
         $("rkControls").scrollIntoView({ block: "start", behavior: "auto" });
         $("rkControls").querySelector("button:not(:disabled),select,input")?.focus({ preventScroll: true });
       },
@@ -13009,7 +12624,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       );
     }
     function amount(max, value = 1, min = 1) {
-      return `<label>Aantal legers<div class="rk-amount"><input id="rkAmount" type="number" inputmode="numeric" min="${min}" max="${max}" value="${value}"><button data-action="all" data-max="${max}">Alle ${max}</button></div></label>`;
+      return `<div class="rk-troops"><label for="rkAmount">Aantal legers</label><div class="rk-amount"><button data-action="less" aria-label="Eén leger minder">−</button><input id="rkAmount" aria-label="Aantal legers" type="number" inputmode="numeric" min="${min}" max="${max}" value="${value}"><button data-action="more" aria-label="Eén leger meer">+</button><button data-action="all" data-max="${max}">Max</button></div><input id="rkAmountRange" aria-label="Aantal legers met schuifregelaar" type="range" min="${min}" max="${max}" value="${value}"></div>`;
     }
     function button(label, action, disabled = false, secondary = false) {
       return `<button id="rkAction${action}" class="rk-action ${secondary ? "rk-secondary" : ""}" data-action="${action}" ${disabled ? "disabled" : ""}>${label}</button>`;
@@ -13025,75 +12640,60 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
         selection = selected !== null ? state.territories[selected] : null;
       const own = selection && selection.owner === state.current,
         canAct = !blocked();
+      const handOpen = $("rkControls").querySelector(".rk-card-hand")?.open,
+        accessibleOpen = $("rkControls").querySelector(".rk-accessible")?.open;
+      const mustTrade = !handoff && isHuman() && state.phase === "reinforce" && state.players[state.current].cards.length >= (state.resumeAttack ? 6 : 5);
+      if (state.pending || state.winner !== null || mustTrade) {
+        $("rk").classList.remove("rk-dock-collapsed");
+        $("rkDockToggle").setAttribute("aria-expanded", "true");
+      }
       let html = "";
       if (state.phase === "won")
-        html = `<h3>🏆 ${esc(state.players[state.winner].name)} wint!</h3><p class="rk-muted">Alle 42 landen zijn veroverd in ${state.round} rondes.</p>${button("Nieuw spel", "new")}${button("Naar menu", "menu", false, true)}`;
+        html = `<h3>🏆 ${esc(state.players[state.winner].name)} wint!</h3><p class="rk-muted">${E.owned(state, state.winner).length} gebieden veroverd in ${state.round} rondes.</p>${button("Nieuw spel", "new")}${button("Naar menu", "menu", false, true)}`;
       else if (handoff)
         html = `<h3>Geef het toestel door</h3><p class="rk-muted">De kaarten en acties van ${esc(state.players[state.current].name)} blijven verborgen.</p>${button("Mijn beurt bekijken", "handoff")}`;
       else if (!isHuman())
         html = `<h3>${esc(state.players[state.current].name)} speelt</h3><p class="rk-muted">De computer ${state.phase === "reinforce" ? "plaatst versterkingen" : state.phase === "attack" ? "bekijkt de grenzen" : "rondt de beurt af"}. Je kunt op elk moment pauzeren of naar het menu gaan.</p>${button("Pauze", "pause", false, true)}`;
       else if (state.pending)
-        html = `<h3>Land veroverd!</h3><p class="rk-muted">${E.territories[state.pending.to].name} is van jou. Er moeten minstens ${state.pending.min} legers heen; één leger blijft achter in ${E.territories[state.pending.from].name}.</p>${amount(state.pending.max, state.pending.min, state.pending.min)}${button("Bezetting bevestigen", "occupy")}`;
+        html = `<h3>Land veroverd!</h3><p class="rk-muted">${E.territories[state.pending.to].name} is van jou. Er moeten minstens ${state.pending.min} legers heen; één leger blijft achter in ${E.territories[state.pending.from].name}.</p>${amount(state.pending.max, state.pending.max, state.pending.min)}${button("Bezetting bevestigen", "occupy")}`;
       else {
-        html = `<h3>${selection ? E.territories[selected].name : "Kies een eigen land"}</h3><p class="rk-muted">${selection ? `${esc(state.players[selection.owner].name)} · ${selection.armies} legers` : "Tik op de kaart of kies hieronder een land."}</p><label>${state.phase === "reinforce" ? "Land voor versterkingen" : "Vanuit"}<select id="rkFrom">${options(E.owned(state), own ? selected : null)}</select></label>`;
+        const hand = state.players[state.current].cards,
+          required = hand.length >= (state.resumeAttack ? 6 : 5);
+        html = `<div class="rk-command-title"><h3>${selection ? E.territories[selected].name : phases[state.phase]}</h3><span>${selection ? `${selection.armies} legers` : `${state.pool || E.owned(state).length} ${state.pool ? "versterkingen" : "gebieden"}`}</span></div>`;
+        if (!own) html += `<p class="rk-muted">${selection ? `${esc(state.players[selection.owner].name)} bezit dit gebied. Kies eerst een eigen land.` : state.phase === "reinforce" ? "Tik op een eigen gebied om legers te plaatsen." : state.phase === "attack" ? "Tik op jouw leger, daarna op een vijandelijke buur." : "Tik op twee verbonden eigen gebieden."}</p>`;
+        let accessible = `<label>Vanuit<select id="rkFrom">${options(E.owned(state), own ? selected : null)}</select></label>`;
         if (state.phase === "reinforce") {
-          html += `<p class="rk-muted"><b>${state.pool}</b> versterkingen over${E.bonus(state).length ? " · inclusief continentbonus" : ""}.</p>`;
-          if (state.pool)
-            html +=
-              amount(state.pool, Math.min(state.pool, 3)) +
-              button("Legers plaatsen", "reinforce", !own);
-          const hand = state.players[state.current].cards,
-            required = hand.length >= (state.resumeAttack ? 6 : 5);
+          if (state.pool && own) html += amount(state.pool, state.pool) + button(`Plaats legers · ${state.pool} beschikbaar`, "reinforce");
           if (hand.length) {
             if (!cards.length) cards = E.findSet(state) || [];
-            html += `<h4>Kaarten (${hand.length})${required ? " · ruilen verplicht" : ""}</h4><div class="rk-cards">${hand.map((id) => `<button id="rkCard${id}" data-card="${id}" aria-pressed="${cards.includes(id)}" aria-label="${id < 42 ? E.territories[id].name : "Joker"}, ${["infanterie", "cavalerie", "artillerie", "joker"][E.cardSymbol(id)]}${cards.includes(id) ? ", geselecteerd" : ""}">${symbols[E.cardSymbol(id)]}<small>${id < 42 ? E.territories[id].name : "Joker"}</small></button>`).join("")}</div>${button("Geselecteerde set ruilen", "trade", !E.validSet(cards))}`;
+            html += `<details class="rk-card-hand" ${required || handOpen ? "open" : ""}><summary>▱ ${hand.length} kaarten${required ? " · ruilen verplicht" : " · bekijk en ruil"}</summary><div class="rk-cards">${hand.map(id => `<button id="rkCard${id}" data-card="${id}" aria-pressed="${cards.includes(id)}" aria-label="${id < 42 ? E.territories[id].name : "Joker"}, ${["infanterie", "cavalerie", "artillerie", "joker"][E.cardSymbol(id)]}">${symbols[E.cardSymbol(id)]}<small>${id < 42 ? E.territories[id].name : "Joker"}</small></button>`).join("")}</div>${button(`Ruil set · +${E.tradeValue(state, cards)} legers`, "trade", !E.validSet(cards))}</details>`;
           }
-          html += button(
-            state.resumeAttack ? "Verder aanvallen" : "Naar aanvallen",
-            "advance",
-            state.pool > 0 || required,
-            true,
-          );
+          html += button(state.resumeAttack ? "Verder aanvallen →" : "Aanvallen →", "advance", state.pool > 0 || required, true);
         } else if (state.phase === "attack") {
-          const enemies = own
-            ? E.territories[selected].neighbors.filter(
-                (i) => state.territories[i].owner !== state.current,
-              )
-            : [];
+          const enemies = own ? E.territories[selected].neighbors.filter(i => state.territories[i].owner !== state.current) : [];
           if (target !== null && !enemies.includes(target)) target = null;
-          html += `<label>Aangrenzend vijandelijk land<select id="rkTarget">${options(enemies, target)}</select></label><label>Dobbelstenen<select id="rkDice">${[
-            1, 2, 3,
-          ]
-            .filter((n) => own && n < selection.armies)
-            .map(
-              (n) =>
-                `<option value="${n}" ${n === Math.min(diceChoice || 3, selection.armies - 1) ? "selected" : ""}>${n} ${n === 1 ? "dobbelsteen" : "dobbelstenen"}</option>`,
-            )
-            .join("")}</select></label>`;
+          accessible += `<label>Vijandelijk buurland<select id="rkTarget">${options(enemies, target)}</select></label><label>Dobbelstenen<select id="rkDice">${[1,2,3].filter(n=>own && n<selection.armies).map(n=>`<option value="${n}" ${n===Math.min(diceChoice||3,selection.armies-1)?"selected":""}>${n} ${n===1?"dobbelsteen":"dobbelstenen"}</option>`).join("")}</select></label>`;
           const invalid = !own || selection.armies < 2 || target === null;
-          html += `<div class="rk-buttons">${button("Eén worp", "attack", invalid)}${button(autoBattle ? "Stop" : "Doorvechten", autoBattle ? "stop" : "blitz", invalid, true)}</div>${button("Aanvallen afronden", "advance", false, true)}`;
+          if (own && target !== null) {
+            const maximum = Math.max(1, selection.armies-1), value = Math.min(commitChoice || maximum, maximum);
+            html += `<div class="rk-matchup"><span>→ ${E.territories[target].name}</span><b>${state.territories[target].armies} legers</b></div><label class="rk-commit-label" for="rkCommitRange">Aanvalslegers <output id="rkCommitCount">${value}</output></label><input id="rkCommitRange" type="range" min="1" max="${maximum}" value="${value}" ${invalid ? "disabled" : ""}><p id="rkOdds" class="rk-odds"></p>`;
+          } else if (own) html += `<p class="rk-muted">${selection.armies > 1 ? "Tik op een vijandelijk buurland om aan te vallen." : "Er blijft altijd één leger achter. Dit gebied kan niet aanvallen."}</p>`;
+          html += `<div class="rk-buttons">${button(autoBattle ? "■ Stop blitz" : "⚡ Blitz", autoBattle ? "stop" : "blitz", invalid)}${button("⚄ Eén worp", "attack", invalid, true)}</div>${button("Verplaatsen →", "advance", false, true)}`;
         } else if (state.phase === "fortify") {
           if (!state.fortified) {
-            const targets = own
-              ? E.owned(state).filter(
-                  (i) => i !== selected && E.connected(state, selected, i),
-                )
-              : [];
+            const targets = own ? E.owned(state).filter(i=>i!==selected && E.connected(state,selected,i)) : [];
             if (target !== null && !targets.includes(target)) target = null;
-            html += `<label>Naar verbonden eigen land<select id="rkTarget">${options(targets, target)}</select></label>`;
-            if (own && selection.armies > 1)
-              html += amount(selection.armies - 1, 1);
-            html += button(
-              "Legers verplaatsen",
-              "fortify",
-              !own || selection.armies < 2 || target === null,
-            );
-          } else
-            html += '<p class="rk-muted">Je hebt je verplaatsing gedaan.</p>';
-          html += button("Beurt beëindigen", "endTurn");
+            accessible += `<label>Naar verbonden eigen land<select id="rkTarget">${options(targets,target)}</select></label>`;
+            if (own && target !== null && selection.armies > 1) html += `<div class="rk-matchup">→ ${E.territories[target].name}</div>${amount(selection.armies-1,selection.armies-1)}${button("Legers verplaatsen", "fortify")}`;
+            else if (own) html += '<p class="rk-muted">Kies een verbonden eigen gebied als bestemming.</p>';
+          } else html += '<p class="rk-muted">Je legers zijn verplaatst.</p>';
+          html += button("Beurt beëindigen ✓", "endTurn");
         }
+        html += `<details class="rk-accessible" ${accessibleOpen ? "open" : ""}><summary>Kiezen via landenlijst</summary>${accessible}</details>`;
       }
       $("rkControls").innerHTML = html;
+      updateOdds();
+      $("rk").classList.toggle("rk-has-selection", selected !== null && isHuman() && !handoff);
       if (focused && $(focused) && $("rkControls").contains($(focused)))
         $(focused).focus({ preventScroll: true });
       else if (wasInControls)
@@ -13110,14 +12710,15 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       if (!state) return;
       const p = state.players[state.current];
       $("rkRound").textContent =
-        `Ronde ${state.round} · ${state.players.length} spelers`;
+        `Ronde ${state.round} · ${state.players.length} spelers · ${E.victoryTarget(state) === 30 ? "70% veroveren" : "Wereldverovering"}`;
       $("rkPlayerName").textContent =
         state.phase === "won"
           ? `${state.players[state.winner].name} heeft gewonnen`
           : p.name;
       $("rkPlayerBadge").style.background = p.color;
       $("rkPlayerBadge").textContent = state.current + 1;
-      $("rkPhase").textContent = phases[state.phase];
+      $("rkPhase").textContent = state.pending ? "Bezetten" : phases[state.phase];
+      $("rkPhaseSteps").querySelectorAll("[data-phase]").forEach(el => { el.classList.toggle("active", el.dataset.phase === state.phase); el.setAttribute("aria-current", el.dataset.phase === state.phase ? "step" : "false"); });
       $("rkInstruction").textContent = state.pending
         ? "Kies hoeveel legers het veroverde land bezetten."
         : state.phase === "reinforce"
@@ -13127,12 +12728,19 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
             : state.phase === "fortify"
               ? "Verplaats één keer via eigen landen, of beëindig je beurt."
               : "De wereld is veroverd.";
+      const scoreScroll = $("rkScoreboard").scrollTop, scoreLeft = $("rkScoreboard").scrollLeft;
       $("rkScoreboard").innerHTML = state.players
         .map(
           (p, i) =>
-            `<div class="rk-score ${i === state.current ? "active" : ""} ${E.owned(state, i).length ? "" : "out"}"><span style="background:${p.color}">${i + 1}</span><div><b>${esc(p.name)}${p.ai ? " 🤖" : ""}</b><small>${E.owned(state, i).length} landen · ${p.cards.length} kaarten${E.owned(state, i).length ? "" : " · uitgeschakeld"}</small></div></div>`,
+            `<div style="--player:${p.color}" class="rk-score ${i === state.current ? "active" : ""} ${E.owned(state, i).length ? "" : "out"}"><span style="background:${p.color}">${i + 1}</span><div><b>${esc(p.name)}${p.ai ? " · CPU" : ""}</b><small>${state.territories.filter(t=>t.owner===i).reduce((n,t)=>n+t.armies,0)} legers · ${E.owned(state, i).length}/${E.victoryTarget(state)} gebieden${E.owned(state, i).length ? "" : " · uitgeschakeld"}</small></div></div>`,
         )
         .join("");
+      const rail = $("rkScoreboard"), currentScore = rail.querySelector(".rk-score.active");
+      rail.scrollTop = scoreScroll; rail.scrollLeft = scoreLeft;
+      if (currentScore && state.turn !== lastTurn) {
+        if (rail.scrollHeight > rail.clientHeight) rail.scrollTop = Math.max(0, currentScore.offsetTop + currentScore.offsetHeight - rail.clientHeight);
+        if (rail.scrollWidth > rail.clientWidth) rail.scrollLeft = Math.max(0, currentScore.offsetLeft + currentScore.offsetWidth - rail.clientWidth);
+      }
       updateMap();
       renderControls();
       const b = state.lastBattle;
@@ -13150,7 +12758,8 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       }
     }
     function startBlitz() {
-      autoBattle = { from: selected, to: target, turn: state.turn };
+      const committed = Number($("rkCommitRange")?.value) || state.territories[selected].armies-1;
+      autoBattle = { from: selected, to: target, turn: state.turn, reserve: state.territories[selected].armies-1-committed };
       const tick = () => {
         battleTimer = null;
         if (
@@ -13161,7 +12770,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
           state.turn !== autoBattle.turn ||
           state.phase !== "attack" ||
           state.pending ||
-          state.territories[autoBattle.from].armies < 2 ||
+          state.territories[autoBattle.from].armies <= autoBattle.reserve + 1 ||
           state.territories[autoBattle.to].owner === state.current
         ) {
           stop();
@@ -13175,13 +12784,13 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
             from: pair.from,
             to: pair.to,
             dice: Math.min(
-              diceChoice || 3,
-              state.territories[pair.from].armies - 1,
+              3,
+              state.territories[pair.from].armies - 1 - pair.reserve,
             ),
           }) &&
           autoBattle
         )
-          battleTimer = setTimeout(tick, 220);
+          battleTimer = setTimeout(tick, settings.tempo === "fast" ? 45 : 90);
       };
       tick();
     }
@@ -13226,6 +12835,8 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       setupNames();
       $("rkDifficulty").value = settings.difficulty;
       $("rkTempo").value = settings.tempo;
+      $("rkGoal").value = settings.goal;
+      $("rkCardMode").value = settings.cardMode;
       $("rkSound").checked = settings.sound !== false;
       $("rkMusic").checked = settings.music !== false;
       api.modal("rkStartModal");
@@ -13235,6 +12846,8 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       api.enter();
       if (!api.isActive()) return;
       active = true;
+      $("rk").classList.add("rk-dock-collapsed");
+      $("rkDockToggle").setAttribute("aria-expanded", "false");
       board.fit();
       if (state) {
         render();
@@ -13250,6 +12863,11 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
           );
       }
     }
+    $("rkDockToggle").addEventListener("click", () => {
+      const collapsed = $("rk").classList.toggle("rk-dock-collapsed");
+      $("rkDockToggle").setAttribute("aria-expanded", String(!collapsed));
+      $("rkDockToggle").setAttribute("aria-label", collapsed ? "Spelacties uitklappen" : "Spelacties inklappen");
+    });
     $("rkBack").addEventListener("click", leave);
     $("rkStartMenu").addEventListener("click", leave);
     $("rkPauseMenu").addEventListener("click", leave);
@@ -13298,6 +12916,8 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
         humans: Number($("rkHumanCount").value),
         difficulty: $("rkDifficulty").value,
         tempo: $("rkTempo").value,
+        goal: $("rkGoal").value,
+        cardMode: $("rkCardMode").value,
         sound: $("rkSound").checked,
         music: $("rkMusic").checked,
       };
@@ -13308,12 +12928,15 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
             : `Computer ${i - settings.humans + 1}`,
         ai: i >= settings.humans,
       }));
-      state = E.newGame(players);
+      state = E.newGame(players, Date.now(), {goal:settings.goal,cards:settings.cardMode});
       selected = null;
       target = null;
       cards = [];
       lastTurn = 0;
       handoff = false;
+      commitChoice = null;
+      $("rk").classList.add("rk-dock-collapsed");
+      $("rkDockToggle").setAttribute("aria-expanded", "false");
       api.storage.set("rk.settings", settings);
       const stats = api.storage.get("rk.stats", { played: 0, won: 0 });
       stats.played = (stats.played || 0) + 1;
@@ -13332,6 +12955,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     }
     $("rkBeginTurn").addEventListener("click", beginTurn);
     function changeView(list) {
+      $("rkViewMenu").open = false;
       $("rkCountryList").hidden = !list;
       $("rkMapViewport").hidden = list;
       $("rkZoomTools").hidden = list;
@@ -13364,8 +12988,10 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       if (!b || b.disabled) return;
       const type = b.dataset.action,
         amount = Number($("rkAmount")?.value);
-      if (type === "all") {
-        $("rkAmount").value = b.dataset.max;
+      if (["all", "less", "more"].includes(type)) {
+        const input = $("rkAmount");
+        input.value = type === "all" ? b.dataset.max : Math.max(Number(input.min), Math.min(Number(input.max), Number(input.value)+(type === "more" ? 1 : -1)));
+        $("rkAmountRange").value = input.value;
         return;
       }
       if (type === "new") {
@@ -13414,8 +13040,20 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
         apply({ type, cards: selection });
       } else apply({ type });
     });
+    function updateOdds() {
+      if (!$("rkOdds") || !state || target === null) return;
+      const value = Number($("rkCommitRange").value), odds = E.battleOdds(value, state.territories[target].armies);
+      $("rkCommitCount").textContent = value;
+      $("rkOdds").textContent = odds === null ? "Eerlijke dobbelstenen · één leger blijft achter" : `${odds > .99 ? ">99" : odds < .01 ? "<1" : Math.round(odds*100)}% kans op verovering · eerlijke dobbelstenen`;
+    }
+    $("rk").addEventListener("input", event => {
+      if (event.target.id === "rkAmountRange") $("rkAmount").value = event.target.value;
+      if (event.target.id === "rkAmount") $("rkAmountRange").value = event.target.value;
+      if (event.target.id === "rkCommitRange") { commitChoice = Number(event.target.value); updateOdds(); }
+    });
     $("rk").addEventListener("change", (event) => {
       if (event.target.id === "rkFrom") {
+        commitChoice = null;
         selected =
           event.target.value === "" ? null : Number(event.target.value);
         target = null;

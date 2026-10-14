@@ -1,0 +1,1 @@
+Wereldmacht heeft nu een groot speelbord in spelerskleuren, verhoogde legerfiches en directe bediening met troepenschuiven. Blitzaanvallen tonen de veroveringskans en kunnen legers achterhouden; je kunt ook kiezen voor snelle verovering of vaste kaartbonussen. Je bestaande spel blijft beschikbaar.

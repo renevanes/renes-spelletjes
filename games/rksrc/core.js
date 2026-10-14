@@ -229,11 +229,11 @@
         for (let c = b + 1; c < cards.length; c++) {
           const set = [cards[a], cards[b], cards[c]];
           if (validSet(set)) {
-            const score = set.some(
+            const score = tradeValue(s, set) * 10 + (set.some(
               (id) => id < 42 && s.territories[id].owner === player,
             )
-              ? 1
-              : 0;
+              ? 2
+              : 0);
             if (score > bestScore) {
               best = set;
               bestScore = score;
@@ -263,13 +263,17 @@
     }
     return false;
   }
-  function newGame(players, seed = Date.now()) {
+  function newGame(players, seed = Date.now(), options = {}) {
     assert(
       Array.isArray(players) && players.length >= 2 && players.length <= 6,
       "Kies 2 tot en met 6 spelers.",
     );
     const s = {
       version: 1,
+      rules: {
+        goal: options.goal === "domination" ? "domination" : "world",
+        cards: options.cards === "fixed" ? "fixed" : "progressive",
+      },
       rng: seed >>> 0 || 1,
       players: players.map((p, i) => ({
         name:
@@ -332,12 +336,12 @@
         `${s.players[previous].name} is uitgeschakeld. De kaarten gaan naar ${s.players[s.current].name}.`,
       );
     }
-    if (owned(s).length === 42) {
+    if (owned(s).length >= victoryTarget(s)) {
       s.winner = s.current;
       s.phase = "won";
       s.pool = 0;
       s.resumeAttack = false;
-      addLog(s, `${s.players[s.current].name} heeft de wereld veroverd!`);
+      addLog(s, `${s.players[s.current].name} wint met ${owned(s).length} gebieden!`);
     } else if (s.players[s.current].cards.length >= 6) {
       s.phase = "reinforce";
       s.resumeAttack = true;
@@ -425,7 +429,7 @@
           validSet(action.cards),
         "Kies drie gelijke symbolen of drie verschillende; jokers mogen meedoen.",
       );
-      const value = [4, 6, 8, 10, 12, 15][s.sets] || 15 + (s.sets - 5) * 5;
+      const value = tradeValue(s, action.cards);
       s.sets++;
       s.pool += value;
       player.cards = player.cards.filter((c) => !action.cards.includes(c));
@@ -567,6 +571,9 @@
       s.territories.length !== 42
     )
       return false;
+    if (s.rules !== undefined && (!s.rules || typeof s.rules !== "object" || Array.isArray(s.rules) ||
+      !["world", "domination"].includes(s.rules.goal) ||
+      !["progressive", "fixed"].includes(s.rules.cards))) return false;
     const count = s.players.length;
     if (
       !s.players.every(
@@ -610,7 +617,7 @@
       s.winner !== null &&
       (!integer(s.winner, 0, count - 1) ||
         s.phase !== "won" ||
-        owned(s, s.winner).length !== 42)
+        owned(s, s.winner).length < victoryTarget(s))
     )
       return false;
     if (s.phase === "won" && s.winner === null) return false;
@@ -657,6 +664,39 @@
     )
       return false;
     return true;
+  }
+  function victoryTarget(s) { return s.rules?.goal === "domination" ? 30 : 42; }
+  function tradeValue(s, cards) {
+    if (s.rules?.cards !== "fixed") return [4, 6, 8, 10, 12, 15][s.sets] || 15 + (s.sets - 5) * 5;
+    const symbols = cards.map(cardSymbol).filter(n => n !== 3);
+    // A joker takes the most valuable valid place in the selected set.
+    if (new Set(symbols).size > 1) return 10;
+    if (symbols.length < 2) return 10;
+    return [4, 6, 8][symbols[0]];
+  }
+  let rollOutcomes;
+  function battleOdds(attackers, defenders) {
+    if (!integer(attackers, 0, 200) || !integer(defenders, 0, 200)) return null;
+    if (!rollOutcomes) {
+      rollOutcomes = {};
+      for (let a = 1; a <= 3; a++) for (let d = 1; d <= 2; d++) {
+        const counts = new Map(), total = 6 ** (a + d);
+        for (let n = 0; n < total; n++) {
+          let number = n;
+          const dice = Array.from({length:a+d}, () => { const value = number % 6 + 1; number = Math.floor(number/6); return value; });
+          const attack = dice.slice(0,a).sort((x,y)=>y-x), defend = dice.slice(a).sort((x,y)=>y-x);
+          let lost = 0;
+          for (let k=0;k<Math.min(a,d);k++) if (attack[k] <= defend[k]) lost++;
+          counts.set(lost, (counts.get(lost)||0)+1);
+        }
+        rollOutcomes[`${a},${d}`] = [...counts].map(([lost,count])=>[lost,Math.min(a,d)-lost,count/total]);
+      }
+    }
+    const table = Array.from({length:attackers+1},()=>new Float64Array(defenders+1));
+    for (let a=0;a<=attackers;a++) table[a][0]=1;
+    for (let a=1;a<=attackers;a++) for (let d=1;d<=defenders;d++)
+      for (const [al,dl,p] of rollOutcomes[`${Math.min(3,a)},${Math.min(2,d)}`]) table[a][d] += p*table[a-al][d-dl];
+    return table[attackers][defenders];
   }
   function frontier(s, player = s.current) {
     return owned(s, player).filter((i) =>
@@ -787,5 +827,8 @@
     findSet,
     cardSymbol,
     chooseAction,
+    victoryTarget,
+    tradeValue,
+    battleOdds,
   };
 });

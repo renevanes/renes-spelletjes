@@ -7,7 +7,7 @@
     "build:debug": "python3 tools/build_web.py --no-minify",
     "test": "node tests/tiles.mjs && node tests/smoke.mjs",
     "check": "npm run build && npm test",
-    "test:improvements": "node --test tests/persistence.test.cjs games/rk.test.cjs && node tests/improvements.mjs && node games/rk1.mjs && node games/rkfuzz.mjs"
+    "test:improvements": "node --test tests/persistence.test.cjs games/rk.test.cjs && node tests/improvements.mjs && node games/rk1.mjs && node games/rk-mobile.mjs && node games/rkfuzz.mjs"
   },
   "devDependencies": {
     "html-minifier-terser": "7.2.0",

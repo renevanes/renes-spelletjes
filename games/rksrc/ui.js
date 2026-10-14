@@ -32,11 +32,12 @@
       battleTimer = null,
       autoBattle = null,
       lastTurn = 0,
-      diceChoice = null;
+      diceChoice = null,
+      commitChoice = null;
     const storedInvalid = state !== null && !E.validState(state);
     if (storedInvalid) state = null;
     let settings = Object.assign(
-      { players: 3, humans: 1, difficulty: "normal", tempo: "normal", sound: true, music: true },
+      { players: 3, humans: 1, difficulty: "normal", tempo: "normal", sound: true, music: true, goal: "world", cardMode: "progressive" },
       api.storage.get("rk.settings", {}),
     );
     api.music?.(() => settings.music !== false);
@@ -59,7 +60,7 @@
     }
     function apply(action) {
       try {
-        const previousTurn = state.turn;
+        const previousTurn = state.turn, previousCapture = state.pending;
         state = E.apply(state, action);
         if (state.winner !== null && !state.statsRecorded) {
           const stats = api.storage.get("rk.stats", { played: 0, won: 0 });
@@ -78,7 +79,15 @@
           target = null;
           cards = [];
           diceChoice = null;
+          commitChoice = null;
           checkHandoff();
+        }
+        if (action.type === "occupy" && previousCapture) {
+          selected = previousCapture.to; target = null; diceChoice = null; commitChoice = null;
+        }
+        if (state.pending || state.winner !== null) {
+          $("rk").classList.remove("rk-dock-collapsed");
+          $("rkDockToggle").setAttribute("aria-expanded", "true");
         }
         if (state.pending) {
           selected = state.pending.from;
@@ -128,6 +137,9 @@
     }
     function choose(id) {
       if (!state || blocked() || state.pending) return;
+      $("rk").classList.remove("rk-dock-collapsed");
+      $("rkDockToggle").setAttribute("aria-expanded", "true");
+      $("rkViewMenu").open = false;
       const t = state.territories[id];
       if (
         state.phase === "attack" &&
@@ -156,6 +168,7 @@
         selected = id;
         target = null;
         diceChoice = null;
+        commitChoice = null;
       }
       stop();
       render();
@@ -163,6 +176,8 @@
     const board = window.ReneWereldBoard.create({
       engine: E, data: window.ReneWereldMap, onSelect: choose,
       onActions: () => {
+        $("rk").classList.remove("rk-dock-collapsed");
+        $("rkDockToggle").setAttribute("aria-expanded", "true");
         $("rkControls").scrollIntoView({ block: "start", behavior: "auto" });
         $("rkControls").querySelector("button:not(:disabled),select,input")?.focus({ preventScroll: true });
       },
@@ -211,7 +226,7 @@
       );
     }
     function amount(max, value = 1, min = 1) {
-      return `<label>Aantal legers<div class="rk-amount"><input id="rkAmount" type="number" inputmode="numeric" min="${min}" max="${max}" value="${value}"><button data-action="all" data-max="${max}">Alle ${max}</button></div></label>`;
+      return `<div class="rk-troops"><label for="rkAmount">Aantal legers</label><div class="rk-amount"><button data-action="less" aria-label="Eén leger minder">−</button><input id="rkAmount" aria-label="Aantal legers" type="number" inputmode="numeric" min="${min}" max="${max}" value="${value}"><button data-action="more" aria-label="Eén leger meer">+</button><button data-action="all" data-max="${max}">Max</button></div><input id="rkAmountRange" aria-label="Aantal legers met schuifregelaar" type="range" min="${min}" max="${max}" value="${value}"></div>`;
     }
     function button(label, action, disabled = false, secondary = false) {
       return `<button id="rkAction${action}" class="rk-action ${secondary ? "rk-secondary" : ""}" data-action="${action}" ${disabled ? "disabled" : ""}>${label}</button>`;
@@ -227,75 +242,60 @@
         selection = selected !== null ? state.territories[selected] : null;
       const own = selection && selection.owner === state.current,
         canAct = !blocked();
+      const handOpen = $("rkControls").querySelector(".rk-card-hand")?.open,
+        accessibleOpen = $("rkControls").querySelector(".rk-accessible")?.open;
+      const mustTrade = !handoff && isHuman() && state.phase === "reinforce" && state.players[state.current].cards.length >= (state.resumeAttack ? 6 : 5);
+      if (state.pending || state.winner !== null || mustTrade) {
+        $("rk").classList.remove("rk-dock-collapsed");
+        $("rkDockToggle").setAttribute("aria-expanded", "true");
+      }
       let html = "";
       if (state.phase === "won")
-        html = `<h3>🏆 ${esc(state.players[state.winner].name)} wint!</h3><p class="rk-muted">Alle 42 landen zijn veroverd in ${state.round} rondes.</p>${button("Nieuw spel", "new")}${button("Naar menu", "menu", false, true)}`;
+        html = `<h3>🏆 ${esc(state.players[state.winner].name)} wint!</h3><p class="rk-muted">${E.owned(state, state.winner).length} gebieden veroverd in ${state.round} rondes.</p>${button("Nieuw spel", "new")}${button("Naar menu", "menu", false, true)}`;
       else if (handoff)
         html = `<h3>Geef het toestel door</h3><p class="rk-muted">De kaarten en acties van ${esc(state.players[state.current].name)} blijven verborgen.</p>${button("Mijn beurt bekijken", "handoff")}`;
       else if (!isHuman())
         html = `<h3>${esc(state.players[state.current].name)} speelt</h3><p class="rk-muted">De computer ${state.phase === "reinforce" ? "plaatst versterkingen" : state.phase === "attack" ? "bekijkt de grenzen" : "rondt de beurt af"}. Je kunt op elk moment pauzeren of naar het menu gaan.</p>${button("Pauze", "pause", false, true)}`;
       else if (state.pending)
-        html = `<h3>Land veroverd!</h3><p class="rk-muted">${E.territories[state.pending.to].name} is van jou. Er moeten minstens ${state.pending.min} legers heen; één leger blijft achter in ${E.territories[state.pending.from].name}.</p>${amount(state.pending.max, state.pending.min, state.pending.min)}${button("Bezetting bevestigen", "occupy")}`;
+        html = `<h3>Land veroverd!</h3><p class="rk-muted">${E.territories[state.pending.to].name} is van jou. Er moeten minstens ${state.pending.min} legers heen; één leger blijft achter in ${E.territories[state.pending.from].name}.</p>${amount(state.pending.max, state.pending.max, state.pending.min)}${button("Bezetting bevestigen", "occupy")}`;
       else {
-        html = `<h3>${selection ? E.territories[selected].name : "Kies een eigen land"}</h3><p class="rk-muted">${selection ? `${esc(state.players[selection.owner].name)} · ${selection.armies} legers` : "Tik op de kaart of kies hieronder een land."}</p><label>${state.phase === "reinforce" ? "Land voor versterkingen" : "Vanuit"}<select id="rkFrom">${options(E.owned(state), own ? selected : null)}</select></label>`;
+        const hand = state.players[state.current].cards,
+          required = hand.length >= (state.resumeAttack ? 6 : 5);
+        html = `<div class="rk-command-title"><h3>${selection ? E.territories[selected].name : phases[state.phase]}</h3><span>${selection ? `${selection.armies} legers` : `${state.pool || E.owned(state).length} ${state.pool ? "versterkingen" : "gebieden"}`}</span></div>`;
+        if (!own) html += `<p class="rk-muted">${selection ? `${esc(state.players[selection.owner].name)} bezit dit gebied. Kies eerst een eigen land.` : state.phase === "reinforce" ? "Tik op een eigen gebied om legers te plaatsen." : state.phase === "attack" ? "Tik op jouw leger, daarna op een vijandelijke buur." : "Tik op twee verbonden eigen gebieden."}</p>`;
+        let accessible = `<label>Vanuit<select id="rkFrom">${options(E.owned(state), own ? selected : null)}</select></label>`;
         if (state.phase === "reinforce") {
-          html += `<p class="rk-muted"><b>${state.pool}</b> versterkingen over${E.bonus(state).length ? " · inclusief continentbonus" : ""}.</p>`;
-          if (state.pool)
-            html +=
-              amount(state.pool, Math.min(state.pool, 3)) +
-              button("Legers plaatsen", "reinforce", !own);
-          const hand = state.players[state.current].cards,
-            required = hand.length >= (state.resumeAttack ? 6 : 5);
+          if (state.pool && own) html += amount(state.pool, state.pool) + button(`Plaats legers · ${state.pool} beschikbaar`, "reinforce");
           if (hand.length) {
             if (!cards.length) cards = E.findSet(state) || [];
-            html += `<h4>Kaarten (${hand.length})${required ? " · ruilen verplicht" : ""}</h4><div class="rk-cards">${hand.map((id) => `<button id="rkCard${id}" data-card="${id}" aria-pressed="${cards.includes(id)}" aria-label="${id < 42 ? E.territories[id].name : "Joker"}, ${["infanterie", "cavalerie", "artillerie", "joker"][E.cardSymbol(id)]}${cards.includes(id) ? ", geselecteerd" : ""}">${symbols[E.cardSymbol(id)]}<small>${id < 42 ? E.territories[id].name : "Joker"}</small></button>`).join("")}</div>${button("Geselecteerde set ruilen", "trade", !E.validSet(cards))}`;
+            html += `<details class="rk-card-hand" ${required || handOpen ? "open" : ""}><summary>▱ ${hand.length} kaarten${required ? " · ruilen verplicht" : " · bekijk en ruil"}</summary><div class="rk-cards">${hand.map(id => `<button id="rkCard${id}" data-card="${id}" aria-pressed="${cards.includes(id)}" aria-label="${id < 42 ? E.territories[id].name : "Joker"}, ${["infanterie", "cavalerie", "artillerie", "joker"][E.cardSymbol(id)]}">${symbols[E.cardSymbol(id)]}<small>${id < 42 ? E.territories[id].name : "Joker"}</small></button>`).join("")}</div>${button(`Ruil set · +${E.tradeValue(state, cards)} legers`, "trade", !E.validSet(cards))}</details>`;
           }
-          html += button(
-            state.resumeAttack ? "Verder aanvallen" : "Naar aanvallen",
-            "advance",
-            state.pool > 0 || required,
-            true,
-          );
+          html += button(state.resumeAttack ? "Verder aanvallen →" : "Aanvallen →", "advance", state.pool > 0 || required, true);
         } else if (state.phase === "attack") {
-          const enemies = own
-            ? E.territories[selected].neighbors.filter(
-                (i) => state.territories[i].owner !== state.current,
-              )
-            : [];
+          const enemies = own ? E.territories[selected].neighbors.filter(i => state.territories[i].owner !== state.current) : [];
           if (target !== null && !enemies.includes(target)) target = null;
-          html += `<label>Aangrenzend vijandelijk land<select id="rkTarget">${options(enemies, target)}</select></label><label>Dobbelstenen<select id="rkDice">${[
-            1, 2, 3,
-          ]
-            .filter((n) => own && n < selection.armies)
-            .map(
-              (n) =>
-                `<option value="${n}" ${n === Math.min(diceChoice || 3, selection.armies - 1) ? "selected" : ""}>${n} ${n === 1 ? "dobbelsteen" : "dobbelstenen"}</option>`,
-            )
-            .join("")}</select></label>`;
+          accessible += `<label>Vijandelijk buurland<select id="rkTarget">${options(enemies, target)}</select></label><label>Dobbelstenen<select id="rkDice">${[1,2,3].filter(n=>own && n<selection.armies).map(n=>`<option value="${n}" ${n===Math.min(diceChoice||3,selection.armies-1)?"selected":""}>${n} ${n===1?"dobbelsteen":"dobbelstenen"}</option>`).join("")}</select></label>`;
           const invalid = !own || selection.armies < 2 || target === null;
-          html += `<div class="rk-buttons">${button("Eén worp", "attack", invalid)}${button(autoBattle ? "Stop" : "Doorvechten", autoBattle ? "stop" : "blitz", invalid, true)}</div>${button("Aanvallen afronden", "advance", false, true)}`;
+          if (own && target !== null) {
+            const maximum = Math.max(1, selection.armies-1), value = Math.min(commitChoice || maximum, maximum);
+            html += `<div class="rk-matchup"><span>→ ${E.territories[target].name}</span><b>${state.territories[target].armies} legers</b></div><label class="rk-commit-label" for="rkCommitRange">Aanvalslegers <output id="rkCommitCount">${value}</output></label><input id="rkCommitRange" type="range" min="1" max="${maximum}" value="${value}" ${invalid ? "disabled" : ""}><p id="rkOdds" class="rk-odds"></p>`;
+          } else if (own) html += `<p class="rk-muted">${selection.armies > 1 ? "Tik op een vijandelijk buurland om aan te vallen." : "Er blijft altijd één leger achter. Dit gebied kan niet aanvallen."}</p>`;
+          html += `<div class="rk-buttons">${button(autoBattle ? "■ Stop blitz" : "⚡ Blitz", autoBattle ? "stop" : "blitz", invalid)}${button("⚄ Eén worp", "attack", invalid, true)}</div>${button("Verplaatsen →", "advance", false, true)}`;
         } else if (state.phase === "fortify") {
           if (!state.fortified) {
-            const targets = own
-              ? E.owned(state).filter(
-                  (i) => i !== selected && E.connected(state, selected, i),
-                )
-              : [];
+            const targets = own ? E.owned(state).filter(i=>i!==selected && E.connected(state,selected,i)) : [];
             if (target !== null && !targets.includes(target)) target = null;
-            html += `<label>Naar verbonden eigen land<select id="rkTarget">${options(targets, target)}</select></label>`;
-            if (own && selection.armies > 1)
-              html += amount(selection.armies - 1, 1);
-            html += button(
-              "Legers verplaatsen",
-              "fortify",
-              !own || selection.armies < 2 || target === null,
-            );
-          } else
-            html += '<p class="rk-muted">Je hebt je verplaatsing gedaan.</p>';
-          html += button("Beurt beëindigen", "endTurn");
+            accessible += `<label>Naar verbonden eigen land<select id="rkTarget">${options(targets,target)}</select></label>`;
+            if (own && target !== null && selection.armies > 1) html += `<div class="rk-matchup">→ ${E.territories[target].name}</div>${amount(selection.armies-1,selection.armies-1)}${button("Legers verplaatsen", "fortify")}`;
+            else if (own) html += '<p class="rk-muted">Kies een verbonden eigen gebied als bestemming.</p>';
+          } else html += '<p class="rk-muted">Je legers zijn verplaatst.</p>';
+          html += button("Beurt beëindigen ✓", "endTurn");
         }
+        html += `<details class="rk-accessible" ${accessibleOpen ? "open" : ""}><summary>Kiezen via landenlijst</summary>${accessible}</details>`;
       }
       $("rkControls").innerHTML = html;
+      updateOdds();
+      $("rk").classList.toggle("rk-has-selection", selected !== null && isHuman() && !handoff);
       if (focused && $(focused) && $("rkControls").contains($(focused)))
         $(focused).focus({ preventScroll: true });
       else if (wasInControls)
@@ -312,14 +312,15 @@
       if (!state) return;
       const p = state.players[state.current];
       $("rkRound").textContent =
-        `Ronde ${state.round} · ${state.players.length} spelers`;
+        `Ronde ${state.round} · ${state.players.length} spelers · ${E.victoryTarget(state) === 30 ? "70% veroveren" : "Wereldverovering"}`;
       $("rkPlayerName").textContent =
         state.phase === "won"
           ? `${state.players[state.winner].name} heeft gewonnen`
           : p.name;
       $("rkPlayerBadge").style.background = p.color;
       $("rkPlayerBadge").textContent = state.current + 1;
-      $("rkPhase").textContent = phases[state.phase];
+      $("rkPhase").textContent = state.pending ? "Bezetten" : phases[state.phase];
+      $("rkPhaseSteps").querySelectorAll("[data-phase]").forEach(el => { el.classList.toggle("active", el.dataset.phase === state.phase); el.setAttribute("aria-current", el.dataset.phase === state.phase ? "step" : "false"); });
       $("rkInstruction").textContent = state.pending
         ? "Kies hoeveel legers het veroverde land bezetten."
         : state.phase === "reinforce"
@@ -329,12 +330,19 @@
             : state.phase === "fortify"
               ? "Verplaats één keer via eigen landen, of beëindig je beurt."
               : "De wereld is veroverd.";
+      const scoreScroll = $("rkScoreboard").scrollTop, scoreLeft = $("rkScoreboard").scrollLeft;
       $("rkScoreboard").innerHTML = state.players
         .map(
           (p, i) =>
-            `<div class="rk-score ${i === state.current ? "active" : ""} ${E.owned(state, i).length ? "" : "out"}"><span style="background:${p.color}">${i + 1}</span><div><b>${esc(p.name)}${p.ai ? " 🤖" : ""}</b><small>${E.owned(state, i).length} landen · ${p.cards.length} kaarten${E.owned(state, i).length ? "" : " · uitgeschakeld"}</small></div></div>`,
+            `<div style="--player:${p.color}" class="rk-score ${i === state.current ? "active" : ""} ${E.owned(state, i).length ? "" : "out"}"><span style="background:${p.color}">${i + 1}</span><div><b>${esc(p.name)}${p.ai ? " · CPU" : ""}</b><small>${state.territories.filter(t=>t.owner===i).reduce((n,t)=>n+t.armies,0)} legers · ${E.owned(state, i).length}/${E.victoryTarget(state)} gebieden${E.owned(state, i).length ? "" : " · uitgeschakeld"}</small></div></div>`,
         )
         .join("");
+      const rail = $("rkScoreboard"), currentScore = rail.querySelector(".rk-score.active");
+      rail.scrollTop = scoreScroll; rail.scrollLeft = scoreLeft;
+      if (currentScore && state.turn !== lastTurn) {
+        if (rail.scrollHeight > rail.clientHeight) rail.scrollTop = Math.max(0, currentScore.offsetTop + currentScore.offsetHeight - rail.clientHeight);
+        if (rail.scrollWidth > rail.clientWidth) rail.scrollLeft = Math.max(0, currentScore.offsetLeft + currentScore.offsetWidth - rail.clientWidth);
+      }
       updateMap();
       renderControls();
       const b = state.lastBattle;
@@ -352,7 +360,8 @@
       }
     }
     function startBlitz() {
-      autoBattle = { from: selected, to: target, turn: state.turn };
+      const committed = Number($("rkCommitRange")?.value) || state.territories[selected].armies-1;
+      autoBattle = { from: selected, to: target, turn: state.turn, reserve: state.territories[selected].armies-1-committed };
       const tick = () => {
         battleTimer = null;
         if (
@@ -363,7 +372,7 @@
           state.turn !== autoBattle.turn ||
           state.phase !== "attack" ||
           state.pending ||
-          state.territories[autoBattle.from].armies < 2 ||
+          state.territories[autoBattle.from].armies <= autoBattle.reserve + 1 ||
           state.territories[autoBattle.to].owner === state.current
         ) {
           stop();
@@ -377,13 +386,13 @@
             from: pair.from,
             to: pair.to,
             dice: Math.min(
-              diceChoice || 3,
-              state.territories[pair.from].armies - 1,
+              3,
+              state.territories[pair.from].armies - 1 - pair.reserve,
             ),
           }) &&
           autoBattle
         )
-          battleTimer = setTimeout(tick, 220);
+          battleTimer = setTimeout(tick, settings.tempo === "fast" ? 45 : 90);
       };
       tick();
     }
@@ -428,6 +437,8 @@
       setupNames();
       $("rkDifficulty").value = settings.difficulty;
       $("rkTempo").value = settings.tempo;
+      $("rkGoal").value = settings.goal;
+      $("rkCardMode").value = settings.cardMode;
       $("rkSound").checked = settings.sound !== false;
       $("rkMusic").checked = settings.music !== false;
       api.modal("rkStartModal");
@@ -437,6 +448,8 @@
       api.enter();
       if (!api.isActive()) return;
       active = true;
+      $("rk").classList.add("rk-dock-collapsed");
+      $("rkDockToggle").setAttribute("aria-expanded", "false");
       board.fit();
       if (state) {
         render();
@@ -452,6 +465,11 @@
           );
       }
     }
+    $("rkDockToggle").addEventListener("click", () => {
+      const collapsed = $("rk").classList.toggle("rk-dock-collapsed");
+      $("rkDockToggle").setAttribute("aria-expanded", String(!collapsed));
+      $("rkDockToggle").setAttribute("aria-label", collapsed ? "Spelacties uitklappen" : "Spelacties inklappen");
+    });
     $("rkBack").addEventListener("click", leave);
     $("rkStartMenu").addEventListener("click", leave);
     $("rkPauseMenu").addEventListener("click", leave);
@@ -500,6 +518,8 @@
         humans: Number($("rkHumanCount").value),
         difficulty: $("rkDifficulty").value,
         tempo: $("rkTempo").value,
+        goal: $("rkGoal").value,
+        cardMode: $("rkCardMode").value,
         sound: $("rkSound").checked,
         music: $("rkMusic").checked,
       };
@@ -510,12 +530,15 @@
             : `Computer ${i - settings.humans + 1}`,
         ai: i >= settings.humans,
       }));
-      state = E.newGame(players);
+      state = E.newGame(players, Date.now(), {goal:settings.goal,cards:settings.cardMode});
       selected = null;
       target = null;
       cards = [];
       lastTurn = 0;
       handoff = false;
+      commitChoice = null;
+      $("rk").classList.add("rk-dock-collapsed");
+      $("rkDockToggle").setAttribute("aria-expanded", "false");
       api.storage.set("rk.settings", settings);
       const stats = api.storage.get("rk.stats", { played: 0, won: 0 });
       stats.played = (stats.played || 0) + 1;
@@ -534,6 +557,7 @@
     }
     $("rkBeginTurn").addEventListener("click", beginTurn);
     function changeView(list) {
+      $("rkViewMenu").open = false;
       $("rkCountryList").hidden = !list;
       $("rkMapViewport").hidden = list;
       $("rkZoomTools").hidden = list;
@@ -566,8 +590,10 @@
       if (!b || b.disabled) return;
       const type = b.dataset.action,
         amount = Number($("rkAmount")?.value);
-      if (type === "all") {
-        $("rkAmount").value = b.dataset.max;
+      if (["all", "less", "more"].includes(type)) {
+        const input = $("rkAmount");
+        input.value = type === "all" ? b.dataset.max : Math.max(Number(input.min), Math.min(Number(input.max), Number(input.value)+(type === "more" ? 1 : -1)));
+        $("rkAmountRange").value = input.value;
         return;
       }
       if (type === "new") {
@@ -616,8 +642,20 @@
         apply({ type, cards: selection });
       } else apply({ type });
     });
+    function updateOdds() {
+      if (!$("rkOdds") || !state || target === null) return;
+      const value = Number($("rkCommitRange").value), odds = E.battleOdds(value, state.territories[target].armies);
+      $("rkCommitCount").textContent = value;
+      $("rkOdds").textContent = odds === null ? "Eerlijke dobbelstenen · één leger blijft achter" : `${odds > .99 ? ">99" : odds < .01 ? "<1" : Math.round(odds*100)}% kans op verovering · eerlijke dobbelstenen`;
+    }
+    $("rk").addEventListener("input", event => {
+      if (event.target.id === "rkAmountRange") $("rkAmount").value = event.target.value;
+      if (event.target.id === "rkAmount") $("rkAmountRange").value = event.target.value;
+      if (event.target.id === "rkCommitRange") { commitChoice = Number(event.target.value); updateOdds(); }
+    });
     $("rk").addEventListener("change", (event) => {
       if (event.target.id === "rkFrom") {
+        commitChoice = null;
         selected =
           event.target.value === "" ? null : Number(event.target.value);
         target = null;
