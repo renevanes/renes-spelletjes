@@ -288,5 +288,10 @@
   "v": "1.57",
   "date": "2026-10-14",
   "notes": "Achter de schermen: de app wordt nu automatisch getest, gebouwd en gepubliceerd vanuit GitHub, zodat meerdere helpers tegelijk aan nieuwe spellen en verbeteringen kunnen werken."
+ },
+ {
+  "v": "1.58",
+  "date": "2026-10-14",
+  "notes": "Kleine verbeteringen en reparaties."
  }
 ]

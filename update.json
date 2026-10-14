@@ -1,11 +1,11 @@
 {
-  "versionCode": 58,
-  "versionName": "1.57",
+  "versionCode": 59,
+  "versionName": "1.58",
   "nativeLevel": 10,
-  "notes": "Achter de schermen: de app wordt nu automatisch getest, gebouwd en gepubliceerd vanuit GitHub, zodat meerdere helpers tegelijk aan nieuwe spellen en verbeteringen kunnen werken.",
+  "notes": "Kleine verbeteringen en reparaties.",
   "web": "web/index.html",
-  "webSha256": "8ebd049fd124166d3549de17572d92383e6b1c214e52417a69bc2a0f22a6d95a",
-  "webSig": "MEYCIQClbrjQy8nieOEuB/VDbxa1RMCeAGZP4gAuTWdHcvDG3gIhALLUlUum9NeGrEUeS7iV3cjdp/htVL10VVlaD6DQk464",
+  "webSha256": "23022427786eaca553c7904adef38b28bfb8c2ae425a75227d9f2c850667dc67",
+  "webSig": "MEUCICQT7fqmBJmkaBU4LlBuWcanQbbP8wzSd41bCSptpeGgAiEAwhO1z266BywZPyFV4KmrckHi3JuwbeuPrZVbh5TXkuE=",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "868c49cd1860d93b8a2b49f23297b94778fdd61fa43d3522bab705c591930865"
