@@ -293,5 +293,10 @@
   "v": "1.58",
   "date": "2026-10-14",
   "notes": "Kleine verbeteringen en reparaties."
+ },
+ {
+  "v": "1.59",
+  "date": "2026-10-14",
+  "notes": "Back-ups worden gecontroleerd voordat je ze terugzet. Bij een opslagfout verschijnt een waarschuwing; een mislukte import probeert je eerdere voortgang te behouden.\nVind spellen met zoeken en categorieën. Je favorieten en de dagelijkse uitdagingen staan voortaan bovenaan in het menu.\nJe kunt inzoomen en spelvensters met het toetsenbord bedienen. Nieuwe instellingen volgen de bewegingsvoorkeur van je toestel en zetten kleurenhulp voor kleurpuzzels aan.\nNieuw: Wereldmacht! Verover 42 landen tegen de computer of met twee tot zes spelers op één toestel, met kaarten, dobbelsteengevechten en automatisch bewaren."
  }
 ]

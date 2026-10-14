@@ -1,12 +1,12 @@
 {
-  "versionCode": 59,
-  "versionName": "1.58",
-  "nativeLevel": 10,
-  "notes": "Kleine verbeteringen en reparaties.",
+  "versionCode": 60,
+  "versionName": "1.59",
+  "nativeLevel": 11,
+  "notes": "Back-ups worden gecontroleerd voordat je ze terugzet. Bij een opslagfout verschijnt een waarschuwing; een mislukte import probeert je eerdere voortgang te behouden.\nVind spellen met zoeken en categorie\u00ebn. Je favorieten en de dagelijkse uitdagingen staan voortaan bovenaan in het menu.\nJe kunt inzoomen en spelvensters met het toetsenbord bedienen. Nieuwe instellingen volgen de bewegingsvoorkeur van je toestel en zetten kleurenhulp voor kleurpuzzels aan.\nNieuw: Wereldmacht! Verover 42 landen tegen de computer of met twee tot zes spelers op \u00e9\u00e9n toestel, met kaarten, dobbelsteengevechten en automatisch bewaren.",
   "web": "web/index.html",
-  "webSha256": "23022427786eaca553c7904adef38b28bfb8c2ae425a75227d9f2c850667dc67",
-  "webSig": "MEUCICQT7fqmBJmkaBU4LlBuWcanQbbP8wzSd41bCSptpeGgAiEAwhO1z266BywZPyFV4KmrckHi3JuwbeuPrZVbh5TXkuE=",
+  "webSha256": "f94734c173c759fdc395107dd450b1dbc75ccd5eeb8542492addcd6f357d0263",
+  "webSig": "MEQCICV5SQdYwKadTN4jmc7WrHHPTY4IULAOBrQVmGiGScC7AiBVO0XUxe5sSmvSipt+u16AodyyQp1l2V5xO6r7NSUxmw==",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
-  "nativeHash": "868c49cd1860d93b8a2b49f23297b94778fdd61fa43d3522bab705c591930865"
+  "nativeHash": "ffe3a952b0dc233a536c58bb092cf94cbd16661ed5a1c4dc2516213283333928"
 }
