@@ -1,0 +1,21 @@
+<!-- ============ VUISTDUEL ============ -->
+<section id="vd" class="screen">
+  <div id="vdStage">
+    <canvas id="vdCv"></canvas>
+    <div id="vdPad" aria-hidden="true">
+      <div class="vd-stick" data-p="0"><i></i></div><div class="vd-stick" data-p="1"><i></i></div>
+    </div>
+    <button id="vdPause" aria-label="Pauze">❚❚</button>
+    <div id="vdSel" class="vd-view">
+      <div class="vd-sel-top"><button id="vdSelBack" class="vd-x" aria-label="Terug">‹</button><h2 id="vdSelTitle">Kies je vechter</h2><button id="vdStageBtn"></button></div>
+      <div class="vd-sel-main">
+        <div class="vd-side" id="vdSideL"><canvas></canvas><div class="vd-info"></div></div>
+        <div class="vd-grid" id="vdGrid"></div>
+        <div class="vd-side" id="vdSideR"><canvas></canvas><div class="vd-info"></div></div>
+      </div>
+      <div class="vd-sel-bot"><span id="vdSelHint"></span><button id="vdSelGo">Vecht! ▶</button></div>
+    </div>
+    <div id="vdRot" class="vd-rot"><div><div class="vd-phone">📱</div><b>Draai je telefoon</b><p>Vuistduel speel je met je telefoon dwars.</p><button class="btn" id="vdRotBack">Terug naar het menu</button></div></div>
+    <div id="vdToast"></div>
+  </div>
+</section>

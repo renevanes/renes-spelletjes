@@ -1,0 +1,66 @@
+# Every push to main that changes the app is tested, built, signed and published, one release at a time.
+# The app on phones picks up the new version from update.json. Agents just push to main (or merge a PR).
+name: Release
+on:
+  push:
+    branches: [main]
+    paths: ['app/**', 'games/**', 'tools/**', 'changes/**', 'tests/**', 'package.json', 'package-lock.json', '.github/workflows/release.yml']
+  workflow_dispatch:
+concurrency:
+  group: release
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Use the newest main (a queued run releases everything pushed so far)
+        run: git pull --ff-only origin main
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: npm }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Build web bundle and test
+        run: |
+          python3 tools/build_web.py
+          npm test
+      - name: Unlock signing keys
+        id: keys
+        env:
+          SIGNING_PASSPHRASE: ${{ secrets.SIGNING_PASSPHRASE }}
+        run: |
+          if [ -z "$SIGNING_PASSPHRASE" ]; then
+            echo "::warning::Repository secret SIGNING_PASSPHRASE ontbreekt: getest, maar niet gepubliceerd."
+            echo "ok=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          mkdir -p keys
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in secrets/signing.tar.gz.enc -pass env:SIGNING_PASSPHRASE | tar xz -C keys
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+      - name: Android SDK packages
+        if: steps.keys.outputs.ok == 'true'
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" > /dev/null
+      - name: Build, sign and write the release
+        if: steps.keys.outputs.ok == 'true'
+        run: python3 tools/release.py
+      - name: Publish
+        if: steps.keys.outputs.ok == 'true'
+        run: |
+          V="$(head -1 build/release.txt)"
+          git config user.name "renes-spelletjes-release"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A update.json web apk changelog.json changes
+          git commit -m "Versie $V [skip ci]" -m "$(tail -n +2 build/release.txt)"
+          for i in 1 2 3 4 5; do
+            git push origin HEAD:main && exit 0
+            sleep $((i * 3)); git pull --rebase origin main
+          done
+          exit 1
+      - name: Remove keys
+        if: always()
+        run: rm -rf keys

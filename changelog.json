@@ -1,0 +1,287 @@
+[
+ {
+  "v": "1.0",
+  "date": "2026-09-28",
+  "notes": "Eerste versie: Patience (Klondike)"
+ },
+ {
+  "v": "1.1",
+  "date": "2026-09-28",
+  "notes": "Nieuwe naam: Rene's spelletjes. Geschikt voor de nieuwste Android-versies"
+ },
+ {
+  "v": "1.2",
+  "date": "2026-09-28",
+  "notes": "Installatieproblemen opgelost (nieuwe ondertekening)"
+ },
+ {
+  "v": "1.3",
+  "date": "2026-09-29",
+  "notes": "Patience: meer opties, draaistapel links of rechts, kaarten met plaatjes, melding als er geen zetten meer zijn, joker"
+ },
+ {
+  "v": "1.4",
+  "date": "2026-09-29",
+  "notes": "Nieuw spel: Airhockey"
+ },
+ {
+  "v": "1.5",
+  "date": "2026-09-29",
+  "notes": "Beter leesbare kaarten. Airhockey met 2 spelers op één telefoon"
+ },
+ {
+  "v": "1.6",
+  "date": "2026-09-29",
+  "notes": "Automatische updates"
+ },
+ {
+  "v": "1.7",
+  "date": "2026-09-29",
+  "notes": "Nieuw: kies de afbeelding op de voor- en achterkant van de kaarten (Opties)"
+ },
+ {
+  "v": "1.8",
+  "date": "2026-09-29",
+  "notes": "Nieuw spel: Klaverjassen (Rotterdams of Amsterdams)"
+ },
+ {
+  "v": "1.9",
+  "date": "2026-09-29",
+  "notes": "Klaverjassen: meer opties (sortering, bescherming tegen verkeerde kaart, twee tikken, troef bepalen, namen, speeltip) en alle slagen terugkijken"
+ },
+ {
+  "v": "1.10",
+  "date": "2026-09-29",
+  "notes": "Klaverjassen: hand sorteren met rood en zwart om en om"
+ },
+ {
+  "v": "1.11",
+  "date": "2026-09-29",
+  "notes": "Klaverjassen: kleur van elke kaart ook zichtbaar als kaarten in je hand over elkaar liggen"
+ },
+ {
+  "v": "1.12",
+  "date": "2026-09-29",
+  "notes": "Klaverjassen: duidelijk scorebord (totaal, deze ronde, troef, wie gaat) en goede weergave rechtop én liggend. Airhockey: rustiger, natuurlijker puck"
+ },
+ {
+  "v": "1.13",
+  "date": "2026-09-29",
+  "notes": "Kaarten: waarde en symbool ook rechtsonder (ondersteboven), standaard aan – uit te zetten in de opties"
+ },
+ {
+  "v": "1.14",
+  "date": "2026-09-29",
+  "notes": "Airhockey: vloeiende tegenstander, puck blijft niet meer vastzitten, stick blijft werken na een goal. Klaverjassen: sneller opgooien, instelbaar"
+ },
+ {
+  "v": "1.15",
+  "date": "2026-09-30",
+  "notes": "Nieuw spel: Torenverdediging (tower defense) met 3 kaarten, 4 torens en 20 golven"
+ },
+ {
+  "v": "1.16",
+  "date": "2026-09-30",
+  "notes": "Torenverdediging: veel mooiere graphics; elke toren apart plaatsen. Menu beter leesbaar op kleine schermen"
+ },
+ {
+  "v": "1.17",
+  "date": "2026-09-30",
+  "notes": "Torenverdediging met meer diepgang: specialisaties op niveau 3, doelkeuze per toren, spreuken (meteoor en vriesgolf), nieuwe vijanden (vliegend, splitser, genezer), rente, sterren en de expertkaart Vulkaan"
+ },
+ {
+  "v": "1.18",
+  "date": "2026-09-30",
+  "notes": "Torenverdediging: melding na een golf toont rente nu netjes op een nieuwe regel"
+ },
+ {
+  "v": "1.19",
+  "date": "2026-09-30",
+  "notes": "Het scherm blijft aan tijdens de spellen, ook zonder aanraken. Torenverdediging: verkopen is minder prominent en vraagt eerst om bevestiging"
+ },
+ {
+  "v": "1.20",
+  "date": "2026-09-30",
+  "notes": "Torenverdediging: de volgende golf komt automatisch na een instelbare tijd (standaard 15 s, eerder starten geeft bonusgoud); vijanden komen zichtbaar uit een portaal met een startzone waar je niet kunt bouwen; meldingen klein bovenin zodat ze niet in de weg zitten; verbeteren direct beschikbaar zodra je genoeg goud hebt. Professionelere geluiden in Torenverdediging en Airhockey. Nieuw: 'Over deze app' met versiegeschiedenis, statistieken en technische gegevens"
+ },
+ {
+  "v": "1.21",
+  "date": "2026-09-30",
+  "notes": "Torenverdediging: 13 uitdagingen met eigen regels (alleen pijlen, één leven, luchtaanval, bazenjacht, marathon en meer); verbeteren en specialiseren kost nu bouwtijd, met steigers op de toren. Volledig nieuwe, realistische geluiden (boogpees, kanonnen, explosies, oorlogshoorns, publiek bij airhockey). Airhockey: ronde hoeken en de puck kan niet meer vast komen te zitten"
+ },
+ {
+  "v": "1.22",
+  "date": "2026-09-30",
+  "notes": "Nieuw spel: Springvos – een klassieke platformgame met 9 levels, kratten, power-ups en gouden tulpen. Airhockey: voller, minder schel goalgeluid. Beveiliging: updates zijn digitaal ondertekend en worden gecontroleerd, strengere app-instellingen. Kleiner en sneller door geoptimaliseerde code"
+ },
+ {
+  "v": "1.23",
+  "date": "2026-10-01",
+  "notes": "Springvos vernieuwd: 12 levels in 4 werelden met eindbazen, muursprong, dash, springveren, liften, brokkelplanken, kanonnen en wespen; veel mooiere graphics met sfeer per wereld (polder, bos, donkere grot, nacht), water, animaties en effecten; tijd en records per level"
+ },
+ {
+  "v": "1.24",
+  "date": "2026-10-01",
+  "notes": "Nieuw spel: Spoorsprinter – ren over het spoor, spring over treinen, ontwijk palen en hekken, met skateboard, jetpack en magneet, en ontsnap aan de handhaver en zijn hond"
+ },
+ {
+  "v": "1.25",
+  "date": "2026-10-01",
+  "notes": "Spoorsprinter: 3 hartjes – bij een botsing ben je er één kwijt en ren je door; pas als ze op zijn word je gepakt. Extra hartjes onderweg te vinden"
+ },
+ {
+  "v": "1.26",
+  "date": "2026-10-01",
+  "notes": "Spoorsprinter: treinen zien er op het dak veel echter uit (grijze daken, losse wagons, dakunits) en het beeld blijft normaal als je over de treinen rent"
+ },
+ {
+  "v": "1.27",
+  "date": "2026-10-02",
+  "notes": "Nieuw spel: Zeeslag – tegen de computer (3 niveaus) of met z'n tweeën op één telefoon, schepen zelf plaatsen of willekeurig"
+ },
+ {
+  "v": "1.28",
+  "date": "2026-10-04",
+  "notes": "Snelkoppelingen: zet elk spel als eigen icoon op je beginscherm (via 📌 Snelkoppelingen of door een spel in het menu ingedrukt te houden), en houd het app-icoon ingedrukt voor je laatst gespeelde spellen"
+ },
+ {
+  "v": "1.29",
+  "date": "2026-10-04",
+  "notes": "Grote app-update: spelers (profielen), instellingenpagina, licht/donker thema, grotere tekst, compact menu, \"Verder waar je was\", statistieken met speeltijd, trofeeënkast, speeltijdlimiet, ouderslot met pincode, back-up en herstel, updates alleen via wifi of handmatig, \"Wat is er nieuw\", herstel bij fouten en voortgang wissen per spel"
+ },
+ {
+  "v": "1.30",
+  "date": "2026-10-05",
+  "notes": "Nieuwe graphics: Springvos in haarscherpe getekende stijl met diepte, licht en nieuwe figuren; Spoorsprinter met echte treinen, bovenleiding, posters en een nieuwe hardloper; Airhockey met glanzende neon-tafel en effecten; Zeeslag met bewegende zee, echte oorlogsschepen en explosies; Torenverdediging met licht en wolkenschaduwen"
+ },
+ {
+  "v": "1.31",
+  "date": "2026-10-05",
+  "notes": "Professioneel geluid: eigen achtergrondmuziek per spel (elke Springvos-wereld en de eindbaas hebben hun eigen muziek), kaartgeluiden voor Patience en Klaverjassen, nieuwe Springvos-effecten, stereo-geluid, en in de instellingen aparte knoppen voor muziek en effectvolume"
+ },
+ {
+  "v": "1.32",
+  "date": "2026-10-05",
+  "notes": "Drie nieuwe spellen: Mijnenveger (3 niveaus, vlaggen, zoomen), Goudgraver (10 levels: pak het goud, graaf gaten en ontsnap aan de mollen) en De Drie Kabouters (8 levels: werk samen met Snel, Sterk en Schild). Met eigen muziek, geluiden en trofeeën. Zeeslag: als je verliest zie je waar de schepen van de computer lagen"
+ },
+ {
+  "v": "1.33",
+  "date": "2026-10-05",
+  "notes": "Goudgraver: graven werkt nu echt tegen de mollen. Een mol die in je gat valt zit vast tot het gat dichtgroeit en is dan verslagen. Mollen lopen ook niet meer om je gaten heen"
+ },
+ {
+  "v": "1.34",
+  "date": "2026-10-06",
+  "notes": "Nieuw spel: Sudoku (3 niveaus, elke puzzel met precies één oplossing, potloodnotities, hints en ongedaan maken). Goudgraver is makkelijker: je hebt nu levens, de mollen zijn trager en minder fanatiek, en je kiest zelf de moeilijkheid (makkelijk, normaal of moeilijk)"
+ },
+ {
+  "v": "1.35",
+  "date": "2026-10-06",
+  "notes": "Goudgraver: de onderste vloer is nu ook te graven, zodat je altijd een gat voor een mol kunt maken. Level 2 (Touwbrug) aangepast: de mol staat niet meer vlak naast je in een doodlopende hoek"
+ },
+ {
+  "v": "1.36",
+  "date": "2026-10-07",
+  "notes": "Nieuwe, professionele iconen: elk spel heeft een eigen getekend icoon in het menu, in de snelkoppelingen en in de statistieken, en de app zelf heeft een nieuw app-icoon dat zich aanpast aan de vorm van je telefoon"
+ },
+ {
+  "v": "1.37",
+  "date": "2026-10-07",
+  "notes": "Nieuw, stijlvol app-icoon (gouden R op groen laken). Grote controle van alle code met tientallen reparaties: verwijderen van spelers, gewist spel en back-up terugzetten werken nu echt; Klaverjassen kan niet meer vastlopen en telt roem correct; Torenverdediging telt een verloren potje niet meer als winst; de eindbaas in Springvos is niet meer te omzeilen; munten in Spoorsprinter blijven bewaard als je stopt; Zeeslag-opties wijzigen tijdens een potje breekt het spel niet meer; Airhockey-puck schiet niet meer door je slagger; Sudoku Moeilijk is echt moeilijk; vensters verschijnen niet meer onverwacht over het menu; speeltijdlimiet is niet meer te omzeilen; donkere statusbalk-iconen bij het lichte thema"
+ },
+ {
+  "v": "1.38",
+  "date": "2026-10-07",
+  "notes": "Nieuw app-icoon: een neon gamecontroller"
+ },
+ {
+  "v": "1.39",
+  "date": "2026-10-07",
+  "notes": "Klaverjassen: het troefsymbool bij de speler die speelt (en in het scoreoverzicht) staat nu in de juiste kleur, harten en ruiten in rood"
+ },
+ {
+  "v": "1.40",
+  "date": "2026-10-07",
+  "notes": "Twee nieuwe spellen: Blokval (vallende blokken, met Klassiek, 40 regels en 2 minuten) en Snoepmix (snoep wisselen en combineren, 20 levels plus vrij spel). Klaverjassen: na elke ronde en na het potje kun je alle slagen, de rondes en de puntentelling bekijken, en er is een nieuw niveau Moeilijk met veel sterkere computerspelers (nu standaard)"
+ },
+ {
+  "v": "1.41",
+  "date": "2026-10-07",
+  "notes": "Nieuw spel: Katapult. Schiet de Bollen met de katapult naar de torens van de wasberen die de picknick hebben gestolen: 20 levels in park, haven en kasteel, vijf soorten Bollen met een eigen kunstje"
+ },
+ {
+  "v": "1.42",
+  "date": "2026-10-08",
+  "notes": "Nieuw: feedback geven vanuit de app (menu → 💬 Feedback, of via Instellingen). Ideeën, problemen en complimenten komen direct bij de ontwikkelaar terecht; zonder internet wordt je bericht bewaard en later verstuurd"
+ },
+ {
+  "v": "1.43",
+  "date": "2026-10-08",
+  "notes": "Nieuw spel: Woordbord 🔤 – een Nederlands woordspel op een bord van 15×15. Leg woorden tegen de computer (Makkelijk, Normaal of Sterk) of speel met z'n tweeën op één toestel. Met bijna 300.000 woorden (OpenTaal), letterwaarde- en woordwaardevakjes, 40 bonuspunten voor alle 7 letters, slepen of tikken om te leggen, inzoomen, tips en een willekeurig bord"
+ },
+ {
+  "v": "1.44",
+  "date": "2026-10-08",
+  "notes": "Beter geluid in alle spellen: geen gekraak of tikjes meer en een vollere, warmere klank. Harde momenten worden zacht begrensd in plaats van afgekapt, diepe tonen worden hoorbaar gemaakt op de telefoonspeaker, schelle bijtonen zijn verwijderd en de muziek wordt op de geluidskwaliteit van je toestel gemaakt"
+ },
+ {
+  "v": "1.45",
+  "date": "2026-10-09",
+  "notes": "Muziek en geluidseffecten los aan of uit: tik in het menu op 🔊 voor een snelmenu, of kies het per spel bij de opties (Geluidseffecten / Achtergrondmuziek). Zeeslag heeft nieuwe, eigen geluiden: een scheepskanon met fluitende granaat, plons, inslag met klinkende romp en een zinkend schip met kreunend staal en bubbels – zonder gekraak"
+ },
+ {
+  "v": "1.46",
+  "date": "2026-10-09",
+  "notes": "Klaverjassen: het scorebord is instelbaar. Standaard staan nu de punten van het huidige potje groot in beeld (met roem) en de totaalscore klein eronder. Wil je het andersom, kies dan bij ⚙ Opties → Scorebord → Groot in beeld: Totaal"
+ },
+ {
+  "v": "1.47",
+  "date": "2026-10-09",
+  "notes": "Klaverjassen: duidelijker troef kiezen. Midden op tafel zie je nu wie als eerste mag kiezen, wie er gepast heeft en wie aan de beurt is; bij de spelers staan labels als 'kiest eerst', 'past' en 'komt uit'. De computer biedt iets rustiger zodat je het kunt volgen. Ook nieuw sinds 1.46: instelbaar scorebord (potje groot, totaal klein)"
+ },
+ {
+  "v": "1.48",
+  "date": "2026-10-09",
+  "notes": "Klaverjassen: duidelijker troef kiezen – midden op tafel zie je wie als eerste mag kiezen, wie gepast heeft en wie aan de beurt is, met labels 'kiest eerst', 'past' en 'komt uit'. Nieuwe regeloptie Ondertroeven: Niet (officieel), Mag of Verplicht. Mag een kaart niet, dan legt de app nu precies uit waarom (bijv. 'je kunt niet over de troefboer heen; gooi een andere kaart bij')"
+ },
+ {
+  "v": "1.49",
+  "date": "2026-10-10",
+  "notes": "De Drie Kabouters helemaal vernieuwd! 20 levels in 5 werelden (Bos, Kristalgrot, Oude Mijn, IJsberg en Burcht met eindbaas De Steenreus). Snel springt en geeft een kopstoot, Sterk heeft een hamer én een katapult, Schild blokkeert met haar paddenstoel, zweeft en de anderen kunnen op haar hoed staan. Met zakken vol spullen (sleutels, appels, bommen, tandwielen) die je aan elkaar kunt geven, liften, lopende banden, ventilatoren, teleporters, hendels en nieuwe vijanden. Mooiere graphics met bewegende achtergronden en licht, en sterren voor alle edelstenen en snelle tijden. Je bestaande voortgang blijft bewaard"
+ },
+ {
+  "v": "1.50",
+  "date": "2026-10-11",
+  "notes": "Nieuw spel: Mahjong 🀄 – speel paren van gelijke stenen weg. 8 vormen (Schildpad, Piramide, Burcht, Draak, Vlinder, Bloem, Brug en Ruit), elk spel is altijd op te lossen. Met hint, onbeperkt terugzetten, schudden, inzoomen, drie tafels (groen vilt, hout, nacht), een dagpuzzel die voor iedereen hetzelfde is, records per vorm en rustige eigen muziek"
+ },
+ {
+  "v": "1.51",
+  "date": "2026-10-13",
+  "notes": "Nieuw spel: Bushalte 🚌 – tik de bussen het parkeerterrein af (alleen als de weg vrij is!) en laat de passagiers instappen in de bus met hun kleur. Maar pas op: er zijn maar een paar vakken bij de halte. 40 levels met paaltjes, vraagteken-bussen en bussen met een slotje, hulpjes (Terug, Extra vak, Schudden, Kraan), een dagelijkse Dagrit en kleurenblind-hulp"
+ },
+ {
+  "v": "1.52",
+  "date": "2026-10-13",
+  "notes": "Bushalte: opgelost dat het spel bleef hangen na Terug (passagiers stapten niet meer in). Ook gebruikt het spel nu minder batterij, omdat het scherm niet meer onnodig blijft tekenen als er niets beweegt"
+ },
+ {
+  "v": "1.53",
+  "date": "2026-10-13",
+  "notes": "Twee nieuwe spellen! Kleurbuisjes 🧪 – giet de gekleurde vloeistoffen tot elk buisje één kleur heeft: 120 levels met verborgen lagen, bevroren en kleine buisjes, plus een dagpuzzel. Bellenschieter 🫧 – mik, schiet en knal drie of meer bellen van dezelfde kleur: 60 levels in 6 werelden met bommen, regenboogbellen, ijs en steen, en een eindeloze modus"
+ },
+ {
+  "v": "1.54",
+  "date": "2026-10-14",
+  "notes": "Nieuw spel: Wereldquiz 🌍 – raad vlaggen en hoofdsteden, herken landen op de kaart of wijs ze zelf aan (met inzoomen). Per werelddeel en niveau, met typen of meerkeuze, tegen de klok, een dagquiz, een atlas om te leren en een voortgangskaart. Fouten komen vanzelf terug zodat je ze leert"
+ },
+ {
+  "v": "1.55",
+  "date": "2026-10-14",
+  "notes": "Nieuw spel: Vuistduel 🥊 – een vechtspel met 8 eigen vechters (o.a. kickbokser Dex uit Rotterdam, karate-oma Truus, robot Moer en ninja Kiki), elk met speciale aanvallen en een supertechniek. Arcade-toernooi met eindbaas, met z'n tweeën op één telefoon, tegen de computer en een trainingsmodus. 8 arena's, van de Rotterdamse haven tot de polder. Speel liggend; met 'Makkelijke specials' krijg je een aparte Speciaal-knop"
+ },
+ {
+  "v": "1.56",
+  "date": "2026-10-14",
+  "notes": "Wereldquiz: kies nu bovenaan duidelijk waar je wilt spelen – de hele wereld of alleen Europa, Afrika, Azië, Noord-Amerika, Zuid-Amerika of Oceanië. Je keuze staat op de Start-knop en bovenin tijdens het spelen"
+ }
+]

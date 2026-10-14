@@ -1,0 +1,167 @@
+  /* ================= data.js: the cast, their moves (frame data) and the stages =================
+     Units: the world is 1200 wide, y goes up from the floor, a standard fighter is ~185 tall.
+     Boxes are [x0, y0, x1, y1] relative to the fighter's feet, x pointing towards where the fighter faces.
+     Frame data is in 60 Hz frames. lv: 'h' = blockable standing or crouching, 'l' = low (block crouching),
+     'o' = overhead (block standing). Every name, move and line of text here is original. */
+  const BASE_NORMALS = {
+    sLP: { s: 4, a: 3, r: 7, d: 30, hs: 13, bs: 10, b: [16, 120, 62, 140], lv: 'h', cn: 'c', ch: 1, st: 7, pu: 6, nm: 'Stoot' },
+    sHP: { s: 7, a: 4, r: 17, d: 80, hs: 20, bs: 15, b: [16, 112, 80, 142], lv: 'h', cn: 's', st: 11, pu: 9, nm: 'Zware stoot' },
+    sLK: { s: 5, a: 3, r: 9, d: 34, hs: 13, bs: 10, b: [14, 40, 76, 72], lv: 'h', cn: 'c', ch: 1, st: 7, pu: 6, nm: 'Trap' },
+    sHK: { s: 9, a: 4, r: 19, d: 88, hs: 20, bs: 15, b: [18, 96, 98, 130], lv: 'h', cn: 0, st: 12, pu: 10, nm: 'Zware trap' },
+    cLP: { s: 4, a: 2, r: 7, d: 24, hs: 12, bs: 9, b: [16, 64, 64, 86], lv: 'h', cn: 'c', ch: 1, st: 7, pu: 6, nm: 'Gehurkte stoot' },
+    cHP: { s: 6, a: 5, r: 19, d: 76, hs: 20, bs: 14, b: [6, 84, 52, 178], lv: 'h', cn: 's', st: 11, pu: 8, aa: 1, nm: 'Opstoot' },
+    cLK: { s: 4, a: 3, r: 8, d: 24, hs: 12, bs: 9, b: [12, 0, 72, 24], lv: 'l', cn: 'c', ch: 1, st: 7, pu: 6, nm: 'Lage trap' },
+    cHK: { s: 8, a: 4, r: 23, d: 72, hs: 0, bs: 14, b: [12, 0, 102, 24], lv: 'l', cn: 0, kd: 1, st: 11, pu: 8, la: [3, 7], nm: 'Veegtrap' },
+    jLP: { s: 4, a: 9, d: 32, hs: 13, bs: 10, b: [10, 58, 58, 86], lv: 'o', st: 8, pu: 5, air: 1, nm: 'Sprongstoot' },
+    jHP: { s: 6, a: 6, d: 80, hs: 19, bs: 14, b: [12, 30, 70, 76], lv: 'o', st: 11, pu: 7, air: 1, nm: 'Zware sprongstoot' },
+    jLK: { s: 4, a: 10, d: 36, hs: 13, bs: 10, b: [6, 8, 60, 48], lv: 'o', st: 8, pu: 5, air: 1, nm: 'Sprongtrap' },
+    jHK: { s: 7, a: 6, d: 84, hs: 19, bs: 14, b: [12, 0, 84, 40], lv: 'o', st: 11, pu: 7, air: 1, nm: 'Zware sprongtrap' },
+  };
+  // helpers to write moves compactly
+  const HIT = (f, n, b, d, o = {}) => Object.assign({ f, n, b, d, hs: 20, bs: 14, lv: 'h', st: 10, pu: 8, ch: .25 }, o);
+  const MULTI = (frames, n, b, d, last, o = {}) => frames.map((f, i) => HIT(f, n, b, i === frames.length - 1 ? last.d : d,
+    i === frames.length - 1 ? Object.assign({ hs: 26, st: 12, pu: 9 }, o, last) : Object.assign({ hs: 26, bs: 12, st: 6, pu: 1.6 }, o)));
+
+  const CAST = [
+    { id: 'dex', nm: 'Dex', full: 'Dex Havenga', style: 'Kickboksen', from: 'Rotterdam', stage: 'haven',
+      bio: 'Kickbokskampioen uit Rotterdam-Zuid. Traint elke ochtend op de kade, tussen de containers en de meeuwen.',
+      intro: 'Kom maar op, ik heb de hele dag!', quote: 'Geen woorden, maar daden!',
+      hp: 1000, walkF: 3.1, walkB: 2.5, jvx: 4.3, jvy: 15.5, W: 1, H: 1, pow: .9, reach: 1, spd: 0, stat: [4, 4, 4],
+      sp: [
+        { id: 'golf', nm: 'Golfslag', in: 'qcf', b: 'K', role: 'proj', desc: 'trapt een golf water weg',
+          mk: h => ({ tot: 46, pj: { f: 13, k: 'golf', x: 58, y: 50, vx: h ? 7.4 : 5.6, w: 24, h: 26, d: 70, hs: 18, bs: 14, life: 150, st: 10 }, cn: 'u', an: 'pjK' }) },
+        { id: 'kraan', nm: 'Kraanknie', in: 'dp', b: 'K', role: 'aa', desc: 'springende knie, goed tegen springers',
+          mk: h => ({ air: 1, lr: 17, inv: [1, h ? 7 : 5], tinv: [1, 10], vel: [[3, 3, h ? 2.4 : 1.6, h ? 13.5 : 11.5]],
+            hits: [HIT(3, 3, [10, 70, 62, 150], h ? 55 : 45, { hs: 22, st: 8, pu: 2, jg: 1, la: [1, 9] }), HIT(6, 8, [4, 90, 58, 196], h ? 60 : 50, { kd: 1, jg: 1, st: 11, la: [3, 10] })], an: 'riseK' }) },
+        { id: 'stoom', nm: 'Stoomboot', in: 'qcb', b: 'P', role: 'rush', desc: 'stormt naar voren met een vuist',
+          mk: h => ({ tot: 42, vel: [[7, 20, h ? 10 : 8, null]], hits: [HIT(9, 11, [10, 92, 70, 142], h ? 95 : 80, { kd: 1, la: [5, 8], st: 12, pu: 10, bs: 16 })], cn: 'u', an: 'rushP' }) },
+      ],
+      su: { id: 'storm', nm: 'Storm op de Maas', in: 'qcf2', b: 'P', role: 'rush', desc: 'een wervelstorm van trappen',
+        mk: () => ({ cost: 100, fl: 40, tot: 74, inv: [1, 12], vel: [[1, 12, 10.5, null], [13, 50, 1.4, null]],
+          hits: [HIT(3, 10, [8, 60, 72, 150], 50, { hs: 30, bs: 18, st: 6, pu: 1 }), ...MULTI([17, 24, 31, 38, 46], 3, [8, 50, 80, 160], 40, { d: 75, kd: 1, la: [6, 11] })], an: 'suDex' }) },
+      easy: { n: 'golf', f: 'stoom', d: 'kraan' } },
+
+    { id: 'truus', nm: 'Oma Truus', full: 'Oma Truus', style: 'Judo', from: 'Kinderdijk', stage: 'polder',
+      bio: 'Zwarte band sinds 1972. Bakt de lekkerste stroopwafels van de polder én gooit je zo over haar heup.',
+      intro: 'Kom maar hier, lieverd.', quote: 'Zo. En nu een kopje thee.',
+      hp: 1050, walkF: 2.8, walkB: 2.2, jvx: 3.8, jvy: 14.5, W: .95, H: .84, pow: 1.08, reach: .95, spd: 0, stat: [4, 3, 3],
+      nov: { cHK: { x: 14 }, sHP: { s: 5 } },
+      sp: [
+        { id: 'waf', nm: 'Stroopwafelworp', in: 'qcf', b: 'P', role: 'proj', desc: 'gooit een stroopwafel in een boog',
+          mk: h => ({ tot: 44, pj: { f: 12, k: 'waf', x: 40, y: 96, vx: h ? 6.2 : 4.4, vy: h ? 6 : 7.5, g: .32, w: 18, h: 14, d: 65, hs: 18, bs: 14, life: 140 }, cn: 'u', an: 'pjP' }) },
+        { id: 'heup', nm: 'Heupworp', in: 'qcb', b: 'P', role: 'grab', desc: 'pakt je dichtbij vast en gooit je over de heup',
+          mk: h => ({ tot: 36, gr: { f: 3, rng: h ? 58 : 80, d: h ? 160 : 135, n: 36 }, an: 'grab' }) },
+        { id: 'tegen', nm: 'Tegenzet', in: 'qcb', b: 'K', role: 'counter', desc: 'vangt een stoot of trap op en gooit terug',
+          mk: h => ({ tot: h ? 44 : 38, ct: { f0: 2, f1: h ? 20 : 14, d: h ? 130 : 110 }, an: 'counter' }) },
+      ],
+      su: { id: 'zwier', nm: 'Zondagse Zwier', in: 'qcf2', b: 'P', role: 'grab', desc: 'een draaiende superworp van dichtbij',
+        mk: () => ({ cost: 100, fl: 36, tot: 52, gr: { f: 3, rng: 105, d: 300, n: 64, su: 1 }, inv: [1, 4], an: 'grab' }) },
+      easy: { n: 'waf', f: 'heup', d: 'tegen' } },
+
+    { id: 'moer', nm: 'Moer', full: 'MR-8 Moer', style: 'Robotica', from: 'Eindhoven', stage: 'ruimte',
+      bio: 'Gebouwd in een Eindhovens lab om fietsen te repareren. Vond vechten uiteindelijk toch leuker.',
+      intro: 'Systemen online. Bliep.', quote: 'Missie voltooid. Bliep bloep!',
+      hp: 1050, walkF: 2.7, walkB: 2.3, jvx: 4.0, jvy: 15, W: 1.05, H: 1.03, pow: 1, reach: 1.08, spd: 1, stat: [4, 3, 5], charge: 1,
+      sp: [
+        { id: 'vuist', nm: 'Raketvuist', in: 'cb', b: 'P', role: 'proj', desc: 'schiet zijn vuist weg als een raket',
+          mk: h => ({ tot: 40, pj: { f: 11, k: 'vuist', x: 60, y: 118, vx: h ? 10 : 8, w: 26, h: 16, d: 75, hs: 18, bs: 14, life: 120 }, cn: 'u', an: 'pjFist' }) },
+        { id: 'veer', nm: 'Springveer', in: 'cd', b: 'K', role: 'aa', desc: 'springt omhoog op een veer, goed tegen springers',
+          mk: h => ({ air: 1, lr: 18, inv: [1, 9], tinv: [1, 10], vel: [[4, 4, 1.4, h ? 13.5 : 12]],
+            hits: [HIT(4, 10, [0, 60, 60, 200], h ? 110 : 95, { kd: 1, jg: 1, la: [3, 10], st: 12, hs: 24, bs: 16 })], an: 'riseK' }) },
+        { id: 'wiel', nm: 'Glijwiel', in: 'cb', b: 'K', role: 'rush', desc: 'glijdt laag over de grond (laag blokken)',
+          mk: h => ({ tot: 46, lo: [6, 30], vel: [[7, 26, h ? 9.5 : 8, null]], hits: [HIT(8, 16, [10, 0, 76, 40], h ? 90 : 80, { lv: 'l', kd: 1, st: 11, la: [3, 6] })], cn: 'u', an: 'slide' }) },
+      ],
+      su: { id: 'laser', nm: 'Overdrive-laser', in: 'qcf2', b: 'P', role: 'proj', desc: 'een enorme laserstraal',
+        mk: () => ({ cost: 100, fl: 40, tot: 56, pj: { f: 6, k: 'laser', x: 70, y: 112, vx: 13, w: 52, h: 34, d: 52, hits: 6, gap: 5, hs: 24, bs: 12, ch: .3, life: 80, st: 6, kd: 1 }, an: 'pjFist' }) },
+      easy: { n: 'vuist', f: 'wiel', d: 'veer' } },
+
+    { id: 'sol', nm: 'Sol', full: 'Sol Vidal', style: 'Capoeira', from: 'Amsterdam', stage: 'gracht',
+      bio: 'Danst capoeira langs de grachten. Niemand weet ooit waar haar volgende trap vandaan komt.',
+      intro: 'Zullen we dansen?', quote: 'Voel je het ritme?',
+      hp: 950, walkF: 3.3, walkB: 2.8, jvx: 4.6, jvy: 15.5, W: .95, H: .98, pow: .97, reach: 1.12, spd: 0, stat: [3, 5, 4],
+      sp: [
+        { id: 'molen', nm: 'Molenwiek', in: 'qcb', b: 'K', role: 'rush', desc: 'draait als een molen naar voren',
+          mk: h => ({ tot: 48, vel: [[6, 34, h ? 5.2 : 4, null]], hits: MULTI([8, 15, 22, 29], 3, [0, 40, 80, 122], h ? 32 : 27, { d: h ? 40 : 34, kd: 1, la: [4, 8] }), cn: 'u', an: 'spin' }) },
+        { id: 'zon', nm: 'Zonnewiel', in: 'qcf', b: 'K', role: 'hop', desc: 'radslag met een trap van boven (staand blokken)',
+          mk: h => ({ air: 1, lr: 10, vel: [[5, 5, h ? 6 : 4.8, 11.5]], hits: [HIT(16, 18, [-10, 0, 62, 62], h ? 85 : 75, { lv: 'o', st: 11, hs: 19, bs: 14 })], an: 'wheel' }) },
+        { id: 'maan', nm: 'Maanboog', in: 'dp', b: 'K', role: 'aa', desc: 'salto met een trap omhoog',
+          mk: h => ({ air: 1, lr: 18, inv: [1, h ? 8 : 6], tinv: [1, 10], vel: [[4, 4, .4, h ? 14 : 12]], hits: [HIT(4, 9, [0, 70, 64, 200], h ? 110 : 95, { kd: 1, jg: 1, la: [3, 10], st: 12 })], an: 'flip' }) },
+      ],
+      su: { id: 'carnaval', nm: 'Carnavalswervel', in: 'qcf2', b: 'K', role: 'rush', desc: 'een eindeloze draaidans vol trappen',
+        mk: () => ({ cost: 100, fl: 40, tot: 80, inv: [1, 10], vel: [[1, 60, 4.6, null]], hits: MULTI([4, 11, 18, 25, 32, 39, 46, 54], 3, [0, 30, 86, 150], 34, { d: 66, kd: 1, la: [6, 11] }), an: 'spin' }) },
+      easy: { n: 'zon', f: 'molen', d: 'maan' } },
+
+    { id: 'bram', nm: 'Bram', full: 'Bram de Berg', style: 'Sumo', from: 'Scheveningen', stage: 'strand',
+      bio: 'Ging naar Japan voor de sushi en kwam terug als sumokampioen. Eet zes ontbijtjes per dag.',
+      intro: 'Ik sta hier als een berg.', quote: 'Tijd voor een haring!',
+      hp: 1200, walkF: 2.3, walkB: 2.0, jvx: 3.6, jvy: 13.8, W: 1.4, H: 1.0, pow: 1.15, reach: .98, spd: 1, stat: [5, 2, 3],
+      sp: [
+        { id: 'klap', nm: 'Klapperregen', in: 'qcf', b: 'P', role: 'poke', desc: 'een regen van handpalmen',
+          mk: h => ({ tot: 40, vel: [[5, 26, 1, null]], hits: MULTI(h ? [6, 10, 14, 18, 22] : [6, 11, 16, 21], 2, [10, 92, 88, 152], 22, { d: 30 }, { hs: 18 }), cn: 'u', an: 'slaps' }) },
+        { id: 'buik', nm: 'Buikbots', in: 'qcb', b: 'P', role: 'rush', desc: 'duikt met zijn buik vooruit',
+          mk: h => ({ tot: 48, vel: [[11, 28, h ? 10 : 8.5, null]], hits: [HIT(12, 16, [0, 40, 82, 132], h ? 115 : 100, { kd: 1, la: [5, 7], st: 12, pu: 10, bs: 16 })], an: 'belly' }) },
+        { id: 'zout', nm: 'Zoutworp', in: 'qcf', b: 'K', role: 'proj', desc: 'gooit een wolk zout (korte afstand)',
+          mk: h => ({ tot: 36, pj: { f: 10, k: 'zout', x: 54, y: 118, vx: h ? 8 : 6.5, w: 30, h: 30, d: 55, hs: 22, bs: 14, life: h ? 30 : 24 }, cn: 'u', an: 'pjP' }) },
+      ],
+      su: { id: 'berg', nm: 'Bergstorting', in: 'qcf2', b: 'P', role: 'rush', desc: 'rolt als een lawine over je heen',
+        mk: () => ({ cost: 100, fl: 40, tot: 70, inv: [1, 8], vel: [[2, 34, 7, null]], hits: MULTI([6, 12, 18, 24, 31], 4, [0, 30, 92, 160], 45, { d: 110, kd: 1, la: [6, 10] }), an: 'belly' }) },
+      easy: { n: 'zout', f: 'buik', d: 'klap' } },
+
+    { id: 'kiki', nm: 'Kiki', full: 'Kiki Schaduw', style: 'Ninjutsu', from: 'Maastricht', stage: 'tempel',
+      bio: 'Ninja in opleiding uit Maastricht. Zo snel dat haar sjaal nog wappert als zij allang weg is.',
+      intro: 'Sssst...', quote: 'Je zag me niet eens!',
+      hp: 1000, walkF: 3.6, walkB: 3.0, jvx: 4.8, jvy: 16, W: .9, H: .92, pow: 1, reach: 1, spd: -1, stat: [2, 5, 4],
+      nov: { sHK: { s: 7 }, cHK: { x: 10 } },
+      sp: [
+        { id: 'ster', nm: 'Sterrenregen', in: 'qcf', b: 'P', role: 'proj', desc: 'gooit een snelle werpster',
+          mk: h => ({ tot: 32, pj: { f: 9, k: 'ster', x: 50, y: 120, vx: h ? 11 : 9, w: 14, h: 14, d: 45, hs: 16, bs: 12, life: 100 }, cn: 'u', an: 'pjThrow' }) },
+        { id: 'rook', nm: 'Rookwolk', in: 'qcb', b: 'P', role: 'tele', desc: 'verdwijnt en duikt voor (licht) of achter (zwaar) je op',
+          mk: h => ({ tot: 34, inv: [1, 18], thru: [1, 18], hid: [6, 16], tp: { f: 12, mode: h ? 'behind' : 'front' }, an: 'tele' }) },
+        { id: 'duik', nm: 'Zwaluwduik', in: 'qcf', b: 'K', role: 'hop', desc: 'springt op en duikt met een trap (staand blokken)',
+          mk: h => ({ air: 1, lr: 8, vel: [[3, 3, h ? 3 : 2.4, 10], [12, 12, h ? 9 : 7.5, -7]], hits: [HIT(12, 30, [0, -10, 60, 42], h ? 75 : 65, { lv: 'o', st: 10, hs: 19, bs: 13 })], an: 'dive' }) },
+      ],
+      su: { id: 'schaduw', nm: 'Duizend Schaduwen', in: 'qcf2', b: 'P', role: 'rush', desc: 'flitst dwars door je heen',
+        mk: () => ({ cost: 100, fl: 40, tot: 62, inv: [1, 40], thru: [1, 40], vel: [[2, 22, 13, null], [23, 62, 0, null]], hits: MULTI([4, 7, 10, 13, 16, 19, 22], 2, [-40, 20, 70, 160], 36, { d: 70, kd: 1, la: [-5, 10] }), an: 'dash' }) },
+      easy: { n: 'ster', f: 'rook', d: 'duik' } },
+
+    { id: 'sjaak', nm: 'Sjaak', full: 'Sterke Sjaak', style: 'Krachtsport', from: 'Tilburg', stage: 'kermis',
+      bio: 'De sterkste man van de Tilburgse kermis. Tilt een draaimolen op met één hand, en zwaait dan naar het publiek.',
+      intro: 'Dames en heren...!', quote: 'Applaus voor de sterkste man!',
+      hp: 1100, walkF: 2.5, walkB: 2.1, jvx: 3.8, jvy: 14, W: 1.25, H: 1.08, pow: 1.1, reach: 1.04, spd: 1, stat: [5, 2, 3],
+      sp: [
+        { id: 'grond', nm: 'Grondklap', in: 'qcf', b: 'P', role: 'proj', desc: 'slaat op de grond: een schokgolf (laag blokken)',
+          mk: h => ({ tot: 50, pj: { f: 16, k: 'klap', x: 60, y: 0, vx: h ? 7 : 5.5, w: 30, h: 24, d: 80, lv: 'l', hs: 20, bs: 14, life: 70 }, cn: 'u', an: 'pound' }) },
+        { id: 'molen', nm: 'Molenarm', in: 'qcb', b: 'P', role: 'rush', desc: 'een gepantserde armzwaai (houdt één klap tegen)',
+          mk: h => ({ tot: 52, arm: [4, 22, 1], vel: [[10, 26, h ? 7 : 5.5, null]], hits: [HIT(12, 12, [0, 100, 92, 162], h ? 120 : 105, { kd: 1, la: [5, 9], st: 13, pu: 10, bs: 18 })], an: 'lariat' }) },
+        { id: 'hef', nm: 'Gewichtheffer', in: 'dp', b: 'P', role: 'aa', desc: 'vangt springers uit de lucht',
+          mk: h => ({ tot: 40, inv: [1, 6], gr: { f: 5, air: 1, b: [0, 70, h ? 100 : 86, 250], d: h ? 150 : 130, n: 40 }, an: 'catch' }) },
+      ],
+      su: { id: 'finale', nm: 'Circusfinale', in: 'qcf2', b: 'P', role: 'rush', desc: 'gepantserde stormloop met een daverende slotklap',
+        mk: () => ({ cost: 100, fl: 40, tot: 70, arm: [1, 30, 2], vel: [[2, 22, 6.5, null]], hits: MULTI([6, 13, 20, 27, 34], 4, [0, 60, 92, 170], 50, { d: 120, kd: 1, la: [6, 11] }), an: 'lariat' }) },
+      easy: { n: 'grond', f: 'molen', d: 'hef' } },
+
+    { id: 'nevel', nm: 'Graaf Nevel', full: 'Graaf Nevel', style: 'Schaduwkunst', from: 'Onbekend', stage: 'dak', boss: 1,
+      bio: 'Niemand weet wie er achter het masker zit. Hij verschijnt alleen voor de allerbeste vechters.',
+      intro: 'Eindelijk... een uitdaging.', quote: 'Het toernooi is van mij.',
+      hp: 960, walkF: 2.9, walkB: 2.5, jvx: 4.3, jvy: 15, W: 1, H: 1.05, pow: 1, reach: 1.02, spd: 0, stat: [4, 4, 5],
+      sp: [
+        { id: 'bol', nm: 'Nevelbol', in: 'qcf', b: 'P', role: 'proj', desc: 'een trage bol paarse mist',
+          mk: h => ({ tot: 50, pj: { f: 15, k: 'nevel', x: 56, y: 100, vx: h ? 6 : 4.5, w: 30, h: 30, d: 62, hs: 20, bs: 15, life: 180 }, cn: 'u', an: 'pjP' }) },
+        { id: 'spiegel', nm: 'Spiegeltruc', in: 'qcb', b: 'K', role: 'tele', desc: 'verdwijnt en verschijnt voor (licht) of achter (zwaar) je',
+          mk: h => ({ tot: 32, inv: [1, 18], thru: [1, 18], hid: [6, 16], tp: { f: 12, mode: h ? 'behind' : 'front' }, an: 'tele' }) },
+        { id: 'sikkel', nm: 'Maansikkel', in: 'dp', b: 'K', role: 'aa', desc: 'een sikkeltrap omhoog',
+          mk: h => ({ air: 1, lr: 18, inv: [1, 8], tinv: [1, 10], vel: [[3, 3, 1.5, h ? 13.5 : 12]], hits: [HIT(4, 10, [0, 60, 70, 200], h ? 96 : 86, { kd: 1, jg: 1, la: [3, 10], st: 12 })], an: 'flip' }) },
+      ],
+      su: { id: 'eclips', nm: 'Totale Eclips', in: 'qcf2', b: 'P', role: 'rush', desc: 'de wereld wordt donker...',
+        mk: () => ({ cost: 100, fl: 44, tot: 66, inv: [1, 14], thru: [1, 12], hid: [2, 9], tp: { f: 8, mode: 'front' }, vel: [[10, 40, 2, null]],
+          hits: MULTI([12, 18, 24, 30, 37], 4, [0, 40, 90, 170], 45, { d: 110, kd: 1, la: [6, 11] }), an: 'suDex' }) },
+      easy: { n: 'bol', f: 'spiegel', d: 'sikkel' } },
+  ];
+  const CAST_BY = {}; CAST.forEach((c, i) => { c.ix = i; CAST_BY[c.id] = c; });
+
+  const STAGES = [
+    { id: 'haven', nm: 'Rotterdamse haven' }, { id: 'gracht', nm: 'Amsterdamse gracht' }, { id: 'polder', nm: 'Molen in de polder' },
+    { id: 'tempel', nm: 'Bergtempel' }, { id: 'ruimte', nm: 'Ruimtestation' }, { id: 'kermis', nm: 'Kermis' },
+    { id: 'strand', nm: 'Strand van Scheveningen' }, { id: 'dak', nm: 'Dak van de flat' },
+  ];
+  const INPUT_TXT = { qcf: '↓↘→', qcb: '↓↙←', dp: '→↓↘', cb: '← (vasthouden) →', cd: '↓ (vasthouden) ↑', qcf2: '↓↘→↓↘→' };

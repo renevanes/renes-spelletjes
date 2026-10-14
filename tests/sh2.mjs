@@ -1,0 +1,42 @@
+import { existsSync as require_exists } from 'node:fs';
+import { chromium, devices } from 'playwright';
+const b = await chromium.launch({executablePath: process.env.PW_CHROMIUM || (require_exists('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : undefined)});
+const ctx = await b.newContext({...devices['Pixel 7']});
+const p = await ctx.newPage();
+const errs=[]; p.on('pageerror',e=>errs.push(e.message));
+p.on('dialog', d=>{console.log('dialog:',d.message().slice(0,80)); d.accept();});
+await p.addInitScript(()=>{ window.Android={ setShortcuts(){}, setBarColor(){}, keepScreenOn(){}, vibrate(){}, setUpdateMode(){}, saveFile:(n,t)=>{ localStorage.setItem('__bk',t); setTimeout(()=>onBackupSaved(true),10); return true;}, openFile:()=>{ setTimeout(()=>onBackupLoaded(localStorage.getItem('__bk')),10);} }; });
+const t0=Date.now();
+await p.goto('file://' + (process.env.APP_HTML || new URL('../build/web/index.html', import.meta.url).pathname));
+console.log('load ms', Date.now()-t0, await p.evaluate(()=>JSON.stringify(performance.getEntriesByType('navigation')[0].toJSON(),['domContentLoadedEventEnd','loadEventEnd','domInteractive'])));
+await p.waitForTimeout(1000);
+const close=()=>p.evaluate(()=>document.querySelectorAll('.modal.show').forEach(m=>m.classList.remove('show')));
+await close();
+// play patience a bit -> continue button
+await p.evaluate(()=>openGame('patience')); await p.waitForTimeout(6000);
+await p.evaluate(()=>window.appBack()); await p.waitForTimeout(500); await close();
+console.log('continue', await p.evaluate(()=>{const c=document.querySelector('#continueBtn'); return c && getComputedStyle(c).display!=='none' ? c.textContent : null}));
+console.log('playtime', await p.evaluate(()=>localStorage.getItem('playtime'), ), await p.evaluate(()=>localStorage.getItem('today')));
+// add profile Sanne
+await p.click('#profBtn'); await p.waitForTimeout(300);
+await p.click('#profList [data-act="add"]'); await p.waitForTimeout(200);
+await p.fill('#profName','Sanne'); await p.click('#profEdit button:text-is("Opslaan")'); await p.waitForTimeout(300);
+console.log('profiles', await p.evaluate(()=>localStorage.getItem('app.profiles')));
+const rows = await p.$$eval('#profList [data-act]', bs=>bs.map(b=>b.dataset.act+':'+b.textContent.trim().slice(0,20)));
+console.log(rows);
+await p.click('#profList [data-act="use"] >> nth=1').catch(e=>console.log('nouse',e.message.slice(0,80)));
+await p.waitForTimeout(1500); await close();
+console.log('active', await p.evaluate(()=>localStorage.getItem('app.profile')), 'chip', await p.textContent('#profBtn'));
+console.log('continue2', await p.evaluate(()=>{const c=document.querySelector('#continueBtn'); return c && getComputedStyle(c).display!=='none' ? c.textContent : null}));
+console.log('keys', await p.evaluate(()=>Object.keys(localStorage).join(',')));
+// backup, wipe sanne patience nothing; then limit test
+await p.evaluate(()=>{const c=JSON.parse(localStorage.getItem('app.cfg')); c.limit=30; localStorage.setItem('app.cfg',JSON.stringify(c)); const d=new Date(); localStorage.setItem('app.today', JSON.stringify({date:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`, sec:1799, extra:0}));});
+await p.reload(); await p.waitForTimeout(1000); await close();
+await p.evaluate(()=>openGame('zs')); await p.waitForTimeout(7000);
+console.log('limit overlay', await p.evaluate(()=>document.querySelector('#limitOverlay').classList.contains('show')), await p.textContent('#limitText'), 'screen', await p.evaluate(()=>document.querySelector('.screen.active').id));
+await p.screenshot({path:'sh_limit.png'});
+await p.click('#limitMenu'); await p.waitForTimeout(400);
+await p.evaluate(()=>openGame('rs')); await p.waitForTimeout(500);
+console.log('blocked ->', await p.evaluate(()=>document.querySelector('.screen.active').id), await p.evaluate(()=>document.querySelector('#limitOverlay').classList.contains('show')));
+console.log('errs', errs);
+await b.close();

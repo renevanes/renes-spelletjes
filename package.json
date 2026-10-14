@@ -1,0 +1,15 @@
+{
+  "name": "renes-spelletjes",
+  "private": true,
+  "description": "Rene's spelletjes – Android-spelletjesapp (WebView + Java). Zie AGENTS.md.",
+  "scripts": {
+    "build": "python3 tools/build_web.py",
+    "build:debug": "python3 tools/build_web.py --no-minify",
+    "test": "node tests/tiles.mjs && node tests/smoke.mjs",
+    "check": "npm run build && npm test"
+  },
+  "devDependencies": {
+    "html-minifier-terser": "7.2.0",
+    "playwright": "1.56.0"
+  }
+}

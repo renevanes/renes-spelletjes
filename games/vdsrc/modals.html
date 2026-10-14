@@ -1,0 +1,39 @@
+<div class="modal" id="vdStartModal">
+  <div class="sheet">
+    <h3>🥊 Vuistduel</h3>
+    <p class="note" style="color:var(--muted);margin-top:0">Kies je vechter en win het toernooi! Stoten, trappen, speciale aanvallen en een supertechniek als je meter vol is. Alles is maar een spelletje: niemand raakt echt gewond.</p>
+    <button id="vdContinue" class="vd-cont" hidden></button>
+    <div class="vd-modes" id="vdModes"></div>
+    <div id="vdOpts"></div>
+    <div class="stats" id="vdStats"></div>
+    <div class="row sticky-actions"><button class="btn" id="vdStartBack">Menu</button></div>
+  </div>
+</div>
+<div class="modal center" id="vdPauseModal">
+  <div class="sheet">
+    <h3>Pauze</h3>
+    <div class="col">
+      <button class="btn primary" id="vdPResume">▶ Verder</button>
+      <button class="btn" id="vdPMoves">📜 Bewegingen</button>
+      <div id="vdPTrain"></div>
+      <div id="vdPOpts"></div>
+      <div class="row"><button class="btn" id="vdPRestart">↻ Opnieuw</button><button class="btn" id="vdPQuit">Stoppen</button></div>
+    </div>
+  </div>
+</div>
+<div class="modal center" id="vdMovesModal">
+  <div class="sheet">
+    <h3 id="vdMovesTitle">Bewegingen</h3>
+    <div id="vdMovesTabs" class="seg"></div>
+    <div id="vdMovesList"></div>
+    <div class="row"><button class="btn primary" id="vdMovesOk">Terug</button></div>
+  </div>
+</div>
+<div class="modal center" id="vdEndModal">
+  <div class="sheet">
+    <div id="vdEndPic"></div>
+    <h3 id="vdEndTitle"></h3>
+    <div id="vdEndText"></div>
+    <div class="row" id="vdEndBtns"></div>
+  </div>
+</div>

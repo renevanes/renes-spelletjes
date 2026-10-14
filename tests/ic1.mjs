@@ -1,0 +1,11 @@
+import { existsSync as require_exists } from 'node:fs';
+import { chromium, devices } from 'playwright';
+const b = await chromium.launch({executablePath: process.env.PW_CHROMIUM || (require_exists('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : undefined)});
+const p = await (await b.newContext({...devices['Pixel 7']})).newPage();
+const errs=[]; p.on('pageerror',e=>errs.push(e.message)); p.on('console',m=>{ if(m.type()==='error') errs.push(m.text()); });
+await p.addInitScript(()=>{ localStorage.setItem('app.cfg','{"seen":"9.99"}'); window.Android = { setShortcuts: j => { window.__sc = JSON.parse(j); }, pinShortcut: () => true }; });
+await p.goto('file://' + (process.env.APP_HTML || new URL('../build/web/index.html', import.meta.url).pathname)); await p.waitForTimeout(1500);
+await p.screenshot({path:'gfx/ic_menu.png'}); await p.evaluate(()=>window.scrollTo(0, 2000)); await p.waitForTimeout(200); await p.screenshot({path:'gfx/ic_menu2.png'});
+console.log('shortcuts', await p.evaluate(()=>(window.__sc||[]).map(s=>s.id+':'+s.png.slice(0,22)+':'+s.png.length).join(' ')));
+await p.evaluate(()=>{ document.documentElement.classList.add('compact'); window.scrollTo(0,0); }); await p.waitForTimeout(200); await p.screenshot({path:'gfx/ic_compact.png'});
+console.log(errs); await b.close();
