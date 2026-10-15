@@ -1813,6 +1813,9 @@ html.big-text #rk .rk-continent-bonuses button{min-height:44px}html.big-text .rk
 .rk-dock-collapsed .rk-command-title h3{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 @media(max-height:550px) and (orientation:landscape){.rk-scoreboard{max-height:calc(100% - 222px);overflow-y:auto;scrollbar-width:thin}.rk-score{flex-shrink:0}}
+
+.rk-army-markers text.rk-capital{font-size:24px;fill:#ffe09a;stroke:#143244;stroke-width:3}
+.rk-mission{border-bottom:1px solid #a8c6d43a;margin-bottom:8px}.rk-mission summary{font-size:12px;font-weight:700;min-height:44px;padding:10px 28px 10px 0;cursor:pointer;color:#ffe09a}.rk-mission p{font-size:13px;line-height:1.4;color:#eff8fc;margin:0 0 12px}
 /* RK_CSS_END */
 
 /* APP_SUPPORT_CSS_BEGIN */
@@ -3075,7 +3078,7 @@ html.light .favorite-choices button {
     <h3>🌍 Wereldmacht · Wereldverovering</h3>
     <p>
       Verover de wereld op een kaart met 42 gebieden. Speel tegen de computer of geef het toestel door
-      aan je medespelers. De startlanden en legers worden automatisch verdeeld.
+      aan je medespelers. Kies je spelvorm en bepaal of je de startlegers zelf plaatst.
     </p>
     <button
       id="rkResume"
@@ -3115,8 +3118,12 @@ html.light .favorite-choices button {
           <option value="fast">Snel</option>
         </select></label
       >
-      <label>Speldoel<select id="rkGoal"><option value="world">Wereldverovering · alle 42</option><option value="domination">Snelle verovering · 70% (30)</option></select></label>
+      <label>Speldoel<select id="rkGoal"><option value="world">Wereldverovering · alle 42</option><option value="domination">Snelle verovering · 70% (30)</option><option value="capital">Hoofdsteden veroveren</option><option value="mission">Geheime missies</option></select></label>
       <label>Kaartbonussen<select id="rkCardMode"><option value="progressive">Oplopend · 4, 6, 8…</option><option value="fixed">Vast · 4 / 6 / 8 / 10</option></select></label>
+    </div>
+    <div class="rk-setup-grid" style="margin-top:12px">
+      <label>Blitzdobbelstenen<select id="rkDiceMode"><option value="balanced">Gebalanceerd · minder extreme uitslagen</option><option value="random">Willekeurig · gewone dobbelstenen</option></select></label>
+      <label>Startlegers<select id="rkSetupMode"><option value="auto">Automatisch verdelen</option><option value="manual">Zelf plaatsen · om de beurt</option></select></label>
     </div>
     <div class="rk-sound-options"><label><input id="rkSound" type="checkbox" checked> Geluidseffecten</label><label><input id="rkMusic" type="checkbox" checked> Achtergrondmuziek</label></div><div id="rkNames" class="rk-names"></div>
     <p class="rk-note">
@@ -3132,6 +3139,9 @@ html.light .favorite-choices button {
 <div id="rkHelpModal" class="modal">
   <div class="sheet">
     <h3>Zo speel je Wereldmacht</h3>
+    <p><b>Hoofdsteden:</b> kies aan het begin een eigen gebied als hoofdstad. Elke veroverde hoofdstad geeft 2 extra legers per beurt en verdedigt met maximaal 3 dobbelstenen. Wie alle hoofdsteden bezet, wint; een hoofdstad verliezen schakelt je dus niet meteen uit.</p>
+    <p><b>Geheime missies:</b> bekijk je eigen opdracht via ‘Mijn geheime missie’. Je wint zodra je opdracht voltooid is. Bij doorgeven blijft deze opdracht verborgen.</p>
+    <p><b>Startlegers zelf plaatsen:</b> de landen worden verdeeld, daarna plaatsen spelers om de beurt maximaal drie startlegers. Als iedereen klaar is, begint de eerste gewone beurt.</p>
     <ol class="rk-rules">
       <li>
         <b>Versterken.</b> Je krijgt minimaal 3 legers, of één per drie landen
@@ -3166,7 +3176,7 @@ html.light .favorite-choices button {
       </li>
     </ol>
     <p>
-      Gebruik de schuif om legers te plaatsen, te verplaatsen of achter te houden bij een blitzaanval. De blitz gebruikt dezelfde dobbelregels als één worp; de getoonde kans geldt voor maximaal drie aanvalsdobbelstenen. Bij snelle verovering win je na het bezetten van 30 gebieden.
+      Gebruik de schuif om legers te plaatsen, te verplaatsen of achter te houden bij een blitzaanval. Blitz handelt het gevecht meteen af, totdat je gekozen aanvalslegers op zijn of je het gebied verovert. Kies bij de start voor willekeurige of gebalanceerde blitz; bij gebalanceerd zijn extreme uitslagen minder waarschijnlijk. Losse worpen gebruiken altijd gewone dobbelstenen. Bij snelle verovering win je na het bezetten van 30 gebieden.
       De stippellijnen verbinden continenten. Alaska en Kamtsjatka zijn ook
       buren. Elk spelersnummer blijft zichtbaar, zodat je geen kleuren hoeft te
       onderscheiden.
@@ -3857,7 +3867,9 @@ html.light .favorite-choices button {
         (!("difficulty" in value) ||
           ["easy", "normal", "strong"].includes(value.difficulty)) &&
         (!("tempo" in value) || ["normal", "fast"].includes(value.tempo)) &&
-        (!("goal" in value) || ["world", "domination"].includes(value.goal)) &&
+        (!("goal" in value) || ["world", "domination", "capital", "mission"].includes(value.goal)) &&
+        (!("dice" in value) || ["random","balanced"].includes(value.dice)) &&
+        (!("setup" in value) || ["auto","manual"].includes(value.setup)) &&
         (!("cardMode" in value) || ["progressive", "fixed"].includes(value.cardMode)) &&
         (!("sound" in value) || typeof value.sound === "boolean") &&
         (!("music" in value) || typeof value.music === "boolean")
@@ -11583,7 +11595,8 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
   function reinforcements(s, player = s.current) {
     return (
       Math.max(3, Math.floor(owned(s, player).length / 3)) +
-      bonus(s, player).reduce((n, c) => n + c.bonus, 0)
+      bonus(s, player).reduce((n, c) => n + c.bonus, 0) +
+      (s.capitals || []).filter(i => i !== null && s.territories[i].owner === player).length * 2
     );
   }
   function addLog(s, message) {
@@ -11653,8 +11666,10 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
     const s = {
       version: 1,
       rules: {
-        goal: options.goal === "domination" ? "domination" : "world",
+        goal: ["world", "domination", "capital", "mission"].includes(options.goal) ? options.goal : "world",
         cards: options.cards === "fixed" ? "fixed" : "progressive",
+        dice: options.dice === "balanced" ? "balanced" : "random",
+        setup: options.setup === "manual" ? "manual" : "auto",
       },
       rng: seed >>> 0 || 1,
       players: players.map((p, i) => ({
@@ -11690,7 +11705,7 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
     for (let i = 0; i < 42; i++)
       s.territories[order[i]] = { owner: i % players.length, armies: 1 };
     const initial = [0, 0, 40, 35, 30, 25, 20][players.length];
-    for (let player = 0; player < players.length; player++) {
+    if (s.rules.setup !== "manual") for (let player = 0; player < players.length; player++) {
       const countries = owned(s, player);
       for (let n = countries.length; n < initial; n++)
         s.territories[countries[Math.floor(random(s) * countries.length)]]
@@ -11700,12 +11715,101 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
       s,
       Array.from({ length: 44 }, (_, i) => i),
     );
-    s.pool = reinforcements(s);
-    addLog(
-      s,
-      `${s.players[0].name} begint met ${s.pool} versterkingen. De startlegers zijn automatisch verdeeld.`,
-    );
+    if (s.rules.goal === "capital") s.capitals = players.map(() => null);
+    if (s.rules.goal === "mission") s.missions = shuffle(s, missions.map(m => m.id)).slice(0,players.length);
+    if (s.rules.setup === "manual") {
+      s.setupRemaining = players.map((_,i) => initial - owned(s,i).length);
+      s.phase = "deploy"; s.pool = Math.min(3,s.setupRemaining[0]);
+      addLog(s,"De landen zijn verdeeld. Plaats om de beurt maximaal drie startlegers.");
+    } else beginPlay(s);
     return s;
+  }
+  function beginPlay(s) {
+    s.current = 0;
+    if (s.capitals?.some(i => i === null)) {
+      s.phase = "capital"; s.pool = 0;
+      addLog(s,"Kies om de beurt een eigen gebied als hoofdstad.");
+    } else {
+      s.phase = "reinforce"; s.pool = reinforcements(s);
+      addLog(s,`${s.players[0].name} begint met ${s.pool} versterkingen.`);
+    }
+  }
+  function nextDeployment(s) {
+    if (s.setupRemaining.every(n => n === 0)) beginPlay(s);
+    else {
+      do { s.current = (s.current+1)%s.players.length; } while (!s.setupRemaining[s.current]);
+      s.pool = Math.min(3,s.setupRemaining[s.current]);
+    }
+    s.turn++;
+  }
+  const missions = [
+    {id:"territories",text:"Verover 24 gebieden.",count:24},
+    {id:"garrisons",text:"Bezet 18 gebieden met minstens twee legers per gebied.",count:18,armies:2},
+    {id:"asia-africa",text:"Verover Azië en Afrika.",continents:["as","af"]},
+    {id:"asia-south",text:"Verover Azië en Zuid-Amerika.",continents:["as","sa"]},
+    {id:"north-africa",text:"Verover Noord-Amerika en Afrika.",continents:["na","af"]},
+    {id:"north-oceania",text:"Verover Noord-Amerika en Oceanië.",continents:["na","au"]},
+    {id:"europe-oceania",text:"Verover Europa, Oceanië en nog een continent.",continents:["eu","au"],extra:true},
+    {id:"europe-south",text:"Verover Europa, Zuid-Amerika en nog een continent.",continents:["eu","sa"],extra:true},
+  ];
+  function mission(s,player=s.current) { return missions.find(m=>m.id===s.missions?.[player]); }
+  function hasWon(s,player=s.current) {
+    if (s.rules?.goal === "capital") return s.capitals.every(i=>i!==null && s.territories[i].owner===player);
+    if (s.rules?.goal === "mission") {
+      const m=mission(s,player); if (!m) return false;
+      if (m.count) return owned(s,player).filter(i=>s.territories[i].armies >= (m.armies||1)).length >= m.count;
+      const ids=bonus(s,player).map(c=>c.id);
+      return m.continents.every(id=>ids.includes(id)) && (!m.extra || ids.length>=3);
+    }
+    return owned(s,player).length >= victoryTarget(s);
+  }
+  function checkVictory(s) {
+    if (s.pending || ["deploy","capital"].includes(s.phase)) return;
+    const winner=[s.current,...s.players.map((_,i)=>i).filter(i=>i!==s.current)].find(i=>hasWon(s,i));
+    if (winner === undefined) return;
+    s.winner=winner; s.phase="won"; s.pool=0; s.resumeAttack=false;
+    addLog(s,`${s.players[winner].name} wint${s.rules?.goal === "mission" ? ": "+mission(s,winner).text : s.rules?.goal === "capital" ? " met alle hoofdsteden!" : " met "+owned(s,winner).length+" gebieden!"}`);
+  }
+  function defenseDice(s,id) { return s.capitals?.includes(id) ? 3 : 2; }
+  function rollBattle(s,a,d,maxDefense,once=false,dice=3) {
+    const initialA=a,initialD=d; let attack=[],defend=[],rounds=0;
+    do {
+      attack=Array.from({length:Math.min(dice,a)},()=>1+Math.floor(random(s)*6)).sort((x,y)=>y-x);
+      defend=Array.from({length:Math.min(maxDefense,d)},()=>1+Math.floor(random(s)*6)).sort((x,y)=>y-x);
+      for (let i=0;i<Math.min(attack.length,defend.length);i++) { if (attack[i]>defend[i]) d--; else a--; }
+      rounds++;
+    } while (!once && a>0 && d>0);
+    return {a,d,attack,defend,attackLoss:initialA-a,defendLoss:initialD-d,rounds};
+  }
+  const battleDistributions = new Map();
+  function balancedBattle(s,a,d,maxDefense) {
+    // Exact terminal probabilities, with bounded memory. Cache only the small result vector.
+    if (a*d>1000000) {
+      const trials=Array.from({length:3},()=>rollBattle(s,a,d,maxDefense));
+      trials.sort((x,y)=>(x.d===0?x.a:-x.d)-(y.d===0?y.a:-y.d));
+      return trials[1];
+    }
+    const key=`${a},${d},${maxDefense}`;
+    let outcomes=battleDistributions.get(key);
+    if (!outcomes) {
+      const columns=d+1, grid=new Float64Array((a+1)*columns);
+      grid[a*columns+d]=1;
+      for (let x=a;x>0;x--) for (let y=d;y>0;y--) {
+        const probability=grid[x*columns+y]; if (!probability) continue;
+        for (const [al,dl,p] of rollOutcomes[`${Math.min(3,x)},${Math.min(maxDefense,y)}`]) grid[(x-al)*columns+y-dl] += probability*p;
+      }
+      outcomes=[];
+      for (let y=d;y>0;y--) if (grid[y]) outcomes.push({a:0,d:y,p:grid[y]});
+      for (let x=1;x<=a;x++) if (grid[x*columns]) outcomes.push({a:x,d:0,p:grid[x*columns]});
+      if (battleDistributions.size>=16) battleDistributions.delete(battleDistributions.keys().next().value);
+      battleDistributions.set(key,outcomes);
+    }
+    // Remove the outer deciles, then concentrate on likely outcomes. This is our own
+    // balancing implementation; ordinary rolls retain the unmodified dice probabilities.
+    const draws=[random(s),random(s),random(s)].sort((x,y)=>x-y);
+    let q=.1+.8*draws[1],chosen=outcomes.at(-1);
+    for (const outcome of outcomes) { q-=outcome.p; if(q<=0) {chosen=outcome;break;} }
+    return {a:chosen.a,d:chosen.d,attack:[],defend:[],attackLoss:a-chosen.a,defendLoss:d-chosen.d,rounds:null};
   }
   function finishCapture(s) {
     const previous = s.pending.defender;
@@ -11718,13 +11822,9 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
         `${s.players[previous].name} is uitgeschakeld. De kaarten gaan naar ${s.players[s.current].name}.`,
       );
     }
-    if (owned(s).length >= victoryTarget(s)) {
-      s.winner = s.current;
-      s.phase = "won";
-      s.pool = 0;
-      s.resumeAttack = false;
-      addLog(s, `${s.players[s.current].name} wint met ${owned(s).length} gebieden!`);
-    } else if (s.players[s.current].cards.length >= 6) {
+    checkVictory(s);
+    if (s.winner !== null) return;
+    if (s.players[s.current].cards.length >= 6) {
       s.phase = "reinforce";
       s.resumeAttack = true;
       s.pool = 0;
@@ -11782,7 +11882,7 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
     };
     if (action.type === "reinforce") {
       assert(
-        s.phase === "reinforce",
+        ["reinforce","deploy"].includes(s.phase),
         "Je kunt nu geen versterkingen plaatsen.",
       );
       const target = territory(action.to);
@@ -11796,10 +11896,19 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
       );
       target.armies += action.amount;
       s.pool -= action.amount;
+      if (s.phase === "deploy") s.setupRemaining[s.current] -= action.amount;
       addLog(
         s,
         `${name} plaatst ${action.amount} ${action.amount === 1 ? "leger" : "legers"} in ${territories[action.to].name}.`,
       );
+    } else if (action.type === "capital") {
+      assert(s.phase === "capital" && s.capitals[s.current] === null,"Kies alleen tijdens de start een hoofdstad.");
+      assert(territory(action.to).owner === s.current,"Kies een eigen gebied als hoofdstad.");
+      s.capitals[s.current] = action.to;
+      addLog(s,`${name} kiest ${territories[action.to].name} als hoofdstad.`);
+      if (s.capitals.every(i=>i!==null)) beginPlay(s);
+      else do { s.current=(s.current+1)%s.players.length; } while (s.capitals[s.current]!==null);
+      s.turn++;
     } else if (action.type === "trade") {
       assert(
         s.phase === "reinforce",
@@ -11825,7 +11934,10 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
         `${name} ruilt kaarten voor ${value} versterkingen${extra != null ? ` en 2 legers in ${territories[extra].name}` : ""}.`,
       );
     } else if (action.type === "advance") {
-      if (s.phase === "reinforce") {
+      if (s.phase === "deploy") {
+        assert(s.pool === 0,"Plaats eerst je startlegers.");
+        nextDeployment(s);
+      } else if (s.phase === "reinforce") {
         assert(s.pool === 0, "Plaats eerst al je versterkingen.");
         assert(
           player.cards.length < (s.resumeAttack ? 6 : 5),
@@ -11835,7 +11947,7 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
         s.resumeAttack = false;
       } else if (s.phase === "attack") s.phase = "fortify";
       else throw new Error("Sluit je beurt af met ‘Beurt beëindigen’.");
-    } else if (action.type === "attack") {
+    } else if (action.type === "attack" || action.type === "blitz") {
       assert(
         s.phase === "attack",
         "Je kunt alleen aanvallen in de aanvalsfase.",
@@ -11850,25 +11962,12 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
         territories[action.from].neighbors.includes(action.to),
         "Deze landen grenzen niet aan elkaar.",
       );
-      assert(
-        integer(action.dice, 1, Math.min(3, from.armies - 1)),
-        "Laat minimaal één leger achter en kies maximaal 3 dobbelstenen.",
-      );
-      const defender = to.owner,
-        attack = Array.from(
-          { length: action.dice },
-          () => 1 + Math.floor(random(s) * 6),
-        ).sort((a, b) => b - a),
-        defend = Array.from(
-          { length: Math.min(2, to.armies) },
-          () => 1 + Math.floor(random(s) * 6),
-        ).sort((a, b) => b - a);
-      let attackLoss = 0,
-        defendLoss = 0;
-      for (let i = 0; i < Math.min(attack.length, defend.length); i++) {
-        if (attack[i] > defend[i]) defendLoss++;
-        else attackLoss++;
-      }
+      const blitz=action.type === "blitz";
+      assert(blitz ? integer(action.amount,1,from.armies-1) : integer(action.dice,1,Math.min(3,from.armies-1)),"Laat minimaal één leger achter en kies een geldig aantal aanvalslegers.");
+      const defender=to.owner, committed=blitz ? action.amount : from.armies-1;
+      const balanced=blitz && s.rules?.dice === "balanced";
+      const result=balanced ? balancedBattle(s,committed,to.armies,defenseDice(s,action.to)) : rollBattle(s,committed,to.armies,defenseDice(s,action.to),!blitz,blitz?3:action.dice);
+      const {attack,defend,attackLoss,defendLoss}=result;
       from.armies -= attackLoss;
       to.armies -= defendLoss;
       s.lastBattle = {
@@ -11878,6 +11977,7 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
         defend,
         attackLoss,
         defendLoss,
+        ...(blitz ? {blitz:true,balanced,rounds:result.rounds} : {}),
       };
       addLog(
         s,
@@ -11885,14 +11985,16 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
       );
       if (to.armies === 0) {
         to.owner = s.current;
-        to.armies = action.dice;
-        from.armies -= action.dice;
+        const move = Math.min(blitz ? 3 : attack.length,committed,result.a,from.armies-1);
+        to.armies = move;
+        from.armies -= move;
         s.conquered = true;
         s.pending = {
           from: action.from,
           to: action.to,
-          min: action.dice,
-          max: from.armies + action.dice - 1,
+          min: move,
+          max: from.armies + move - 1,
+          suggested: Math.max(move,Math.min(from.armies + move - 1,result.a)),
           defender,
         };
         addLog(
@@ -11939,6 +12041,7 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
       );
       nextTurn(s);
     } else throw new Error("Onbekende spelactie.");
+    checkVictory(s);
     assert(validState(s), "De spelactie leverde ongeldige gegevens op.");
     return s;
   }
@@ -11954,8 +12057,10 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
     )
       return false;
     if (s.rules !== undefined && (!s.rules || typeof s.rules !== "object" || Array.isArray(s.rules) ||
-      !["world", "domination"].includes(s.rules.goal) ||
-      !["progressive", "fixed"].includes(s.rules.cards))) return false;
+      !["world", "domination", "capital", "mission"].includes(s.rules.goal) ||
+      !["progressive", "fixed"].includes(s.rules.cards) ||
+      (s.rules.dice !== undefined && !["random","balanced"].includes(s.rules.dice)) ||
+      (s.rules.setup !== undefined && !["auto","manual"].includes(s.rules.setup)))) return false;
     const count = s.players.length;
     if (
       !s.players.every(
@@ -11980,7 +12085,7 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
       return false;
     if (
       !integer(s.current, 0, count - 1) ||
-      !["reinforce", "attack", "fortify", "won"].includes(s.phase) ||
+      !["deploy", "capital", "reinforce", "attack", "fortify", "won"].includes(s.phase) ||
       !integer(s.pool, 0, 100000) ||
       !integer(s.rng, 1, 4294967295) ||
       !integer(s.round, 1) ||
@@ -11995,16 +12100,29 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
       typeof s.resumeAttack !== "boolean"
     )
       return false;
+    if (s.rules?.goal === "capital") {
+      if (!Array.isArray(s.capitals) || s.capitals.length!==count ||
+        !s.capitals.every(i=>i===null || integer(i,0,41)) ||
+        new Set(s.capitals.filter(i=>i!==null)).size!==s.capitals.filter(i=>i!==null).length ||
+        (!["deploy","capital"].includes(s.phase) && s.capitals.includes(null)) ||
+        (s.phase==="capital" && s.capitals[s.current]!==null)) return false;
+    } else if (s.phase==="capital" || s.capitals!==undefined) return false;
+    if (s.rules?.goal === "mission" && (!Array.isArray(s.missions) || s.missions.length!==count ||
+      new Set(s.missions).size!==count || !s.missions.every(id=>missions.some(m=>m.id===id)))) return false;
+    if (s.setupRemaining!==undefined && (!Array.isArray(s.setupRemaining) || s.setupRemaining.length!==count ||
+      !s.setupRemaining.every(n=>integer(n,0,40)) || (s.phase!=="deploy" && s.setupRemaining.some(n=>n!==0)))) return false;
+    if (s.phase==="deploy" && (s.rules?.setup!=="manual" || !s.setupRemaining ||
+      s.pool>s.setupRemaining[s.current] || s.pool>3)) return false;
     if (
       s.winner !== null &&
       (!integer(s.winner, 0, count - 1) ||
         s.phase !== "won" ||
-        owned(s, s.winner).length < victoryTarget(s))
+        !hasWon(s, s.winner))
     )
       return false;
     if (s.phase === "won" && s.winner === null) return false;
     if (!owned(s).length) return false;
-    if (s.phase !== "reinforce" && s.pool !== 0) return false;
+    if (!["reinforce","deploy"].includes(s.phase) && s.pool !== 0) return false;
     const cards = [
       ...s.deck,
       ...s.discard,
@@ -12028,6 +12146,7 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
         p.defender === s.current ||
         !integer(p.min, 1, 3) ||
         !integer(p.max, p.min, 100000) ||
+        (p.suggested!==undefined && !integer(p.suggested,p.min,p.max)) ||
         s.territories[p.from].owner !== s.current ||
         s.territories[p.to].owner !== s.current ||
         s.territories[p.to].armies !== p.min ||
@@ -12056,29 +12175,21 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
     if (symbols.length < 2) return 10;
     return [4, 6, 8][symbols[0]];
   }
-  let rollOutcomes;
-  function battleOdds(attackers, defenders) {
-    if (!integer(attackers, 0, 200) || !integer(defenders, 0, 200)) return null;
-    if (!rollOutcomes) {
-      rollOutcomes = {};
-      for (let a = 1; a <= 3; a++) for (let d = 1; d <= 2; d++) {
-        const counts = new Map(), total = 6 ** (a + d);
-        for (let n = 0; n < total; n++) {
-          let number = n;
-          const dice = Array.from({length:a+d}, () => { const value = number % 6 + 1; number = Math.floor(number/6); return value; });
-          const attack = dice.slice(0,a).sort((x,y)=>y-x), defend = dice.slice(a).sort((x,y)=>y-x);
-          let lost = 0;
-          for (let k=0;k<Math.min(a,d);k++) if (attack[k] <= defend[k]) lost++;
-          counts.set(lost, (counts.get(lost)||0)+1);
-        }
-        rollOutcomes[`${a},${d}`] = [...counts].map(([lost,count])=>[lost,Math.min(a,d)-lost,count/total]);
-      }
-    }
+  const rollCounts = {
+    "1,1":[[0,1,15],[1,0,21]], "1,2":[[0,1,55],[1,0,161]], "1,3":[[0,1,225],[1,0,1071]],
+    "2,1":[[0,1,125],[1,0,91]], "2,2":[[0,2,295],[1,1,420],[2,0,581]], "2,3":[[0,2,979],[1,1,1981],[2,0,4816]],
+    "3,1":[[0,1,855],[1,0,441]], "3,2":[[0,2,2890],[1,1,2611],[2,0,2275]], "3,3":[[0,3,6420],[1,2,10017],[2,1,12348],[3,0,17871]],
+  };
+  const rollOutcomes=Object.fromEntries(Object.entries(rollCounts).map(([key,rows])=>[key,rows.map(([a,d,n])=>[a,d,n/6**key.split(",").map(Number).reduce((x,y)=>x+y,0)])]));
+  function battleOdds(attackers, defenders, maxDefense=2, mode="random") {
+    if (!integer(attackers, 0, 200) || !integer(defenders, 0, 200) || ![2,3].includes(maxDefense)) return null;
     const table = Array.from({length:attackers+1},()=>new Float64Array(defenders+1));
     for (let a=0;a<=attackers;a++) table[a][0]=1;
     for (let a=1;a<=attackers;a++) for (let d=1;d<=defenders;d++)
-      for (const [al,dl,p] of rollOutcomes[`${Math.min(3,a)},${Math.min(2,d)}`]) table[a][d] += p*table[a-al][d-dl];
-    return table[attackers][defenders];
+      for (const [al,dl,p] of rollOutcomes[`${Math.min(3,a)},${Math.min(maxDefense,d)}`]) table[a][d] += p*table[a-al][d-dl];
+    const p=table[attackers][defenders];
+    const q=Math.max(0,Math.min(1,(p-.1)/.8));
+    return mode==="balanced" ? q*q*(3-2*q) : p;
   }
   function frontier(s, player = s.current) {
     return owned(s, player).filter((i) =>
@@ -12087,6 +12198,16 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
   }
   function chooseAction(s, difficulty = "normal") {
     if (s.phase === "won") return null;
+    if (s.phase === "capital") {
+      const choices=owned(s), score=i=>s.territories[i].armies*2-territories[i].neighbors.length;
+      return {type:"capital",to:choices.reduce((a,b)=>score(a)>score(b)?a:b)};
+    }
+    if (s.phase === "deploy") {
+      if (!s.pool) return {type:"advance"};
+      const choices=frontier(s), candidates=choices.length?choices:owned(s);
+      const to=candidates.reduce((a,b)=>s.territories[a].armies>s.territories[b].armies?a:b);
+      return {type:"reinforce",to,amount:s.pool};
+    }
     if (s.pending) {
       const threat = (i) =>
         territories[i].neighbors
@@ -12108,8 +12229,14 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
     }
     if (s.phase === "reinforce") {
       const set = findSet(s);
-      if (set) return { type: "trade", cards: set };
+      const required=s.players[s.current].cards.length >= (s.resumeAttack?6:5);
+      if (set && (s.rules?.cards==="fixed" || required || frontier(s).some(i=>territories[i].neighbors.some(n=>s.territories[n].owner!==s.current && s.territories[n].armies>s.territories[i].armies*2)))) return { type: "trade", cards: set };
       if (s.pool) {
+        const m=mission(s);
+        if (m?.armies && owned(s).filter(i=>s.territories[i].armies>=m.armies).length<m.count) {
+          const to=owned(s).find(i=>s.territories[i].armies<m.armies);
+          if (to!==undefined) return {type:"reinforce",to,amount:Math.min(s.pool,m.armies-s.territories[to].armies)};
+        }
         const border = frontier(s),
           candidates = border.length ? border : owned(s);
         const strength = (i) => {
@@ -12126,7 +12253,8 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
             continent.filter(
               (t) => s.territories[byId[t.id]].owner === s.current,
             ).length / continent.length;
-          return s.territories[i].armies - weakest + fraction * 6;
+          const capGuard=s.capitals?.includes(i)?Math.max(0,weakest-s.territories[i].armies+6):0;
+          return s.territories[i].armies - weakest + fraction * 6 + capGuard;
         };
         const to =
           difficulty === "easy"
@@ -12145,7 +12273,7 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
           if (d.owner === s.current) continue;
           const ratio =
             difficulty === "easy" ? 1.05 : difficulty === "strong" ? 1.35 : 1.6;
-          if (a.armies >= 4 && a.armies - 1 >= d.armies * ratio) {
+          if (a.armies >= 4 && a.armies - 1 >= d.armies * (defenseDice(s,to)===3 ? ratio*1.4 : ratio)) {
             const region = territories.filter(
                 (t) => t.continent === territories[to].continent,
               ),
@@ -12156,14 +12284,15 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
             candidates.push({
               from,
               to,
-              score: a.armies - d.armies + 6 / remaining + elimination,
+              score: a.armies - d.armies + 6 / remaining + elimination + (s.capitals?.includes(to)?12:0) + (mission(s)?.continents?.includes(territories[to].continent)?8:0),
             });
           }
         }
       if (candidates.length) {
         candidates.sort((a, b) => b.score - a.score);
         return {
-          type: "attack",
+          type: s.rules?.dice === "balanced" ? "blitz" : "attack",
+          amount: s.territories[candidates[0].from].armies-1,
           from: candidates[0].from,
           to: candidates[0].to,
           dice: Math.min(3, s.territories[candidates[0].from].armies - 1),
@@ -12210,6 +12339,9 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
     cardSymbol,
     chooseAction,
     victoryTarget,
+    hasWon,
+    mission,
+    defenseDice,
     tradeValue,
     battleOdds,
   };
@@ -12246,7 +12378,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       <g class="rk-land-shadow" transform="translate(2 5)">${regions.map(g=>`<path d="${g.path}" fill-rule="evenodd"/>`).join("")}</g><g class="rk-land-regions">${regions.map((g, i) => `<g class="rk-country" data-country="${i}" role="button" tabindex="0"><title>${E.territories[i].name}</title><path class="rk-country-shape" d="${g.path}" fill="${palette[E.territories[i].continent]}" fill-rule="evenodd"/></g>`).join("")}</g>
       <g class="rk-sea-routes">${routeMarkup}</g><path id="rkBattleRoute" class="rk-battle-route" marker-end="url(#rkAttackArrow)"/>
       <g class="rk-region-labels">${regions.map((g, i) => { const [x, y] = g.anchor; const words = g.label.includes("-") ? g.label.split("-") : [g.label]; const [lx,ly] = ({ britain:[x+20,y-43], northeu:[x+34,y-31], westeu:[x-48,y-15], southeu:[x+45,y+7] })[g.id] || [x,y-(words.length>1?38:25)]; return `<text data-label="${i}" x="${lx}" y="${ly}" text-anchor="middle">${words.map((w, n) => `<tspan x="${lx}" dy="${n ? 12 : 0}">${esc(w)}</tspan>`).join("")}</text>`; }).join("")}</g>
-      <g class="rk-army-markers">${regions.map((g, i) => `<g data-marker="${i}" data-country-marker="${i}" transform="translate(${g.anchor.join(" ")})"><circle class="rk-marker-halo" r="20"/><ellipse class="rk-marker-base" cy="4" rx="16" ry="15"/><circle class="rk-marker-disc" r="15"/><text class="rk-armies" y="5" text-anchor="middle"></text><text class="rk-owner" x="13" y="18" text-anchor="middle"></text></g>`).join("")}</g>
+      <g class="rk-army-markers">${regions.map((g, i) => `<g data-marker="${i}" data-country-marker="${i}" transform="translate(${g.anchor.join(" ")})"><circle class="rk-marker-halo" r="20"/><ellipse class="rk-marker-base" cy="4" rx="16" ry="15"/><circle class="rk-marker-disc" r="15"/><text class="rk-armies" y="5" text-anchor="middle"></text><text class="rk-owner" x="13" y="18" text-anchor="middle"></text><text class="rk-capital" y="-21" text-anchor="middle"></text></g>`).join("")}</g>
       <g class="rk-continent-labels">${names.map(([id, x, y]) => { const c = E.continents.find(c => c.id === id); return `<text x="${x}" y="${y}" text-anchor="middle">${esc(c.name.toUpperCase())} · +${c.bonus}</text>`; }).join("")}</g>
       <g class="rk-compass" transform="translate(118 664)"><circle r="30"/><path d="M0,-37L8,0L0,37L-8,0ZM-37,0L0,8L37,0L0,-8Z"/><text y="-44" text-anchor="middle">N</text></g><text class="rk-map-credit" x="1421" y="742" text-anchor="end">Kustlijnen: Natural Earth · speelgebieden: Wereldmacht</text>`;
     const shapes = [...svg.querySelectorAll(".rk-country")], markers = [...svg.querySelectorAll("[data-marker]")];
@@ -12304,7 +12436,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       shapes.forEach((node, i) => {
         const t = state.territories[i], p = state.players[t.owner];
         node.querySelector("path").setAttribute("fill", ownership ? `url(#rkLand${E.COLORS.indexOf(p.color)})` : palette[E.territories[i].continent]);
-        node.setAttribute("aria-label", `${E.territories[i].name}, ${p.name}, ${t.armies} legers`);
+        node.setAttribute("aria-label", `${E.territories[i].name}, ${p.name}, ${t.armies} legers${state.capitals?.includes(i) ? ", hoofdstad, maximaal drie verdedigingsdobbelstenen" : ""}`);
         node.setAttribute("aria-pressed", String(i === selected || i === target));
         node.classList.toggle("selected", i === selected); node.classList.toggle("target", i === target);
         node.classList.toggle("neighbor", selected !== null && E.territories[selected].neighbors.includes(i));
@@ -12313,6 +12445,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
         marker.querySelector(".rk-armies").textContent = t.armies;
         marker.querySelector(".rk-armies").style.fontSize = t.armies > 999 ? "11px" : t.armies > 99 ? "14px" : "18px";
         marker.querySelector(".rk-owner").textContent = t.owner + 1;
+        marker.querySelector(".rk-capital").textContent = state.capitals?.includes(i) ? "♛" : "";
         marker.classList.toggle("selected", i === selected); marker.classList.toggle("target", i === target);
       });
       svg.querySelectorAll("[data-route]").forEach(route => route.classList.toggle("active", selected !== null && route.dataset.route.split("-").map(Number).includes(selected)));
@@ -12320,7 +12453,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       const bering = a && [selected,target].includes(E.byId.alaska) && [selected,target].includes(E.byId.kamchatka);
       $("rkBattleRoute").setAttribute("d", bering ? `M${a[0]},${a[1]}L${selected===E.byId.alaska?24:1416},${a[1]}M${selected===E.byId.alaska?1416:24},${b[1]}L${b[0]},${b[1]}` : a ? `M${a[0]},${a[1]}Q${(a[0]+b[0])/2},${(a[1]+b[1])/2-20} ${b[0]},${b[1]}` : "");
       const p = state.players[state.current];
-      $("rkMapTurn").textContent = `${p.name} · ${state.pending ? "Bezetten" : { reinforce:"Versterken", attack:"Aanvallen", fortify:"Verplaatsen", won:"Gewonnen" }[state.phase]}`;
+      $("rkMapTurn").textContent = `${p.name} · ${state.pending ? "Bezetten" : { deploy:"Startlegers", capital:"Hoofdstad kiezen", reinforce:"Versterken", attack:"Aanvallen", fortify:"Verplaatsen", won:"Gewonnen" }[state.phase]}`;
       $("rkMapTurn").style.setProperty("--player", p.color);
       $("rkMapSelection").textContent = selected === null ? "Kies een eigen gebied op de kaart" : `${E.territories[selected].name} · ${state.territories[selected].armies} legers${target !== null ? " → " + E.territories[target].name : ""}`;
       $("rkToActions").hidden = selected === null || p.ai || handoff;
@@ -12413,6 +12546,8 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
           })[c],
       );
   const phases = {
+    deploy: "Startlegers",
+    capital: "Hoofdstad kiezen",
     reinforce: "Versterken",
     attack: "Aanvallen",
     fortify: "Verplaatsen",
@@ -12435,7 +12570,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     const storedInvalid = state !== null && !E.validState(state);
     if (storedInvalid) state = null;
     let settings = Object.assign(
-      { players: 3, humans: 1, difficulty: "normal", tempo: "normal", sound: true, music: true, goal: "world", cardMode: "progressive" },
+      { players: 3, humans: 1, difficulty: "normal", tempo: "normal", sound: true, music: true, goal: "world", cardMode: "progressive", dice: "balanced", setup: "auto" },
       api.storage.get("rk.settings", {}),
     );
     api.music?.(() => settings.music !== false);
@@ -12468,7 +12603,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
           state.statsRecorded = true;
         }
         save();
-        if (action.type === "attack") sound(state.pending ? "rkCapture" : "rkDice");
+        if (["attack","blitz"].includes(action.type)) sound(state.pending ? "rkCapture" : "rkDice");
         else if (action.type === "trade") sound("rkTrade");
         else if (action.type === "reinforce" || action.type === "fortify") sound("rkPlace");
         if (state.winner !== null) sound("rkWin");
@@ -12595,7 +12730,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
                 if (t.continent !== c.id) return "";
                 const country = state.territories[i],
                   p = state.players[country.owner];
-                return `<button data-country="${i}" class="${i === selected ? "selected" : i === target ? "target" : ""}" aria-pressed="${i === selected || i === target}"><i style="background:${p.color}">${country.owner + 1}</i><span>${t.name}<small>${esc(p.name)}</small></span><b>${country.armies}</b><span class="visually-hidden">legers</span></button>`;
+                return `<button data-country="${i}" class="${i === selected ? "selected" : i === target ? "target" : ""}" aria-pressed="${i === selected || i === target}"><i style="background:${p.color}">${country.owner + 1}</i><span>${t.name}${state.capitals?.includes(i) ? " ♛" : ""}<small>${esc(p.name)}</small></span><b>${country.armies}</b><span class="visually-hidden">legers</span></button>`;
               })
               .join("")}</div>`,
         )
@@ -12643,19 +12778,23 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       const handOpen = $("rkControls").querySelector(".rk-card-hand")?.open,
         accessibleOpen = $("rkControls").querySelector(".rk-accessible")?.open;
       const mustTrade = !handoff && isHuman() && state.phase === "reinforce" && state.players[state.current].cards.length >= (state.resumeAttack ? 6 : 5);
-      if (state.pending || state.winner !== null || mustTrade) {
+      if (state.pending || state.winner !== null || mustTrade || ["deploy","capital"].includes(state.phase)) {
         $("rk").classList.remove("rk-dock-collapsed");
         $("rkDockToggle").setAttribute("aria-expanded", "true");
       }
       let html = "";
       if (state.phase === "won")
-        html = `<h3>🏆 ${esc(state.players[state.winner].name)} wint!</h3><p class="rk-muted">${E.owned(state, state.winner).length} gebieden veroverd in ${state.round} rondes.</p>${button("Nieuw spel", "new")}${button("Naar menu", "menu", false, true)}`;
+        html = `<h3>🏆 ${esc(state.players[state.winner].name)} wint!</h3><p class="rk-muted">${state.rules?.goal === "capital" ? "Alle hoofdsteden zijn in handen van de winnaar." : state.rules?.goal === "mission" ? esc(E.mission(state,state.winner).text) : E.owned(state, state.winner).length+" gebieden veroverd."} · ${state.round} rondes.</p>${button("Nieuw spel", "new")}${button("Naar menu", "menu", false, true)}`;
       else if (handoff)
         html = `<h3>Geef het toestel door</h3><p class="rk-muted">De kaarten en acties van ${esc(state.players[state.current].name)} blijven verborgen.</p>${button("Mijn beurt bekijken", "handoff")}`;
       else if (!isHuman())
         html = `<h3>${esc(state.players[state.current].name)} speelt</h3><p class="rk-muted">De computer ${state.phase === "reinforce" ? "plaatst versterkingen" : state.phase === "attack" ? "bekijkt de grenzen" : "rondt de beurt af"}. Je kunt op elk moment pauzeren of naar het menu gaan.</p>${button("Pauze", "pause", false, true)}`;
+      else if (state.phase === "capital")
+        html = `<h3>Kies je hoofdstad</h3><p class="rk-muted">Een hoofdstad geeft elke beurt 2 extra legers en verdedigt met maximaal 3 dobbelstenen. Verover alle hoofdsteden om te winnen.</p><label>Hoofdstad<select id="rkFrom">${options(E.owned(state),own?selected:null)}</select></label>${button(own ? E.territories[selected].name+" als hoofdstad" : "Kies een eigen gebied", "capital", !own)}`;
+      else if (state.phase === "deploy")
+        html = `<h3>Startlegers plaatsen</h3><p class="rk-muted">Je hebt nog ${state.setupRemaining[state.current]} startlegers. Plaats er deze keer maximaal ${state.pool}; daarna is de volgende speler aan de beurt.</p><label>Eigen gebied<select id="rkFrom">${options(E.owned(state),own?selected:null)}</select></label>${state.pool && own ? amount(state.pool,state.pool)+button("Startlegers plaatsen","reinforce") : ""}${button("Volgende speler →","advance",state.pool>0,true)}`;
       else if (state.pending)
-        html = `<h3>Land veroverd!</h3><p class="rk-muted">${E.territories[state.pending.to].name} is van jou. Er moeten minstens ${state.pending.min} legers heen; één leger blijft achter in ${E.territories[state.pending.from].name}.</p>${amount(state.pending.max, state.pending.max, state.pending.min)}${button("Bezetting bevestigen", "occupy")}`;
+        html = `<h3>Land veroverd!</h3><p class="rk-muted">${E.territories[state.pending.to].name} is van jou. Er moeten minstens ${state.pending.min} legers heen; één leger blijft achter in ${E.territories[state.pending.from].name}.</p>${amount(state.pending.max, state.pending.suggested ?? state.pending.max, state.pending.min)}${button("Bezetting bevestigen", "occupy")}`;
       else {
         const hand = state.players[state.current].cards,
           required = hand.length >= (state.resumeAttack ? 6 : 5);
@@ -12676,9 +12815,9 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
           const invalid = !own || selection.armies < 2 || target === null;
           if (own && target !== null) {
             const maximum = Math.max(1, selection.armies-1), value = Math.min(commitChoice || maximum, maximum);
-            html += `<div class="rk-matchup"><span>→ ${E.territories[target].name}</span><b>${state.territories[target].armies} legers</b></div><label class="rk-commit-label" for="rkCommitRange">Aanvalslegers <output id="rkCommitCount">${value}</output></label><input id="rkCommitRange" type="range" min="1" max="${maximum}" value="${value}" ${invalid ? "disabled" : ""}><p id="rkOdds" class="rk-odds"></p>`;
+            html += `<div class="rk-matchup"><span>→ ${E.territories[target].name}</span><b>${state.territories[target].armies} legers</b></div><label class="rk-commit-label" for="rkCommitRange">Legers voor blitz <output id="rkCommitCount">${value}</output></label><input id="rkCommitRange" type="range" min="1" max="${maximum}" value="${value}" ${invalid ? "disabled" : ""}><p id="rkOdds" class="rk-odds"></p>`;
           } else if (own) html += `<p class="rk-muted">${selection.armies > 1 ? "Tik op een vijandelijk buurland om aan te vallen." : "Er blijft altijd één leger achter. Dit gebied kan niet aanvallen."}</p>`;
-          html += `<div class="rk-buttons">${button(autoBattle ? "■ Stop blitz" : "⚡ Blitz", autoBattle ? "stop" : "blitz", invalid)}${button("⚄ Eén worp", "attack", invalid, true)}</div>${button("Verplaatsen →", "advance", false, true)}`;
+          html += `<div class="rk-buttons">${button("⚡ Blitz", "blitz", invalid)}${button("⚄ Eén worp", "attack", invalid, true)}</div>${button("Verplaatsen →", "advance", false, true)}`;
         } else if (state.phase === "fortify") {
           if (!state.fortified) {
             const targets = own ? E.owned(state).filter(i=>i!==selected && E.connected(state,selected,i)) : [];
@@ -12690,6 +12829,9 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
           html += button("Beurt beëindigen ✓", "endTurn");
         }
         html += `<details class="rk-accessible" ${accessibleOpen ? "open" : ""}><summary>Kiezen via landenlijst</summary>${accessible}</details>`;
+      }
+      if (isHuman() && !handoff && state.rules?.goal === "mission" && state.phase !== "won") {
+        html = `<details class="rk-mission"><summary>✉ Mijn geheime missie</summary><p>${esc(E.mission(state).text)}</p></details>`+html;
       }
       $("rkControls").innerHTML = html;
       updateOdds();
@@ -12710,7 +12852,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       if (!state) return;
       const p = state.players[state.current];
       $("rkRound").textContent =
-        `Ronde ${state.round} · ${state.players.length} spelers · ${E.victoryTarget(state) === 30 ? "70% veroveren" : "Wereldverovering"}`;
+        `Ronde ${state.round} · ${state.players.length} spelers · ${({world:"Wereldverovering",domination:"70% veroveren",capital:"Hoofdsteden",mission:"Geheime missies"})[state.rules?.goal||"world"]}`;
       $("rkPlayerName").textContent =
         state.phase === "won"
           ? `${state.players[state.winner].name} heeft gewonnen`
@@ -12719,7 +12861,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       $("rkPlayerBadge").textContent = state.current + 1;
       $("rkPhase").textContent = state.pending ? "Bezetten" : phases[state.phase];
       $("rkPhaseSteps").querySelectorAll("[data-phase]").forEach(el => { el.classList.toggle("active", el.dataset.phase === state.phase); el.setAttribute("aria-current", el.dataset.phase === state.phase ? "step" : "false"); });
-      $("rkInstruction").textContent = state.pending
+      $("rkInstruction").textContent = state.phase === "deploy" ? "Plaats je startlegers; geef daarna de beurt door." : state.phase === "capital" ? "Kies een eigen gebied als hoofdstad." : state.pending
         ? "Kies hoeveel legers het veroverde land bezetten."
         : state.phase === "reinforce"
           ? `Plaats ${state.pool} versterkingen in je eigen landen.`
@@ -12727,12 +12869,12 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
             ? "Kies een eigen land en een vijandelijke buur. Eén leger blijft achter."
             : state.phase === "fortify"
               ? "Verplaats één keer via eigen landen, of beëindig je beurt."
-              : "De wereld is veroverd.";
+              : "Het spel is beslist.";
       const scoreScroll = $("rkScoreboard").scrollTop, scoreLeft = $("rkScoreboard").scrollLeft;
       $("rkScoreboard").innerHTML = state.players
         .map(
           (p, i) =>
-            `<div style="--player:${p.color}" class="rk-score ${i === state.current ? "active" : ""} ${E.owned(state, i).length ? "" : "out"}"><span style="background:${p.color}">${i + 1}</span><div><b>${esc(p.name)}${p.ai ? " · CPU" : ""}</b><small>${state.territories.filter(t=>t.owner===i).reduce((n,t)=>n+t.armies,0)} legers · ${E.owned(state, i).length}/${E.victoryTarget(state)} gebieden${E.owned(state, i).length ? "" : " · uitgeschakeld"}</small></div></div>`,
+            `<div style="--player:${p.color}" class="rk-score ${i === state.current ? "active" : ""} ${E.owned(state, i).length ? "" : "out"}"><span style="background:${p.color}">${i + 1}</span><div><b>${esc(p.name)}${p.ai ? " · CPU" : ""}</b><small>${state.territories.filter(t=>t.owner===i).reduce((n,t)=>n+t.armies,0)} legers · ${E.owned(state, i).length} gebieden${state.capitals ? " · ♛ "+state.capitals.filter(id=>id!==null && state.territories[id].owner===i).length+"/"+state.players.length : ""}${E.owned(state, i).length ? "" : " · uitgeschakeld"}</small></div></div>`,
         )
         .join("");
       const rail = $("rkScoreboard"), currentScore = rail.querySelector(".rk-score.active");
@@ -12745,7 +12887,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       renderControls();
       const b = state.lastBattle;
       $("rkBattle").innerHTML = b
-        ? `<h4>${E.territories[b.from].name} → ${E.territories[b.to].name}</h4><div class="rk-dice-row"><span>Aanval</span>${b.attack.map(n => die(n)).join("")}</div><div class="rk-dice-row"><span>Verdediging</span>${b.defend.map(n => die(n, true)).join("")}</div><p>Aanvaller verliest ${b.attackLoss}, verdediger ${b.defendLoss}. Bij gelijke worpen wint de verdediger.</p>`
+        ? `<h4>${E.territories[b.from].name} → ${E.territories[b.to].name}</h4><div class="rk-dice-row"><span>Aanval</span>${b.attack.map(n => die(n)).join("")}</div><div class="rk-dice-row"><span>Verdediging</span>${b.defend.map(n => die(n, true)).join("")}</div><p>${b.blitz ? `Blitz · ${b.rounds ? b.rounds+" worpen · " : ""}` : ""}Aanvaller verliest ${b.attackLoss}, verdediger ${b.defendLoss}. Bij gelijke worpen wint de verdediger.</p>`
         : "";
       $("rkHistory").innerHTML = state.log
         .map((text) => `<li>${esc(text)}</li>`)
@@ -12759,40 +12901,8 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     }
     function startBlitz() {
       const committed = Number($("rkCommitRange")?.value) || state.territories[selected].armies-1;
-      autoBattle = { from: selected, to: target, turn: state.turn, reserve: state.territories[selected].armies-1-committed };
-      const tick = () => {
-        battleTimer = null;
-        if (
-          !autoBattle ||
-          !active ||
-          document.hidden ||
-          modalOpen() ||
-          state.turn !== autoBattle.turn ||
-          state.phase !== "attack" ||
-          state.pending ||
-          state.territories[autoBattle.from].armies <= autoBattle.reserve + 1 ||
-          state.territories[autoBattle.to].owner === state.current
-        ) {
-          stop();
-          renderControls();
-          return;
-        }
-        const pair = autoBattle;
-        if (
-          apply({
-            type: "attack",
-            from: pair.from,
-            to: pair.to,
-            dice: Math.min(
-              3,
-              state.territories[pair.from].armies - 1 - pair.reserve,
-            ),
-          }) &&
-          autoBattle
-        )
-          battleTimer = setTimeout(tick, settings.tempo === "fast" ? 45 : 90);
-      };
-      tick();
+      stop();
+      apply({type:"blitz",from:selected,to:target,amount:committed});
     }
     function leave() {
       stop();
@@ -12837,6 +12947,8 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       $("rkTempo").value = settings.tempo;
       $("rkGoal").value = settings.goal;
       $("rkCardMode").value = settings.cardMode;
+      $("rkDiceMode").value = settings.dice;
+      $("rkSetupMode").value = settings.setup;
       $("rkSound").checked = settings.sound !== false;
       $("rkMusic").checked = settings.music !== false;
       api.modal("rkStartModal");
@@ -12850,9 +12962,8 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       $("rkDockToggle").setAttribute("aria-expanded", "false");
       board.fit();
       if (state) {
+        checkHandoff();
         render();
-        if (isHuman() && state.players.filter((p) => !p.ai).length > 1)
-          checkHandoff();
         schedule();
       } else {
         showStart();
@@ -12887,8 +12998,8 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     $("rkNew").addEventListener("click", showStart);
     $("rkResume").addEventListener("click", () => {
       api.close();
-      render();
       checkHandoff();
+      render();
       schedule();
     });
     $("rkPlayerCount").addEventListener("change", setupNames);
@@ -12918,6 +13029,8 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
         tempo: $("rkTempo").value,
         goal: $("rkGoal").value,
         cardMode: $("rkCardMode").value,
+        dice: $("rkDiceMode").value,
+        setup: $("rkSetupMode").value,
         sound: $("rkSound").checked,
         music: $("rkMusic").checked,
       };
@@ -12928,7 +13041,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
             : `Computer ${i - settings.humans + 1}`,
         ai: i >= settings.humans,
       }));
-      state = E.newGame(players, Date.now(), {goal:settings.goal,cards:settings.cardMode});
+      state = E.newGame(players, Date.now(), {goal:settings.goal,cards:settings.cardMode,dice:settings.dice,setup:settings.setup});
       selected = null;
       target = null;
       cards = [];
@@ -12943,8 +13056,8 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       api.storage.set("rk.stats", stats);
       save();
       api.close();
-      render();
       checkHandoff();
+      render();
       schedule();
     });
     function beginTurn() {
@@ -13030,6 +13143,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
           to: target,
           dice: Number($("rkDice")?.value),
         });
+      else if (type === "capital") apply({type,to:selected});
       else if (type === "reinforce") apply({ type, to: selected, amount });
       else if (type === "fortify")
         apply({ type, from: selected, to: target, amount });
@@ -13042,10 +13156,17 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     });
     function updateOdds() {
       if (!$("rkOdds") || !state || target === null) return;
-      const value = Number($("rkCommitRange").value), odds = E.battleOdds(value, state.territories[target].armies);
+      const value = Number($("rkCommitRange").value), odds = E.battleOdds(value, state.territories[target].armies, E.defenseDice(state,target), state.rules?.dice);
       $("rkCommitCount").textContent = value;
-      $("rkOdds").textContent = odds === null ? "Eerlijke dobbelstenen · één leger blijft achter" : `${odds > .99 ? ">99" : odds < .01 ? "<1" : Math.round(odds*100)}% kans op verovering · eerlijke dobbelstenen`;
+      const mode=state.rules?.dice === "balanced" ? "gebalanceerde blitz" : "willekeurige blitz";
+      $("rkOdds").textContent = `${odds === null ? "" : (odds===1 ? "100" : odds===0 ? "0" : odds > .99 ? ">99" : odds < .01 ? "<1" : Math.round(odds*100))+"% kans · "}${mode}${E.defenseDice(state,target)===3 ? " · hoofdstad: 3 verdedigingsdobbelstenen" : ""}`;
     }
+    $("rk").addEventListener("toggle", event => {
+      if (event.target.classList?.contains("rk-mission") && event.target.open) {
+        $("rk").classList.remove("rk-dock-collapsed");
+        $("rkDockToggle").setAttribute("aria-expanded","true");
+      }
+    },true);
     $("rk").addEventListener("input", event => {
       if (event.target.id === "rkAmountRange") $("rkAmount").value = event.target.value;
       if (event.target.id === "rkAmount") $("rkAmountRange").value = event.target.value;

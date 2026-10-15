@@ -28,7 +28,7 @@
       <g class="rk-land-shadow" transform="translate(2 5)">${regions.map(g=>`<path d="${g.path}" fill-rule="evenodd"/>`).join("")}</g><g class="rk-land-regions">${regions.map((g, i) => `<g class="rk-country" data-country="${i}" role="button" tabindex="0"><title>${E.territories[i].name}</title><path class="rk-country-shape" d="${g.path}" fill="${palette[E.territories[i].continent]}" fill-rule="evenodd"/></g>`).join("")}</g>
       <g class="rk-sea-routes">${routeMarkup}</g><path id="rkBattleRoute" class="rk-battle-route" marker-end="url(#rkAttackArrow)"/>
       <g class="rk-region-labels">${regions.map((g, i) => { const [x, y] = g.anchor; const words = g.label.includes("-") ? g.label.split("-") : [g.label]; const [lx,ly] = ({ britain:[x+20,y-43], northeu:[x+34,y-31], westeu:[x-48,y-15], southeu:[x+45,y+7] })[g.id] || [x,y-(words.length>1?38:25)]; return `<text data-label="${i}" x="${lx}" y="${ly}" text-anchor="middle">${words.map((w, n) => `<tspan x="${lx}" dy="${n ? 12 : 0}">${esc(w)}</tspan>`).join("")}</text>`; }).join("")}</g>
-      <g class="rk-army-markers">${regions.map((g, i) => `<g data-marker="${i}" data-country-marker="${i}" transform="translate(${g.anchor.join(" ")})"><circle class="rk-marker-halo" r="20"/><ellipse class="rk-marker-base" cy="4" rx="16" ry="15"/><circle class="rk-marker-disc" r="15"/><text class="rk-armies" y="5" text-anchor="middle"></text><text class="rk-owner" x="13" y="18" text-anchor="middle"></text></g>`).join("")}</g>
+      <g class="rk-army-markers">${regions.map((g, i) => `<g data-marker="${i}" data-country-marker="${i}" transform="translate(${g.anchor.join(" ")})"><circle class="rk-marker-halo" r="20"/><ellipse class="rk-marker-base" cy="4" rx="16" ry="15"/><circle class="rk-marker-disc" r="15"/><text class="rk-armies" y="5" text-anchor="middle"></text><text class="rk-owner" x="13" y="18" text-anchor="middle"></text><text class="rk-capital" y="-21" text-anchor="middle"></text></g>`).join("")}</g>
       <g class="rk-continent-labels">${names.map(([id, x, y]) => { const c = E.continents.find(c => c.id === id); return `<text x="${x}" y="${y}" text-anchor="middle">${esc(c.name.toUpperCase())} · +${c.bonus}</text>`; }).join("")}</g>
       <g class="rk-compass" transform="translate(118 664)"><circle r="30"/><path d="M0,-37L8,0L0,37L-8,0ZM-37,0L0,8L37,0L0,-8Z"/><text y="-44" text-anchor="middle">N</text></g><text class="rk-map-credit" x="1421" y="742" text-anchor="end">Kustlijnen: Natural Earth · speelgebieden: Wereldmacht</text>`;
     const shapes = [...svg.querySelectorAll(".rk-country")], markers = [...svg.querySelectorAll("[data-marker]")];
@@ -86,7 +86,7 @@
       shapes.forEach((node, i) => {
         const t = state.territories[i], p = state.players[t.owner];
         node.querySelector("path").setAttribute("fill", ownership ? `url(#rkLand${E.COLORS.indexOf(p.color)})` : palette[E.territories[i].continent]);
-        node.setAttribute("aria-label", `${E.territories[i].name}, ${p.name}, ${t.armies} legers`);
+        node.setAttribute("aria-label", `${E.territories[i].name}, ${p.name}, ${t.armies} legers${state.capitals?.includes(i) ? ", hoofdstad, maximaal drie verdedigingsdobbelstenen" : ""}`);
         node.setAttribute("aria-pressed", String(i === selected || i === target));
         node.classList.toggle("selected", i === selected); node.classList.toggle("target", i === target);
         node.classList.toggle("neighbor", selected !== null && E.territories[selected].neighbors.includes(i));
@@ -95,6 +95,7 @@
         marker.querySelector(".rk-armies").textContent = t.armies;
         marker.querySelector(".rk-armies").style.fontSize = t.armies > 999 ? "11px" : t.armies > 99 ? "14px" : "18px";
         marker.querySelector(".rk-owner").textContent = t.owner + 1;
+        marker.querySelector(".rk-capital").textContent = state.capitals?.includes(i) ? "♛" : "";
         marker.classList.toggle("selected", i === selected); marker.classList.toggle("target", i === target);
       });
       svg.querySelectorAll("[data-route]").forEach(route => route.classList.toggle("active", selected !== null && route.dataset.route.split("-").map(Number).includes(selected)));
@@ -102,7 +103,7 @@
       const bering = a && [selected,target].includes(E.byId.alaska) && [selected,target].includes(E.byId.kamchatka);
       $("rkBattleRoute").setAttribute("d", bering ? `M${a[0]},${a[1]}L${selected===E.byId.alaska?24:1416},${a[1]}M${selected===E.byId.alaska?1416:24},${b[1]}L${b[0]},${b[1]}` : a ? `M${a[0]},${a[1]}Q${(a[0]+b[0])/2},${(a[1]+b[1])/2-20} ${b[0]},${b[1]}` : "");
       const p = state.players[state.current];
-      $("rkMapTurn").textContent = `${p.name} · ${state.pending ? "Bezetten" : { reinforce:"Versterken", attack:"Aanvallen", fortify:"Verplaatsen", won:"Gewonnen" }[state.phase]}`;
+      $("rkMapTurn").textContent = `${p.name} · ${state.pending ? "Bezetten" : { deploy:"Startlegers", capital:"Hoofdstad kiezen", reinforce:"Versterken", attack:"Aanvallen", fortify:"Verplaatsen", won:"Gewonnen" }[state.phase]}`;
       $("rkMapTurn").style.setProperty("--player", p.color);
       $("rkMapSelection").textContent = selected === null ? "Kies een eigen gebied op de kaart" : `${E.territories[selected].name} · ${state.territories[selected].armies} legers${target !== null ? " → " + E.territories[target].name : ""}`;
       $("rkToActions").hidden = selected === null || p.ai || handoff;

@@ -183,3 +183,6 @@ html.big-text #rk .rk-continent-bonuses button{min-height:44px}html.big-text .rk
 .rk-dock-collapsed .rk-command-title h3{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 @media(max-height:550px) and (orientation:landscape){.rk-scoreboard{max-height:calc(100% - 222px);overflow-y:auto;scrollbar-width:thin}.rk-score{flex-shrink:0}}
+
+.rk-army-markers text.rk-capital{font-size:24px;fill:#ffe09a;stroke:#143244;stroke-width:3}
+.rk-mission{border-bottom:1px solid #a8c6d43a;margin-bottom:8px}.rk-mission summary{font-size:12px;font-weight:700;min-height:44px;padding:10px 28px 10px 0;cursor:pointer;color:#ffe09a}.rk-mission p{font-size:13px;line-height:1.4;color:#eff8fc;margin:0 0 12px}

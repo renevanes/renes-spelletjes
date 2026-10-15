@@ -15,6 +15,8 @@
           })[c],
       );
   const phases = {
+    deploy: "Startlegers",
+    capital: "Hoofdstad kiezen",
     reinforce: "Versterken",
     attack: "Aanvallen",
     fortify: "Verplaatsen",
@@ -37,7 +39,7 @@
     const storedInvalid = state !== null && !E.validState(state);
     if (storedInvalid) state = null;
     let settings = Object.assign(
-      { players: 3, humans: 1, difficulty: "normal", tempo: "normal", sound: true, music: true, goal: "world", cardMode: "progressive" },
+      { players: 3, humans: 1, difficulty: "normal", tempo: "normal", sound: true, music: true, goal: "world", cardMode: "progressive", dice: "balanced", setup: "auto" },
       api.storage.get("rk.settings", {}),
     );
     api.music?.(() => settings.music !== false);
@@ -70,7 +72,7 @@
           state.statsRecorded = true;
         }
         save();
-        if (action.type === "attack") sound(state.pending ? "rkCapture" : "rkDice");
+        if (["attack","blitz"].includes(action.type)) sound(state.pending ? "rkCapture" : "rkDice");
         else if (action.type === "trade") sound("rkTrade");
         else if (action.type === "reinforce" || action.type === "fortify") sound("rkPlace");
         if (state.winner !== null) sound("rkWin");
@@ -197,7 +199,7 @@
                 if (t.continent !== c.id) return "";
                 const country = state.territories[i],
                   p = state.players[country.owner];
-                return `<button data-country="${i}" class="${i === selected ? "selected" : i === target ? "target" : ""}" aria-pressed="${i === selected || i === target}"><i style="background:${p.color}">${country.owner + 1}</i><span>${t.name}<small>${esc(p.name)}</small></span><b>${country.armies}</b><span class="visually-hidden">legers</span></button>`;
+                return `<button data-country="${i}" class="${i === selected ? "selected" : i === target ? "target" : ""}" aria-pressed="${i === selected || i === target}"><i style="background:${p.color}">${country.owner + 1}</i><span>${t.name}${state.capitals?.includes(i) ? " ♛" : ""}<small>${esc(p.name)}</small></span><b>${country.armies}</b><span class="visually-hidden">legers</span></button>`;
               })
               .join("")}</div>`,
         )
@@ -245,19 +247,23 @@
       const handOpen = $("rkControls").querySelector(".rk-card-hand")?.open,
         accessibleOpen = $("rkControls").querySelector(".rk-accessible")?.open;
       const mustTrade = !handoff && isHuman() && state.phase === "reinforce" && state.players[state.current].cards.length >= (state.resumeAttack ? 6 : 5);
-      if (state.pending || state.winner !== null || mustTrade) {
+      if (state.pending || state.winner !== null || mustTrade || ["deploy","capital"].includes(state.phase)) {
         $("rk").classList.remove("rk-dock-collapsed");
         $("rkDockToggle").setAttribute("aria-expanded", "true");
       }
       let html = "";
       if (state.phase === "won")
-        html = `<h3>🏆 ${esc(state.players[state.winner].name)} wint!</h3><p class="rk-muted">${E.owned(state, state.winner).length} gebieden veroverd in ${state.round} rondes.</p>${button("Nieuw spel", "new")}${button("Naar menu", "menu", false, true)}`;
+        html = `<h3>🏆 ${esc(state.players[state.winner].name)} wint!</h3><p class="rk-muted">${state.rules?.goal === "capital" ? "Alle hoofdsteden zijn in handen van de winnaar." : state.rules?.goal === "mission" ? esc(E.mission(state,state.winner).text) : E.owned(state, state.winner).length+" gebieden veroverd."} · ${state.round} rondes.</p>${button("Nieuw spel", "new")}${button("Naar menu", "menu", false, true)}`;
       else if (handoff)
         html = `<h3>Geef het toestel door</h3><p class="rk-muted">De kaarten en acties van ${esc(state.players[state.current].name)} blijven verborgen.</p>${button("Mijn beurt bekijken", "handoff")}`;
       else if (!isHuman())
         html = `<h3>${esc(state.players[state.current].name)} speelt</h3><p class="rk-muted">De computer ${state.phase === "reinforce" ? "plaatst versterkingen" : state.phase === "attack" ? "bekijkt de grenzen" : "rondt de beurt af"}. Je kunt op elk moment pauzeren of naar het menu gaan.</p>${button("Pauze", "pause", false, true)}`;
+      else if (state.phase === "capital")
+        html = `<h3>Kies je hoofdstad</h3><p class="rk-muted">Een hoofdstad geeft elke beurt 2 extra legers en verdedigt met maximaal 3 dobbelstenen. Verover alle hoofdsteden om te winnen.</p><label>Hoofdstad<select id="rkFrom">${options(E.owned(state),own?selected:null)}</select></label>${button(own ? E.territories[selected].name+" als hoofdstad" : "Kies een eigen gebied", "capital", !own)}`;
+      else if (state.phase === "deploy")
+        html = `<h3>Startlegers plaatsen</h3><p class="rk-muted">Je hebt nog ${state.setupRemaining[state.current]} startlegers. Plaats er deze keer maximaal ${state.pool}; daarna is de volgende speler aan de beurt.</p><label>Eigen gebied<select id="rkFrom">${options(E.owned(state),own?selected:null)}</select></label>${state.pool && own ? amount(state.pool,state.pool)+button("Startlegers plaatsen","reinforce") : ""}${button("Volgende speler →","advance",state.pool>0,true)}`;
       else if (state.pending)
-        html = `<h3>Land veroverd!</h3><p class="rk-muted">${E.territories[state.pending.to].name} is van jou. Er moeten minstens ${state.pending.min} legers heen; één leger blijft achter in ${E.territories[state.pending.from].name}.</p>${amount(state.pending.max, state.pending.max, state.pending.min)}${button("Bezetting bevestigen", "occupy")}`;
+        html = `<h3>Land veroverd!</h3><p class="rk-muted">${E.territories[state.pending.to].name} is van jou. Er moeten minstens ${state.pending.min} legers heen; één leger blijft achter in ${E.territories[state.pending.from].name}.</p>${amount(state.pending.max, state.pending.suggested ?? state.pending.max, state.pending.min)}${button("Bezetting bevestigen", "occupy")}`;
       else {
         const hand = state.players[state.current].cards,
           required = hand.length >= (state.resumeAttack ? 6 : 5);
@@ -278,9 +284,9 @@
           const invalid = !own || selection.armies < 2 || target === null;
           if (own && target !== null) {
             const maximum = Math.max(1, selection.armies-1), value = Math.min(commitChoice || maximum, maximum);
-            html += `<div class="rk-matchup"><span>→ ${E.territories[target].name}</span><b>${state.territories[target].armies} legers</b></div><label class="rk-commit-label" for="rkCommitRange">Aanvalslegers <output id="rkCommitCount">${value}</output></label><input id="rkCommitRange" type="range" min="1" max="${maximum}" value="${value}" ${invalid ? "disabled" : ""}><p id="rkOdds" class="rk-odds"></p>`;
+            html += `<div class="rk-matchup"><span>→ ${E.territories[target].name}</span><b>${state.territories[target].armies} legers</b></div><label class="rk-commit-label" for="rkCommitRange">Legers voor blitz <output id="rkCommitCount">${value}</output></label><input id="rkCommitRange" type="range" min="1" max="${maximum}" value="${value}" ${invalid ? "disabled" : ""}><p id="rkOdds" class="rk-odds"></p>`;
           } else if (own) html += `<p class="rk-muted">${selection.armies > 1 ? "Tik op een vijandelijk buurland om aan te vallen." : "Er blijft altijd één leger achter. Dit gebied kan niet aanvallen."}</p>`;
-          html += `<div class="rk-buttons">${button(autoBattle ? "■ Stop blitz" : "⚡ Blitz", autoBattle ? "stop" : "blitz", invalid)}${button("⚄ Eén worp", "attack", invalid, true)}</div>${button("Verplaatsen →", "advance", false, true)}`;
+          html += `<div class="rk-buttons">${button("⚡ Blitz", "blitz", invalid)}${button("⚄ Eén worp", "attack", invalid, true)}</div>${button("Verplaatsen →", "advance", false, true)}`;
         } else if (state.phase === "fortify") {
           if (!state.fortified) {
             const targets = own ? E.owned(state).filter(i=>i!==selected && E.connected(state,selected,i)) : [];
@@ -292,6 +298,9 @@
           html += button("Beurt beëindigen ✓", "endTurn");
         }
         html += `<details class="rk-accessible" ${accessibleOpen ? "open" : ""}><summary>Kiezen via landenlijst</summary>${accessible}</details>`;
+      }
+      if (isHuman() && !handoff && state.rules?.goal === "mission" && state.phase !== "won") {
+        html = `<details class="rk-mission"><summary>✉ Mijn geheime missie</summary><p>${esc(E.mission(state).text)}</p></details>`+html;
       }
       $("rkControls").innerHTML = html;
       updateOdds();
@@ -312,7 +321,7 @@
       if (!state) return;
       const p = state.players[state.current];
       $("rkRound").textContent =
-        `Ronde ${state.round} · ${state.players.length} spelers · ${E.victoryTarget(state) === 30 ? "70% veroveren" : "Wereldverovering"}`;
+        `Ronde ${state.round} · ${state.players.length} spelers · ${({world:"Wereldverovering",domination:"70% veroveren",capital:"Hoofdsteden",mission:"Geheime missies"})[state.rules?.goal||"world"]}`;
       $("rkPlayerName").textContent =
         state.phase === "won"
           ? `${state.players[state.winner].name} heeft gewonnen`
@@ -321,7 +330,7 @@
       $("rkPlayerBadge").textContent = state.current + 1;
       $("rkPhase").textContent = state.pending ? "Bezetten" : phases[state.phase];
       $("rkPhaseSteps").querySelectorAll("[data-phase]").forEach(el => { el.classList.toggle("active", el.dataset.phase === state.phase); el.setAttribute("aria-current", el.dataset.phase === state.phase ? "step" : "false"); });
-      $("rkInstruction").textContent = state.pending
+      $("rkInstruction").textContent = state.phase === "deploy" ? "Plaats je startlegers; geef daarna de beurt door." : state.phase === "capital" ? "Kies een eigen gebied als hoofdstad." : state.pending
         ? "Kies hoeveel legers het veroverde land bezetten."
         : state.phase === "reinforce"
           ? `Plaats ${state.pool} versterkingen in je eigen landen.`
@@ -329,12 +338,12 @@
             ? "Kies een eigen land en een vijandelijke buur. Eén leger blijft achter."
             : state.phase === "fortify"
               ? "Verplaats één keer via eigen landen, of beëindig je beurt."
-              : "De wereld is veroverd.";
+              : "Het spel is beslist.";
       const scoreScroll = $("rkScoreboard").scrollTop, scoreLeft = $("rkScoreboard").scrollLeft;
       $("rkScoreboard").innerHTML = state.players
         .map(
           (p, i) =>
-            `<div style="--player:${p.color}" class="rk-score ${i === state.current ? "active" : ""} ${E.owned(state, i).length ? "" : "out"}"><span style="background:${p.color}">${i + 1}</span><div><b>${esc(p.name)}${p.ai ? " · CPU" : ""}</b><small>${state.territories.filter(t=>t.owner===i).reduce((n,t)=>n+t.armies,0)} legers · ${E.owned(state, i).length}/${E.victoryTarget(state)} gebieden${E.owned(state, i).length ? "" : " · uitgeschakeld"}</small></div></div>`,
+            `<div style="--player:${p.color}" class="rk-score ${i === state.current ? "active" : ""} ${E.owned(state, i).length ? "" : "out"}"><span style="background:${p.color}">${i + 1}</span><div><b>${esc(p.name)}${p.ai ? " · CPU" : ""}</b><small>${state.territories.filter(t=>t.owner===i).reduce((n,t)=>n+t.armies,0)} legers · ${E.owned(state, i).length} gebieden${state.capitals ? " · ♛ "+state.capitals.filter(id=>id!==null && state.territories[id].owner===i).length+"/"+state.players.length : ""}${E.owned(state, i).length ? "" : " · uitgeschakeld"}</small></div></div>`,
         )
         .join("");
       const rail = $("rkScoreboard"), currentScore = rail.querySelector(".rk-score.active");
@@ -347,7 +356,7 @@
       renderControls();
       const b = state.lastBattle;
       $("rkBattle").innerHTML = b
-        ? `<h4>${E.territories[b.from].name} → ${E.territories[b.to].name}</h4><div class="rk-dice-row"><span>Aanval</span>${b.attack.map(n => die(n)).join("")}</div><div class="rk-dice-row"><span>Verdediging</span>${b.defend.map(n => die(n, true)).join("")}</div><p>Aanvaller verliest ${b.attackLoss}, verdediger ${b.defendLoss}. Bij gelijke worpen wint de verdediger.</p>`
+        ? `<h4>${E.territories[b.from].name} → ${E.territories[b.to].name}</h4><div class="rk-dice-row"><span>Aanval</span>${b.attack.map(n => die(n)).join("")}</div><div class="rk-dice-row"><span>Verdediging</span>${b.defend.map(n => die(n, true)).join("")}</div><p>${b.blitz ? `Blitz · ${b.rounds ? b.rounds+" worpen · " : ""}` : ""}Aanvaller verliest ${b.attackLoss}, verdediger ${b.defendLoss}. Bij gelijke worpen wint de verdediger.</p>`
         : "";
       $("rkHistory").innerHTML = state.log
         .map((text) => `<li>${esc(text)}</li>`)
@@ -361,40 +370,8 @@
     }
     function startBlitz() {
       const committed = Number($("rkCommitRange")?.value) || state.territories[selected].armies-1;
-      autoBattle = { from: selected, to: target, turn: state.turn, reserve: state.territories[selected].armies-1-committed };
-      const tick = () => {
-        battleTimer = null;
-        if (
-          !autoBattle ||
-          !active ||
-          document.hidden ||
-          modalOpen() ||
-          state.turn !== autoBattle.turn ||
-          state.phase !== "attack" ||
-          state.pending ||
-          state.territories[autoBattle.from].armies <= autoBattle.reserve + 1 ||
-          state.territories[autoBattle.to].owner === state.current
-        ) {
-          stop();
-          renderControls();
-          return;
-        }
-        const pair = autoBattle;
-        if (
-          apply({
-            type: "attack",
-            from: pair.from,
-            to: pair.to,
-            dice: Math.min(
-              3,
-              state.territories[pair.from].armies - 1 - pair.reserve,
-            ),
-          }) &&
-          autoBattle
-        )
-          battleTimer = setTimeout(tick, settings.tempo === "fast" ? 45 : 90);
-      };
-      tick();
+      stop();
+      apply({type:"blitz",from:selected,to:target,amount:committed});
     }
     function leave() {
       stop();
@@ -439,6 +416,8 @@
       $("rkTempo").value = settings.tempo;
       $("rkGoal").value = settings.goal;
       $("rkCardMode").value = settings.cardMode;
+      $("rkDiceMode").value = settings.dice;
+      $("rkSetupMode").value = settings.setup;
       $("rkSound").checked = settings.sound !== false;
       $("rkMusic").checked = settings.music !== false;
       api.modal("rkStartModal");
@@ -452,9 +431,8 @@
       $("rkDockToggle").setAttribute("aria-expanded", "false");
       board.fit();
       if (state) {
+        checkHandoff();
         render();
-        if (isHuman() && state.players.filter((p) => !p.ai).length > 1)
-          checkHandoff();
         schedule();
       } else {
         showStart();
@@ -489,8 +467,8 @@
     $("rkNew").addEventListener("click", showStart);
     $("rkResume").addEventListener("click", () => {
       api.close();
-      render();
       checkHandoff();
+      render();
       schedule();
     });
     $("rkPlayerCount").addEventListener("change", setupNames);
@@ -520,6 +498,8 @@
         tempo: $("rkTempo").value,
         goal: $("rkGoal").value,
         cardMode: $("rkCardMode").value,
+        dice: $("rkDiceMode").value,
+        setup: $("rkSetupMode").value,
         sound: $("rkSound").checked,
         music: $("rkMusic").checked,
       };
@@ -530,7 +510,7 @@
             : `Computer ${i - settings.humans + 1}`,
         ai: i >= settings.humans,
       }));
-      state = E.newGame(players, Date.now(), {goal:settings.goal,cards:settings.cardMode});
+      state = E.newGame(players, Date.now(), {goal:settings.goal,cards:settings.cardMode,dice:settings.dice,setup:settings.setup});
       selected = null;
       target = null;
       cards = [];
@@ -545,8 +525,8 @@
       api.storage.set("rk.stats", stats);
       save();
       api.close();
-      render();
       checkHandoff();
+      render();
       schedule();
     });
     function beginTurn() {
@@ -632,6 +612,7 @@
           to: target,
           dice: Number($("rkDice")?.value),
         });
+      else if (type === "capital") apply({type,to:selected});
       else if (type === "reinforce") apply({ type, to: selected, amount });
       else if (type === "fortify")
         apply({ type, from: selected, to: target, amount });
@@ -644,10 +625,17 @@
     });
     function updateOdds() {
       if (!$("rkOdds") || !state || target === null) return;
-      const value = Number($("rkCommitRange").value), odds = E.battleOdds(value, state.territories[target].armies);
+      const value = Number($("rkCommitRange").value), odds = E.battleOdds(value, state.territories[target].armies, E.defenseDice(state,target), state.rules?.dice);
       $("rkCommitCount").textContent = value;
-      $("rkOdds").textContent = odds === null ? "Eerlijke dobbelstenen · één leger blijft achter" : `${odds > .99 ? ">99" : odds < .01 ? "<1" : Math.round(odds*100)}% kans op verovering · eerlijke dobbelstenen`;
+      const mode=state.rules?.dice === "balanced" ? "gebalanceerde blitz" : "willekeurige blitz";
+      $("rkOdds").textContent = `${odds === null ? "" : (odds===1 ? "100" : odds===0 ? "0" : odds > .99 ? ">99" : odds < .01 ? "<1" : Math.round(odds*100))+"% kans · "}${mode}${E.defenseDice(state,target)===3 ? " · hoofdstad: 3 verdedigingsdobbelstenen" : ""}`;
     }
+    $("rk").addEventListener("toggle", event => {
+      if (event.target.classList?.contains("rk-mission") && event.target.open) {
+        $("rk").classList.remove("rk-dock-collapsed");
+        $("rkDockToggle").setAttribute("aria-expanded","true");
+      }
+    },true);
     $("rk").addEventListener("input", event => {
       if (event.target.id === "rkAmountRange") $("rkAmount").value = event.target.value;
       if (event.target.id === "rkAmount") $("rkAmountRange").value = event.target.value;

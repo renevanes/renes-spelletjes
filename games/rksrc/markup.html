@@ -70,7 +70,7 @@
     <h3>🌍 Wereldmacht · Wereldverovering</h3>
     <p>
       Verover de wereld op een kaart met 42 gebieden. Speel tegen de computer of geef het toestel door
-      aan je medespelers. De startlanden en legers worden automatisch verdeeld.
+      aan je medespelers. Kies je spelvorm en bepaal of je de startlegers zelf plaatst.
     </p>
     <button
       id="rkResume"
@@ -110,8 +110,12 @@
           <option value="fast">Snel</option>
         </select></label
       >
-      <label>Speldoel<select id="rkGoal"><option value="world">Wereldverovering · alle 42</option><option value="domination">Snelle verovering · 70% (30)</option></select></label>
+      <label>Speldoel<select id="rkGoal"><option value="world">Wereldverovering · alle 42</option><option value="domination">Snelle verovering · 70% (30)</option><option value="capital">Hoofdsteden veroveren</option><option value="mission">Geheime missies</option></select></label>
       <label>Kaartbonussen<select id="rkCardMode"><option value="progressive">Oplopend · 4, 6, 8…</option><option value="fixed">Vast · 4 / 6 / 8 / 10</option></select></label>
+    </div>
+    <div class="rk-setup-grid" style="margin-top:12px">
+      <label>Blitzdobbelstenen<select id="rkDiceMode"><option value="balanced">Gebalanceerd · minder extreme uitslagen</option><option value="random">Willekeurig · gewone dobbelstenen</option></select></label>
+      <label>Startlegers<select id="rkSetupMode"><option value="auto">Automatisch verdelen</option><option value="manual">Zelf plaatsen · om de beurt</option></select></label>
     </div>
     <div class="rk-sound-options"><label><input id="rkSound" type="checkbox" checked> Geluidseffecten</label><label><input id="rkMusic" type="checkbox" checked> Achtergrondmuziek</label></div><div id="rkNames" class="rk-names"></div>
     <p class="rk-note">
@@ -127,6 +131,9 @@
 <div id="rkHelpModal" class="modal">
   <div class="sheet">
     <h3>Zo speel je Wereldmacht</h3>
+    <p><b>Hoofdsteden:</b> kies aan het begin een eigen gebied als hoofdstad. Elke veroverde hoofdstad geeft 2 extra legers per beurt en verdedigt met maximaal 3 dobbelstenen. Wie alle hoofdsteden bezet, wint; een hoofdstad verliezen schakelt je dus niet meteen uit.</p>
+    <p><b>Geheime missies:</b> bekijk je eigen opdracht via ‘Mijn geheime missie’. Je wint zodra je opdracht voltooid is. Bij doorgeven blijft deze opdracht verborgen.</p>
+    <p><b>Startlegers zelf plaatsen:</b> de landen worden verdeeld, daarna plaatsen spelers om de beurt maximaal drie startlegers. Als iedereen klaar is, begint de eerste gewone beurt.</p>
     <ol class="rk-rules">
       <li>
         <b>Versterken.</b> Je krijgt minimaal 3 legers, of één per drie landen
@@ -161,7 +168,7 @@
       </li>
     </ol>
     <p>
-      Gebruik de schuif om legers te plaatsen, te verplaatsen of achter te houden bij een blitzaanval. De blitz gebruikt dezelfde dobbelregels als één worp; de getoonde kans geldt voor maximaal drie aanvalsdobbelstenen. Bij snelle verovering win je na het bezetten van 30 gebieden.
+      Gebruik de schuif om legers te plaatsen, te verplaatsen of achter te houden bij een blitzaanval. Blitz handelt het gevecht meteen af, totdat je gekozen aanvalslegers op zijn of je het gebied verovert. Kies bij de start voor willekeurige of gebalanceerde blitz; bij gebalanceerd zijn extreme uitslagen minder waarschijnlijk. Losse worpen gebruiken altijd gewone dobbelstenen. Bij snelle verovering win je na het bezetten van 30 gebieden.
       De stippellijnen verbinden continenten. Alaska en Kamtsjatka zijn ook
       buren. Elk spelersnummer blijft zichtbaar, zodat je geen kleuren hoeft te
       onderscheiden.
