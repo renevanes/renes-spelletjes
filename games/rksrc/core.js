@@ -201,7 +201,8 @@
   function reinforcements(s, player = s.current) {
     return (
       Math.max(3, Math.floor(owned(s, player).length / 3)) +
-      bonus(s, player).reduce((n, c) => n + c.bonus, 0)
+      bonus(s, player).reduce((n, c) => n + c.bonus, 0) +
+      (s.capitals || []).filter(i => i !== null && s.territories[i].owner === player).length * 2
     );
   }
   function addLog(s, message) {
@@ -271,8 +272,10 @@
     const s = {
       version: 1,
       rules: {
-        goal: options.goal === "domination" ? "domination" : "world",
+        goal: ["world", "domination", "capital", "mission"].includes(options.goal) ? options.goal : "world",
         cards: options.cards === "fixed" ? "fixed" : "progressive",
+        dice: options.dice === "balanced" ? "balanced" : "random",
+        setup: options.setup === "manual" ? "manual" : "auto",
       },
       rng: seed >>> 0 || 1,
       players: players.map((p, i) => ({
@@ -308,7 +311,7 @@
     for (let i = 0; i < 42; i++)
       s.territories[order[i]] = { owner: i % players.length, armies: 1 };
     const initial = [0, 0, 40, 35, 30, 25, 20][players.length];
-    for (let player = 0; player < players.length; player++) {
+    if (s.rules.setup !== "manual") for (let player = 0; player < players.length; player++) {
       const countries = owned(s, player);
       for (let n = countries.length; n < initial; n++)
         s.territories[countries[Math.floor(random(s) * countries.length)]]
@@ -318,12 +321,101 @@
       s,
       Array.from({ length: 44 }, (_, i) => i),
     );
-    s.pool = reinforcements(s);
-    addLog(
-      s,
-      `${s.players[0].name} begint met ${s.pool} versterkingen. De startlegers zijn automatisch verdeeld.`,
-    );
+    if (s.rules.goal === "capital") s.capitals = players.map(() => null);
+    if (s.rules.goal === "mission") s.missions = shuffle(s, missions.map(m => m.id)).slice(0,players.length);
+    if (s.rules.setup === "manual") {
+      s.setupRemaining = players.map((_,i) => initial - owned(s,i).length);
+      s.phase = "deploy"; s.pool = Math.min(3,s.setupRemaining[0]);
+      addLog(s,"De landen zijn verdeeld. Plaats om de beurt maximaal drie startlegers.");
+    } else beginPlay(s);
     return s;
+  }
+  function beginPlay(s) {
+    s.current = 0;
+    if (s.capitals?.some(i => i === null)) {
+      s.phase = "capital"; s.pool = 0;
+      addLog(s,"Kies om de beurt een eigen gebied als hoofdstad.");
+    } else {
+      s.phase = "reinforce"; s.pool = reinforcements(s);
+      addLog(s,`${s.players[0].name} begint met ${s.pool} versterkingen.`);
+    }
+  }
+  function nextDeployment(s) {
+    if (s.setupRemaining.every(n => n === 0)) beginPlay(s);
+    else {
+      do { s.current = (s.current+1)%s.players.length; } while (!s.setupRemaining[s.current]);
+      s.pool = Math.min(3,s.setupRemaining[s.current]);
+    }
+    s.turn++;
+  }
+  const missions = [
+    {id:"territories",text:"Verover 24 gebieden.",count:24},
+    {id:"garrisons",text:"Bezet 18 gebieden met minstens twee legers per gebied.",count:18,armies:2},
+    {id:"asia-africa",text:"Verover Azië en Afrika.",continents:["as","af"]},
+    {id:"asia-south",text:"Verover Azië en Zuid-Amerika.",continents:["as","sa"]},
+    {id:"north-africa",text:"Verover Noord-Amerika en Afrika.",continents:["na","af"]},
+    {id:"north-oceania",text:"Verover Noord-Amerika en Oceanië.",continents:["na","au"]},
+    {id:"europe-oceania",text:"Verover Europa, Oceanië en nog een continent.",continents:["eu","au"],extra:true},
+    {id:"europe-south",text:"Verover Europa, Zuid-Amerika en nog een continent.",continents:["eu","sa"],extra:true},
+  ];
+  function mission(s,player=s.current) { return missions.find(m=>m.id===s.missions?.[player]); }
+  function hasWon(s,player=s.current) {
+    if (s.rules?.goal === "capital") return s.capitals.every(i=>i!==null && s.territories[i].owner===player);
+    if (s.rules?.goal === "mission") {
+      const m=mission(s,player); if (!m) return false;
+      if (m.count) return owned(s,player).filter(i=>s.territories[i].armies >= (m.armies||1)).length >= m.count;
+      const ids=bonus(s,player).map(c=>c.id);
+      return m.continents.every(id=>ids.includes(id)) && (!m.extra || ids.length>=3);
+    }
+    return owned(s,player).length >= victoryTarget(s);
+  }
+  function checkVictory(s) {
+    if (s.pending || ["deploy","capital"].includes(s.phase)) return;
+    const winner=[s.current,...s.players.map((_,i)=>i).filter(i=>i!==s.current)].find(i=>hasWon(s,i));
+    if (winner === undefined) return;
+    s.winner=winner; s.phase="won"; s.pool=0; s.resumeAttack=false;
+    addLog(s,`${s.players[winner].name} wint${s.rules?.goal === "mission" ? ": "+mission(s,winner).text : s.rules?.goal === "capital" ? " met alle hoofdsteden!" : " met "+owned(s,winner).length+" gebieden!"}`);
+  }
+  function defenseDice(s,id) { return s.capitals?.includes(id) ? 3 : 2; }
+  function rollBattle(s,a,d,maxDefense,once=false,dice=3) {
+    const initialA=a,initialD=d; let attack=[],defend=[],rounds=0;
+    do {
+      attack=Array.from({length:Math.min(dice,a)},()=>1+Math.floor(random(s)*6)).sort((x,y)=>y-x);
+      defend=Array.from({length:Math.min(maxDefense,d)},()=>1+Math.floor(random(s)*6)).sort((x,y)=>y-x);
+      for (let i=0;i<Math.min(attack.length,defend.length);i++) { if (attack[i]>defend[i]) d--; else a--; }
+      rounds++;
+    } while (!once && a>0 && d>0);
+    return {a,d,attack,defend,attackLoss:initialA-a,defendLoss:initialD-d,rounds};
+  }
+  const battleDistributions = new Map();
+  function balancedBattle(s,a,d,maxDefense) {
+    // Exact terminal probabilities, with bounded memory. Cache only the small result vector.
+    if (a*d>1000000) {
+      const trials=Array.from({length:3},()=>rollBattle(s,a,d,maxDefense));
+      trials.sort((x,y)=>(x.d===0?x.a:-x.d)-(y.d===0?y.a:-y.d));
+      return trials[1];
+    }
+    const key=`${a},${d},${maxDefense}`;
+    let outcomes=battleDistributions.get(key);
+    if (!outcomes) {
+      const columns=d+1, grid=new Float64Array((a+1)*columns);
+      grid[a*columns+d]=1;
+      for (let x=a;x>0;x--) for (let y=d;y>0;y--) {
+        const probability=grid[x*columns+y]; if (!probability) continue;
+        for (const [al,dl,p] of rollOutcomes[`${Math.min(3,x)},${Math.min(maxDefense,y)}`]) grid[(x-al)*columns+y-dl] += probability*p;
+      }
+      outcomes=[];
+      for (let y=d;y>0;y--) if (grid[y]) outcomes.push({a:0,d:y,p:grid[y]});
+      for (let x=1;x<=a;x++) if (grid[x*columns]) outcomes.push({a:x,d:0,p:grid[x*columns]});
+      if (battleDistributions.size>=16) battleDistributions.delete(battleDistributions.keys().next().value);
+      battleDistributions.set(key,outcomes);
+    }
+    // Remove the outer deciles, then concentrate on likely outcomes. This is our own
+    // balancing implementation; ordinary rolls retain the unmodified dice probabilities.
+    const draws=[random(s),random(s),random(s)].sort((x,y)=>x-y);
+    let q=.1+.8*draws[1],chosen=outcomes.at(-1);
+    for (const outcome of outcomes) { q-=outcome.p; if(q<=0) {chosen=outcome;break;} }
+    return {a:chosen.a,d:chosen.d,attack:[],defend:[],attackLoss:a-chosen.a,defendLoss:d-chosen.d,rounds:null};
   }
   function finishCapture(s) {
     const previous = s.pending.defender;
@@ -336,13 +428,9 @@
         `${s.players[previous].name} is uitgeschakeld. De kaarten gaan naar ${s.players[s.current].name}.`,
       );
     }
-    if (owned(s).length >= victoryTarget(s)) {
-      s.winner = s.current;
-      s.phase = "won";
-      s.pool = 0;
-      s.resumeAttack = false;
-      addLog(s, `${s.players[s.current].name} wint met ${owned(s).length} gebieden!`);
-    } else if (s.players[s.current].cards.length >= 6) {
+    checkVictory(s);
+    if (s.winner !== null) return;
+    if (s.players[s.current].cards.length >= 6) {
       s.phase = "reinforce";
       s.resumeAttack = true;
       s.pool = 0;
@@ -400,7 +488,7 @@
     };
     if (action.type === "reinforce") {
       assert(
-        s.phase === "reinforce",
+        ["reinforce","deploy"].includes(s.phase),
         "Je kunt nu geen versterkingen plaatsen.",
       );
       const target = territory(action.to);
@@ -414,10 +502,19 @@
       );
       target.armies += action.amount;
       s.pool -= action.amount;
+      if (s.phase === "deploy") s.setupRemaining[s.current] -= action.amount;
       addLog(
         s,
         `${name} plaatst ${action.amount} ${action.amount === 1 ? "leger" : "legers"} in ${territories[action.to].name}.`,
       );
+    } else if (action.type === "capital") {
+      assert(s.phase === "capital" && s.capitals[s.current] === null,"Kies alleen tijdens de start een hoofdstad.");
+      assert(territory(action.to).owner === s.current,"Kies een eigen gebied als hoofdstad.");
+      s.capitals[s.current] = action.to;
+      addLog(s,`${name} kiest ${territories[action.to].name} als hoofdstad.`);
+      if (s.capitals.every(i=>i!==null)) beginPlay(s);
+      else do { s.current=(s.current+1)%s.players.length; } while (s.capitals[s.current]!==null);
+      s.turn++;
     } else if (action.type === "trade") {
       assert(
         s.phase === "reinforce",
@@ -443,7 +540,10 @@
         `${name} ruilt kaarten voor ${value} versterkingen${extra != null ? ` en 2 legers in ${territories[extra].name}` : ""}.`,
       );
     } else if (action.type === "advance") {
-      if (s.phase === "reinforce") {
+      if (s.phase === "deploy") {
+        assert(s.pool === 0,"Plaats eerst je startlegers.");
+        nextDeployment(s);
+      } else if (s.phase === "reinforce") {
         assert(s.pool === 0, "Plaats eerst al je versterkingen.");
         assert(
           player.cards.length < (s.resumeAttack ? 6 : 5),
@@ -453,7 +553,7 @@
         s.resumeAttack = false;
       } else if (s.phase === "attack") s.phase = "fortify";
       else throw new Error("Sluit je beurt af met ‘Beurt beëindigen’.");
-    } else if (action.type === "attack") {
+    } else if (action.type === "attack" || action.type === "blitz") {
       assert(
         s.phase === "attack",
         "Je kunt alleen aanvallen in de aanvalsfase.",
@@ -468,25 +568,12 @@
         territories[action.from].neighbors.includes(action.to),
         "Deze landen grenzen niet aan elkaar.",
       );
-      assert(
-        integer(action.dice, 1, Math.min(3, from.armies - 1)),
-        "Laat minimaal één leger achter en kies maximaal 3 dobbelstenen.",
-      );
-      const defender = to.owner,
-        attack = Array.from(
-          { length: action.dice },
-          () => 1 + Math.floor(random(s) * 6),
-        ).sort((a, b) => b - a),
-        defend = Array.from(
-          { length: Math.min(2, to.armies) },
-          () => 1 + Math.floor(random(s) * 6),
-        ).sort((a, b) => b - a);
-      let attackLoss = 0,
-        defendLoss = 0;
-      for (let i = 0; i < Math.min(attack.length, defend.length); i++) {
-        if (attack[i] > defend[i]) defendLoss++;
-        else attackLoss++;
-      }
+      const blitz=action.type === "blitz";
+      assert(blitz ? integer(action.amount,1,from.armies-1) : integer(action.dice,1,Math.min(3,from.armies-1)),"Laat minimaal één leger achter en kies een geldig aantal aanvalslegers.");
+      const defender=to.owner, committed=blitz ? action.amount : from.armies-1;
+      const balanced=blitz && s.rules?.dice === "balanced";
+      const result=balanced ? balancedBattle(s,committed,to.armies,defenseDice(s,action.to)) : rollBattle(s,committed,to.armies,defenseDice(s,action.to),!blitz,blitz?3:action.dice);
+      const {attack,defend,attackLoss,defendLoss}=result;
       from.armies -= attackLoss;
       to.armies -= defendLoss;
       s.lastBattle = {
@@ -496,6 +583,7 @@
         defend,
         attackLoss,
         defendLoss,
+        ...(blitz ? {blitz:true,balanced,rounds:result.rounds} : {}),
       };
       addLog(
         s,
@@ -503,14 +591,16 @@
       );
       if (to.armies === 0) {
         to.owner = s.current;
-        to.armies = action.dice;
-        from.armies -= action.dice;
+        const move = Math.min(blitz ? 3 : attack.length,committed,result.a,from.armies-1);
+        to.armies = move;
+        from.armies -= move;
         s.conquered = true;
         s.pending = {
           from: action.from,
           to: action.to,
-          min: action.dice,
-          max: from.armies + action.dice - 1,
+          min: move,
+          max: from.armies + move - 1,
+          suggested: Math.max(move,Math.min(from.armies + move - 1,result.a)),
           defender,
         };
         addLog(
@@ -557,6 +647,7 @@
       );
       nextTurn(s);
     } else throw new Error("Onbekende spelactie.");
+    checkVictory(s);
     assert(validState(s), "De spelactie leverde ongeldige gegevens op.");
     return s;
   }
@@ -572,8 +663,10 @@
     )
       return false;
     if (s.rules !== undefined && (!s.rules || typeof s.rules !== "object" || Array.isArray(s.rules) ||
-      !["world", "domination"].includes(s.rules.goal) ||
-      !["progressive", "fixed"].includes(s.rules.cards))) return false;
+      !["world", "domination", "capital", "mission"].includes(s.rules.goal) ||
+      !["progressive", "fixed"].includes(s.rules.cards) ||
+      (s.rules.dice !== undefined && !["random","balanced"].includes(s.rules.dice)) ||
+      (s.rules.setup !== undefined && !["auto","manual"].includes(s.rules.setup)))) return false;
     const count = s.players.length;
     if (
       !s.players.every(
@@ -598,7 +691,7 @@
       return false;
     if (
       !integer(s.current, 0, count - 1) ||
-      !["reinforce", "attack", "fortify", "won"].includes(s.phase) ||
+      !["deploy", "capital", "reinforce", "attack", "fortify", "won"].includes(s.phase) ||
       !integer(s.pool, 0, 100000) ||
       !integer(s.rng, 1, 4294967295) ||
       !integer(s.round, 1) ||
@@ -613,16 +706,29 @@
       typeof s.resumeAttack !== "boolean"
     )
       return false;
+    if (s.rules?.goal === "capital") {
+      if (!Array.isArray(s.capitals) || s.capitals.length!==count ||
+        !s.capitals.every(i=>i===null || integer(i,0,41)) ||
+        new Set(s.capitals.filter(i=>i!==null)).size!==s.capitals.filter(i=>i!==null).length ||
+        (!["deploy","capital"].includes(s.phase) && s.capitals.includes(null)) ||
+        (s.phase==="capital" && s.capitals[s.current]!==null)) return false;
+    } else if (s.phase==="capital" || s.capitals!==undefined) return false;
+    if (s.rules?.goal === "mission" && (!Array.isArray(s.missions) || s.missions.length!==count ||
+      new Set(s.missions).size!==count || !s.missions.every(id=>missions.some(m=>m.id===id)))) return false;
+    if (s.setupRemaining!==undefined && (!Array.isArray(s.setupRemaining) || s.setupRemaining.length!==count ||
+      !s.setupRemaining.every(n=>integer(n,0,40)) || (s.phase!=="deploy" && s.setupRemaining.some(n=>n!==0)))) return false;
+    if (s.phase==="deploy" && (s.rules?.setup!=="manual" || !s.setupRemaining ||
+      s.pool>s.setupRemaining[s.current] || s.pool>3)) return false;
     if (
       s.winner !== null &&
       (!integer(s.winner, 0, count - 1) ||
         s.phase !== "won" ||
-        owned(s, s.winner).length < victoryTarget(s))
+        !hasWon(s, s.winner))
     )
       return false;
     if (s.phase === "won" && s.winner === null) return false;
     if (!owned(s).length) return false;
-    if (s.phase !== "reinforce" && s.pool !== 0) return false;
+    if (!["reinforce","deploy"].includes(s.phase) && s.pool !== 0) return false;
     const cards = [
       ...s.deck,
       ...s.discard,
@@ -646,6 +752,7 @@
         p.defender === s.current ||
         !integer(p.min, 1, 3) ||
         !integer(p.max, p.min, 100000) ||
+        (p.suggested!==undefined && !integer(p.suggested,p.min,p.max)) ||
         s.territories[p.from].owner !== s.current ||
         s.territories[p.to].owner !== s.current ||
         s.territories[p.to].armies !== p.min ||
@@ -657,6 +764,11 @@
       s.lastBattle &&
       (!integer(s.lastBattle.from, 0, 41) ||
         !integer(s.lastBattle.to, 0, 41) ||
+        !integer(s.lastBattle.attackLoss,0,100000) ||
+        !integer(s.lastBattle.defendLoss,0,100000) ||
+        (s.lastBattle.blitz!==undefined && typeof s.lastBattle.blitz!=="boolean") ||
+        (s.lastBattle.balanced!==undefined && typeof s.lastBattle.balanced!=="boolean") ||
+        (s.lastBattle.rounds!==undefined && s.lastBattle.rounds!==null && !integer(s.lastBattle.rounds,1,200000)) ||
         !Array.isArray(s.lastBattle.attack) ||
         !Array.isArray(s.lastBattle.defend) ||
         !s.lastBattle.attack.every((n) => integer(n, 1, 6)) ||
@@ -674,29 +786,21 @@
     if (symbols.length < 2) return 10;
     return [4, 6, 8][symbols[0]];
   }
-  let rollOutcomes;
-  function battleOdds(attackers, defenders) {
-    if (!integer(attackers, 0, 200) || !integer(defenders, 0, 200)) return null;
-    if (!rollOutcomes) {
-      rollOutcomes = {};
-      for (let a = 1; a <= 3; a++) for (let d = 1; d <= 2; d++) {
-        const counts = new Map(), total = 6 ** (a + d);
-        for (let n = 0; n < total; n++) {
-          let number = n;
-          const dice = Array.from({length:a+d}, () => { const value = number % 6 + 1; number = Math.floor(number/6); return value; });
-          const attack = dice.slice(0,a).sort((x,y)=>y-x), defend = dice.slice(a).sort((x,y)=>y-x);
-          let lost = 0;
-          for (let k=0;k<Math.min(a,d);k++) if (attack[k] <= defend[k]) lost++;
-          counts.set(lost, (counts.get(lost)||0)+1);
-        }
-        rollOutcomes[`${a},${d}`] = [...counts].map(([lost,count])=>[lost,Math.min(a,d)-lost,count/total]);
-      }
-    }
+  const rollCounts = {
+    "1,1":[[0,1,15],[1,0,21]], "1,2":[[0,1,55],[1,0,161]], "1,3":[[0,1,225],[1,0,1071]],
+    "2,1":[[0,1,125],[1,0,91]], "2,2":[[0,2,295],[1,1,420],[2,0,581]], "2,3":[[0,2,979],[1,1,1981],[2,0,4816]],
+    "3,1":[[0,1,855],[1,0,441]], "3,2":[[0,2,2890],[1,1,2611],[2,0,2275]], "3,3":[[0,3,6420],[1,2,10017],[2,1,12348],[3,0,17871]],
+  };
+  const rollOutcomes=Object.fromEntries(Object.entries(rollCounts).map(([key,rows])=>[key,rows.map(([a,d,n])=>[a,d,n/6**key.split(",").map(Number).reduce((x,y)=>x+y,0)])]));
+  function battleOdds(attackers, defenders, maxDefense=2, mode="random") {
+    if (!integer(attackers, 0, 200) || !integer(defenders, 0, 200) || ![2,3].includes(maxDefense)) return null;
     const table = Array.from({length:attackers+1},()=>new Float64Array(defenders+1));
     for (let a=0;a<=attackers;a++) table[a][0]=1;
     for (let a=1;a<=attackers;a++) for (let d=1;d<=defenders;d++)
-      for (const [al,dl,p] of rollOutcomes[`${Math.min(3,a)},${Math.min(2,d)}`]) table[a][d] += p*table[a-al][d-dl];
-    return table[attackers][defenders];
+      for (const [al,dl,p] of rollOutcomes[`${Math.min(3,a)},${Math.min(maxDefense,d)}`]) table[a][d] += p*table[a-al][d-dl];
+    const p=table[attackers][defenders];
+    const q=Math.max(0,Math.min(1,(p-.1)/.8));
+    return mode==="balanced" ? q*q*(3-2*q) : p;
   }
   function frontier(s, player = s.current) {
     return owned(s, player).filter((i) =>
@@ -705,6 +809,16 @@
   }
   function chooseAction(s, difficulty = "normal") {
     if (s.phase === "won") return null;
+    if (s.phase === "capital") {
+      const choices=owned(s), score=i=>s.territories[i].armies*2-territories[i].neighbors.length;
+      return {type:"capital",to:choices.reduce((a,b)=>score(a)>score(b)?a:b)};
+    }
+    if (s.phase === "deploy") {
+      if (!s.pool) return {type:"advance"};
+      const choices=frontier(s), candidates=choices.length?choices:owned(s);
+      const to=candidates.reduce((a,b)=>s.territories[a].armies>s.territories[b].armies?a:b);
+      return {type:"reinforce",to,amount:s.pool};
+    }
     if (s.pending) {
       const threat = (i) =>
         territories[i].neighbors
@@ -726,8 +840,14 @@
     }
     if (s.phase === "reinforce") {
       const set = findSet(s);
-      if (set) return { type: "trade", cards: set };
+      const required=s.players[s.current].cards.length >= (s.resumeAttack?6:5);
+      if (set && (s.rules?.cards==="fixed" || required || frontier(s).some(i=>territories[i].neighbors.some(n=>s.territories[n].owner!==s.current && s.territories[n].armies>s.territories[i].armies*2)))) return { type: "trade", cards: set };
       if (s.pool) {
+        const m=mission(s);
+        if (m?.armies && owned(s).filter(i=>s.territories[i].armies>=m.armies).length<m.count) {
+          const to=owned(s).find(i=>s.territories[i].armies<m.armies);
+          if (to!==undefined) return {type:"reinforce",to,amount:Math.min(s.pool,m.armies-s.territories[to].armies)};
+        }
         const border = frontier(s),
           candidates = border.length ? border : owned(s);
         const strength = (i) => {
@@ -744,7 +864,8 @@
             continent.filter(
               (t) => s.territories[byId[t.id]].owner === s.current,
             ).length / continent.length;
-          return s.territories[i].armies - weakest + fraction * 6;
+          const capGuard=s.capitals?.includes(i)?Math.max(0,weakest-s.territories[i].armies+6):0;
+          return s.territories[i].armies - weakest + fraction * 6 + capGuard;
         };
         const to =
           difficulty === "easy"
@@ -763,7 +884,7 @@
           if (d.owner === s.current) continue;
           const ratio =
             difficulty === "easy" ? 1.05 : difficulty === "strong" ? 1.35 : 1.6;
-          if (a.armies >= 4 && a.armies - 1 >= d.armies * ratio) {
+          if (a.armies >= 4 && a.armies - 1 >= d.armies * (defenseDice(s,to)===3 ? ratio*1.4 : ratio)) {
             const region = territories.filter(
                 (t) => t.continent === territories[to].continent,
               ),
@@ -774,14 +895,15 @@
             candidates.push({
               from,
               to,
-              score: a.armies - d.armies + 6 / remaining + elimination,
+              score: a.armies - d.armies + 6 / remaining + elimination + (s.capitals?.includes(to)?12:0) + (mission(s)?.continents?.includes(territories[to].continent)?8:0),
             });
           }
         }
       if (candidates.length) {
         candidates.sort((a, b) => b.score - a.score);
         return {
-          type: "attack",
+          type: s.rules?.dice === "balanced" ? "blitz" : "attack",
+          amount: s.territories[candidates[0].from].armies-1,
           from: candidates[0].from,
           to: candidates[0].to,
           dice: Math.min(3, s.territories[candidates[0].from].armies - 1),
@@ -828,6 +950,9 @@
     cardSymbol,
     chooseAction,
     victoryTarget,
+    hasWon,
+    mission,
+    defenseDice,
     tradeValue,
     battleOdds,
   };

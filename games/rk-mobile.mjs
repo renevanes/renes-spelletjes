@@ -20,7 +20,7 @@ try {
   await p.locator('#rkCardMode').selectOption('fixed');
   await p.locator('#rkStart').click();
   const start=await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')));
-  assert.deepEqual(start.rules,{goal:'domination',cards:'fixed'});
+  assert.deepEqual(start.rules,{goal:'domination',cards:'fixed',dice:'balanced',setup:'auto'});
   assert.equal(await p.locator('#rkOwnership').getAttribute('aria-pressed'),'true');
   assert.match(await p.locator('#rkRound').innerText(),/70%/);
   assert.ok(await p.locator('#rk').evaluate(el=>el.classList.contains('rk-dock-collapsed')));
@@ -88,6 +88,51 @@ try {
   await p.locator('#rkActiontrade').click();
   assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')).pool),pool+10);
   assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')).players[0].cards.length),2);
+  // Resume during manual deployment without granting extra starting armies.
+  await p.locator('#rkBack').click();
+  await p.evaluate(()=>{
+    window.__noSave=true; const E=ReneRiskEngine,s=E.newGame([{name:'Rene'},{name:'CPU',ai:true}],31,{setup:'manual',goal:'capital',dice:'balanced'});
+    localStorage.setItem('rk.save',JSON.stringify(s));
+  });
+  await p.reload();await p.locator('#tileRk').click();
+  assert.match(await p.locator('#rkControls').innerText(),/Startlegers plaatsen/);
+  const starting=await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')));
+  const startCountry=starting.territories.findIndex(t=>t.owner===0);
+  await p.locator('#rkFrom').selectOption(String(startCountry));
+  await p.locator('#rkActionreinforce').click();
+  const deployed=await p.evaluate(()=>localStorage.getItem('rk.save'));
+  await p.locator('#rkBack').click();await p.reload();await p.locator('#tileRk').click();
+  assert.equal(await p.evaluate(()=>localStorage.getItem('rk.save')),deployed);
+  assert.ok(await p.locator('#rkActionadvance').isEnabled());
+
+  // Choose a capital, finish the opening with AI, and see its crown and bonus.
+  await p.locator('#rkBack').click();
+  await p.evaluate(()=>{
+    window.__noSave=true;const s=ReneRiskEngine.newGame([{name:'Rene'},{name:'CPU',ai:true}],41,{goal:'capital',dice:'balanced'});
+    localStorage.setItem('rk.save',JSON.stringify(s));
+  });
+  await p.reload();await p.locator('#tileRk').click();
+  const firstCapital=await p.evaluate(()=>ReneRiskEngine.owned(JSON.parse(localStorage.getItem('rk.save')))[0]);
+  await p.locator('#rkFrom').selectOption(String(firstCapital));await p.locator('#rkActioncapital').click();
+  await p.waitForFunction(()=>JSON.parse(localStorage.getItem('rk.save')).phase==='reinforce');
+  assert.equal(await p.locator('#rkMap .rk-capital').evaluateAll(nodes=>nodes.filter(n=>n.textContent==='♛').length),2);
+  const capitalState=await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')));
+  assert.ok(capitalState.pool>=5);
+
+  // Hidden missions must be absent from the DOM until a local player opens their turn.
+  await p.locator('#rkBack').click();
+  await p.evaluate(()=>{
+    window.__noSave=true;const s=ReneRiskEngine.newGame([{name:'Rene'},{name:'Medespeler'}],51,{goal:'mission'});
+    localStorage.setItem('rk.save',JSON.stringify(s));
+  });
+  await p.reload();await p.locator('#tileRk').click();
+  await p.locator('#rkHandoffModal.show').waitFor();
+  assert.equal(await p.locator('.rk-mission').count(),0);
+  await p.locator('#rkBeginTurn').click();await p.locator('.rk-mission summary').click();
+  assert.equal(await p.locator('.rk-mission p').innerText(),await p.evaluate(()=>ReneRiskEngine.mission(JSON.parse(localStorage.getItem('rk.save'))).text));
+  assert.ok(await p.locator('.rk-mission p').isVisible());
+  await p.locator('#rkBack').click();await p.reload();await p.locator('#tileRk').click();
+  assert.equal(await p.locator('.rk-mission').count(),0);
   assert.deepEqual(errors,[]);await context.close();
-  console.log('Risk mobile: direct troop sliders, reserves, fair blitz, fixed cards, short mode, folding and resume passed');
+  console.log('Risk mobile: troops, instant blitz, capitals, manual setup, hidden missions, six players and resume passed');
 } finally { await browser.close(); await new Promise(resolve=>server.close(resolve)); }

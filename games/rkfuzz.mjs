@@ -20,3 +20,17 @@ for (let seed = 1; seed <= 100; seed++) {
   assert.equal(E.owned(s, s.winner).length, 42);
 }
 console.log(`PASS: 100 complete seeded games; ${checked} valid actions, rejected actions and save/resume checks`);
+
+let variants=0;
+for(const goal of ['world','domination','capital','mission'])for(const dice of ['random','balanced'])for(const setup of ['auto','manual'])for(let sample=1;sample<=3;sample++){
+ const seed=++variants+200,n=2+seed%5;
+ let s=E.newGame(Array.from({length:n},(_,i)=>({name:`Speler ${i+1}`,ai:true})),seed,{goal,dice,setup}),moves=0;
+ while(s.phase!=='won' && moves++<15000){
+  const before=JSON.stringify(s);assert.throws(()=>E.apply(s,{type:'blitz',from:99,to:-1,amount:0}));assert.equal(JSON.stringify(s),before);
+  s=E.apply(s,E.chooseAction(s,['easy','normal','strong'][sample-1]));
+  assert.ok(E.validState(s),`${goal} ${dice} ${setup} move ${moves}`);
+  if(moves%37===0)s=JSON.parse(JSON.stringify(s));
+ }
+ assert.equal(s.phase,'won',`${goal} ${dice} ${setup} sample ${sample}`);assert.ok(E.hasWon(s,s.winner));
+}
+console.log(`PASS: ${variants} additional full games across all goals, both blitz modes, both setup types and all AI difficulties`);
