@@ -118,6 +118,8 @@
           selected = previousCapture.to; target = null; diceChoice = null; commitChoice = null;
           feedback(`${E.territories[selected].name} veroverd`, "Tik op de volgende vijandelijke buur om verder aan te vallen.");
         }
+        if (action.type === "advance" && state.phase === "fortify") { selected = null; target = null; }
+        if ((action.type === "advance" && ["attack","fortify"].includes(state.phase)) || action.type === "occupy") $("rk").classList.add("rk-dock-collapsed");
         if (action.type === "reinforce") { feedback(`+${action.amount} legers`, E.territories[action.to].name); board.effect(action.to, `+${action.amount}`); }
         if (["attack", "blitz"].includes(action.type)) board.effect(action.to, state.pending ? "Veroverd!" : `−${state.lastBattle.defendLoss}`);
         if (action.type === "fortify") { feedback("Legers verplaatst", `${action.amount} naar ${E.territories[action.to].name}. Je kunt je beurt beëindigen.`); selected = null; target = null; $("rk").classList.add("rk-dock-collapsed"); }
@@ -212,6 +214,7 @@
         diceChoice = null;
         commitChoice = null;
       }
+      if (["attack","fortify"].includes(state.phase) && target === null) $("rk").classList.add("rk-dock-collapsed");
       stop();
       render();
       $("rkControls").parentElement.scrollTop = 0;

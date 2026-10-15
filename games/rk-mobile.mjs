@@ -121,6 +121,7 @@ try {
   assert.ok(await p.locator('#rkHand').evaluate(el=>el.classList.contains('rk-card-earned')));
   await p.locator('#rkNext').click();
   await p.setViewportSize({width:915,height:412});await p.locator('#rkWorldView').click();
+  await p.locator('#rkMap [data-marker="1"]').click();
   await p.locator('#rkMap [data-marker="0"]').click();
   await p.locator('#rkAmountRange').fill('2');
   const fortifiedFrom=Number(await p.locator('#rkFromCount').innerText()),fortifiedTo=Number(await p.locator('#rkToCount').innerText());
