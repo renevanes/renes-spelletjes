@@ -323,5 +323,10 @@
   "v": "1.64",
   "date": "2026-10-15",
   "notes": "Wereldmacht heeft een nieuwe kaartbediening: de kaart zoomt naar je gekozen leger of gevecht, met grote knoppen voor teruggaan en bevestigen en centrale dobbelstenen met wisselknoppen. Plaatsen en verplaatsen beginnen altijd met een preview; annuleren herstelt de vorige kaartweergave, en na een verovering kun je met één tik de volgende buur kiezen. Geselecteerde legers kun je slepen, kaarten staan in een apart overzicht en de Android-terugknop sluit eerst je selectie."
+ },
+ {
+  "v": "1.65",
+  "date": "2026-10-15",
+  "notes": "Wereldmacht helpt je tijdens elke beurt met een duidelijke volgende stap en gemarkeerde legers die je kunt gebruiken. Zoek landen op naam, filter op beschikbare of eigen landen en kies na je leger direct een geldige bestemming met een leesbare knop. De laatste legerplaatsing kun je ongedaan maken zolang je nog niet bent doorgegaan; de beurtfasen en je aantallen landen en legers zijn ook duidelijker in beeld."
  }
 ]

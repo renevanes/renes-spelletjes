@@ -1,11 +1,11 @@
 {
-  "versionCode": 65,
-  "versionName": "1.64",
+  "versionCode": 66,
+  "versionName": "1.65",
   "nativeLevel": 11,
-  "notes": "Wereldmacht heeft een nieuwe kaartbediening: de kaart zoomt naar je gekozen leger of gevecht, met grote knoppen voor teruggaan en bevestigen en centrale dobbelstenen met wisselknoppen. Plaatsen en verplaatsen beginnen altijd met een preview; annuleren herstelt de vorige kaartweergave, en na een verovering kun je met \u00e9\u00e9n tik de volgende buur kiezen. Geselecteerde legers kun je slepen, kaarten staan in een apart overzicht en de Android-terugknop sluit eerst je selectie.",
+  "notes": "Wereldmacht helpt je tijdens elke beurt met een duidelijke volgende stap en gemarkeerde legers die je kunt gebruiken. Zoek landen op naam, filter op beschikbare of eigen landen en kies na je leger direct een geldige bestemming met een leesbare knop. De laatste legerplaatsing kun je ongedaan maken zolang je nog niet bent doorgegaan; de beurtfasen en je aantallen landen en legers zijn ook duidelijker in beeld.",
   "web": "web/index.html",
-  "webSha256": "c747b4b223fd558f8989a1a73ac3fd058026d9812d4b62d82a0a9c3c6e925853",
-  "webSig": "MEUCIQC9pD8X+X+90zf7i6QP5weO6PDJSFb2B9VuxLxGKFLOSQIgC34xTeCd3rEedIbdkXpiW1BEGa/PQCceZ7vjYTQCjG8=",
+  "webSha256": "15e12c689112a111b8adecc9d67b37986be85bfac6cee3aafa29d18da3773fbd",
+  "webSig": "MEQCIHtFrtelq8rZKoOeTf25+SEta5fsOJ5BzLg8QF4cKN/NAiByeifyc+6kXp6ZxRdKa4dX4+MpeQkfewnkZlnAxXjTEA==",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "ffe3a952b0dc233a536c58bb092cf94cbd16661ed5a1c4dc2516213283333928"
