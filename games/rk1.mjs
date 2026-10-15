@@ -132,7 +132,8 @@ try {
   for (const [width, height] of [[320, 844], [390, 844], [915, 412], [1280, 800]]) {
     await p.setViewportSize({ width, height });
     await p.waitForFunction(() => { const el=document.getElementById('rkMapViewport'); return el.scrollWidth<=el.clientWidth+1 && el.scrollHeight<=el.clientHeight+1; });
-    assert.ok(await p.locator('#rk').evaluate(el => el.scrollWidth <= el.clientWidth), `Game overflow at ${width}×${height}`);
+    const layout=await p.locator('#rk').evaluate(el=>({fits:el.scrollWidth<=el.clientWidth,width:el.scrollWidth,items:[...el.querySelectorAll('.rk-topbar>*,.rk-turn>*')].map(n=>({id:n.id||n.className,right:n.getBoundingClientRect().right}))}));
+    assert.ok(layout.fits, `Game overflow at ${width}×${height}: ${JSON.stringify(layout)}`);
     assert.ok(await p.locator('#rkMapViewport').evaluate(el => el.scrollWidth <= el.clientWidth+1 && el.scrollHeight <= el.clientHeight+1), `Whole map at ${width}×${height}`);
   }
   await p.screenshot({ path: 'games/rk-landscape.png', fullPage: true });
