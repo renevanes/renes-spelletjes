@@ -12158,6 +12158,11 @@ $('#tileZs').addEventListener('click', () => Zeeslag.enter());
       s.lastBattle &&
       (!integer(s.lastBattle.from, 0, 41) ||
         !integer(s.lastBattle.to, 0, 41) ||
+        !integer(s.lastBattle.attackLoss,0,100000) ||
+        !integer(s.lastBattle.defendLoss,0,100000) ||
+        (s.lastBattle.blitz!==undefined && typeof s.lastBattle.blitz!=="boolean") ||
+        (s.lastBattle.balanced!==undefined && typeof s.lastBattle.balanced!=="boolean") ||
+        (s.lastBattle.rounds!==undefined && s.lastBattle.rounds!==null && !integer(s.lastBattle.rounds,1,200000)) ||
         !Array.isArray(s.lastBattle.attack) ||
         !Array.isArray(s.lastBattle.defend) ||
         !s.lastBattle.attack.every((n) => integer(n, 1, 6)) ||

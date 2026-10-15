@@ -69,3 +69,11 @@ test('AI completes new goals with both blitz modes, auto/manual setup and save/r
   assert.equal(s.phase,'won',`${goal} ${dice} seed ${seed}`);assert.ok(E.hasWon(s,s.winner));assert.ok(E.validState(s));
  }
 });
+
+test('saved battle summaries reject text and invalid counters before rendering',()=>{
+ const s=E.apply(battle(),{type:'blitz',from:0,to:1,amount:8});
+ for(const [field,value] of [['rounds','<svg onload=alert(1)>'],['attackLoss','5'],['defendLoss',-1],['balanced','true'],['blitz',1]]){
+  const invalid=JSON.parse(JSON.stringify(s));invalid.lastBattle[field]=value;assert.equal(E.validState(invalid),false,field);
+ }
+ assert.ok(E.validState(JSON.parse(JSON.stringify(s))));
+});
