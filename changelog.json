@@ -308,5 +308,10 @@
   "v": "1.61",
   "date": "2026-10-14",
   "notes": "Wereldmacht heeft nu een groot speelbord in spelerskleuren, verhoogde legerfiches en directe bediening met troepenschuiven. Blitzaanvallen tonen de veroveringskans en kunnen legers achterhouden; je kunt ook kiezen voor snelle verovering of vaste kaartbonussen. Je bestaande spel blijft beschikbaar."
+ },
+ {
+  "v": "1.62",
+  "date": "2026-10-15",
+  "notes": "Wereldmacht speelt nu ook met hoofdstedenverovering, geheime missies en startlegers die je zelf om de beurt plaatst. Blitz handelt een gevecht direct af, met keuze tussen willekeurige en minder extreme uitslagen; na verovering blijven gereserveerde legers standaard achter. De computer houdt rekening met hoofdsteden, opdrachten en het moment van kaarten ruilen."
  }
 ]

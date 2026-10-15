@@ -1,1 +1,0 @@
-Wereldmacht speelt nu ook met hoofdstedenverovering, geheime missies en startlegers die je zelf om de beurt plaatst. Blitz handelt een gevecht direct af, met keuze tussen willekeurige en minder extreme uitslagen; na verovering blijven gereserveerde legers standaard achter. De computer houdt rekening met hoofdsteden, opdrachten en het moment van kaarten ruilen.
