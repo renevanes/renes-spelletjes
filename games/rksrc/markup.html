@@ -24,12 +24,6 @@
     <button id="rkNext" class="rk-next" disabled>Volgende fase →</button>
   </div>
   <div id="rkFeedback" class="rk-feedback" role="status" hidden></div>
-  <div
-    id="rkScoreboard"
-    class="rk-scoreboard"
-    tabindex="0"
-    aria-label="Spelers en aantallen landen"
-  ></div>
   <div class="rk-layout">
     <div id="rkBoardPanel" class="rk-board-panel">
       <details id="rkViewMenu" class="rk-view-menu"><summary aria-label="Kaartweergave instellen">☷ Kaart</summary><div class="rk-map-tools">
@@ -71,13 +65,14 @@
         <button id="rkPool" class="rk-pool" hidden aria-label="Versterkingen plaatsen"><svg viewBox="0 0 32 48" aria-hidden="true"><path d="M7 48V32L3 36L0 33L6 22L12 20H20L26 22L32 33L29 36L25 32V48H18V36H14V48Z" fill="currentColor"/><circle cx="16" cy="12" r="7" fill="#edcf96"/><path d="M7 10Q8 1 16 1Q24 1 25 10L22 13H10Z" fill="currentColor"/><path d="M9 8H23M10 26H22" stroke="#ffe5a9" stroke-width="2"/></svg><b id="rkPoolCount">3</b><span>PLAATSEN</span><small>Sleep naar een eigen land</small></button>
         <div class="rk-guide-copy"><b id="rkGuideTitle"></b><p id="rkGuideDetail"></p></div>
         <div id="rkTargetChoices" class="rk-target-choices" aria-label="Beschikbare bestemmingen" hidden></div>
-        <div class="rk-guide-actions"><button id="rkPickCountry">Land kiezen</button><button id="rkClearSelection" class="rk-clear-selection" hidden>‹ Ander leger</button><button id="rkUndoPlacement" hidden>↶ Ongedaan</button></div>
+        <div class="rk-guide-actions"><button id="rkPickCountry" aria-label="Land kiezen">Zoeken</button><button id="rkTargetsToggle" hidden aria-expanded="false" aria-controls="rkTargetChoices">Doelen</button><button id="rkClearSelection" class="rk-clear-selection" hidden aria-label="Ander leger kiezen">‹</button><button id="rkUndoPlacement" hidden>↶</button></div>
       </div>
       <button id="rkDockToggle" class="rk-inspector-toggle" aria-label="Landen, kaarten en beurtverslag bekijken" aria-expanded="false">☷ <span>Overzicht</span></button>
       <button id="rkMapNext" class="rk-next rk-map-next" disabled>Volgende fase →</button>
       <button id="rkHand" class="rk-hand-button" aria-label="Mijn kaarten bekijken"><span>▱</span><b id="rkHandCount">0</b><small>Kaarten</small></button>
-    <aside id="rkInspector" class="rk-inspector" role="dialog" aria-modal="true" aria-label="Landen, kaarten en beurtverslag" hidden>
+    <aside id="rkInspector" class="rk-inspector" role="dialog" aria-modal="true" aria-label="Landen, kaarten en beurtverslag" data-panel="overview" hidden>
       <div class="rk-inspector-heading"><h3>Speloverzicht</h3><button id="rkCloseInspector" aria-label="Speloverzicht sluiten">×</button></div>
+      <div id="rkScoreboard" class="rk-scoreboard" tabindex="0" aria-label="Spelers en aantallen landen"></div>
       <div id="rkPrivateInfo"></div>
       <details class="rk-accessible"><summary>Landen kiezen uit een lijst</summary><div id="rkSelectors"></div></details>
       <details class="rk-history">
@@ -156,7 +151,7 @@
 <div id="rkHelpModal" class="modal">
   <div class="sheet">
     <h3>Zo speel je Wereldmacht</h3>
-    <p>De beurtgids boven de knoppen vertelt wat je nu kunt doen. Via <b>Land kiezen</b> zoek je op naam of filter je op beschikbare of eigen landen. Nadat je een leger kiest, staan geldige bestemmingen ook als knoppen in beeld. Met <b>Ongedaan</b> herstel je de laatste legerplaatsing zolang je nog niet bent doorgegaan.</p>
+    <p>De compacte beurtbalk laat zien wat je kunt doen. Via <b>Zoeken</b> kies je een land op naam. Met <b>Doelen</b> open je de geldige bestemmingen van je gekozen leger. Sleep een eigen leger direct naar een vijand of verbonden eigen land; je bekijkt de actie voordat je bevestigt. Tik nogmaals op je gekozen leger om de selectie te wissen. Met <b>↶</b> herstel je je laatste legerplaatsing of verplaatsing, zolang je nog niet bent doorgegaan of het spel hebt verlaten.</p>
     <p><b>Hoofdsteden:</b> kies aan het begin een eigen gebied als hoofdstad. Elke veroverde hoofdstad geeft 2 extra legers per beurt en verdedigt met maximaal 3 dobbelstenen. Wie alle hoofdsteden bezet, wint; een hoofdstad verliezen schakelt je dus niet meteen uit.</p>
     <p><b>Geheime missies:</b> bekijk je eigen opdracht via ‘Mijn geheime missie’. Je wint zodra je opdracht voltooid is. Bij doorgeven blijft deze opdracht verborgen.</p>
     <p><b>Startlegers zelf plaatsen:</b> de landen worden verdeeld, daarna plaatsen spelers om de beurt maximaal drie startlegers. Als iedereen klaar is, begint de eerste gewone beurt.</p>

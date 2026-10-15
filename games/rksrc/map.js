@@ -8,6 +8,7 @@
   function create({ engine: E, data: M, onSelect, onActions, onMove }) {
     const viewport = $("rkMapViewport"), svg = $("rkMap"), surface = $("rkMapSurface");
     let zoom = 1, scale = 1, expanded = false, ownership = true, state = null, selection = {}, frame = 0, lastWidth = 0, lastHeight = 0;
+    let cameraCenter = [M.width/2, M.height/2], framing = null;
     const pointers = new Map();
     let gesture = null, moved = false;
     const effects = new Set();
@@ -54,38 +55,48 @@
     function pointAt(x, y) {
       return [(viewport.scrollLeft + x - parseFloat(svg.style.left || 0)) / (scale*zoom), (viewport.scrollTop + y - parseFloat(svg.style.top || 0)) / (scale*zoom)];
     }
+    function rememberCamera() {
+      // A resize can clamp scroll offsets before ResizeObserver runs. Only read
+      // scroll coordinates while they still belong to the measured viewport.
+      if (lastWidth && lastHeight && viewport.clientWidth===lastWidth && viewport.clientHeight===lastHeight)
+        cameraCenter = pointAt(lastWidth/2,lastHeight/2);
+    }
     function zoomAt(next, x = viewport.clientWidth/2, y = viewport.clientHeight/2, point = pointAt(x, y)) {
       zoom = Math.max(1, Math.min(6, next));
-      metrics();
+      if (!metrics()) return;
       viewport.scrollLeft = point[0]*scale*zoom + parseFloat(svg.style.left || 0)-x;
       viewport.scrollTop = point[1]*scale*zoom + parseFloat(svg.style.top || 0)-y;
+      rememberCamera();
     }
-    function fit() { zoom = 1; metrics(); viewport.scrollLeft = 0; viewport.scrollTop = 0; }
+    function fit() { framing=null; zoom = 1; metrics(); viewport.scrollLeft = 0; viewport.scrollTop = 0; cameraCenter=[M.width/2,M.height/2]; }
     function focusPair(from, to) {
       metrics();
       const a = regions[from].anchor, b = regions[to].anchor;
       if ([from,to].includes(E.byId.alaska) && [from,to].includes(E.byId.kamchatka)) { fit(); return; }
+      framing={kind:'pair',from,to};
       zoomAt(Math.min(viewport.clientWidth*.64/(Math.abs(a[0]-b[0])+170), viewport.clientHeight*.74/(Math.abs(a[1]-b[1])+115))/scale,
         viewport.clientWidth/2, viewport.clientHeight/2, [(a[0]+b[0])/2,(a[1]+b[1])/2]);
     }
-    function snapshot() { return {zoom,center:pointAt(viewport.clientWidth/2,viewport.clientHeight/2)}; }
-    function restore(view) { if (!view || view.zoom<=1.01) fit(); else { metrics(); zoomAt(view.zoom,viewport.clientWidth/2,viewport.clientHeight/2,view.center); } }
+    function snapshot() { rememberCamera(); return {zoom,center:[...cameraCenter]}; }
+    function restore(view) { framing=null; if (!view || view.zoom<=1.01) fit(); else { metrics(); zoomAt(view.zoom,viewport.clientWidth/2,viewport.clientHeight/2,view.center); } }
     function focusCountry(id, neighbors = false) {
       metrics();
+      framing={kind:'country',id,neighbors};
       const ids = neighbors ? [id,...E.territories[id].neighbors].filter(i=>Math.abs(regions[i].anchor[0]-regions[id].anchor[0])<700) : [id];
       const xs=ids.map(i=>regions[i].anchor[0]), ys=ids.map(i=>regions[i].anchor[1]);
       const left=Math.min(...xs),right=Math.max(...xs),top=Math.min(...ys),bottom=Math.max(...ys);
       zoomAt(Math.min(viewport.clientWidth*.8/(right-left+230),viewport.clientHeight*.78/(bottom-top+180))/scale,
         viewport.clientWidth/2,viewport.clientHeight/2,[(left+right)/2,(top+bottom)/2]);
     }
-    function pickCountry(x,y, forgiving = true) {
+    function pickCountry(x,y, forgiving = true, from = selection.selected) {
       const hit=document.elementFromPoint(x,y)?.closest('[data-country],[data-country-marker]');
       const direct=hit && svg.contains(hit) ? Number(hit.dataset.country ?? hit.dataset.countryMarker) : null;
-      if (!forgiving || !state) return direct;
+      // An actual marker is precise, even beside several small countries.
+      if (!forgiving || !state || direct!==null && hit.hasAttribute('data-country-marker')) return direct;
       const matrix=svg.getScreenCTM(); if (!matrix) return direct;
       let nearest=null, distance=22;
       regions.forEach((g,i)=>{
-        const country=state.territories[i], current=state.current, from=selection.selected;
+        const country=state.territories[i], current=state.current;
         const candidate=state.pending || selection.handoff || state.players[current].ai ? true :
           ['reinforce','deploy','capital'].includes(state.phase) ? country.owner===current :
           state.phase==='attack' ? country.owner===current && country.armies>1 || from!==null && from!==undefined && country.owner!==current && E.territories[from].neighbors.includes(i) :
@@ -95,6 +106,13 @@
         if (d<distance) {nearest=i;distance=d;}
       });
       return nearest ?? direct;
+    }
+    function legalMove(from,to) {
+      if (!state || from==null || to==null || from===to || state.pending || selection.handoff || state.players[state.current].ai || selection.target!=null) return false;
+      const source=state.territories[from], destination=state.territories[to];
+      if (source.owner!==state.current || source.armies<2) return false;
+      return state.phase==='attack' ? destination.owner!==state.current && E.territories[from].neighbors.includes(to) :
+        state.phase==='fortify' && !state.fortified && destination.owner===state.current && E.connected(state,from,to);
     }
     function clearPreview() {
       markers.forEach(node => { node.classList.remove("rk-previewing"); node.querySelector(".rk-preview-armies").textContent = ""; });
@@ -121,15 +139,16 @@
     function clearEffects() {
       effects.forEach(animation=>animation.cancel());effects.clear();$('rkMapEffects').replaceChildren();
     }
-    function focusContinent(id) {
+    function focusContinent(id, focus = true) {
       metrics();
+      framing={kind:'continent',id};
       const matching = regions.filter((_, i) => E.territories[i].continent === id);
       const b = [Math.min(...matching.map(g => g.bounds[0])), Math.min(...matching.map(g => g.bounds[1])), Math.max(...matching.map(g => g.bounds[2])), Math.max(...matching.map(g => g.bounds[3]))];
       // Ignore the date-line sliver of Kamchatka when fitting Asia.
       if (id === "as") b[0] = regions[E.byId.middleeast].bounds[0];
       zoomAt(Math.min(viewport.clientWidth/(b[2]-b[0]+70), viewport.clientHeight/(b[3]-b[1]+70))/scale, viewport.clientWidth/2, viewport.clientHeight/2, [(b[0]+b[2])/2, (b[1]+b[3])/2]);
       svg.dataset.continent = id;
-      viewport.focus({ preventScroll: true });
+      if (focus) viewport.focus({ preventScroll: true });
     }
     function expand(value = !expanded) {
       expanded = value;
@@ -137,7 +156,7 @@
       $("rkExpandMap").setAttribute("aria-pressed", String(expanded));
       $("rkExpandMap").textContent = expanded ? "↙ Terug" : "⛶ Grote kaart";
       // Keep keyboard/screen-reader navigation in the visible board while it fills the screen.
-      $("rk").querySelectorAll(".rk-topbar,.rk-turn,.rk-scoreboard").forEach(el => { el.inert = expanded; });
+      $("rk").querySelectorAll(".rk-topbar,.rk-turn").forEach(el => { el.inert = expanded; });
       $("rkViewMenu").open = false;
       fit();
     }
@@ -180,21 +199,22 @@
       $("rkToActions").textContent = state.pending ? "Legers bezetten →" : state.phase === "reinforce" ? "Legers plaatsen →" : state.phase === "attack" ? "Aanvallen →" : "Spelacties →";
     }
     $("rkOwnership").setAttribute("aria-pressed", "true");
-    $("rkZoomIn").addEventListener("click", () => zoomAt(zoom*1.5));
-    $("rkZoomOut").addEventListener("click", () => zoomAt(zoom/1.5));
+    $("rkZoomIn").addEventListener("click", () => { framing=null; zoomAt(zoom*1.5); });
+    $("rkZoomOut").addEventListener("click", () => { framing=null; zoomAt(zoom/1.5); });
     $("rkWorldView").addEventListener("click", fit);
     $("rkExpandMap").addEventListener("click", () => expand());
     $("rkOwnership").addEventListener("click", () => { ownership = !ownership; $("rkViewMenu").open = false; $("rkOwnership").setAttribute("aria-pressed", String(ownership)); if (state) update(state, selection); });
     $("rkToActions").addEventListener("click", () => { if (expanded) expand(false); onActions(); });
     viewport.addEventListener("wheel", event => {
-      if (!event.ctrlKey) return;
-      event.preventDefault(); const r = viewport.getBoundingClientRect();
+      if (!event.ctrlKey) { framing=null; return; }
+      event.preventDefault(); framing=null; const r = viewport.getBoundingClientRect();
       zoomAt(zoom*Math.exp(-event.deltaY*.007), event.clientX-r.left, event.clientY-r.top);
     }, { passive: false });
     function startGesture() {
       const pts = [...pointers.values()], r = viewport.getBoundingClientRect();
       if (pts.length === 2) {
         clearArmyDrag();
+        framing=null;
         const x = (pts[0].x+pts[1].x)/2-r.left, y = (pts[0].y+pts[1].y)/2-r.top;
         gesture = { distance: Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y), zoom, anchor: pointAt(x, y) }; moved = true;
       } else if (pts.length === 1) gesture = { x: pts[0].x, y: pts[0].y, left: viewport.scrollLeft, top: viewport.scrollTop };
@@ -204,9 +224,9 @@
       if (!pointers.size) moved = false;
       pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
       viewport.setPointerCapture(event.pointerId); startGesture();
-      if (pointers.size===1 && state && !state.pending && !state.players[state.current].ai && !selection.handoff && ['attack','fortify'].includes(state.phase)) {
+      if (pointers.size===1 && state && !state.pending && selection.target==null && !state.players[state.current].ai && !selection.handoff && ['attack','fortify'].includes(state.phase)) {
         const from=pickCountry(event.clientX,event.clientY);
-        if (from===selection.selected && state.territories[from]?.owner===state.current && state.territories[from].armies>1) {
+        if (from!==null && state.territories[from]?.owner===state.current && state.territories[from].armies>1 && state.territories.some((_,to)=>legalMove(from,to))) {
           const point=new DOMPoint(...regions[from].anchor).matrixTransform(svg.getScreenCTM());
           if(Math.hypot(point.x-event.clientX,point.y-event.clientY)<=Math.max(24,20*scale*zoom)) gesture.army=from;
         }
@@ -225,13 +245,13 @@
           const dx = pts[0].x-gesture.x, dy = pts[0].y-gesture.y;
           if (Math.hypot(dx, dy)>5) moved = true;
           if (gesture.army!==undefined && moved) {
-            const to=pickCountry(pts[0].x,pts[0].y);
-            const legal=to!==null && (state.phase==='attack' ? state.territories[to].owner!==state.current && E.territories[gesture.army].neighbors.includes(to) : to!==gesture.army && state.territories[to].owner===state.current && E.connected(state,gesture.army,to));
+            const to=pickCountry(pts[0].x,pts[0].y,true,gesture.army);
+            const legal=legalMove(gesture.army,to);
             const hover=legal?to:null;
             if (gesture.hover!==hover) { if (gesture.hover!=null) markers[gesture.hover].classList.remove('rk-drag-target'); if (hover!==null)markers[hover].classList.add('rk-drag-target'); gesture.hover=hover; }
             viewport.classList.add('rk-army-dragging');
             const ghost=$('rkPoolGhost');ghost.hidden=false;ghost.querySelector('b').textContent=state.territories[gesture.army].armies-1;ghost.style.transform=`translate(${pts[0].x-26}px,${pts[0].y-42}px)`;
-          } else { viewport.scrollLeft = gesture.left-dx; viewport.scrollTop = gesture.top-dy; }
+          } else { if(moved)framing=null; viewport.scrollLeft = gesture.left-dx; viewport.scrollTop = gesture.top-dy; rememberCamera(); }
         }
       });
     });
@@ -239,9 +259,9 @@
       if (!pointers.has(event.pointerId)) return;
       const from=gesture?.army;
       if (event.type === "pointerup") {
-        const id=pickCountry(event.clientX,event.clientY);
+        const id=pickCountry(event.clientX,event.clientY,true,from ?? selection.selected);
         if (!moved && id!==null) onSelect(id);
-        else if (moved && from!==undefined && pointers.size===1 && id!==null && id!==from) onMove?.(from,id);
+        else if (moved && from!==undefined && pointers.size===1 && legalMove(from,id)) onMove?.(from,id);
       }
       clearArmyDrag();
       pointers.delete(event.pointerId);
@@ -261,7 +281,17 @@
         if ((event.shiftKey && document.activeElement === items[0]) || (!event.shiftKey && document.activeElement === items.at(-1))) { event.preventDefault(); (event.shiftKey ? items.at(-1) : items[0]).focus(); }
       }
     });
-    new ResizeObserver(() => { const center = pointAt(lastWidth/2, lastHeight/2); if (metrics() && zoom>1) zoomAt(zoom, viewport.clientWidth/2, viewport.clientHeight/2, center); }).observe(viewport);
+    viewport.addEventListener('scroll',rememberCamera,{passive:true});
+    new ResizeObserver(() => {
+      if (!viewport.clientWidth || !viewport.clientHeight || viewport.clientWidth===lastWidth && viewport.clientHeight===lastHeight) return;
+      const center=[...cameraCenter], focus=framing;
+      if (!metrics()) return;
+      if (focus?.kind==='pair') focusPair(focus.from,focus.to);
+      else if (focus?.kind==='country') focusCountry(focus.id,focus.neighbors);
+      else if (focus?.kind==='continent') focusContinent(focus.id,false);
+      else if (zoom>1) zoomAt(zoom,viewport.clientWidth/2,viewport.clientHeight/2,center);
+      else fit();
+    }).observe(viewport);
     return { update, fit, snapshot, restore, focusCountry, pickCountry, focusContinent, focusPair, preview, previewDraft, clearPreview, effect, clearEffects, close: () => { pointers.clear(); gesture = null; cancelAnimationFrame(frame); frame = 0; clearArmyDrag();clearEffects();clearPreview(); if (expanded) expand(false); } };
   }
   window.ReneWereldBoard = { create, palette };
