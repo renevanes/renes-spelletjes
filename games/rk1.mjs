@@ -1,9 +1,23 @@
 import assert from 'node:assert/strict';
+import { createServer } from 'node:http';
+import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { appBrowser, appPage, appURL } from '../tests/browser-util.mjs';
 
+// A stable origin keeps reload/resume fixtures independent of file-URL storage timing.
+const html = await readFile(fileURLToPath(appURL));
+const server = createServer((req,res) => {
+  if (req.url === '/favicon.ico') { res.writeHead(204); res.end(); return; }
+  res.writeHead(200, {'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});
+  res.end(html);
+});
+await new Promise(resolve => server.listen(0,'127.0.0.1',resolve));
+const testURL = `http://127.0.0.1:${server.address().port}/`;
 const browser = await appBrowser();
+async function menu(p){ await p.locator('#rkPause').click(); await p.locator('#rkPauseMenu').click(); }
 try {
   const { context, page: p, errors } = await appPage(browser);
+  await p.goto(testURL);
   await p.locator('#tileRk').click();
   assert.equal(await p.locator('#rkMap').getAttribute('data-geographic'), 'natural-earth');
   assert.ok(await p.locator('#rkMap .rk-country-shape').evaluateAll(paths => paths.every(path => path.getAttribute('d').length > 250)));
@@ -20,7 +34,7 @@ try {
   assert.equal(await p.locator('#rkMap [data-country]').count(), 42);
   assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('rk.settings')).music), false);
   assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('rk.settings')).sound), false);
-  await p.locator('#rkBack').click();
+  await menu(p);
   assert.ok(await p.locator('#tileRk').evaluate(el => el.classList.contains('has-save')));
 
   // A controlled battle exercises the actual controls and automatic persistence.
@@ -41,9 +55,11 @@ try {
   assert.equal(await p.locator('#rkFrom').inputValue(),'0');
   await p.locator('#rkAmount').fill('3');
   await p.locator('#rkActionreinforce').click();
-  await p.locator('#rkActionadvance').click();
+  await p.locator('#rkNext').click();
+  await p.locator('#rkMap [data-marker="0"]').click();
   await p.locator('#rkMap [data-marker="1"]').click();
   assert.equal(await p.locator('#rkTarget').inputValue(),'1');
+  await p.locator('#rkDice').selectOption('3');
   for (let i = 0; i < 20 && !(await p.locator('#rkActionoccupy').count()); i++) await p.locator('#rkActionattack').click();
   await p.locator('#rkActionoccupy').click();
   const saved = await p.evaluate(() => JSON.parse(localStorage.getItem('rk.save')));
@@ -57,15 +73,15 @@ try {
   await p.waitForFunction(() => document.activeElement.id === 'rkHelp');
   await p.locator('#rkPause').click();
   await p.locator('#rkContinue').click();
-  await p.locator('#rkBack').click();
+  await menu(p);
   await p.reload();
   await p.locator('#tileRk').click();
   assert.deepEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('rk.save'))), saved);
   if (!(await p.locator('#rkListTab').isVisible())) await p.locator('#rkViewMenu > summary').click();
   await p.locator('#rkListTab').click();
-  await p.locator('#rkCountryList [data-country="0"]').focus();
+  await p.locator('#rkCountryList [data-country="3"]').focus();
   await p.keyboard.press('Enter');
-  assert.equal(await p.evaluate(() => document.activeElement.dataset.country), '0');
+  assert.equal(await p.evaluate(() => document.activeElement.dataset.country), '3');
   if (!(await p.locator('#rkMapTab').isVisible())) await p.locator('#rkViewMenu > summary').click();
   await p.locator('#rkMapTab').click();
   await p.locator('#rkWorldView').click();
@@ -79,20 +95,22 @@ try {
   assert.ok(mapsamples.every(s => s.inside), `Geographic areas must contain their real-world locations: ${JSON.stringify(mapsamples)}`);
   assert.ok(await p.evaluate(() => ReneWereldMap.contacts.every(([a,b]) => ReneRiskEngine.territories[ReneRiskEngine.byId[a]].neighbors.includes(ReneRiskEngine.byId[b]))), 'Every drawn land border allows a legal attack');
   // Selecting a piece on the geographic map must select that same game territory.
-  await p.locator('#rkMap [data-marker="0"]').click();
-  assert.equal(await p.locator('#rkFrom').inputValue(), '0');
+  await p.locator('#rkMap [data-marker="3"]').click();
+  assert.equal(await p.locator('#rkFrom').inputValue(), '3');
   if (!(await p.locator('#rkExpandMap').isVisible())) await p.locator('#rkViewMenu > summary').click();
   await p.locator('#rkExpandMap').click();
   await p.setViewportSize({width:915,height:412});
   await p.waitForFunction(() => { const el = document.getElementById("rkMapViewport"); return el.scrollWidth <= el.clientWidth+1 && el.scrollHeight <= el.clientHeight+1; });
   assert.ok(await p.locator('#rkMapViewport').evaluate(el => el.scrollWidth <= el.clientWidth+1 && el.scrollHeight <= el.clientHeight+1));
-  // The fullscreen board hides the global phase bar, so its encounter must retain a phase action.
+  // A focused battle keeps the primary action visible; cancel returns to the fullscreen map.
   const australia = await p.evaluate(()=>[ReneRiskEngine.byId.westaus,ReneRiskEngine.byId.eastaus]);
   await p.locator(`#rkMap [data-marker="${australia[0]}"]`).click();
   await p.locator(`#rkMap [data-marker="${australia[1]}"]`).click();
-  await p.locator('#rkActionadvance').scrollIntoViewIfNeeded();
-  assert.ok(await p.locator('#rkActionadvance').isVisible(),'Fullscreen combat retains a way to advance the phase');
-  await p.locator('#rkMap [data-marker="0"]').click();
+  assert.ok(await p.locator('#rkActionblitz').isVisible());
+  assert.equal(await p.locator('#rkMapNext').isVisible(),false,'Phase changes stay out of the active battle');
+  await p.locator('#rkActioncancel').click();
+  await p.locator('#rkClearSelection').click();
+  assert.ok(await p.locator('#rkMapNext').isVisible(),'The fullscreen board retains its phase action');
   await p.locator('#rkViewMenu > summary').click();
   await p.locator('[data-continent="eu"]').click();
   assert.ok(parseInt(await p.locator('#rkZoomLabel').innerText()) > 100);
@@ -139,7 +157,7 @@ try {
   await p.screenshot({ path: 'games/rk-landscape.png', fullPage: true });
   await p.setViewportSize({ width: 390, height: 844 });
   await p.screenshot({ path: 'games/rk-portrait.png', fullPage: true });
-  await p.locator('#rkBack').click();
+  await menu(p);
 
   // Switching profiles never overwrites another player's save while the game is idle.
   await p.evaluate(() => localStorage.setItem('app.profile', '"pabc"'));
@@ -149,12 +167,12 @@ try {
   await p.locator('#rkStart').click();
   assert.ok(await p.evaluate(() => !!localStorage.getItem('p_pabc.rk.save')));
   assert.deepEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('rk.save'))), saved);
-  await p.locator('#rkBack').click();
+  await menu(p);
   await p.evaluate(() => localStorage.setItem('app.profile', '"p0"'));
   await p.reload();
   await p.locator('#tileRk').click();
   assert.deepEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('rk.save'))), saved);
-  await p.locator('#rkBack').click();
+  await menu(p);
 
   // AI advances while playing, then stops on pause and when leaving the game.
   await p.evaluate(() => {
@@ -181,7 +199,7 @@ try {
   const a = await audio.newPage(), audioErrors = [];
   a.on('pageerror', error => audioErrors.push(error.message));
   await a.addInitScript(() => localStorage.setItem('app.cfg', '{"seen":"9.99","mute":false}'));
-  await a.goto(appURL);
+  await a.goto(testURL);
   await a.locator('#tileRk').click();
   await a.locator('#rkStart').click();
   await a.waitForFunction(() => __sfx._state().now === 'rk', null, { timeout: 20000 });
@@ -195,7 +213,7 @@ try {
 
   // Sample both the idle board and scrolling the enlarged geographic board under 6× CPU throttling.
   const perf = await appPage(browser);
-  await perf.page.goto(appURL);
+  await perf.page.goto(testURL);
   await perf.page.locator('#tileRk').click();
   await perf.page.locator('#rkStart').click();
   const cdp = await perf.context.newCDPSession(perf.page);
@@ -230,4 +248,5 @@ try {
   console.log(`PASS: geographic hit-testing, full-world view, map combat, pinch/drag, continent zoom, fullscreen, dice, resume/profiles/audio; ${fps.toFixed(1)} fps idle and ${panFPS.toFixed(1)} fps panning at 6× CPU`);
 } finally {
   await browser.close();
+  await new Promise(resolve => server.close(resolve));
 }

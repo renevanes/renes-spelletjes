@@ -1,216 +1,104 @@
 import assert from 'node:assert/strict';
-import { createServer } from 'node:http';
-import { readFile } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
-import { appBrowser, appPage, appURL } from '../tests/browser-util.mjs';
-// A real origin keeps the reload checks independent of Chromium's file-URL storage handling.
-const html = await readFile(fileURLToPath(appURL));
-const server = createServer((req,res)=>{
-  if (req.url === '/favicon.ico') { res.writeHead(204); res.end(); return; }
-  res.writeHead(200, {'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}); res.end(html);
-});
+import {createServer} from 'node:http';
+import {readFile} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import {appBrowser,appPage,appURL} from '../tests/browser-util.mjs';
+const html=await readFile(fileURLToPath(appURL));
+const server=createServer((req,res)=>{if(req.url==='/favicon.ico'){res.writeHead(204);res.end();return;}res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});res.end(html);});
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-const browser = await appBrowser();
+const browser=await appBrowser();
 try {
-  const {page:p,context,errors} = await appPage(browser);
+  const {page:p,context,errors}=await appPage(browser);
   await p.goto(`http://127.0.0.1:${server.address().port}/`);
-  await p.locator('#tileRk').click();
-  await p.locator('#rkPlayerCount').selectOption('6');
-  await p.locator('#rkGoal').selectOption('domination');
-  await p.locator('#rkCardMode').selectOption('fixed');
-  await p.locator('#rkStart').click();
-  const start=await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')));
-  assert.deepEqual(start.rules,{goal:'domination',cards:'fixed',dice:'balanced',setup:'auto'});
-  assert.equal(await p.locator('#rkOwnership').getAttribute('aria-pressed'),'true');
-  assert.match(await p.locator('#rkRound').innerText(),/70%/);
-  assert.ok(await p.locator('#rk').evaluate(el=>el.classList.contains('rk-dock-collapsed')));
-  await p.setViewportSize({width:915,height:412});
-  await p.waitForTimeout(100);
-  const railBox = await p.locator('#rkScoreboard').boundingBox(), zoomBox = await p.locator('#rkWorldView').boundingBox();
-  assert.ok(railBox.y+railBox.height <= zoomBox.y, 'Six-player rail must leave the zoom controls clear');
-  assert.ok(await p.locator('#rkScoreboard').evaluate(el=>el.scrollHeight>el.clientHeight),'All six players remain reachable by scrolling');
-  await p.locator('#rkScoreboard').evaluate(el=>el.scrollTop=el.scrollHeight);
-  assert.equal(await p.locator('#rkScoreboard .rk-score').count(),6);
-  await p.setViewportSize({width:390,height:844});
-  const own=start.territories.findIndex(t=>t.owner===0);
-  await p.locator(`#rkMap [data-marker="${own}"]`).click();
-  const total=Number(await p.locator('#rkAmount').inputValue());
-  await p.locator('#rkAmountRange').fill('1');
-  assert.equal(await p.locator('#rkAmount').inputValue(),'1');
-  await p.locator('[data-action="more"]').click();
-  assert.equal(Number(await p.locator('#rkAmountRange').inputValue()),Math.min(2,total));
-  await p.locator('[data-action="all"]').click();
-  await p.locator('#rkActionreinforce').click();
-  assert.equal((await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')))).territories[own].armies,start.territories[own].armies+total);
-  await p.locator('#rkDockToggle').click();
-  assert.equal(await p.locator('#rkActionadvance').isVisible(),false);
-  await p.locator('#rkDockToggle').click();
-  const beforeReload = await p.evaluate(()=>localStorage.getItem('rk.save'));
-  await p.locator('#rkBack').click();
-  assert.equal(await p.evaluate(()=>localStorage.getItem('rk.save')),beforeReload);
-  await p.reload();await p.locator('#tileRk').click();
-  assert.equal(await p.evaluate(()=>localStorage.getItem('rk.save')),beforeReload,'Reload must retain the complete game, including rules, armies and RNG');
-  assert.equal(await p.locator('#rkStartModal').isVisible(),false);
-
-  // A blitz with one committed troop must leave all other troops in reserve.
-  await p.evaluate(()=>{
-    window.__noSave=true;
-    const E=ReneRiskEngine,s=E.newGame([{name:'Rene'},{name:'CPU',ai:true}],7);
-    s.phase='attack';s.pool=0;s.territories[0]={owner:0,armies:40};s.territories[1]={owner:1,armies:1000};
-    localStorage.setItem('rk.save',JSON.stringify(s));
-  });
-  await p.reload();await p.locator('#tileRk').click();
-  await p.locator('#rkMap [data-marker="0"]').click();await p.locator('#rkMap [data-marker="1"]').click();
-  await p.locator('#rkCommitRange').fill('1');
-  assert.equal(await p.locator('#rkCommitCount').innerText(),'1');
-  assert.match(await p.locator('#rkReserve').innerText(),/39 blijven achter/);
-  await p.locator('#rkActionblitz').click();
-  await p.waitForFunction(()=>JSON.parse(localStorage.getItem('rk.save')).territories[0].armies===39);
-  await p.waitForTimeout(250);
-  assert.equal((await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')))).territories[0].armies,39);
-  assert.equal(await p.locator('#rkActionstop').count(),0);
-  assert.match(await p.locator('.rk-result').innerText(),/Jij −1/);
-  await p.setViewportSize({width:915,height:412});
-  await p.locator('#rkDockToggle').click();await p.waitForTimeout(100);
-  assert.ok((await p.locator('#rkMap').boundingBox()).width>650,'Landscape board should fill most of the screen');
-  await p.screenshot({path:'games/rk-mobile-landscape.png'});
-
-  // Dragging the reserve directly onto the map places troops once; a cancelled drag does nothing.
-  await p.locator('#rkBack').click();
-  await p.evaluate(()=>{
-    window.__noSave=true;const s=ReneRiskEngine.newGame([{name:'Rene'},{name:'Nova',ai:true},{name:'Atlas',ai:true}],23,{dice:'balanced'});
-    s.territories[0]={owner:0,armies:30};s.territories[1]={owner:1,armies:12};
-    localStorage.setItem('rk.save',JSON.stringify(s));
-  });
-  await p.reload();await p.locator('#tileRk').click();
-  const draft=await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')));
-  const poolBox=await p.locator('#rkPool').boundingBox();
-  await p.mouse.move(poolBox.x+poolBox.width/2,poolBox.y+poolBox.height/2);await p.mouse.down();
-  await p.mouse.move(10,400,{steps:8});await p.mouse.up();
-  assert.deepEqual(await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save'))),draft);
-  const marker=await p.locator('#rkMap [data-marker="0"]').boundingBox();
   const touch=await context.newCDPSession(p);
-  await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:poolBox.x+poolBox.width/2,y:poolBox.y+poolBox.height/2,id:1}]});
-  await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:marker.x+marker.width/2,y:marker.y+marker.height/2,id:1}]});
-  await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
-  const placed=await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')));
-  assert.equal(placed.territories[0].armies,draft.territories[0].armies+draft.pool);
-  assert.equal(placed.pool,0);assert.ok(await p.locator('#rkNext').isEnabled());
-  await p.locator('#rkNext').click();
-  await p.locator('#rkMap [data-marker="0"]').click();await p.locator('#rkMap [data-marker="1"]').click();
-  // The main battle button is reachable without scrolling in landscape.
-  assert.ok(await p.locator('#rkActionblitz').evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));}));
-  const preview=await p.evaluate(()=>localStorage.getItem('rk.save'));
-  await p.locator('[data-action="focus"]').click();
-  assert.equal(await p.evaluate(()=>localStorage.getItem('rk.save')),preview,'Looking at a battle does not roll dice');
-  await p.locator('#rkWorldView').click();await p.locator('#rkActionblitz').click();
-  const captured=await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')));
-  assert.ok(captured.pending);
-  const occupy=Math.min(captured.pending.max,captured.pending.min+1);
-  await p.locator('#rkAmountRange').fill(String(occupy));
-  const remain=Number(await p.locator('#rkFromCount').innerText()),arrive=Number(await p.locator('#rkToCount').innerText());
-  assert.equal(arrive,occupy);assert.ok(remain>=1);
-  assert.equal(remain+arrive,captured.territories[0].armies+captured.territories[1].armies,'The preview conserves troops already moved by conquest');
-  assert.equal(await p.locator('#rkMap [data-marker="0"] .rk-preview-armies').textContent(),String(remain));
-  assert.deepEqual(await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save'))),captured,'The slider previews without saving the move');
-  await p.setViewportSize({width:390,height:844});
-  await p.locator('#rkActionoccupy').click();
-  const occupied=await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')));
-  assert.equal(occupied.territories[0].armies,remain);assert.equal(occupied.territories[1].armies,arrive);
-  await p.setViewportSize({width:320,height:844});
-  await p.evaluate(()=>document.documentElement.classList.add('big-text'));
-  assert.ok(await p.locator('#rkFeedback').isVisible());
-  assert.ok(await p.locator('#rk').evaluate(el=>el.scrollWidth<=el.clientWidth),'An active conquest notification must fit the narrow screen with large text');
-  await p.evaluate(()=>document.documentElement.classList.remove('big-text'));
-  await p.setViewportSize({width:390,height:844});
-  assert.equal(await p.locator('#rkFrom').inputValue(),'1','The captured country becomes the next attacking country');
-  assert.ok(await p.locator('#rkHand').evaluate(el=>el.classList.contains('rk-card-earned')));
-  await p.locator('#rkNext').click();
-  await p.setViewportSize({width:915,height:412});await p.locator('#rkWorldView').click();
-  await p.locator('#rkMap [data-marker="1"]').click();
-  await p.locator('#rkMap [data-marker="0"]').click();
-  await p.locator('#rkAmountRange').fill('2');
-  const fortifiedFrom=Number(await p.locator('#rkFromCount').innerText()),fortifiedTo=Number(await p.locator('#rkToCount').innerText());
-  await p.locator('#rkActionfortify').click();
-  const fortified=await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')));
-  assert.equal(fortified.territories[1].armies,fortifiedFrom);assert.equal(fortified.territories[0].armies,fortifiedTo);assert.ok(fortified.fortified);
-  await p.locator('#rkNext').click();
-  assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')).players[0].cards.length),1,'A conquest earns one card when the turn ends');
+  const saved=()=>p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')));
+  async function menu(){if(await p.locator('#rkInspector').isVisible())await p.locator('#rkCloseInspector').click();await p.locator('#rkPause').click();await p.locator('#rkPauseMenu').click();}
+  async function fixture(fn){await menu();await p.evaluate(fn);await p.reload();await p.locator('#tileRk').click();}
+  async function point(id){return p.locator(`#rkMap [data-marker="${id}"]`).evaluate(el=>{const p=new DOMPoint(0,0).matrixTransform(el.getScreenCTM());return{x:p.x,y:p.y};});}
+  async function tapCountry(id,offset=0){const pt=await point(id),box=await p.locator('#rkMapViewport').boundingBox();assert.ok(pt.x>=box.x&&pt.x<=box.x+box.width&&pt.y>=box.y&&pt.y<=box.y+box.height,`Country ${id} must be reachable on the actual map`);await p.touchscreen.tap(pt.x+offset,pt.y);}
+  async function drag(from,to){await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{...from,id:1}]});await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{...to,id:1}]});await p.waitForTimeout(40);await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});}
+  async function free(id){assert.ok(await p.locator(id).evaluate(el=>{const r=el.getBoundingClientRect();return r.width>=44&&r.height>=44&&el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));}),`${id} must be a large, directly reachable action without scrolling`);}
+  async function narrowFits(){assert.ok(await p.locator('#rk').evaluate(el=>el.scrollWidth<=el.clientWidth),'All controls fit the phone width');}
 
-  // A depleted attacking country has zero usable troops; cards remain viewable outside drafting.
-  await p.locator('#rkBack').click();
-  await p.evaluate(()=>{
-    window.__noSave=true;const s=ReneRiskEngine.newGame([{name:'Rene'},{name:'Nova',ai:true}],43);
-    s.phase='attack';s.pool=0;s.territories[0]={owner:0,armies:1};s.territories[1]={owner:1,armies:1000};
-    s.players[0].cards=[0,1,2];s.deck=s.deck.filter(c=>![0,1,2].includes(c));localStorage.setItem('rk.save',JSON.stringify(s));
-  });
-  await p.reload();await p.locator('#tileRk').click();await p.locator('#rkMap [data-marker="0"]').click();await p.locator('#rkMap [data-marker="1"]').click();
-  assert.equal(await p.locator('#rkChance').innerText(),'0%');assert.equal(await p.locator('#rkFromCount').innerText(),'0');assert.ok(await p.locator('#rkActionblitz').isDisabled());
-  const cardView=await p.evaluate(()=>localStorage.getItem('rk.save'));
-  await p.locator('#rkHand').click();assert.ok(await p.locator('.rk-card-hand').evaluate(el=>el.open));
-  assert.equal(await p.locator('.rk-cards button').count(),3);assert.equal(await p.locator('#rkActiontrade').count(),0);
-  assert.equal(await p.evaluate(()=>localStorage.getItem('rk.save')),cardView);
+  await p.locator('#tileRk').click();await p.locator('#rkPlayerCount').selectOption('6');await p.locator('#rkGoal').selectOption('domination');await p.locator('#rkCardMode').selectOption('fixed');await p.locator('#rkStart').click();
+  const initial=await saved();assert.deepEqual(initial.rules,{goal:'domination',cards:'fixed',dice:'balanced',setup:'auto'});
+  assert.equal(await p.locator('#rkOwnership').getAttribute('aria-pressed'),'true');assert.match(await p.locator('#rkRound').innerText(),/70%/);
+  assert.equal(await p.locator('#rkControls').isVisible(),false,'The world starts without an action form');
+  await p.setViewportSize({width:915,height:412});await p.waitForTimeout(80);
+  const rail=await p.locator('#rkScoreboard').boundingBox(),zoom=await p.locator('#rkWorldView').boundingBox();assert.ok(rail.y+rail.height<=zoom.y);
+  assert.equal(await p.locator('#rkScoreboard .rk-score').count(),6);assert.ok(await p.locator('#rkScoreboard').evaluate(el=>el.scrollHeight>el.clientHeight));
+  await p.locator('#rkScoreboard').evaluate(el=>el.scrollTop=el.scrollHeight);
+  await p.setViewportSize({width:390,height:844});await p.waitForTimeout(50);
+  const own=initial.territories.findIndex(t=>t.owner===0),other=initial.territories.findIndex((t,i)=>t.owner===0&&i!==own);
+  await tapCountry(own);assert.ok(parseInt(await p.locator('#rkZoomLabel').innerText())>100,'Choosing a country focuses the action');
+  await free('#rkActionreinforce');await p.locator('#rkAmountRange').fill('1');assert.equal(await p.locator('#rkAmount').inputValue(),'1');
+  assert.deepEqual(await saved(),initial,'Deployment is only a preview until confirmed');
+  await p.locator('#rkActioncancel').click();assert.deepEqual(await saved(),initial);assert.equal(await p.locator('#rkZoomLabel').innerText(),'100%','Cancel restores the original camera');
+  await tapCountry(own);assert.equal(await p.evaluate(()=>window.appBack()),true);assert.equal(await p.locator('#rkControls').isVisible(),false,'Android Back cancels the preview before leaving');assert.ok(await p.locator('#rk').evaluate(el=>el.classList.contains('active')));assert.deepEqual(await saved(),initial);
+  // A real finger drag from the reserve also previews, rather than silently committing all troops.
+  const pool=await p.locator('#rkPool').boundingBox();await drag({x:pool.x+pool.width/2,y:pool.y+pool.height/2},await point(own));
+  assert.equal(await p.locator('#rkActionreinforce').isVisible(),true);assert.deepEqual(await saved(),initial);
+  await p.locator('#rkAmountRange').fill('1');await p.locator('[data-action="more"]').click();assert.equal(Number(await p.locator('#rkAmount').inputValue()),2);
+  await p.locator('[data-action="less"]').click();await p.locator('#rkActionreinforce').click();
+  let s=await saved();assert.equal(s.territories[own].armies,initial.territories[own].armies+1);assert.equal(s.pool,initial.pool-1);
+  await tapCountry(other);await p.locator('[data-action="all"]').click();await p.locator('#rkActionreinforce').click();
+  s=await saved();assert.equal(s.pool,0);assert.equal(s.territories[other].armies,initial.territories[other].armies+initial.pool-1);assert.ok(await p.locator('#rkNext').isEnabled());
+  const beforeReload=s;await menu();await p.reload();await p.locator('#tileRk').click();assert.deepEqual(await saved(),beforeReload);
 
-  // Required card exchange is visible even when other controls are folded away.
-  await p.locator('#rkBack').click();
-  await p.evaluate(()=>{
-    window.__noSave=true;const E=ReneRiskEngine,s=E.newGame([{name:'Rene'},{name:'CPU',ai:true}],11,{cards:'fixed',goal:'domination'});
-    const cards=[0,1,2,3,4];s.players[0].cards=cards;s.deck=s.deck.filter(c=>!cards.includes(c));
-    localStorage.setItem('rk.save',JSON.stringify(s));
-  });
-  await p.reload();await p.locator('#tileRk').click();
-  assert.equal(await p.locator('#rkDockToggle').getAttribute('aria-expanded'),'true');
-  assert.equal(await p.locator('.rk-card-hand').evaluate(el=>el.open),true);
-  assert.equal(await p.locator('#rkActiontrade').isEnabled(),true);
-  const pool=await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')).pool);
-  await p.locator('#rkActiontrade').click();
-  assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')).pool),pool+10);
-  assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')).players[0].cards.length),2);
-  // Resume during manual deployment without granting extra starting armies.
-  await p.locator('#rkBack').click();
-  await p.evaluate(()=>{
-    window.__noSave=true; const E=ReneRiskEngine,s=E.newGame([{name:'Rene'},{name:'CPU',ai:true}],31,{setup:'manual',goal:'capital',dice:'balanced'});
-    localStorage.setItem('rk.save',JSON.stringify(s));
-  });
-  await p.reload();await p.locator('#tileRk').click();
-  assert.match(await p.locator('#rkControls').innerText(),/Startlegers plaatsen/);
-  const starting=await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')));
-  const startCountry=starting.territories.findIndex(t=>t.owner===0);
-  await p.locator('#rkFrom').selectOption(String(startCountry));
-  await p.locator('#rkActionreinforce').click();
-  const deployed=await p.evaluate(()=>localStorage.getItem('rk.save'));
-  await p.locator('#rkBack').click();await p.reload();await p.locator('#tileRk').click();
-  assert.equal(await p.evaluate(()=>localStorage.getItem('rk.save')),deployed);
-  assert.ok(await p.locator('#rkActionadvance').isEnabled());
+  // Selecting and dragging a stack is distinct from panning the map. Dice remain untouched until Blitz.
+  await fixture(()=>{window.__noSave=true;const s=ReneRiskEngine.newGame([{name:'Rene'},{name:'Nova',ai:true}],7);s.phase='attack';s.pool=0;s.territories[0]={owner:0,armies:40};s.territories[1]={owner:1,armies:1000};localStorage.setItem('rk.save',JSON.stringify(s));});
+  await p.setViewportSize({width:915,height:412});await p.waitForTimeout(50);const preBattle=await saved();await tapCountry(0,12);
+  const originZoom=await p.locator('#rkZoomLabel').innerText();await drag(await point(0),await point(1));
+  await free('#rkActionblitz');assert.equal(await p.locator('#rkNext').isVisible(),false,'An active battle cannot accidentally skip the phase');
+  for(const [width,height] of [[320,844],[390,844],[915,412]]){await p.setViewportSize({width,height});await narrowFits();await free('[data-action="previousDice"]');await free('[data-action="nextDice"]');await free('#rkActionblitz');}
+  assert.deepEqual(await saved(),preBattle);await p.locator('#rkCommitRange').fill('1');assert.match(await p.locator('#rkReserve').innerText(),/39 blijven achter/);
+  await p.locator('[data-action="nextDice"]').click();assert.ok(await p.locator('#rkActionattack').isVisible());await p.locator('[data-action="previousDice"]').click();assert.ok(await p.locator('#rkActionblitz').isVisible());assert.deepEqual(await saved(),preBattle);
+  await p.locator('#rkActionblitz').click();s=await saved();assert.equal(s.territories[0].armies,39);assert.match(await p.locator('.rk-result').innerText(),/Jij −1/);
+  await p.locator('#rkActioncancel').click();assert.equal(await p.locator('#rkZoomLabel').innerText(),originZoom);await p.locator('#rkClearSelection').click();assert.equal(await p.locator('#rkZoomLabel').innerText(),'100%');
 
-  // Choose a capital, finish the opening with AI, and see its crown and bonus.
-  await p.locator('#rkBack').click();
-  await p.evaluate(()=>{
-    window.__noSave=true;const s=ReneRiskEngine.newGame([{name:'Rene'},{name:'CPU',ai:true}],41,{goal:'capital',dice:'balanced'});
-    localStorage.setItem('rk.save',JSON.stringify(s));
-  });
-  await p.reload();await p.locator('#tileRk').click();
-  const firstCapital=await p.evaluate(()=>ReneRiskEngine.owned(JSON.parse(localStorage.getItem('rk.save')))[0]);
-  await p.locator('#rkFrom').selectOption(String(firstCapital));await p.locator('#rkActioncapital').click();
-  await p.waitForFunction(()=>JSON.parse(localStorage.getItem('rk.save')).phase==='reinforce');
-  assert.equal(await p.locator('#rkMap .rk-capital').evaluateAll(nodes=>nodes.filter(n=>n.textContent==='♛').length),2);
-  const capitalState=await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')));
-  assert.ok(capitalState.pool>=5);
+  // Conquest, resume halfway through occupation, one-tap continuation, then a single fortification.
+  await fixture(()=>{window.__noSave=true;const s=ReneRiskEngine.newGame([{name:'Rene'},{name:'Nova',ai:true},{name:'Atlas',ai:true}],23,{dice:'balanced'});s.phase='attack';s.pool=0;s.territories[0]={owner:0,armies:40};s.territories[1]={owner:1,armies:3};s.territories[2]={owner:1,armies:1};localStorage.setItem('rk.save',JSON.stringify(s));});
+  await tapCountry(0);await tapCountry(1);await free('#rkActionblitz');await p.locator('#rkActionblitz').click();
+  const captured=await saved();assert.ok(captured.pending);assert.ok(await p.locator('#rkActionoccupy').isVisible());
+  await p.locator('#rkAmountRange').fill(String(captured.pending.min));
+  assert.equal(Number(await p.locator('#rkToCount').innerText()),captured.pending.min);assert.deepEqual(await saved(),captured,'Changing occupation never moves troops early');
+  await menu();await p.reload();await p.locator('#tileRk').click();assert.deepEqual(await saved(),captured);assert.ok((await p.locator('#rkBattleRoute').getAttribute('d')).length>0,'Resuming a capture restores its map route');
+  for(const [width,height,big] of [[320,844,true],[390,844,false],[915,412,true]]){await p.setViewportSize({width,height});await p.evaluate(big=>document.documentElement.classList.toggle('big-text',big),big);await narrowFits();await free('#rkActionoccupy');}
+  await p.evaluate(()=>document.documentElement.classList.remove('big-text'));await p.locator('[data-action="all"]').click();
+  const remain=Number(await p.locator('#rkFromCount').innerText()),arrive=Number(await p.locator('#rkToCount').innerText());assert.ok(remain>=1);assert.equal(arrive+remain,captured.territories[0].armies+captured.territories[1].armies);assert.equal(await p.locator('#rkMap [data-marker="0"] .rk-preview-armies').textContent(),String(remain));
+  await p.locator('#rkActionoccupy').click();s=await saved();assert.equal(s.territories[0].armies,remain);assert.equal(s.territories[1].armies,arrive);assert.ok(await p.locator('#rkHand').evaluate(el=>el.classList.contains('rk-card-earned')));
+  await tapCountry(2);assert.equal(await p.locator('#rk').getAttribute('data-interaction'),'attack','The captured stack attacks the next country with one tap');assert.equal(await p.locator('#rkFrom').inputValue(),'1');await p.locator('#rkActioncancel').click();
+  await p.locator('#rkNext').click();await tapCountry(1);await tapCountry(0);const preFortify=await saved();await p.locator('#rkAmountRange').fill('2');assert.deepEqual(await saved(),preFortify);
+  await p.locator('#rkActioncancel').click();assert.deepEqual(await saved(),preFortify,'Cancelling a transfer does not use the fortification');
+  await tapCountry(1);await tapCountry(0);await p.locator('#rkAmountRange').fill('2');const from=Number(await p.locator('#rkFromCount').innerText()),to=Number(await p.locator('#rkToCount').innerText());await free('#rkActionfortify');await p.locator('#rkActionfortify').click();s=await saved();assert.equal(s.territories[1].armies,from);assert.equal(s.territories[0].armies,to);assert.equal(s.fortified,true);
+  await tapCountry(1);assert.equal(await p.locator('#rkActionfortify').count(),0,'A used fortification cannot open a second move');await p.locator('#rkNext').click();assert.equal((await saved()).players[0].cards.length,1);
 
-  // Hidden missions must be absent from the DOM until a local player opens their turn.
-  await p.locator('#rkBack').click();
-  await p.evaluate(()=>{
-    window.__noSave=true;const s=ReneRiskEngine.newGame([{name:'Rene'},{name:'Medespeler'}],51,{goal:'mission'});
-    localStorage.setItem('rk.save',JSON.stringify(s));
-  });
-  await p.reload();await p.locator('#tileRk').click();
-  await p.locator('#rkHandoffModal.show').waitFor();
-  assert.equal(await p.locator('.rk-mission').count(),0);
-  await p.locator('#rkBeginTurn').click();await p.locator('.rk-mission summary').click();
-  assert.equal(await p.locator('.rk-mission p').innerText(),await p.evaluate(()=>ReneRiskEngine.mission(JSON.parse(localStorage.getItem('rk.save'))).text));
-  assert.ok(await p.locator('.rk-mission p').isVisible());
-  await p.locator('#rkBack').click();await p.reload();await p.locator('#tileRk').click();
-  assert.equal(await p.locator('.rk-mission').count(),0);
+  // Forced trading is a readable card dialog, with no phase shortcut around it.
+  await fixture(()=>{window.__noSave=true;const s=ReneRiskEngine.newGame([{name:'Rene'},{name:'CPU',ai:true}],11,{cards:'fixed',goal:'domination'});s.players[0].cards=[0,1,2,3,4];s.deck=s.deck.filter(c=>![0,1,2,3,4].includes(c));localStorage.setItem('rk.save',JSON.stringify(s));});
+  assert.ok(await p.locator('#rkInspector').isVisible());assert.equal(await p.locator('.rk-cards button').count(),5);
+  const chosen=await p.locator('.rk-cards button[aria-pressed="true"]').evaluateAll(nodes=>nodes.map(n=>n.id));
+  for (const id of chosen) await p.locator('#'+id).click();
+  assert.equal(await p.locator('.rk-cards button[aria-pressed="true"]').count(),0,'Players can clear the suggested set');assert.ok(await p.locator('#rkActiontrade').isDisabled());
+  for (const id of chosen) await p.locator('#'+id).click();
+  await free('#rkActiontrade');const poolBefore=(await saved()).pool;await p.locator('#rkActiontrade').click();assert.equal((await saved()).pool,poolBefore+10);assert.equal((await saved()).players[0].cards.length,2);
+  assert.equal(await p.locator('#rkInspector').isVisible(),false);
+
+  // Manual setup and capitals retain the same touch-to-preview-to-confirm interaction.
+  await fixture(()=>{window.__noSave=true;localStorage.setItem('rk.save',JSON.stringify(ReneRiskEngine.newGame([{name:'Rene'},{name:'CPU',ai:true}],31,{setup:'manual',goal:'capital',dice:'balanced'})));});
+  assert.match(await p.locator('#rkPhase').innerText(),/Startlegers/i);s=await saved();const startCountry=s.territories.findIndex(t=>t.owner===0);await tapCountry(startCountry);await free('#rkActionreinforce');await p.locator('#rkActionreinforce').click();const deployed=await saved();await menu();await p.reload();await p.locator('#tileRk').click();assert.deepEqual(await saved(),deployed);assert.ok(await p.locator('#rkNext').isEnabled());
+  await fixture(()=>{window.__noSave=true;localStorage.setItem('rk.save',JSON.stringify(ReneRiskEngine.newGame([{name:'Rene'},{name:'CPU',ai:true}],41,{goal:'capital',dice:'balanced'})));});
+  s=await saved();const capital=s.territories.findIndex(t=>t.owner===0);await tapCountry(capital);await free('#rkActioncapital');await p.locator('#rkActioncapital').click();await p.waitForFunction(()=>JSON.parse(localStorage.getItem('rk.save')).phase==='reinforce');assert.equal(await p.locator('#rkMap .rk-capital').evaluateAll(nodes=>nodes.filter(n=>n.textContent==='♛').length),2);assert.ok((await saved()).pool>=5);
+
+  // A lone garrison cannot open an attack. Cards remain accessible outside reinforcement.
+  await fixture(()=>{window.__noSave=true;const s=ReneRiskEngine.newGame([{name:'Rene'},{name:'Nova',ai:true}],43);s.phase='attack';s.pool=0;s.territories[0]={owner:0,armies:1};s.territories[1]={owner:1,armies:1000};s.players[0].cards=[0,1,2];s.deck=s.deck.filter(c=>![0,1,2].includes(c));localStorage.setItem('rk.save',JSON.stringify(s));});
+  const guarded=await saved();await tapCountry(0);assert.equal(await p.locator('#rkActionblitz').count(),0);assert.deepEqual(await saved(),guarded);await p.locator('#rkHand').click();assert.ok(await p.locator('#rkInspector').isVisible());assert.equal(await p.locator('.rk-cards button').count(),3);assert.equal(await p.locator('#rkActiontrade').count(),0);await p.keyboard.press('Escape');assert.equal(await p.locator('#rkInspector').isVisible(),false);
+  await p.locator('#rkHand').click();assert.equal(await p.evaluate(()=>window.appBack()),true);assert.equal(await p.locator('#rkInspector').isVisible(),false,'Android Back closes the card overview before leaving');assert.ok(await p.locator('#rk').evaluate(el=>el.classList.contains('active')));
+
+  // A pass-and-play handoff must contain neither cards nor a secret mission in the DOM.
+  await fixture(()=>{window.__noSave=true;localStorage.setItem('rk.save',JSON.stringify(ReneRiskEngine.newGame([{name:'Rene'},{name:'Medespeler'}],51,{goal:'mission'})));});
+  await p.locator('#rkHandoffModal.show').waitFor();assert.equal(await p.locator('.rk-mission').count(),0);assert.equal(await p.locator('[data-card]').count(),0);
+  await p.locator('#rkBeginTurn').click();await p.locator('#rkHand').click();await p.locator('.rk-mission summary').click();assert.equal(await p.locator('.rk-mission p').innerText(),await p.evaluate(()=>ReneRiskEngine.mission(JSON.parse(localStorage.getItem('rk.save'))).text));
+  await menu();await p.reload();await p.locator('#tileRk').click();assert.equal(await p.locator('.rk-mission').count(),0);
   assert.deepEqual(errors,[]);await context.close();
-  console.log('Risk mobile: touch-drag deployment, combat/occupation/fortify previews, phase controls, cards, capitals, manual setup, hidden missions, six players and resume passed');
-} finally { await browser.close(); await new Promise(resolve=>server.close(resolve)); }
+  console.log('PASS: real touch deployment and army dragging; previews/cancellation/camera restore; dice modes; resumed conquest; one-tap attack chains; fortification/cards; narrow large-text controls; setup/capitals/private handoffs');
+} finally {await browser.close();await new Promise(resolve=>server.close(resolve));}
