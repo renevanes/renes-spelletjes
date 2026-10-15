@@ -313,5 +313,10 @@
   "v": "1.62",
   "date": "2026-10-15",
   "notes": "Wereldmacht speelt nu ook met hoofdstedenverovering, geheime missies en startlegers die je zelf om de beurt plaatst. Blitz handelt een gevecht direct af, met keuze tussen willekeurige en minder extreme uitslagen; na verovering blijven gereserveerde legers standaard achter. De computer houdt rekening met hoofdsteden, opdrachten en het moment van kaarten ruilen."
+ },
+ {
+  "v": "1.63",
+  "date": "2026-10-15",
+  "notes": "Wereldmacht heeft een nieuw spelbeeld met meer ruimte voor de wereldkaart, eigen commandanten en een vaste balk voor kaarten en beurtfasen. Sleep je legerreserve naar een eigen land, bekijk je aanvalskans en verliezen in het gevechtspaneel en zie vóór het bevestigen hoeveel legers achterblijven en oversteken. Na een verovering kun je meteen vanuit je nieuwe gebied verder aanvallen."
  }
 ]

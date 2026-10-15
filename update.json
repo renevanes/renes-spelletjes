@@ -1,11 +1,11 @@
 {
-  "versionCode": 63,
-  "versionName": "1.62",
+  "versionCode": 64,
+  "versionName": "1.63",
   "nativeLevel": 11,
-  "notes": "Wereldmacht speelt nu ook met hoofdstedenverovering, geheime missies en startlegers die je zelf om de beurt plaatst. Blitz handelt een gevecht direct af, met keuze tussen willekeurige en minder extreme uitslagen; na verovering blijven gereserveerde legers standaard achter. De computer houdt rekening met hoofdsteden, opdrachten en het moment van kaarten ruilen.",
+  "notes": "Wereldmacht heeft een nieuw spelbeeld met meer ruimte voor de wereldkaart, eigen commandanten en een vaste balk voor kaarten en beurtfasen. Sleep je legerreserve naar een eigen land, bekijk je aanvalskans en verliezen in het gevechtspaneel en zie v\u00f3\u00f3r het bevestigen hoeveel legers achterblijven en oversteken. Na een verovering kun je meteen vanuit je nieuwe gebied verder aanvallen.",
   "web": "web/index.html",
-  "webSha256": "41fb544394c28ed8a441fb98a29877ca97ff9aa0512a3392353dc886ecd98da5",
-  "webSig": "MEUCIQDlu/7nD61SwjOBgk/DxpAZ6fbUnl4x6KOCqnuIiG5uDQIgCwup3WOfQIxU7qIAUWyGHpolhds+vy9tvoY+n71l1U0=",
+  "webSha256": "3ba03a26cda9c103a661f7c817e15f9032a9f4bb534fe6f184abb8aae3443faa",
+  "webSig": "MEUCIQD6BPvbAHkW0pZr8U5Gg0xGzb9jo1wj1SYEE5glr44Q7gIgO+X5EMHcVFGiZUk2zgIikBmVB7R56W8nqrT0V7idQIM=",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "ffe3a952b0dc233a536c58bb092cf94cbd16661ed5a1c4dc2516213283333928"
