@@ -10,6 +10,7 @@
     let zoom = 1, scale = 1, expanded = false, ownership = true, state = null, selection = {}, frame = 0, lastWidth = 0, lastHeight = 0;
     const pointers = new Map();
     let gesture = null, moved = false;
+    const effects = new Set();
     const regions = M.regions.map((g, i) => { if (g.id !== E.territories[i].id) throw new Error("Kaartindeling komt niet overeen met de spelregels"); return g; });
     const mix = (hex, t) => "#" + [1, 3, 5].map(i => Math.round(parseInt(hex.slice(i, i + 2), 16) * (1 - t) + 246 * t).toString(16).padStart(2, "0")).join("");
     const routeMarkup = [...new Set([...seas, ...M.seaRoutes.map(pair => pair.join(" "))])].map(pair => {
@@ -21,14 +22,13 @@
     }).join("");
     svg.setAttribute("viewBox", `0 0 ${M.width} ${M.height}`);
     svg.setAttribute("data-geographic", "natural-earth");
-    svg.innerHTML = `<defs><linearGradient id="rkOcean" x2="0" y2="1"><stop stop-color="#123a52"/><stop offset=".5" stop-color="#247c98"/><stop offset="1" stop-color="#164c64"/></linearGradient><pattern id="rkPaper" width="9" height="9" patternUnits="userSpaceOnUse"><path d="M0 9L9 0" stroke="#9dd6e6" stroke-width=".4" opacity=".06"/></pattern>${E.COLORS.map((color,i)=>`<linearGradient id="rkLand${i}" x2=".2" y2="1"><stop stop-color="${mix(color,.38)}"/><stop offset="1" stop-color="${mix(color,.05)}"/></linearGradient>`).join("")}<marker id="rkAttackArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0L10,5L0,10Z" fill="#ffe3a0"/></marker></defs>
-      <rect width="${M.width}" height="${M.height}" rx="12" fill="url(#rkOcean)"/><rect width="${M.width}" height="${M.height}" fill="url(#rkPaper)"/>
+    svg.innerHTML = `<defs><linearGradient id="rkOcean" x2="0" y2="1"><stop stop-color="#12465e"/><stop offset=".5" stop-color="#2386a2"/><stop offset="1" stop-color="#18516e"/></linearGradient><pattern id="rkPaper" width="80" height="80" patternUnits="userSpaceOnUse"><path d="M0 80L80 0M0 0L80 80" stroke="#b6edff" stroke-width=".65" opacity=".1"/></pattern>${E.COLORS.map((color,i)=>`<linearGradient id="rkLand${i}" x2=".2" y2="1"><stop stop-color="${mix(color,.18)}"/><stop offset="1" stop-color="${color}"/></linearGradient>`).join("")}<marker id="rkAttackArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0L10,5L0,10Z" fill="#ffe3a0"/></marker></defs>
       <path d="${M.graticule}" class="rk-graticule"/><path d="${M.neutral}" class="rk-neutral-land"/>
       <g class="rk-ocean-labels"><text x="130" y="430">GROTE OCEAAN</text><text x="585" y="405">ATLANTISCHE</text><text x="585" y="426">OCEAAN</text><text x="1020" y="550">INDISCHE OCEAAN</text></g>
       <g class="rk-land-shadow" transform="translate(2 5)">${regions.map(g=>`<path d="${g.path}" fill-rule="evenodd"/>`).join("")}</g><g class="rk-land-regions">${regions.map((g, i) => `<g class="rk-country" data-country="${i}" role="button" tabindex="0"><title>${E.territories[i].name}</title><path class="rk-country-shape" d="${g.path}" fill="${palette[E.territories[i].continent]}" fill-rule="evenodd"/></g>`).join("")}</g>
       <g class="rk-sea-routes">${routeMarkup}</g><path id="rkBattleRoute" class="rk-battle-route" marker-end="url(#rkAttackArrow)"/>
       <g class="rk-region-labels">${regions.map((g, i) => { const [x, y] = g.anchor; const words = g.label.includes("-") ? g.label.split("-") : [g.label]; const [lx,ly] = ({ britain:[x+20,y-43], northeu:[x+34,y-31], westeu:[x-48,y-15], southeu:[x+45,y+7] })[g.id] || [x,y-(words.length>1?38:25)]; return `<text data-label="${i}" x="${lx}" y="${ly}" text-anchor="middle">${words.map((w, n) => `<tspan x="${lx}" dy="${n ? 12 : 0}">${esc(w)}</tspan>`).join("")}</text>`; }).join("")}</g>
-      <g class="rk-army-markers">${regions.map((g, i) => `<g data-marker="${i}" data-country-marker="${i}" transform="translate(${g.anchor.join(" ")})"><circle class="rk-marker-halo" r="20"/><ellipse class="rk-marker-base" cy="4" rx="16" ry="15"/><circle class="rk-marker-disc" r="15"/><text class="rk-armies" y="5" text-anchor="middle"></text><text class="rk-owner" x="13" y="18" text-anchor="middle"></text><text class="rk-capital" y="-21" text-anchor="middle"></text></g>`).join("")}</g>
+      <g class="rk-army-markers">${regions.map((g, i) => `<g data-marker="${i}" data-country-marker="${i}" transform="translate(${g.anchor.join(" ")})"><circle class="rk-marker-halo" r="23"/><ellipse class="rk-marker-base" cy="5" rx="18" ry="17"/><circle class="rk-marker-disc" r="17"/><path class="rk-marker-shine" d="M-13,-7A15,15 0 0,1 12,-9"/><text class="rk-armies" y="6" text-anchor="middle"></text><text class="rk-owner" x="15" y="21" text-anchor="middle"></text><text class="rk-capital" y="-25" text-anchor="middle"></text><text class="rk-preview-armies" y="6" text-anchor="middle"></text></g>`).join("")}</g><g id="rkMapEffects" aria-hidden="true"></g>
       <g class="rk-continent-labels">${names.map(([id, x, y]) => { const c = E.continents.find(c => c.id === id); return `<text x="${x}" y="${y}" text-anchor="middle">${esc(c.name.toUpperCase())} · +${c.bonus}</text>`; }).join("")}</g>
       <g class="rk-compass" transform="translate(118 664)"><circle r="30"/><path d="M0,-37L8,0L0,37L-8,0ZM-37,0L0,8L37,0L0,-8Z"/><text y="-44" text-anchor="middle">N</text></g><text class="rk-map-credit" x="1421" y="742" text-anchor="end">Kustlijnen: Natural Earth · speelgebieden: Wereldmacht</text>`;
     const shapes = [...svg.querySelectorAll(".rk-country")], markers = [...svg.querySelectorAll("[data-marker]")];
@@ -43,7 +43,7 @@
       surface.style.height = `${Math.max(h, height)}px`;
       svg.style.width = `${w}px`; svg.style.height = `${h}px`;
       svg.style.left = `${Math.max(0, (width-w)/2)}px`;
-      svg.style.top = `${Math.max(0, (height-h)/2)}px`;
+      svg.style.top = `${Math.max(0, Math.min((height-h)/2, !expanded && matchMedia("(max-width:650px) and (orientation:portrait)").matches ? 70 : Infinity))}px`;
       svg.classList.toggle("rk-map-detail", scale*zoom >= .55);
       $("rkZoomLabel").textContent = `${Math.round(zoom*100)}%`;
       $("rkZoomOut").disabled = zoom <= 1;
@@ -60,6 +60,32 @@
       viewport.scrollTop = point[1]*scale*zoom + parseFloat(svg.style.top || 0)-y;
     }
     function fit() { zoom = 1; metrics(); viewport.scrollLeft = 0; viewport.scrollTop = 0; }
+    function focusPair(from, to) {
+      metrics();
+      const a = regions[from].anchor, b = regions[to].anchor;
+      if ([from,to].includes(E.byId.alaska) && [from,to].includes(E.byId.kamchatka)) { fit(); return; }
+      const compact = viewport.clientWidth < 600;
+      zoomAt(Math.min(viewport.clientWidth*.68/(Math.abs(a[0]-b[0])+150), viewport.clientHeight*.7/(Math.abs(a[1]-b[1])+130))/scale,
+        viewport.clientWidth*(compact ? .5 : .35), viewport.clientHeight*(compact ? .3 : .46), [(a[0]+b[0])/2,(a[1]+b[1])/2]);
+    }
+    function clearPreview() {
+      markers.forEach(node => { node.classList.remove("rk-previewing"); node.querySelector(".rk-preview-armies").textContent = ""; });
+    }
+    function preview(from, to, amount) {
+      clearPreview();
+      [[from,state.territories[from].armies-amount],[to,state.territories[to].armies+amount]].forEach(([i,n])=>{
+        markers[i].classList.add("rk-previewing"); markers[i].querySelector(".rk-preview-armies").textContent = n;
+        markers[i].querySelector(".rk-preview-armies").style.fontSize = n>999 ? "11px" : n>99 ? "14px" : "18px";
+      });
+    }
+    function effect(id, label) {
+      if (document.documentElement.classList.contains("reduced-motion")) return;
+      const node = document.createElementNS("http://www.w3.org/2000/svg","text"), [x,y] = regions[id].anchor;
+      node.textContent = label; node.setAttribute("x",x); node.setAttribute("y",y-30); node.classList.add("rk-map-pop");
+      $("rkMapEffects").append(node);
+      const animation = node.animate([{opacity:0,transform:"translateY(8px)"},{opacity:1,offset:.2},{opacity:0,transform:"translateY(-25px)"}],{duration:1000,easing:"ease-out"});
+      effects.add(animation); animation.finished.then(()=>{node.remove(); effects.delete(animation);},()=>node.remove());
+    }
     function focusContinent(id) {
       metrics();
       const matching = regions.filter((_, i) => E.territories[i].continent === id);
@@ -90,6 +116,7 @@
         node.setAttribute("aria-pressed", String(i === selected || i === target));
         node.classList.toggle("selected", i === selected); node.classList.toggle("target", i === target);
         node.classList.toggle("neighbor", selected !== null && E.territories[selected].neighbors.includes(i));
+        node.classList.toggle("attackable", !handoff && state.phase === "attack" && selected !== null && state.territories[selected].owner === state.current && state.territories[selected].armies > 1 && t.owner !== state.current && E.territories[selected].neighbors.includes(i));
         const marker = markers[i];
         marker.querySelector(".rk-marker-disc").setAttribute("fill", mix(p.color,.18));
         marker.querySelector(".rk-armies").textContent = t.armies;
@@ -174,7 +201,7 @@
       }
     });
     new ResizeObserver(() => { const center = pointAt(lastWidth/2, lastHeight/2); if (metrics() && zoom>1) zoomAt(zoom, viewport.clientWidth/2, viewport.clientHeight/2, center); }).observe(viewport);
-    return { update, fit, focusContinent, close: () => { pointers.clear(); gesture = null; cancelAnimationFrame(frame); frame = 0; if (expanded) expand(false); } };
+    return { update, fit, focusContinent, focusPair, preview, clearPreview, effect, close: () => { pointers.clear(); gesture = null; cancelAnimationFrame(frame); frame = 0; effects.forEach(a=>a.cancel()); effects.clear(); clearPreview(); if (expanded) expand(false); } };
   }
   window.ReneWereldBoard = { create, palette };
 })();

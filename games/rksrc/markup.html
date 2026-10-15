@@ -12,16 +12,18 @@
     <button id="rkHelp" class="iconbtn" aria-label="Spelregels van Wereldmacht">
       ?
     </button>
-    <button id="rkNew" class="iconbtn" aria-label="Nieuw Wereldmacht-spel">↻</button>
   </div>
   <div class="rk-turn">
+    <button id="rkHand" class="rk-hand-button" aria-label="Mijn kaarten bekijken"><span>▱</span><b id="rkHandCount">0</b><small>Kaarten</small></button>
     <span id="rkPlayerBadge"></span>
     <div>
       <b id="rkPlayerName"></b>
       <p id="rkInstruction"></p>
     </div>
     <div class="rk-phase-track" aria-label="Beurtfasen"><span id="rkPhase"></span><div id="rkPhaseSteps"><span data-phase="reinforce">1 Versterken</span><span data-phase="attack">2 Aanvallen</span><span data-phase="fortify">3 Verplaatsen</span></div></div>
+    <button id="rkNext" class="rk-next" disabled>Volgende fase →</button>
   </div>
+  <div id="rkFeedback" class="rk-feedback" role="status" hidden></div>
   <div
     id="rkScoreboard"
     class="rk-scoreboard"
@@ -38,6 +40,7 @@
         <button id="rkExpandMap" class="rk-map-button" aria-pressed="false">⛶ Grote kaart</button>
       </div>
       <button id="rkOwnership" class="rk-map-button" aria-pressed="true" aria-label="Toon gebieden in spelerskleuren">Spelerskleuren</button>
+      <div id="rkContinentBonuses" class="rk-continent-bonuses" aria-label="Continentbonussen en continentvergroting"></div>
       </details>
       <div id="rkZoomTools" class="rk-map-toolbar">
         <button id="rkWorldView" class="rk-map-button" aria-label="De volledige wereldkaart tonen">⌖ Wereld</button>
@@ -52,8 +55,9 @@
         <div id="rkMapSurface"><svg id="rkMap" viewBox="0 0 1440 760" xmlns="http://www.w3.org/2000/svg" aria-label="Wereldkaart met de 42 gebieden en gekleurde legerfiches"></svg></div>
       </div>
       <div id="rkCountryList" class="rk-country-list" hidden></div>
+      <button id="rkPool" class="rk-pool" hidden aria-label="Versterkingen plaatsen"><svg viewBox="0 0 32 48" aria-hidden="true"><path d="M7 48V32L3 36L0 33L6 22L12 20H20L26 22L32 33L29 36L25 32V48H18V36H14V48Z" fill="currentColor"/><circle cx="16" cy="12" r="7" fill="#edcf96"/><path d="M7 10Q8 1 16 1Q24 1 25 10L22 13H10Z" fill="currentColor"/><path d="M9 8H23M10 26H22" stroke="#ffe5a9" stroke-width="2"/></svg><b id="rkPoolCount">3</b><span>PLAATSEN</span><small>Sleep naar een eigen land</small></button>
+      <div id="rkPoolGhost" class="rk-pool-ghost" hidden aria-hidden="true">♟ <b></b></div>
       <div class="rk-map-status"><span id="rkMapTurn"></span><span id="rkMapSelection">Kies een eigen gebied op de kaart</span><button id="rkToActions" class="rk-map-button" hidden>Spelacties →</button></div>
-      <div id="rkContinentBonuses" class="rk-continent-bonuses" aria-label="Continentbonussen en continentvergroting"></div>
     <aside class="rk-command-panel" aria-label="Spelacties"><button id="rkDockToggle" class="rk-dock-toggle" aria-label="Spelacties inklappen" aria-expanded="true">⌄</button>
       <div id="rkControls"></div>
       <details class="rk-history">
@@ -67,7 +71,7 @@
 </section>
 <div id="rkStartModal" class="modal">
   <div class="sheet">
-    <h3>🌍 Wereldmacht · Wereldverovering</h3>
+    <div class="rk-lobby-hero"><span>VERDEEL. VEROVER. HEERS.</span><h3>Wereldmacht</h3><p>Jouw leger. Jouw strategie. De hele wereld.</p></div>
     <p>
       Verover de wereld op een kaart met 42 gebieden. Speel tegen de computer of geef het toestel door
       aan je medespelers. Kies je spelvorm en bepaal of je de startlegers zelf plaatst.
@@ -80,6 +84,7 @@
     >
       Verder spelen
     </button>
+    <div class="rk-presets" aria-label="Spelvorm kiezen"><button data-preset="world"><b>🌍 Wereldverovering</b><small>Alle 42 gebieden</small></button><button data-preset="domination"><b>⚡ Snelle partij</b><small>Verover 30 gebieden</small></button><button data-preset="capital"><b>♛ Hoofdsteden</b><small>Pak de strategische bolwerken</small></button><button data-preset="mission"><b>✉ Geheime missies</b><small>Voltooi jouw eigen opdracht</small></button></div>
     <div class="rk-setup-grid">
       <label
         >Spelers<select id="rkPlayerCount">
@@ -138,7 +143,7 @@
       <li>
         <b>Versterken.</b> Je krijgt minimaal 3 legers, of één per drie landen
         als dat meer is. Een compleet continent geeft extra legers. Plaats alle
-        versterkingen in je eigen landen.
+        versterkingen in je eigen landen. Sleep de legerreserve op de kaart naar een eigen land om alles daar te plaatsen. Je kunt ook een land aantikken en met de schuif een deel plaatsen.
       </li>
       <li>
         <b>Aanvallen.</b> Kies een eigen land met minstens 2 legers en een
@@ -182,6 +187,7 @@
   <div class="sheet">
     <h3>Wereldmacht staat op pauze</h3>
     <p>Je spel wordt na elke actie opgeslagen.</p>
+    <button id="rkNew" class="btn" style="width:100%;margin-bottom:12px">Nieuw Wereldmacht-spel</button>
     <div class="row">
       <button id="rkPauseMenu" class="btn">Naar menu</button
       ><button id="rkContinue" class="btn primary">Verder spelen</button>

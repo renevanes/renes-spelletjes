@@ -86,6 +86,7 @@ try {
   await p.setViewportSize({width:915,height:412});
   await p.waitForFunction(() => { const el = document.getElementById("rkMapViewport"); return el.scrollWidth <= el.clientWidth+1 && el.scrollHeight <= el.clientHeight+1; });
   assert.ok(await p.locator('#rkMapViewport').evaluate(el => el.scrollWidth <= el.clientWidth+1 && el.scrollHeight <= el.clientHeight+1));
+  await p.locator('#rkViewMenu > summary').click();
   await p.locator('[data-continent="eu"]').click();
   assert.ok(parseInt(await p.locator('#rkZoomLabel').innerText()) > 100);
   assert.ok(await p.locator('#rkMap .rk-region-labels').isVisible());
@@ -176,6 +177,7 @@ try {
   await a.locator('#tileRk').click();
   await a.locator('#rkStart').click();
   await a.waitForFunction(() => __sfx._state().now === 'rk', null, { timeout: 20000 });
+  await a.locator('#rkPause').click();
   await a.locator('#rkNew').click();
   await a.locator('#rkMusic').uncheck();
   await a.waitForFunction(() => __sfx._state().now === null);
