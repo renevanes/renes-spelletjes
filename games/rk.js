@@ -1006,7 +1006,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       surface.style.height = `${Math.max(h, height)}px`;
       svg.style.width = `${w}px`; svg.style.height = `${h}px`;
       svg.style.left = `${Math.max(0, (width-w)/2)}px`;
-      svg.style.top = `${Math.max(0, Math.min((height-h)/2, !expanded && matchMedia("(max-width:650px) and (orientation:portrait)").matches ? 70 : Infinity))}px`;
+      svg.style.top = `${Math.max(0,(height-h)/2)}px`;
       svg.classList.toggle("rk-map-detail", scale*zoom >= .55);
       $("rkZoomLabel").textContent = `${Math.round(zoom*100)}%`;
       $("rkZoomOut").disabled = zoom <= 1;
@@ -1080,6 +1080,9 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       const animation = node.animate([{opacity:0,transform:"translateY(8px)"},{opacity:1,offset:.2},{opacity:0,transform:"translateY(-25px)"}],{duration:1000,easing:"ease-out"});
       effects.add(animation); animation.finished.then(()=>{node.remove(); effects.delete(animation);},()=>node.remove());
     }
+    function clearEffects() {
+      effects.forEach(animation=>animation.cancel());effects.clear();$('rkMapEffects').replaceChildren();
+    }
     function focusContinent(id) {
       metrics();
       const matching = regions.filter((_, i) => E.territories[i].continent === id);
@@ -1113,6 +1116,13 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
         node.classList.toggle("attackable", !handoff && state.phase === "attack" && selected !== null && state.territories[selected].owner === state.current && state.territories[selected].armies > 1 && t.owner !== state.current && E.territories[selected].neighbors.includes(i));
         node.classList.toggle('reachable', !handoff && state.phase==='fortify' && selected!==null && i!==selected && t.owner===state.current && E.connected(state,selected,i));
         const marker = markers[i];
+        const human=!handoff && !state.players[state.current].ai && !state.pending && state.phase!=='won';
+        const source=t.owner===state.current && t.armies>1;
+        const eligible=human && (['deploy','reinforce','capital'].includes(state.phase) ? t.owner===state.current && (state.phase==='capital'||state.pool>0) :
+          state.phase==='attack' ? source && E.territories[i].neighbors.some(j=>state.territories[j].owner!==state.current) || node.classList.contains('attackable') :
+          state.phase==='fortify' && !state.fortified ? selected!==null ? node.classList.contains('reachable') || i===selected : source && state.territories.some((other,j)=>j!==i && other.owner===state.current && E.connected(state,i,j)) : false);
+        node.classList.toggle('eligible',eligible);marker.classList.toggle('eligible',eligible);
+        marker.classList.toggle('unavailable',human && !eligible && i!==selected && i!==target);
         marker.querySelector(".rk-marker-disc").setAttribute("fill", mix(p.color,.18));
         marker.querySelector(".rk-armies").textContent = t.armies;
         marker.querySelector(".rk-armies").style.fontSize = t.armies > 999 ? "11px" : t.armies > 99 ? "14px" : "18px";
@@ -1207,14 +1217,14 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       if (event.detail === 0) { const hit = event.target.closest("[data-country],[data-country-marker]"); if (hit) onSelect(Number(hit.dataset.country ?? hit.dataset.countryMarker)); }
     });
     $("rk").addEventListener("keydown", event => {
-      if (event.key === "Escape" && expanded && selection.selected===null && $('rkInspector').hidden && !$("rk").classList.contains('rk-focus-mode') && !document.querySelector(".modal.show")) { event.preventDefault(); event.stopPropagation(); expand(false); $("rkViewMenu").querySelector("summary").focus(); }
+      if (event.key === "Escape" && expanded && selection.selected===null && $('rkInspector').hidden && $('rkCountryList').hidden && !$("rk").classList.contains('rk-focus-mode') && !document.querySelector(".modal.show")) { event.preventDefault(); event.stopPropagation(); expand(false); $("rkViewMenu").querySelector("summary").focus(); }
       if (event.key === "Tab" && expanded && !document.querySelector(".modal.show")) {
-        const items = [...$("rkBoardPanel").querySelectorAll('button:not(:disabled),[tabindex="0"]')].filter(el => !el.closest('[hidden],[inert]') && el.getClientRects().length);
+        const items = [...$("rkBoardPanel").querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),summary,[tabindex="0"]')].filter(el => !el.closest('[hidden],[inert]') && el.getClientRects().length);
         if ((event.shiftKey && document.activeElement === items[0]) || (!event.shiftKey && document.activeElement === items.at(-1))) { event.preventDefault(); (event.shiftKey ? items.at(-1) : items[0]).focus(); }
       }
     });
     new ResizeObserver(() => { const center = pointAt(lastWidth/2, lastHeight/2); if (metrics() && zoom>1) zoomAt(zoom, viewport.clientWidth/2, viewport.clientHeight/2, center); }).observe(viewport);
-    return { update, fit, snapshot, restore, focusCountry, pickCountry, focusContinent, focusPair, preview, previewDraft, clearPreview, effect, close: () => { pointers.clear(); gesture = null; cancelAnimationFrame(frame); frame = 0; clearArmyDrag();effects.forEach(a=>a.cancel()); effects.clear(); clearPreview(); if (expanded) expand(false); } };
+    return { update, fit, snapshot, restore, focusCountry, pickCountry, focusContinent, focusPair, preview, previewDraft, clearPreview, effect, clearEffects, close: () => { pointers.clear(); gesture = null; cancelAnimationFrame(frame); frame = 0; clearArmyDrag();clearEffects();clearPreview(); if (expanded) expand(false); } };
   }
   window.ReneWereldBoard = { create, palette };
 })();
@@ -1262,6 +1272,8 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       overviewView = null,
       amountKey = '',
       handKey = '',
+      countryFilter = 'available',
+      lastPlacement = null,
       contextView = null;
     const storedInvalid = state !== null && !E.validState(state);
     if (storedInvalid) state = null;
@@ -1311,8 +1323,10 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     }
     function apply(action) {
       try {
-        const previousTurn = state.turn, previousCapture = state.pending, view = contextView || overviewView;
+        const previousTurn = state.turn, previousCapture = state.pending, previousState = state, view = contextView || overviewView;
         state = E.apply(state, action);
+        lastPlacement = action.type === 'reinforce' && !previousState.players[previousState.current].ai && state.phase !== 'won'
+          ? {before:previousState, after:state, amount:action.amount, country:action.to, view} : null;
         if (["attack", "blitz"].includes(action.type)) encounter = { ...state.lastBattle, turn: state.turn };
         if (state.winner !== null && !state.statsRecorded) {
           const stats = api.storage.get("rk.stats", { played: 0, won: 0 });
@@ -1350,6 +1364,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
           target = null; contextView = null; overviewView = null;
           commitChoice = null;
         }
+        if (['advance','endTurn'].includes(action.type)) changeView(false);
         if (action.type === "trade") showInspector(false);
         if (state.pending) {
           selected = state.pending.from;
@@ -1431,25 +1446,13 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       },
     });
     function updateMap() {
-      const focusedCountry = $("rkCountryList").contains(
+      const focusedCountry = $("rkCountryResults").contains(
         document.activeElement,
       )
         ? document.activeElement.dataset.country
         : null;
       board.update(state, { selected, target, handoff });
-      $("rkCountryList").innerHTML = E.continents
-        .map(
-          (c) =>
-            `<h3>${c.name} · +${c.bonus}</h3><div>${E.territories
-              .map((t, i) => {
-                if (t.continent !== c.id) return "";
-                const country = state.territories[i],
-                  p = state.players[country.owner];
-                return `<button data-country="${i}" class="${i === selected ? "selected" : i === target ? "target" : ""}" aria-pressed="${i === selected || i === target}"><i style="background:${p.color}">${country.owner + 1}</i><span>${t.name}${state.capitals?.includes(i) ? " ♛" : ""}<small>${esc(p.name)}</small></span><b>${country.armies}</b><span class="visually-hidden">legers</span></button>`;
-              })
-              .join("")}</div>`,
-        )
-        .join("");
+      renderCountryList();
       if (focusedCountry != null)
         $("rkCountryList")
           .querySelector(`[data-country="${focusedCountry}"]`)
@@ -1472,6 +1475,92 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
           )
           .join("")
       );
+    }
+    function availableCountries() {
+      if (blocked() || state.pending) return [];
+      const own = E.owned(state), phase = state.phase;
+      if (phase === 'capital') return own;
+      if (phase === 'deploy' || phase === 'reinforce') {
+        const mustTrade = phase === 'reinforce' && state.players[state.current].cards.length >= (state.resumeAttack ? 6 : 5);
+        return state.pool && !mustTrade ? own : [];
+      }
+      if (phase === 'attack') return selected !== null
+        ? E.territories[selected].neighbors.filter(i=>state.territories[i].owner!==state.current && state.territories[selected].armies>1)
+        : own.filter(i=>state.territories[i].armies>1 && E.territories[i].neighbors.some(j=>state.territories[j].owner!==state.current));
+      if (phase === 'fortify' && !state.fortified) return selected !== null
+        ? own.filter(i=>i!==selected && E.connected(state,selected,i))
+        : own.filter(i=>state.territories[i].armies>1 && own.some(j=>j!==i && E.connected(state,i,j)));
+      return [];
+    }
+    function canChooseCountry(id, available = new Set(availableCountries())) {
+      if (blocked() || state.pending) return false;
+      if (available.has(id)) return true;
+      // The own-country filter also allows switching to another source army.
+      return ['attack','fortify'].includes(state.phase) && !state.fortified && state.territories[id].owner===state.current && state.territories[id].armies>1;
+    }
+    function renderCountryList() {
+      const normalize = text=>text.normalize('NFD').replace(/[\u0300-\u036f\s-]/g,'').toLowerCase();
+      const query = normalize($('rkCountrySearch').value), available = new Set(availableCountries());
+      const visible = E.territories.map((t,i)=>i).filter(i=>
+        (countryFilter==='all' || (countryFilter==='own' ? state.territories[i].owner===state.current : available.has(i))) &&
+        normalize(E.territories[i].name).includes(query));
+      $('rkCountryFilters').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.countryFilter===countryFilter)));
+      $('rkCountryCount').textContent = `${visible.length} ${visible.length===1?'land':'landen'}${countryFilter==='available' ? ' beschikbaar' : ''}`;
+      $('rkCountryResults').innerHTML = visible.length ? E.continents.map(c=>{
+        const ids = visible.filter(i=>E.territories[i].continent===c.id);
+        if (!ids.length) return '';
+        return `<h3>${c.name} <small>continentbonus +${c.bonus}</small></h3><div>${ids.map(i=>{
+          const t=state.territories[i], p=state.players[t.owner], usable=canChooseCountry(i,available);
+          return `<button data-country="${i}" class="${i===selected?'selected':i===target?'target':''}" aria-pressed="${i===selected||i===target}" ${usable?'':'disabled'}><i style="background:${p.color}">${t.owner+1}</i><span>${E.territories[i].name}${state.capitals?.includes(i)?' ♛':''}<small>${esc(p.name)}${!usable?' · nu niet beschikbaar':''}</small></span><b>${t.armies}</b><span class="visually-hidden">legers</span></button>`;
+        }).join('')}</div>`;
+      }).join('') : '<p class="rk-no-countries">Geen landen gevonden. Probeer een andere naam of een ander filter.</p>';
+    }
+    function measureLayout() {
+      const root=$('rk');
+      for (const [name,value] of [['--rk-turn-height',root.querySelector('.rk-turn').offsetHeight],['--rk-guide-height',$('rkGuide').offsetHeight]]) {
+        if (root.style.getPropertyValue(name)!==`${value}px`) root.style.setProperty(name,`${value}px`);
+      }
+    }
+    function renderGuide() {
+      const guide=$('rkGuide'), phase=state.phase, available=availableCountries();
+      guide.hidden=!active || blocked() || $('rk').classList.contains('rk-focus-mode') || !$('rkCountryList').hidden;
+      let title='',detail='';
+      const required=phase==='reinforce' && state.players[state.current].cards.length>=(state.resumeAttack?6:5);
+      if (required) { title='Ruil eerst een kaartenset'; detail='Je krijgt extra legers om deze beurt te plaatsen.'; }
+      else if (['reinforce','deploy'].includes(phase)) {
+        title=state.pool ? `${state.pool} ${state.pool===1?'leger':'legers'} plaatsen` : 'Alle legers staan';
+        detail=state.pool ? 'Tik op jouw kleur, kies uit de lijst of sleep je reserve.' : phase==='deploy' ? 'Geef de beurt door aan de volgende speler.' : 'Klaar om aan te vallen. Ga door wanneer jij wilt.';
+      } else if (phase==='capital') { title='Kies je hoofdstad'; detail='Tik op een eigen land of kies het op naam.'; }
+      else if (phase==='attack') {
+        title=selected!==null ? `${E.territories[selected].name} · ${state.territories[selected].armies-1} beschikbaar` : available.length ? 'Kies je aanvallende leger' : 'Geen aanval mogelijk';
+        detail=selected!==null ? available.length ? 'Kies een buur op de kaart of hieronder.' : 'Dit leger kan geen vijandelijke buur aanvallen. Kies een ander leger.' : available.length ? 'Gemarkeerde legers kunnen aanvallen. Je mag ook verdergaan.' : 'Je kunt naar verplaatsen gaan of je beurt afronden.';
+      } else if (phase==='fortify') {
+        title=state.fortified ? 'Je verplaatsing is gedaan' : selected!==null ? `Vanuit ${E.territories[selected].name}` : available.length ? 'Verplaats je legers' : 'Geen verplaatsing mogelijk';
+        detail=state.fortified ? 'Rond je beurt af. Volgende beurt kun je weer verplaatsen.' : selected!==null ? 'Kies een verbonden eigen land op de kaart of hieronder.' : available.length ? 'Eén verplaatsing via eigen landen. Overslaan mag.' : 'Rond je beurt af om verder te spelen.';
+      }
+      $('rkGuideTitle').textContent=title; $('rkGuideDetail').textContent=detail;
+      const targets=!guide.hidden && selected!==null && ['attack','fortify'].includes(phase) ? available : [];
+      const rail=$('rkTargetChoices'), scroll=rail.scrollLeft;
+      rail.hidden=!targets.length;
+      rail.innerHTML=targets.map(i=>`<button data-quick-country="${i}" style="--player:${state.players[state.territories[i].owner].color}" title="${E.territories[i].name}" aria-label="${E.territories[i].name}, ${state.territories[i].armies} legers, kiezen"><span>${esc(window.ReneWereldMap.regions[i].label.replace(/-/g,' '))}</span><b>${state.territories[i].armies}</b></button>`).join('');
+      rail.scrollLeft=scroll;
+      const list=!$('rkCountryList').hidden, pick=$('rkPickCountry');
+      pick.textContent=required?'Kaarten ruilen':list?'Kaart tonen':selected!==null?'Doel zoeken':'Land kiezen';
+      pick.hidden=!list && !required && !available.length;
+      $('rkUndoPlacement').hidden=guide.hidden || !lastPlacement || lastPlacement.after!==state;
+      $('rkUndoPlacement').setAttribute('aria-label',lastPlacement?`Laatste plaatsing van ${lastPlacement.amount} ${lastPlacement.amount===1?'leger':'legers'} in ${E.territories[lastPlacement.country].name} ongedaan maken`:'Laatste plaatsing ongedaan maken');
+      measureLayout();
+    }
+    function undoPlacement() {
+      if (blocked() || state.pending || !lastPlacement || lastPlacement.after!==state) return;
+      const previous=lastPlacement;
+      state=previous.before; lastPlacement=null;
+      selected=null;target=null;contextView=null;overviewView=null;
+      board.clearEffects();
+      save(); render();
+      if (previous.view) board.restore(previous.view);
+      feedback('Plaatsing ongedaan gemaakt',`${previous.amount} ${previous.amount===1?'leger is':'legers zijn'} terug in je reserve.`);
+      $('rkPickCountry').focus({preventScroll:true});
     }
     function amount(max, value = 1, min = 1) {
       return `<div class="rk-troops"><div class="rk-amount"><button data-action="less" aria-label="Eén leger minder">−</button><input id="rkAmount" aria-label="Aantal legers" type="number" inputmode="numeric" min="${min}" max="${max}" value="${value}" style="${value>99999?'font-size:12px':value>999?'font-size:18px':''}"><button data-action="more" aria-label="Eén leger meer">+</button></div><div class="rk-amount-slider"><span>${min}</span><input id="rkAmountRange" aria-label="Aantal legers met schuifregelaar" type="range" min="${min}" max="${max}" value="${value}"><button data-action="all" data-max="${max}">Alles</button></div></div>`;
@@ -1585,6 +1674,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       }
       $('rkSelectors').innerHTML = fields;
       if (required && canAct) showInspector(true);
+      renderGuide();
       if (focused && $(focused) && $(focused).getClientRects().length) $(focused).focus({preventScroll:true});
       else if (wasInControls && !mode) $('rkNext').focus({preventScroll:true});
     }
@@ -1607,7 +1697,12 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       $("rkPlayerBadge").style.background = p.color;
       $("rkPlayerBadge").innerHTML = portrait(state.current);
       $("rkPhase").textContent = state.pending ? "Bezetten" : phases[state.phase];
-      $("rkPhaseSteps").querySelectorAll("[data-phase]").forEach(el => { el.classList.toggle("active", el.dataset.phase === state.phase); el.setAttribute("aria-current", el.dataset.phase === state.phase ? "step" : "false"); });
+      const phaseOrder=['reinforce','attack','fortify'];
+      $("rkPhaseSteps").querySelectorAll("[data-phase]").forEach(el => {
+        el.classList.toggle("active", el.dataset.phase === state.phase);
+        el.classList.toggle('complete',phaseOrder.indexOf(el.dataset.phase)<phaseOrder.indexOf(state.phase));
+        el.setAttribute("aria-current", el.dataset.phase === state.phase ? "step" : "false");
+      });
       $("rkInstruction").textContent = state.phase === "deploy" ? "Plaats je startlegers; geef daarna de beurt door." : state.phase === "capital" ? "Kies een eigen gebied als hoofdstad." : state.pending
         ? "Kies hoeveel legers het veroverde land bezetten."
         : state.phase === "reinforce"
@@ -1621,6 +1716,10 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       else if (state.phase==='reinforce' && !state.pool) $('rkInstruction').textContent='Alle legers staan. Je kunt gaan aanvallen.';
       else if (state.phase==='deploy' && !state.pool) $('rkInstruction').textContent='Je startlegers staan. Geef de beurt door.';
       else if (!state.pending && selected !== null && ['attack','fortify'].includes(state.phase)) $('rkInstruction').textContent = `${E.territories[selected].name} · ${state.phase==='attack'?'kies een gemarkeerde vijand of sleep je leger':'kies een verbonden eigen land'}`;
+      if (isHuman() && !handoff && state.phase!=='won') {
+        const owned=E.owned(state), armies=owned.reduce((sum,i)=>sum+state.territories[i].armies,0);
+        $('rkInstruction').textContent=`${owned.length} landen · ${armies} legers${state.conquered?' · kaart verdiend':''}`;
+      }
       const required = p.cards.length >= (state.resumeAttack ? 6 : 5), next = $("rkNext");
       next.dataset.action = state.phase === "fortify" ? "endTurn" : "advance";
       next.disabled = !isHuman() || handoff || !!state.pending || !["reinforce","attack","fortify","deploy"].includes(state.phase) || ((state.phase === "reinforce" || state.phase === "deploy") && (state.pool > 0 || (state.phase === "reinforce" && required)));
@@ -1679,6 +1778,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       selected=null;target=null;overviewView=null;contextView=null;
       $('rk').classList.remove('rk-focus-mode');
       active = false;
+      lastPlacement=null;
       showInspector(false);
       api.close();
       api.menu();
@@ -1690,6 +1790,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
         ($('rkActioncancel') || $('rkActionoccupy') || $('rkDockToggle')).focus({preventScroll:true});
         return true;
       }
+      if (!$('rkCountryList').hidden) {changeView(false);$('rkPickCountry').focus({preventScroll:true});return true;}
       if (!state?.pending && selected!==null) { cancelSelection(target===null); return true; }
       if (!state?.pending && $('rk').classList.contains('rk-expanded')) { board.close(); return true; }
       return false;
@@ -1743,6 +1844,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       api.enter();
       if (!api.isActive()) return;
       active = true;
+      countryFilter='available';$('rkCountrySearch').value='';changeView(false);
       showInspector(false);
       board.fit();
       if (state) {
@@ -1810,9 +1912,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     $("rkPool").addEventListener("click", () => {
       if (draggedPool) { draggedPool = false; return; }
       if (blocked()) return;
-      showInspector(true);
-      $('rkInspector').querySelector('.rk-accessible').open=true;
-      $('rkFrom').focus({preventScroll:true});
+      openCountryPicker();
     });
     $("rkHand").addEventListener("click", () => {
       if (blocked()) return;
@@ -1878,6 +1978,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       target = null;
       cards = [];
       lastTurn = 0;
+      lastPlacement = null;
       handoff = false;
       commitChoice = null;
       encounter = null;
@@ -1908,10 +2009,12 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       }
       if (event.key!=='Escape' || document.querySelector('.modal.show,.overlay.show')) return;
       if (!$('rkInspector').hidden) {event.preventDefault();event.stopImmediatePropagation();showInspector(false);$('rkDockToggle').focus({preventScroll:true});}
+      else if (!$('rkCountryList').hidden) {event.preventDefault();event.stopImmediatePropagation();changeView(false);$('rkPickCountry').focus({preventScroll:true});}
       else if (selected!==null && !state?.pending) {event.preventDefault();event.stopImmediatePropagation();cancelSelection(target===null);}
     });
     $("rkBeginTurn").addEventListener("click", beginTurn);
     function changeView(list) {
+      if (list) {clearTimeout(feedbackTimer);$('rkFeedback').hidden=true;}
       $("rkViewMenu").open = false;
       $("rkCountryList").hidden = !list;
       $("rkMapViewport").hidden = list;
@@ -1919,7 +2022,32 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       $("rkMapTip").hidden = list;
       $("rkMapTab").setAttribute("aria-pressed", String(!list));
       $("rkListTab").setAttribute("aria-pressed", String(list));
+      if (state) {renderCountryList();renderGuide();}
     }
+    function openCountryPicker() {
+      if (blocked() || state.pending) return;
+      countryFilter='available';$('rkCountrySearch').value='';
+      changeView(true);
+      $('rkCloseCountries').focus({preventScroll:true});
+    }
+    $('rkPickCountry').addEventListener('click',()=>{
+      const required=state?.phase==='reinforce' && state.players[state.current].cards.length>=(state.resumeAttack?6:5);
+      if (required) {$('rkHand').click();return;}
+      if (!$('rkCountryList').hidden) {changeView(false);$('rkMapViewport').focus({preventScroll:true});}
+      else openCountryPicker();
+    });
+    $('rkCloseCountries').addEventListener('click',()=>{changeView(false);$('rkPickCountry').focus({preventScroll:true});});
+    $('rkCountrySearch').addEventListener('input',renderCountryList);
+    $('rkCountryFilters').addEventListener('click',event=>{
+      const b=event.target.closest('[data-country-filter]');if(!b)return;
+      countryFilter=b.dataset.countryFilter;renderCountryList();
+    });
+    $('rkUndoPlacement').addEventListener('click',undoPlacement);
+    let layoutFrame=0;
+    const guideLayout=new ResizeObserver(()=>{
+      if (!layoutFrame) layoutFrame=requestAnimationFrame(()=>{layoutFrame=0;measureLayout();});
+    });
+    guideLayout.observe($('rkGuide'));guideLayout.observe($('rk').querySelector('.rk-turn'));
     $("rkMapTab").addEventListener("click", () => changeView(false));
     $("rkListTab").addEventListener("click", () => changeView(true));
     $("rk").addEventListener("click", (event) => {
@@ -1927,9 +2055,15 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       if (continent) { changeView(false); board.focusContinent(continent.dataset.continent); return; }
       const country = event.target.closest("[data-country]");
       if (country) {
+        if (country.disabled) return;
+        const fromList=!!country.closest('#rkCountryResults');
+        if (fromList) changeView(false);
         choose(Number(country.dataset.country));
+        if (fromList) ($('rkActionreinforce') || $('rkActionblitz') || $('rkActioncapital') || $('rkTargetChoices').querySelector('button') || $('rkMapViewport')).focus({preventScroll:true});
         return;
       }
+      const destination=event.target.closest('[data-quick-country]');
+      if (destination) {choose(Number(destination.dataset.quickCountry));return;}
       const card = event.target.closest("[data-card]");
       if (card) {
         const id = Number(card.dataset.card);

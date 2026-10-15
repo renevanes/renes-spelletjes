@@ -54,15 +54,26 @@
       <div id="rkMapViewport" class="rk-map-viewport" tabindex="0" aria-label="Geografische wereldkaart met 42 speelgebieden. Gebruik de zoomknoppen of de landenlijst.">
         <div id="rkMapSurface"><svg id="rkMap" viewBox="0 0 1440 760" xmlns="http://www.w3.org/2000/svg" aria-label="Wereldkaart met de 42 gebieden en gekleurde legerfiches"></svg></div>
       </div>
-      <div id="rkCountryList" class="rk-country-list" hidden></div>
-      <button id="rkPool" class="rk-pool" hidden aria-label="Versterkingen plaatsen"><svg viewBox="0 0 32 48" aria-hidden="true"><path d="M7 48V32L3 36L0 33L6 22L12 20H20L26 22L32 33L29 36L25 32V48H18V36H14V48Z" fill="currentColor"/><circle cx="16" cy="12" r="7" fill="#edcf96"/><path d="M7 10Q8 1 16 1Q24 1 25 10L22 13H10Z" fill="currentColor"/><path d="M9 8H23M10 26H22" stroke="#ffe5a9" stroke-width="2"/></svg><b id="rkPoolCount">3</b><span>PLAATSEN</span><small>Sleep naar een eigen land</small></button>
+      <div id="rkCountryList" class="rk-country-list" hidden>
+        <div class="rk-country-tools">
+          <div class="rk-country-search"><label for="rkCountrySearch">Zoek een land</label><input id="rkCountrySearch" type="search" placeholder="Bijvoorbeeld Alaska" autocomplete="off"><button id="rkCloseCountries" aria-label="Terug naar de wereldkaart">×</button></div>
+          <div id="rkCountryFilters" class="rk-country-filters" role="group" aria-label="Landen filteren"><button data-country-filter="available" aria-pressed="true">Beschikbaar</button><button data-country-filter="own" aria-pressed="false">Jouw landen</button><button data-country-filter="all" aria-pressed="false">Alle landen</button></div>
+          <p id="rkCountryCount" role="status"></p>
+        </div>
+        <div id="rkCountryResults"></div>
+      </div>
       <div id="rkPoolGhost" class="rk-pool-ghost" hidden aria-hidden="true">♟ <b></b></div>
       <div class="rk-map-status"><span id="rkMapTurn"></span><span id="rkMapSelection">Kies een eigen gebied op de kaart</span><button id="rkToActions" class="rk-map-button" hidden>Spelacties →</button></div>
       <div id="rkContextHeading" class="rk-context-heading" hidden></div>
       <div id="rkActors" class="rk-actors" hidden></div>
       <div id="rkControls" class="rk-touch-controls" aria-label="Actie op de kaart" hidden></div>
-      <button id="rkClearSelection" class="rk-clear-selection" hidden>‹ Ander leger kiezen</button>
-      <button id="rkDockToggle" class="rk-inspector-toggle" aria-label="Landen, kaarten en beurtverslag bekijken" aria-expanded="false">☷</button>
+      <div id="rkGuide" class="rk-guide" hidden>
+        <button id="rkPool" class="rk-pool" hidden aria-label="Versterkingen plaatsen"><svg viewBox="0 0 32 48" aria-hidden="true"><path d="M7 48V32L3 36L0 33L6 22L12 20H20L26 22L32 33L29 36L25 32V48H18V36H14V48Z" fill="currentColor"/><circle cx="16" cy="12" r="7" fill="#edcf96"/><path d="M7 10Q8 1 16 1Q24 1 25 10L22 13H10Z" fill="currentColor"/><path d="M9 8H23M10 26H22" stroke="#ffe5a9" stroke-width="2"/></svg><b id="rkPoolCount">3</b><span>PLAATSEN</span><small>Sleep naar een eigen land</small></button>
+        <div class="rk-guide-copy"><b id="rkGuideTitle"></b><p id="rkGuideDetail"></p></div>
+        <div id="rkTargetChoices" class="rk-target-choices" aria-label="Beschikbare bestemmingen" hidden></div>
+        <div class="rk-guide-actions"><button id="rkPickCountry">Land kiezen</button><button id="rkClearSelection" class="rk-clear-selection" hidden>‹ Ander leger</button><button id="rkUndoPlacement" hidden>↶ Ongedaan</button></div>
+      </div>
+      <button id="rkDockToggle" class="rk-inspector-toggle" aria-label="Landen, kaarten en beurtverslag bekijken" aria-expanded="false">☷ <span>Overzicht</span></button>
       <button id="rkMapNext" class="rk-next rk-map-next" disabled>Volgende fase →</button>
       <button id="rkHand" class="rk-hand-button" aria-label="Mijn kaarten bekijken"><span>▱</span><b id="rkHandCount">0</b><small>Kaarten</small></button>
     <aside id="rkInspector" class="rk-inspector" role="dialog" aria-modal="true" aria-label="Landen, kaarten en beurtverslag" hidden>
@@ -145,6 +156,7 @@
 <div id="rkHelpModal" class="modal">
   <div class="sheet">
     <h3>Zo speel je Wereldmacht</h3>
+    <p>De beurtgids boven de knoppen vertelt wat je nu kunt doen. Via <b>Land kiezen</b> zoek je op naam of filter je op beschikbare of eigen landen. Nadat je een leger kiest, staan geldige bestemmingen ook als knoppen in beeld. Met <b>Ongedaan</b> herstel je de laatste legerplaatsing zolang je nog niet bent doorgegaan.</p>
     <p><b>Hoofdsteden:</b> kies aan het begin een eigen gebied als hoofdstad. Elke veroverde hoofdstad geeft 2 extra legers per beurt en verdedigt met maximaal 3 dobbelstenen. Wie alle hoofdsteden bezet, wint; een hoofdstad verliezen schakelt je dus niet meteen uit.</p>
     <p><b>Geheime missies:</b> bekijk je eigen opdracht via ‘Mijn geheime missie’. Je wint zodra je opdracht voltooid is. Bij doorgeven blijft deze opdracht verborgen.</p>
     <p><b>Startlegers zelf plaatsen:</b> de landen worden verdeeld, daarna plaatsen spelers om de beurt maximaal drie startlegers. Als iedereen klaar is, begint de eerste gewone beurt.</p>
