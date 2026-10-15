@@ -16,6 +16,11 @@ js=read('core.js')+'\nwindow.ReneWereldMap = '+read('map.json').strip()+';\n'+re
   music: predicate => Sfx.gate('rk', predicate), refreshSound: () => Sfx.refresh(),
 });
 $('#tileRk').addEventListener('click', () => window.openGame('rk'));
+const rkPreviousBack = window.appBack;
+window.appBack = () => {
+  if (current === 'rk' && !document.querySelector('.modal.show,.overlay.show,#limitOverlay.show,#errOverlay.show') && Wereldmacht.dismiss()) return true;
+  return rkPreviousBack();
+};
 '''
 icon="{bg:['#79b7c9','#224a62'],defs:'<radialGradient id=\"rkglobe\"><stop stop-color=\"#9ed4d8\"/><stop offset=\"1\" stop-color=\"#468a9c\"/></radialGradient>',body:'<circle cx=\"256\" cy=\"265\" r=\"173\" fill=\"url(#rkglobe)\" stroke=\"#ffffffaa\" stroke-width=\"10\"/><g fill=\"none\" stroke=\"#fff6\" stroke-width=\"7\"><ellipse cx=\"256\" cy=\"265\" rx=\"84\" ry=\"173\"/><path d=\"M85 265H427M112 177H400M112 353H400\"/></g><g fill=\"#235866\" stroke=\"#def2d599\" stroke-width=\"4\"><path d=\"M114 183 160 133 209 146 213 189 178 210 165 261 143 246Z\"/><path d=\"M184 280 233 294 248 327 211 399 179 358Z\"/><path d=\"M267 194 305 168 351 198 394 185 422 264 376 280 343 242 314 282 277 265Z\"/><path d=\"M290 293 326 305 339 350 303 397 280 350Z\"/></g><path d=\"M139 97V175M367 317V402\" stroke=\"#fff\" stroke-width=\"5\"/><path d=\"M141 98 210 117 141 139ZM369 319 430 338 369 362Z\" fill=\"#f2c14e\"/>'}"
 track='''    // Wereldmacht: original quiet strategy score, warm pads and slow bell phrases.

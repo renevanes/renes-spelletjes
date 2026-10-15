@@ -5,7 +5,7 @@
   const palette = { na: "#e9ce76", sa: "#d58f79", eu: "#91bbd7", af: "#c6b4cd", as: "#afd097", au: "#d6ac77" };
   const seas = ["alaska kamchatka", "nw greenland", "ontario greenland", "quebec greenland", "greenland iceland", "iceland britain", "iceland scandinavia", "britain scandinavia", "britain northeu", "britain westeu", "brazil northaf", "southeu northaf", "southeu egypt", "southeu middleeast", "madagascar eastaf", "madagascar southaf", "japan mongolia", "japan kamchatka", "siam indonesia", "indonesia newguinea", "indonesia westaus", "newguinea westaus", "newguinea eastaus"];
   const names = [ ["na", 275, 68], ["sa", 437, 712], ["eu", 736, 93], ["af", 712, 620], ["as", 1163, 64], ["au", 1190, 665] ];
-  function create({ engine: E, data: M, onSelect, onActions }) {
+  function create({ engine: E, data: M, onSelect, onActions, onMove }) {
     const viewport = $("rkMapViewport"), svg = $("rkMap"), surface = $("rkMapSurface");
     let zoom = 1, scale = 1, expanded = false, ownership = true, state = null, selection = {}, frame = 0, lastWidth = 0, lastHeight = 0;
     const pointers = new Map();
@@ -32,6 +32,7 @@
       <g class="rk-continent-labels">${names.map(([id, x, y]) => { const c = E.continents.find(c => c.id === id); return `<text x="${x}" y="${y}" text-anchor="middle">${esc(c.name.toUpperCase())} · +${c.bonus}</text>`; }).join("")}</g>
       <g class="rk-compass" transform="translate(118 664)"><circle r="30"/><path d="M0,-37L8,0L0,37L-8,0ZM-37,0L0,8L37,0L0,-8Z"/><text y="-44" text-anchor="middle">N</text></g><text class="rk-map-credit" x="1421" y="742" text-anchor="end">Kustlijnen: Natural Earth · speelgebieden: Wereldmacht</text>`;
     const shapes = [...svg.querySelectorAll(".rk-country")], markers = [...svg.querySelectorAll("[data-marker]")];
+    function clearArmyDrag() { markers.forEach(node=>node.classList.remove('rk-drag-target'));viewport.classList.remove('rk-army-dragging');$('rkPoolGhost').hidden=true; }
 
     function metrics() {
       const width = viewport.clientWidth, height = viewport.clientHeight;
@@ -64,9 +65,36 @@
       metrics();
       const a = regions[from].anchor, b = regions[to].anchor;
       if ([from,to].includes(E.byId.alaska) && [from,to].includes(E.byId.kamchatka)) { fit(); return; }
-      const compact = viewport.clientWidth < 600;
-      zoomAt(Math.min(viewport.clientWidth*.68/(Math.abs(a[0]-b[0])+150), viewport.clientHeight*.7/(Math.abs(a[1]-b[1])+130))/scale,
-        viewport.clientWidth*(compact ? .5 : .35), viewport.clientHeight*(compact ? .3 : .46), [(a[0]+b[0])/2,(a[1]+b[1])/2]);
+      zoomAt(Math.min(viewport.clientWidth*.64/(Math.abs(a[0]-b[0])+170), viewport.clientHeight*.74/(Math.abs(a[1]-b[1])+115))/scale,
+        viewport.clientWidth/2, viewport.clientHeight/2, [(a[0]+b[0])/2,(a[1]+b[1])/2]);
+    }
+    function snapshot() { return {zoom,center:pointAt(viewport.clientWidth/2,viewport.clientHeight/2)}; }
+    function restore(view) { if (!view || view.zoom<=1.01) fit(); else { metrics(); zoomAt(view.zoom,viewport.clientWidth/2,viewport.clientHeight/2,view.center); } }
+    function focusCountry(id, neighbors = false) {
+      metrics();
+      const ids = neighbors ? [id,...E.territories[id].neighbors].filter(i=>Math.abs(regions[i].anchor[0]-regions[id].anchor[0])<700) : [id];
+      const xs=ids.map(i=>regions[i].anchor[0]), ys=ids.map(i=>regions[i].anchor[1]);
+      const left=Math.min(...xs),right=Math.max(...xs),top=Math.min(...ys),bottom=Math.max(...ys);
+      zoomAt(Math.min(viewport.clientWidth*.8/(right-left+230),viewport.clientHeight*.78/(bottom-top+180))/scale,
+        viewport.clientWidth/2,viewport.clientHeight/2,[(left+right)/2,(top+bottom)/2]);
+    }
+    function pickCountry(x,y, forgiving = true) {
+      const hit=document.elementFromPoint(x,y)?.closest('[data-country],[data-country-marker]');
+      const direct=hit && svg.contains(hit) ? Number(hit.dataset.country ?? hit.dataset.countryMarker) : null;
+      if (!forgiving || !state) return direct;
+      const matrix=svg.getScreenCTM(); if (!matrix) return direct;
+      let nearest=null, distance=22;
+      regions.forEach((g,i)=>{
+        const country=state.territories[i], current=state.current, from=selection.selected;
+        const candidate=state.pending || selection.handoff || state.players[current].ai ? true :
+          ['reinforce','deploy','capital'].includes(state.phase) ? country.owner===current :
+          state.phase==='attack' ? country.owner===current && country.armies>1 || from!==null && from!==undefined && country.owner!==current && E.territories[from].neighbors.includes(i) :
+          state.phase==='fortify' ? country.owner===current : true;
+        if (!candidate) return;
+        const p=new DOMPoint(...g.anchor).matrixTransform(matrix), d=Math.hypot(x-p.x,y-p.y);
+        if (d<distance) {nearest=i;distance=d;}
+      });
+      return nearest ?? direct;
     }
     function clearPreview() {
       markers.forEach(node => { node.classList.remove("rk-previewing"); node.querySelector(".rk-preview-armies").textContent = ""; });
@@ -77,6 +105,10 @@
         markers[i].classList.add("rk-previewing"); markers[i].querySelector(".rk-preview-armies").textContent = n;
         markers[i].querySelector(".rk-preview-armies").style.fontSize = n>999 ? "11px" : n>99 ? "14px" : "18px";
       });
+    }
+    function previewDraft(to,amount) {
+      clearPreview(); const node=markers[to], n=state.territories[to].armies+amount;
+      node.classList.add('rk-previewing'); node.querySelector('.rk-preview-armies').textContent=n;
     }
     function effect(id, label) {
       if (document.documentElement.classList.contains("reduced-motion")) return;
@@ -117,6 +149,7 @@
         node.classList.toggle("selected", i === selected); node.classList.toggle("target", i === target);
         node.classList.toggle("neighbor", selected !== null && E.territories[selected].neighbors.includes(i));
         node.classList.toggle("attackable", !handoff && state.phase === "attack" && selected !== null && state.territories[selected].owner === state.current && state.territories[selected].armies > 1 && t.owner !== state.current && E.territories[selected].neighbors.includes(i));
+        node.classList.toggle('reachable', !handoff && state.phase==='fortify' && selected!==null && i!==selected && t.owner===state.current && E.connected(state,selected,i));
         const marker = markers[i];
         marker.querySelector(".rk-marker-disc").setAttribute("fill", mix(p.color,.18));
         marker.querySelector(".rk-armies").textContent = t.armies;
@@ -151,6 +184,7 @@
     function startGesture() {
       const pts = [...pointers.values()], r = viewport.getBoundingClientRect();
       if (pts.length === 2) {
+        clearArmyDrag();
         const x = (pts[0].x+pts[1].x)/2-r.left, y = (pts[0].y+pts[1].y)/2-r.top;
         gesture = { distance: Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y), zoom, anchor: pointAt(x, y) }; moved = true;
       } else if (pts.length === 1) gesture = { x: pts[0].x, y: pts[0].y, left: viewport.scrollLeft, top: viewport.scrollTop };
@@ -160,6 +194,13 @@
       if (!pointers.size) moved = false;
       pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
       viewport.setPointerCapture(event.pointerId); startGesture();
+      if (pointers.size===1 && state && !state.pending && !state.players[state.current].ai && !selection.handoff && ['attack','fortify'].includes(state.phase)) {
+        const from=pickCountry(event.clientX,event.clientY);
+        if (from===selection.selected && state.territories[from]?.owner===state.current && state.territories[from].armies>1) {
+          const point=new DOMPoint(...regions[from].anchor).matrixTransform(svg.getScreenCTM());
+          if(Math.hypot(point.x-event.clientX,point.y-event.clientY)<=Math.max(24,20*scale*zoom)) gesture.army=from;
+        }
+      }
     });
     viewport.addEventListener("pointermove", event => {
       if (!pointers.has(event.pointerId)) return;
@@ -173,35 +214,45 @@
         else if (pts.length === 1 && "left" in gesture) {
           const dx = pts[0].x-gesture.x, dy = pts[0].y-gesture.y;
           if (Math.hypot(dx, dy)>5) moved = true;
-          viewport.scrollLeft = gesture.left-dx; viewport.scrollTop = gesture.top-dy;
+          if (gesture.army!==undefined && moved) {
+            const to=pickCountry(pts[0].x,pts[0].y);
+            const legal=to!==null && (state.phase==='attack' ? state.territories[to].owner!==state.current && E.territories[gesture.army].neighbors.includes(to) : to!==gesture.army && state.territories[to].owner===state.current && E.connected(state,gesture.army,to));
+            const hover=legal?to:null;
+            if (gesture.hover!==hover) { if (gesture.hover!=null) markers[gesture.hover].classList.remove('rk-drag-target'); if (hover!==null)markers[hover].classList.add('rk-drag-target'); gesture.hover=hover; }
+            viewport.classList.add('rk-army-dragging');
+            const ghost=$('rkPoolGhost');ghost.hidden=false;ghost.querySelector('b').textContent=state.territories[gesture.army].armies-1;ghost.style.transform=`translate(${pts[0].x-26}px,${pts[0].y-42}px)`;
+          } else { viewport.scrollLeft = gesture.left-dx; viewport.scrollTop = gesture.top-dy; }
         }
       });
     });
     function endPointer(event) {
       if (!pointers.has(event.pointerId)) return;
-      if (!moved && event.type === "pointerup") {
-        const hit = document.elementFromPoint(event.clientX, event.clientY)?.closest("[data-country],[data-country-marker]");
-        if (hit && svg.contains(hit)) onSelect(Number(hit.dataset.country ?? hit.dataset.countryMarker));
+      const from=gesture?.army;
+      if (event.type === "pointerup") {
+        const id=pickCountry(event.clientX,event.clientY);
+        if (!moved && id!==null) onSelect(id);
+        else if (moved && from!==undefined && pointers.size===1 && id!==null && id!==from) onMove?.(from,id);
       }
+      clearArmyDrag();
       pointers.delete(event.pointerId);
       if (viewport.hasPointerCapture(event.pointerId)) viewport.releasePointerCapture(event.pointerId);
       if (pointers.size) startGesture(); else gesture = null;
     }
     viewport.addEventListener("pointerup", endPointer); viewport.addEventListener("pointercancel", endPointer);
-    viewport.addEventListener("lostpointercapture", event => { if (pointers.has(event.pointerId)) { pointers.delete(event.pointerId); gesture = null; } });
+    viewport.addEventListener("lostpointercapture", event => { if (pointers.has(event.pointerId)) { pointers.delete(event.pointerId); gesture = null; clearArmyDrag(); } });
     viewport.addEventListener("click", event => {
       event.stopPropagation();
       if (event.detail === 0) { const hit = event.target.closest("[data-country],[data-country-marker]"); if (hit) onSelect(Number(hit.dataset.country ?? hit.dataset.countryMarker)); }
     });
     $("rk").addEventListener("keydown", event => {
-      if (event.key === "Escape" && expanded && !document.querySelector(".modal.show")) { event.preventDefault(); event.stopPropagation(); expand(false); $("rkViewMenu").querySelector("summary").focus(); }
+      if (event.key === "Escape" && expanded && selection.selected===null && $('rkInspector').hidden && !$("rk").classList.contains('rk-focus-mode') && !document.querySelector(".modal.show")) { event.preventDefault(); event.stopPropagation(); expand(false); $("rkViewMenu").querySelector("summary").focus(); }
       if (event.key === "Tab" && expanded && !document.querySelector(".modal.show")) {
         const items = [...$("rkBoardPanel").querySelectorAll('button:not(:disabled),[tabindex="0"]')].filter(el => !el.closest('[hidden],[inert]') && el.getClientRects().length);
         if ((event.shiftKey && document.activeElement === items[0]) || (!event.shiftKey && document.activeElement === items.at(-1))) { event.preventDefault(); (event.shiftKey ? items.at(-1) : items[0]).focus(); }
       }
     });
     new ResizeObserver(() => { const center = pointAt(lastWidth/2, lastHeight/2); if (metrics() && zoom>1) zoomAt(zoom, viewport.clientWidth/2, viewport.clientHeight/2, center); }).observe(viewport);
-    return { update, fit, focusContinent, focusPair, preview, clearPreview, effect, close: () => { pointers.clear(); gesture = null; cancelAnimationFrame(frame); frame = 0; effects.forEach(a=>a.cancel()); effects.clear(); clearPreview(); if (expanded) expand(false); } };
+    return { update, fit, snapshot, restore, focusCountry, pickCountry, focusContinent, focusPair, preview, previewDraft, clearPreview, effect, close: () => { pointers.clear(); gesture = null; cancelAnimationFrame(frame); frame = 0; clearArmyDrag();effects.forEach(a=>a.cancel()); effects.clear(); clearPreview(); if (expanded) expand(false); } };
   }
   window.ReneWereldBoard = { create, palette };
 })();

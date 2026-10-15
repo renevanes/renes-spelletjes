@@ -967,7 +967,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
   const palette = { na: "#e9ce76", sa: "#d58f79", eu: "#91bbd7", af: "#c6b4cd", as: "#afd097", au: "#d6ac77" };
   const seas = ["alaska kamchatka", "nw greenland", "ontario greenland", "quebec greenland", "greenland iceland", "iceland britain", "iceland scandinavia", "britain scandinavia", "britain northeu", "britain westeu", "brazil northaf", "southeu northaf", "southeu egypt", "southeu middleeast", "madagascar eastaf", "madagascar southaf", "japan mongolia", "japan kamchatka", "siam indonesia", "indonesia newguinea", "indonesia westaus", "newguinea westaus", "newguinea eastaus"];
   const names = [ ["na", 275, 68], ["sa", 437, 712], ["eu", 736, 93], ["af", 712, 620], ["as", 1163, 64], ["au", 1190, 665] ];
-  function create({ engine: E, data: M, onSelect, onActions }) {
+  function create({ engine: E, data: M, onSelect, onActions, onMove }) {
     const viewport = $("rkMapViewport"), svg = $("rkMap"), surface = $("rkMapSurface");
     let zoom = 1, scale = 1, expanded = false, ownership = true, state = null, selection = {}, frame = 0, lastWidth = 0, lastHeight = 0;
     const pointers = new Map();
@@ -994,6 +994,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       <g class="rk-continent-labels">${names.map(([id, x, y]) => { const c = E.continents.find(c => c.id === id); return `<text x="${x}" y="${y}" text-anchor="middle">${esc(c.name.toUpperCase())} · +${c.bonus}</text>`; }).join("")}</g>
       <g class="rk-compass" transform="translate(118 664)"><circle r="30"/><path d="M0,-37L8,0L0,37L-8,0ZM-37,0L0,8L37,0L0,-8Z"/><text y="-44" text-anchor="middle">N</text></g><text class="rk-map-credit" x="1421" y="742" text-anchor="end">Kustlijnen: Natural Earth · speelgebieden: Wereldmacht</text>`;
     const shapes = [...svg.querySelectorAll(".rk-country")], markers = [...svg.querySelectorAll("[data-marker]")];
+    function clearArmyDrag() { markers.forEach(node=>node.classList.remove('rk-drag-target'));viewport.classList.remove('rk-army-dragging');$('rkPoolGhost').hidden=true; }
 
     function metrics() {
       const width = viewport.clientWidth, height = viewport.clientHeight;
@@ -1026,9 +1027,36 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       metrics();
       const a = regions[from].anchor, b = regions[to].anchor;
       if ([from,to].includes(E.byId.alaska) && [from,to].includes(E.byId.kamchatka)) { fit(); return; }
-      const compact = viewport.clientWidth < 600;
-      zoomAt(Math.min(viewport.clientWidth*.68/(Math.abs(a[0]-b[0])+150), viewport.clientHeight*.7/(Math.abs(a[1]-b[1])+130))/scale,
-        viewport.clientWidth*(compact ? .5 : .35), viewport.clientHeight*(compact ? .3 : .46), [(a[0]+b[0])/2,(a[1]+b[1])/2]);
+      zoomAt(Math.min(viewport.clientWidth*.64/(Math.abs(a[0]-b[0])+170), viewport.clientHeight*.74/(Math.abs(a[1]-b[1])+115))/scale,
+        viewport.clientWidth/2, viewport.clientHeight/2, [(a[0]+b[0])/2,(a[1]+b[1])/2]);
+    }
+    function snapshot() { return {zoom,center:pointAt(viewport.clientWidth/2,viewport.clientHeight/2)}; }
+    function restore(view) { if (!view || view.zoom<=1.01) fit(); else { metrics(); zoomAt(view.zoom,viewport.clientWidth/2,viewport.clientHeight/2,view.center); } }
+    function focusCountry(id, neighbors = false) {
+      metrics();
+      const ids = neighbors ? [id,...E.territories[id].neighbors].filter(i=>Math.abs(regions[i].anchor[0]-regions[id].anchor[0])<700) : [id];
+      const xs=ids.map(i=>regions[i].anchor[0]), ys=ids.map(i=>regions[i].anchor[1]);
+      const left=Math.min(...xs),right=Math.max(...xs),top=Math.min(...ys),bottom=Math.max(...ys);
+      zoomAt(Math.min(viewport.clientWidth*.8/(right-left+230),viewport.clientHeight*.78/(bottom-top+180))/scale,
+        viewport.clientWidth/2,viewport.clientHeight/2,[(left+right)/2,(top+bottom)/2]);
+    }
+    function pickCountry(x,y, forgiving = true) {
+      const hit=document.elementFromPoint(x,y)?.closest('[data-country],[data-country-marker]');
+      const direct=hit && svg.contains(hit) ? Number(hit.dataset.country ?? hit.dataset.countryMarker) : null;
+      if (!forgiving || !state) return direct;
+      const matrix=svg.getScreenCTM(); if (!matrix) return direct;
+      let nearest=null, distance=22;
+      regions.forEach((g,i)=>{
+        const country=state.territories[i], current=state.current, from=selection.selected;
+        const candidate=state.pending || selection.handoff || state.players[current].ai ? true :
+          ['reinforce','deploy','capital'].includes(state.phase) ? country.owner===current :
+          state.phase==='attack' ? country.owner===current && country.armies>1 || from!==null && from!==undefined && country.owner!==current && E.territories[from].neighbors.includes(i) :
+          state.phase==='fortify' ? country.owner===current : true;
+        if (!candidate) return;
+        const p=new DOMPoint(...g.anchor).matrixTransform(matrix), d=Math.hypot(x-p.x,y-p.y);
+        if (d<distance) {nearest=i;distance=d;}
+      });
+      return nearest ?? direct;
     }
     function clearPreview() {
       markers.forEach(node => { node.classList.remove("rk-previewing"); node.querySelector(".rk-preview-armies").textContent = ""; });
@@ -1039,6 +1067,10 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
         markers[i].classList.add("rk-previewing"); markers[i].querySelector(".rk-preview-armies").textContent = n;
         markers[i].querySelector(".rk-preview-armies").style.fontSize = n>999 ? "11px" : n>99 ? "14px" : "18px";
       });
+    }
+    function previewDraft(to,amount) {
+      clearPreview(); const node=markers[to], n=state.territories[to].armies+amount;
+      node.classList.add('rk-previewing'); node.querySelector('.rk-preview-armies').textContent=n;
     }
     function effect(id, label) {
       if (document.documentElement.classList.contains("reduced-motion")) return;
@@ -1079,6 +1111,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
         node.classList.toggle("selected", i === selected); node.classList.toggle("target", i === target);
         node.classList.toggle("neighbor", selected !== null && E.territories[selected].neighbors.includes(i));
         node.classList.toggle("attackable", !handoff && state.phase === "attack" && selected !== null && state.territories[selected].owner === state.current && state.territories[selected].armies > 1 && t.owner !== state.current && E.territories[selected].neighbors.includes(i));
+        node.classList.toggle('reachable', !handoff && state.phase==='fortify' && selected!==null && i!==selected && t.owner===state.current && E.connected(state,selected,i));
         const marker = markers[i];
         marker.querySelector(".rk-marker-disc").setAttribute("fill", mix(p.color,.18));
         marker.querySelector(".rk-armies").textContent = t.armies;
@@ -1113,6 +1146,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     function startGesture() {
       const pts = [...pointers.values()], r = viewport.getBoundingClientRect();
       if (pts.length === 2) {
+        clearArmyDrag();
         const x = (pts[0].x+pts[1].x)/2-r.left, y = (pts[0].y+pts[1].y)/2-r.top;
         gesture = { distance: Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y), zoom, anchor: pointAt(x, y) }; moved = true;
       } else if (pts.length === 1) gesture = { x: pts[0].x, y: pts[0].y, left: viewport.scrollLeft, top: viewport.scrollTop };
@@ -1122,6 +1156,13 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       if (!pointers.size) moved = false;
       pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
       viewport.setPointerCapture(event.pointerId); startGesture();
+      if (pointers.size===1 && state && !state.pending && !state.players[state.current].ai && !selection.handoff && ['attack','fortify'].includes(state.phase)) {
+        const from=pickCountry(event.clientX,event.clientY);
+        if (from===selection.selected && state.territories[from]?.owner===state.current && state.territories[from].armies>1) {
+          const point=new DOMPoint(...regions[from].anchor).matrixTransform(svg.getScreenCTM());
+          if(Math.hypot(point.x-event.clientX,point.y-event.clientY)<=Math.max(24,20*scale*zoom)) gesture.army=from;
+        }
+      }
     });
     viewport.addEventListener("pointermove", event => {
       if (!pointers.has(event.pointerId)) return;
@@ -1135,35 +1176,45 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
         else if (pts.length === 1 && "left" in gesture) {
           const dx = pts[0].x-gesture.x, dy = pts[0].y-gesture.y;
           if (Math.hypot(dx, dy)>5) moved = true;
-          viewport.scrollLeft = gesture.left-dx; viewport.scrollTop = gesture.top-dy;
+          if (gesture.army!==undefined && moved) {
+            const to=pickCountry(pts[0].x,pts[0].y);
+            const legal=to!==null && (state.phase==='attack' ? state.territories[to].owner!==state.current && E.territories[gesture.army].neighbors.includes(to) : to!==gesture.army && state.territories[to].owner===state.current && E.connected(state,gesture.army,to));
+            const hover=legal?to:null;
+            if (gesture.hover!==hover) { if (gesture.hover!=null) markers[gesture.hover].classList.remove('rk-drag-target'); if (hover!==null)markers[hover].classList.add('rk-drag-target'); gesture.hover=hover; }
+            viewport.classList.add('rk-army-dragging');
+            const ghost=$('rkPoolGhost');ghost.hidden=false;ghost.querySelector('b').textContent=state.territories[gesture.army].armies-1;ghost.style.transform=`translate(${pts[0].x-26}px,${pts[0].y-42}px)`;
+          } else { viewport.scrollLeft = gesture.left-dx; viewport.scrollTop = gesture.top-dy; }
         }
       });
     });
     function endPointer(event) {
       if (!pointers.has(event.pointerId)) return;
-      if (!moved && event.type === "pointerup") {
-        const hit = document.elementFromPoint(event.clientX, event.clientY)?.closest("[data-country],[data-country-marker]");
-        if (hit && svg.contains(hit)) onSelect(Number(hit.dataset.country ?? hit.dataset.countryMarker));
+      const from=gesture?.army;
+      if (event.type === "pointerup") {
+        const id=pickCountry(event.clientX,event.clientY);
+        if (!moved && id!==null) onSelect(id);
+        else if (moved && from!==undefined && pointers.size===1 && id!==null && id!==from) onMove?.(from,id);
       }
+      clearArmyDrag();
       pointers.delete(event.pointerId);
       if (viewport.hasPointerCapture(event.pointerId)) viewport.releasePointerCapture(event.pointerId);
       if (pointers.size) startGesture(); else gesture = null;
     }
     viewport.addEventListener("pointerup", endPointer); viewport.addEventListener("pointercancel", endPointer);
-    viewport.addEventListener("lostpointercapture", event => { if (pointers.has(event.pointerId)) { pointers.delete(event.pointerId); gesture = null; } });
+    viewport.addEventListener("lostpointercapture", event => { if (pointers.has(event.pointerId)) { pointers.delete(event.pointerId); gesture = null; clearArmyDrag(); } });
     viewport.addEventListener("click", event => {
       event.stopPropagation();
       if (event.detail === 0) { const hit = event.target.closest("[data-country],[data-country-marker]"); if (hit) onSelect(Number(hit.dataset.country ?? hit.dataset.countryMarker)); }
     });
     $("rk").addEventListener("keydown", event => {
-      if (event.key === "Escape" && expanded && !document.querySelector(".modal.show")) { event.preventDefault(); event.stopPropagation(); expand(false); $("rkViewMenu").querySelector("summary").focus(); }
+      if (event.key === "Escape" && expanded && selection.selected===null && $('rkInspector').hidden && !$("rk").classList.contains('rk-focus-mode') && !document.querySelector(".modal.show")) { event.preventDefault(); event.stopPropagation(); expand(false); $("rkViewMenu").querySelector("summary").focus(); }
       if (event.key === "Tab" && expanded && !document.querySelector(".modal.show")) {
         const items = [...$("rkBoardPanel").querySelectorAll('button:not(:disabled),[tabindex="0"]')].filter(el => !el.closest('[hidden],[inert]') && el.getClientRects().length);
         if ((event.shiftKey && document.activeElement === items[0]) || (!event.shiftKey && document.activeElement === items.at(-1))) { event.preventDefault(); (event.shiftKey ? items.at(-1) : items[0]).focus(); }
       }
     });
     new ResizeObserver(() => { const center = pointAt(lastWidth/2, lastHeight/2); if (metrics() && zoom>1) zoomAt(zoom, viewport.clientWidth/2, viewport.clientHeight/2, center); }).observe(viewport);
-    return { update, fit, focusContinent, focusPair, preview, clearPreview, effect, close: () => { pointers.clear(); gesture = null; cancelAnimationFrame(frame); frame = 0; effects.forEach(a=>a.cancel()); effects.clear(); clearPreview(); if (expanded) expand(false); } };
+    return { update, fit, snapshot, restore, focusCountry, pickCountry, focusContinent, focusPair, preview, previewDraft, clearPreview, effect, close: () => { pointers.clear(); gesture = null; cancelAnimationFrame(frame); frame = 0; clearArmyDrag();effects.forEach(a=>a.cancel()); effects.clear(); clearPreview(); if (expanded) expand(false); } };
   }
   window.ReneWereldBoard = { create, palette };
 })();
@@ -1207,7 +1258,11 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       draggedPool = false,
       lastTurn = 0,
       diceChoice = null,
-      commitChoice = null;
+      commitChoice = null,
+      overviewView = null,
+      amountKey = '',
+      handKey = '',
+      contextView = null;
     const storedInvalid = state !== null && !E.validState(state);
     if (storedInvalid) state = null;
     let settings = Object.assign(
@@ -1220,7 +1275,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     const blocked = () =>
       !state || !isHuman() || handoff || state.phase === "won";
     const modalOpen = () =>
-      !!document.querySelector(".modal.show,.overlay.show");
+      !!document.querySelector(".modal.show,.overlay.show") || !$('rkInspector').hidden;
     function stop() {
       clearTimeout(botTimer);
       botTimer = null;
@@ -1237,10 +1292,6 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       const skin = ["#d9a776","#a86f4d","#e5b593","#bc895f","#eac5a0","#b87955"][i],
         hair = ["#583b29","#252c39","#8e5032","#32302b","#e5d0a3","#4f3228"][i];
       return `<svg class="rk-portrait" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="${E.COLORS[i]}"/><path d="M6 64Q6 44 22 43H42Q58 44 58 64" fill="#172d40"/><path d="M21 45L32 56L43 45M15 52L22 55M49 52L42 55" fill="none" stroke="#e8c97c" stroke-width="3"/><path d="M27 38H37V48L32 53L27 48" fill="${skin}"/><ellipse cx="32" cy="28" rx="14" ry="18" fill="${skin}"/><path d="M17 27V18Q18 5 32 5Q47 5 47 22L44 28L41 16Q30 20 22 15L20 28Z" fill="${hair}"/>${i%3===0 ? '<path d="M14 18Q17 4 32 4Q47 4 50 18L46 23H18Z" fill="#263b46"/><path d="M19 18H45" stroke="#edcd7b" stroke-width="3"/><path d="M29 9L32 6L35 9L32 13Z" fill="#edcd7b"/>' : i%3===1 ? '<path d="M17 17Q30 8 46 17L44 10Q31 0 20 9Z" fill="#e2c984"/>' : '<path d="M20 14Q31 20 44 12" fill="none" stroke="#edcd7b" stroke-width="4"/>'}<path d="M23 27H28M36 27H41" stroke="${hair}" stroke-width="2"/><circle cx="26" cy="30" r="1.5" fill="#202733"/><circle cx="38" cy="30" r="1.5" fill="#202733"/><path d="M32 30L30 36H33" stroke="#875e46" fill="none" stroke-width="1.2"/>${i%2 ? '<path d="M25 39Q32 43 39 39" fill="none" stroke="#784d36" stroke-width="1.5"/>' : `<path d="M23 39Q28 34 32 38Q36 34 41 39L36 41L32 39L28 41Z" fill="${hair}"/>`}<circle cx="32" cy="60" r="2" fill="#e8c97c"/></svg><em>${i+1}</em>`;
-    }
-    function matchup(from, to, kind) {
-      const a = state.territories[from], b = state.territories[to];
-      return `<div class="rk-encounter"><div class="rk-country-card" style="--player:${state.players[a.owner].color}"><small>${kind === "attack" ? "AANVALLER" : "VANUIT"}</small><b>${E.territories[from].name}</b><span class="rk-force" id="rkFromCount">${a.armies}</span><small id="rkFromCaption">legers</small></div><button data-action="focus" class="rk-versus" aria-label="Inzoomen op deze twee landen">${kind === "attack" ? "⚔" : "→"}<small>Kaart</small></button><div class="rk-country-card" style="--player:${state.players[b.owner].color}"><small>${kind === "attack" ? "VERDEDIGER" : "NAAR"}</small><b>${E.territories[to].name}</b><span class="rk-force" id="rkToCount">${b.armies}</span><small id="rkToCaption">legers</small></div></div>`;
     }
     function previewTransfer() {
       if (!state || !$("rkFromCount") || !$("rkAmount")) return;
@@ -1260,7 +1311,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     }
     function apply(action) {
       try {
-        const previousTurn = state.turn, previousCapture = state.pending;
+        const previousTurn = state.turn, previousCapture = state.pending, view = contextView || overviewView;
         state = E.apply(state, action);
         if (["attack", "blitz"].includes(action.type)) encounter = { ...state.lastBattle, turn: state.turn };
         if (state.winner !== null && !state.statsRecorded) {
@@ -1285,26 +1336,28 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
           checkHandoff();
         }
         if (action.type === "occupy" && previousCapture) {
-          selected = previousCapture.to; target = null; diceChoice = null; commitChoice = null;
+          selected = previousCapture.to; target = null; commitChoice = null;
           feedback(`${E.territories[selected].name} veroverd`, "Tik op de volgende vijandelijke buur om verder aan te vallen.");
         }
         if (action.type === "advance" && state.phase === "fortify") { selected = null; target = null; }
-        if ((action.type === "advance" && ["attack","fortify"].includes(state.phase)) || action.type === "occupy") $("rk").classList.add("rk-dock-collapsed");
         if (action.type === "reinforce") { feedback(`+${action.amount} legers`, E.territories[action.to].name); board.effect(action.to, `+${action.amount}`); }
         if (["attack", "blitz"].includes(action.type)) board.effect(action.to, state.pending ? "Veroverd!" : `−${state.lastBattle.defendLoss}`);
-        if (action.type === "fortify") { feedback("Legers verplaatst", `${action.amount} naar ${E.territories[action.to].name}. Je kunt je beurt beëindigen.`); selected = null; target = null; $("rk").classList.add("rk-dock-collapsed"); }
+        if (action.type === "fortify") { feedback("Legers verplaatst", `${action.amount} naar ${E.territories[action.to].name}. Je kunt je beurt beëindigen.`); }
         if (action.type === "endTurn") $("rkFeedback").hidden = true;
-        if (state.pending || state.winner !== null) {
-          $("rk").classList.remove("rk-dock-collapsed");
-          $("rkDockToggle").setAttribute("aria-expanded", "true");
+        const finishedSelection = ["reinforce","fortify","capital","advance","endTurn","occupy"].includes(action.type);
+        if (finishedSelection) {
+          if (action.type !== "occupy") selected = null;
+          target = null; contextView = null; overviewView = null;
+          commitChoice = null;
         }
+        if (action.type === "trade") showInspector(false);
         if (state.pending) {
           selected = state.pending.from;
           target = state.pending.to;
         }
         if (state.winner !== null) stop();
         render();
-        if (state.pending && !previousCapture) $("rkControls").parentElement.scrollTop = 0;
+        if (finishedSelection && view) board.restore(view);
         if (isHuman() && !handoff)
           window.ReneEnhancements.announce(state.log[0]);
         schedule();
@@ -1346,56 +1399,35 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       );
     }
     function choose(id) {
-      if (!state || blocked() || state.pending) return;
-      if (state.territories[id].owner !== state.current && (state.phase !== "attack" || selected === null || state.territories[selected].owner !== state.current)) {
-        feedback(E.territories[id].name, `${state.players[state.territories[id].owner].name} · ${state.territories[id].armies} legers. Kies eerst een eigen leger.`);
-        return;
-      }
-      $("rk").classList.remove("rk-dock-collapsed");
-      $("rkDockToggle").setAttribute("aria-expanded", "true");
-      $("rkViewMenu").open = false;
-      const t = state.territories[id];
-      if (
-        state.phase === "attack" &&
-        t.owner !== state.current &&
-        selected !== null &&
-        state.territories[selected].owner === state.current
-      ) {
-        if (!E.territories[selected].neighbors.includes(id)) {
-          api.toast("Deze landen grenzen niet aan elkaar.");
-          return;
-        }
-        target = id;
-      } else if (
-        state.phase === "fortify" &&
-        t.owner === state.current &&
-        selected !== null &&
-        selected !== id &&
-        state.territories[selected].owner === state.current
-      ) {
-        if (!E.connected(state, selected, id)) {
-          api.toast("Verplaatsen kan alleen via eigen landen.");
-          return;
-        }
-        target = id;
-      } else {
-        selected = id;
-        target = null;
-        diceChoice = null;
-        commitChoice = null;
-      }
-      if (["attack","fortify"].includes(state.phase) && target === null) $("rk").classList.add("rk-dock-collapsed");
-      stop();
-      render();
-      $("rkControls").parentElement.scrollTop = 0;
+      if (!state || blocked() || state.pending || id===null) return;
+      const t=state.territories[id], phase=state.phase, before=board.snapshot();
+      if (phase==='fortify' && state.fortified) { feedback('Je verplaatsing is gedaan','Kies Beurt klaar om verder te spelen.'); return; }
+      if (phase==='attack' && t.owner!==state.current) {
+        if (selected===null) { feedback('Kies eerst jouw leger','Tik op een eigen land met minstens twee legers.'); return; }
+        if (!E.territories[selected].neighbors.includes(id)) { feedback('Geen aangrenzend land','Kies een gemarkeerde vijandelijke buur.'); return; }
+        if (!contextView) contextView=before;
+        target=id;
+      } else if (phase==='fortify' && selected!==null && id!==selected && t.owner===state.current) {
+        if (!E.connected(state,selected,id)) { feedback('Niet verbonden','Verplaats via je eigen gebieden.'); return; }
+        if (!contextView) contextView=before;
+        target=id;
+      } else if (t.owner===state.current) {
+        if (['attack','fortify'].includes(phase) && t.armies<2) { feedback('Eén leger blijft achter','Kies een eigen land met minstens twee legers.'); return; }
+        if (!overviewView) overviewView=before;
+        if (['reinforce','deploy','capital'].includes(phase) && !contextView) contextView=before;
+        selected=id;target=null;commitChoice=null;
+      } else { feedback(E.territories[id].name,`${state.players[t.owner].name} · ${t.armies} legers`); return; }
+      clearTimeout(feedbackTimer); $('rkFeedback').hidden=true;
+      showInspector(false); $('rkViewMenu').open=false; stop(); render();
+      if (target!==null) board.focusPair(selected,target);
+      else if (['reinforce','deploy','capital'].includes(phase)) board.focusCountry(selected);
+      else if (phase==='attack' && before.zoom<=1.01) board.focusCountry(selected,true);
     }
     const board = window.ReneWereldBoard.create({
-      engine: E, data: window.ReneWereldMap, onSelect: choose,
+      engine: E, data: window.ReneWereldMap, onSelect: id=>{if(!modalOpen())choose(id);},
+      onMove: (from,to) => { if (blocked() || state.pending || modalOpen()) return; selected=from; choose(to); },
       onActions: () => {
-        $("rk").classList.remove("rk-dock-collapsed");
-        $("rkDockToggle").setAttribute("aria-expanded", "true");
-        $("rkControls").scrollIntoView({ block: "start", behavior: "auto" });
-        $("rkControls").querySelector("button:not(:disabled),select,input")?.focus({ preventScroll: true });
+        showInspector(true,true);
       },
     });
     function updateMap() {
@@ -1442,7 +1474,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       );
     }
     function amount(max, value = 1, min = 1) {
-      return `<div class="rk-troops"><label for="rkAmount">Aantal legers</label><div class="rk-amount"><button data-action="less" aria-label="Eén leger minder">−</button><input id="rkAmount" aria-label="Aantal legers" type="number" inputmode="numeric" min="${min}" max="${max}" value="${value}"><button data-action="more" aria-label="Eén leger meer">+</button><button data-action="all" data-max="${max}">Max</button></div><input id="rkAmountRange" aria-label="Aantal legers met schuifregelaar" type="range" min="${min}" max="${max}" value="${value}"></div>`;
+      return `<div class="rk-troops"><div class="rk-amount"><button data-action="less" aria-label="Eén leger minder">−</button><input id="rkAmount" aria-label="Aantal legers" type="number" inputmode="numeric" min="${min}" max="${max}" value="${value}" style="${value>99999?'font-size:12px':value>999?'font-size:18px':''}"><button data-action="more" aria-label="Eén leger meer">+</button></div><div class="rk-amount-slider"><span>${min}</span><input id="rkAmountRange" aria-label="Aantal legers met schuifregelaar" type="range" min="${min}" max="${max}" value="${value}"><button data-action="all" data-max="${max}">Alles</button></div></div>`;
     }
     function button(label, action, disabled = false, secondary = false) {
       return `<button id="rkAction${action}" class="rk-action ${secondary ? "rk-secondary" : ""}" data-action="${action}" ${disabled ? "disabled" : ""}>${label}</button>`;
@@ -1452,96 +1484,119 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       const faces = { 1:[6], 2:[0,5], 3:[0,5,6], 4:[0,1,4,5], 5:[0,1,4,5,6], 6:[0,1,2,3,4,5] };
       return `<span class="rk-die ${defense ? "defense" : ""}" role="img" aria-label="${n} ogen"><svg viewBox="0 0 20 20" aria-hidden="true">${faces[n].map(i => `<circle cx="${spots[i][0]}" cy="${spots[i][1]}" r="1.7"/>`).join("")}</svg></span>`;
     }
+    function showInspector(value = true, focus = false) {
+      $('rkInspector').hidden = !value;
+      $('rkDockToggle').setAttribute('aria-expanded', String(value));
+      $('rk').querySelectorAll('.rk-topbar,.rk-turn,.rk-scoreboard').forEach(el=>el.inert=value || $('rk').classList.contains('rk-expanded'));
+      $('rkBoardPanel').querySelectorAll(':scope > :not(#rkInspector)').forEach(el=>el.inert=value);
+      if (value) stop();
+      if (focus && value) $('rkCloseInspector').focus({preventScroll:true});
+    }
+    function actor(id, side, caption) {
+      const t = state.territories[id], p = state.players[t.owner];
+      return `<div class="rk-actor ${side}" style="--player:${p.color}"><span class="rk-avatar">${portrait(t.owner)}</span><b>${window.ReneWereldMap.regions[id].label}</b><strong id="rk${side === 'from' ? 'From' : 'To'}Count">${t.armies}</strong><small id="rk${side === 'from' ? 'From' : 'To'}Caption">${caption}</small></div>`;
+    }
+    function cancelSelection(all = false) {
+      if (state?.pending) return;
+      if (!all && state?.phase === 'attack' && target !== null) {
+        target = null;
+        const view = contextView; contextView = null;
+        render(); if (view) board.restore(view);
+      } else {
+        selected = null; target = null; commitChoice = null;
+        const view = overviewView || contextView; overviewView = null; contextView = null;
+        render(); if (view) board.restore(view);
+      }
+      $('rkMapViewport').focus({preventScroll:true});
+    }
     function renderControls() {
-      const focused = document.activeElement?.id,
-        wasInControls = $("rkControls").contains(document.activeElement),
-        selection = selected !== null ? state.territories[selected] : null;
-      const own = selection && selection.owner === state.current,
-        canAct = !blocked();
-      const handOpen = $("rkControls").querySelector(".rk-card-hand")?.open,
-        accessibleOpen = $("rkControls").querySelector(".rk-accessible")?.open;
-      const mustTrade = !handoff && isHuman() && state.phase === "reinforce" && state.players[state.current].cards.length >= (state.resumeAttack ? 6 : 5);
-      if (state.pending || state.winner !== null || mustTrade || ["deploy","capital"].includes(state.phase)) {
-        $("rk").classList.remove("rk-dock-collapsed");
-        $("rkDockToggle").setAttribute("aria-expanded", "true");
+      const focused = document.activeElement?.id, wasInControls = $('rkControls').contains(document.activeElement);
+      const nextAmountKey=`${state.current}/${state.phase}/${selected}/${target}/${state.pool}/${state.pending?.min||0}`;
+      const previousAmount=amountKey===nextAmountKey?$('rkAmount')?.value:null;
+      amountKey=nextAmountKey;
+      if (state.pending && isHuman() && !handoff) { selected = state.pending.from; target = state.pending.to; }
+      const t = selected === null ? null : state.territories[selected], own = t?.owner === state.current;
+      const canAct = !blocked(), phase = state.phase, hand = state.players[state.current].cards;
+      const required = phase === 'reinforce' && hand.length >= (state.resumeAttack ? 6 : 5);
+      const pair = canAct && own && target !== null && (phase === 'attack' || phase === 'fortify');
+      const placing = canAct && own && state.pool > 0 && ['reinforce','deploy'].includes(phase) && !required;
+      const capital = canAct && own && phase === 'capital';
+      const occupied = canAct && !!state.pending;
+      const mode = occupied ? 'occupy' : pair ? phase : placing ? 'deploy' : capital ? 'capital' : '';
+      if (mode && !$('rk').classList.contains('rk-focus-mode') && !contextView) contextView=board.snapshot();
+      $('rk').classList.toggle('rk-focus-mode', !!mode);
+      $('rk').dataset.interaction = mode;
+      $('rkClearSelection').hidden = !canAct || selected === null || !!mode;
+      $('rkPool').classList.toggle('rk-selected-pool', !!mode);
+      let html = '', title = '', subtitle = '', actors = '';
+      const cancel = '<button id="rkActioncancel" class="rk-round rk-cancel" data-action="cancel" aria-label="Annuleren en terug naar de kaart"><span>×</span><small>Terug</small></button>';
+      const confirm = (label, action) => button(`<span aria-hidden="true">✓</span><small>${label}</small>`,action);
+      if (mode === 'deploy') {
+        title = phase === 'deploy' ? 'Startlegers plaatsen' : 'Legers plaatsen';
+        subtitle = E.territories[selected].name;
+        html = `${cancel}${amount(state.pool,state.pool)}${confirm('Plaatsen','reinforce')}<p id="rkDraftPreview" class="rk-transfer-caption"></p>`;
+      } else if (mode === 'capital') {
+        title = 'Kies je hoofdstad'; subtitle = E.territories[selected].name;
+        html = `${cancel}<p class="rk-capital-choice">♛<small>+2 legers per beurt · 3 verdedigingsdobbelstenen</small></p>${confirm('Kiezen','capital')}`;
+      } else if (mode === 'occupy' || mode === 'fortify') {
+        title = mode === 'occupy' ? 'Veroverd! Verplaats je legers' : 'Legers verplaatsen';
+        subtitle = mode === 'occupy' && state.lastBattle ? `Jij −${state.lastBattle.attackLoss} · Tegenstander −${state.lastBattle.defendLoss}` : 'Verplaats één keer via je eigen gebieden';
+        actors = actor(selected,'from','blijven achter')+actor(target,'to','na verplaatsing');
+        const min = mode === 'occupy' ? state.pending.min : 1, max = mode === 'occupy' ? state.pending.max : t.armies-1;
+        const value = mode === 'occupy' ? state.pending.suggested ?? max : max;
+        html = `${mode === 'occupy' ? '<button class="rk-round rk-minimum" data-action="minimum" aria-label="Minimaal aantal legers verplaatsen"><span>Min</span><small>Minimaal</small></button>' : cancel}${amount(max,value,min)}${confirm('Verplaatsen',mode === 'occupy' ? 'occupy' : 'fortify')}`;
+      } else if (mode === 'attack') {
+        title = 'Winstkans bij blitz';
+        const max = Math.max(0,t.armies-1), value = Math.min(commitChoice ?? max,max);
+        const dice = Math.min(diceChoice ?? 0,Math.min(3,max));
+        if (dice) title='Losse worp';
+        actors = actor(selected,'from','vallen aan')+actor(target,'to','verdedigen');
+        const diceOptions = [0,...[1,2,3].filter(n=>n<=max)];
+        const roll = `<div class="rk-roll-choice"><button data-action="previousDice" aria-label="Vorige dobbelsteenkeuze">‹</button>${button(`<span class="rk-dice-cluster" aria-hidden="true">${[0,1,2].slice(0,dice||3).map((_,i)=>die(dice ? i+2 : 6)).join('')}</span><small>${dice ? dice+' '+(dice===1?'dobbelsteen':'dobbelstenen') : 'Blitz'}</small>`,dice?'attack':'blitz',max<1)}<button data-action="nextDice" aria-label="Volgende dobbelsteenkeuze">›</button><label class="visually-hidden">Dobbelsteenkeuze<select id="rkDice">${diceOptions.map(n=>`<option value="${n}" ${n===dice?'selected':''}>${n ? n+' dobbelstenen' : 'Blitz'}</option>`).join('')}</select></label></div>`;
+        html = `${cancel}${roll}<div class="rk-attack-limit">${dice ? `<b>${dice} ${dice===1?'dobbelsteen':'dobbelstenen'}</b><span>tegen ${Math.min(E.defenseDice(state,target),state.territories[target].armies)}</span>` : `<label for="rkCommitRange">Inzet <output id="rkCommitCount">${value}</output><span>/${max}</span></label><input id="rkCommitRange" type="range" min="1" max="${Math.max(1,max)}" value="${Math.max(1,value)}" ${max?'':'disabled'}>`}<p id="rkReserve"></p><small id="rkOdds"></small></div>`;
+        if (encounter?.from === selected && encounter?.to === target && encounter.turn === state.turn) html += `<div class="rk-result"><b>Jij −${encounter.attackLoss} · Tegenstander −${encounter.defendLoss}</b>${encounter.attack.length ? encounter.attack.map(n=>die(n)).join('')+'<i>tegen</i>'+encounter.defend.map(n=>die(n,true)).join('') : ''}</div>`;
+      } else if (phase === 'won') {
+        html = `<div class="rk-victory"><h3>🏆 ${esc(state.players[state.winner].name)} wint!</h3><p>${state.round} rondes · ${E.owned(state,state.winner).length} gebieden</p>${button('Nieuw spel','new')}${button('Naar menu','menu',false,true)}</div>`;
       }
-      let html = "";
-      if (state.phase === "won")
-        html = `<h3>🏆 ${esc(state.players[state.winner].name)} wint!</h3><p class="rk-muted">${state.rules?.goal === "capital" ? "Alle hoofdsteden zijn in handen van de winnaar." : state.rules?.goal === "mission" ? esc(E.mission(state,state.winner).text) : E.owned(state, state.winner).length+" gebieden veroverd."} · ${state.round} rondes.</p>${button("Nieuw spel", "new")}${button("Naar menu", "menu", false, true)}`;
-      else if (handoff)
-        html = `<h3>Geef het toestel door</h3><p class="rk-muted">De kaarten en acties van ${esc(state.players[state.current].name)} blijven verborgen.</p>${button("Mijn beurt bekijken", "handoff")}`;
-      else if (!isHuman())
-        html = `<h3>${esc(state.players[state.current].name)} speelt</h3><p class="rk-muted">De computer ${state.phase === "reinforce" ? "plaatst versterkingen" : state.phase === "attack" ? "bekijkt de grenzen" : "rondt de beurt af"}. Je kunt op elk moment pauzeren of naar het menu gaan.</p>${button("Pauze", "pause", false, true)}`;
-      else if (state.phase === "capital")
-        html = `<h3>Kies je hoofdstad</h3><p class="rk-muted">Een hoofdstad geeft elke beurt 2 extra legers en verdedigt met maximaal 3 dobbelstenen. Verover alle hoofdsteden om te winnen.</p><label>Hoofdstad<select id="rkFrom">${options(E.owned(state),own?selected:null)}</select></label>${button(own ? E.territories[selected].name+" als hoofdstad" : "Kies een eigen gebied", "capital", !own)}`;
-      else if (state.phase === "deploy")
-        html = `<h3>Startlegers plaatsen</h3><p class="rk-muted">Je hebt nog ${state.setupRemaining[state.current]} startlegers. Plaats er deze keer maximaal ${state.pool}; daarna is de volgende speler aan de beurt.</p><label>Eigen gebied<select id="rkFrom">${options(E.owned(state),own?selected:null)}</select></label>${state.pool && own ? amount(state.pool,state.pool)+button("Startlegers plaatsen","reinforce") : ""}${button("Volgende speler →","advance",state.pool>0,true)}`;
-      else if (state.pending)
-        html = `<h3 class="rk-capture-title">✓ Land veroverd!</h3>${state.lastBattle ? `<div class="rk-conquest-result">Jij −${state.lastBattle.attackLoss} · Tegenstander −${state.lastBattle.defendLoss}</div>` : ""}${matchup(state.pending.from, state.pending.to, "transfer")}<p class="rk-muted">Kies je bezetting. Minimaal ${state.pending.min} legers gaan mee.</p>${amount(state.pending.max, state.pending.suggested ?? state.pending.max, state.pending.min)}${button("Bezetting bevestigen →", "occupy")}`;
-      else {
-        const hand = state.players[state.current].cards,
-          required = hand.length >= (state.resumeAttack ? 6 : 5);
-        html = `<div class="rk-command-title"><h3>${selection ? E.territories[selected].name : phases[state.phase]}</h3><span>${selection ? `${selection.armies} legers` : `${state.pool || E.owned(state).length} ${state.pool ? "versterkingen" : "gebieden"}`}</span></div>`;
-        if (!own) html += `<p class="rk-muted">${selection ? `${esc(state.players[selection.owner].name)} bezit dit gebied. Kies eerst een eigen land.` : state.phase === "reinforce" ? "Tik op een eigen gebied om legers te plaatsen." : state.phase === "attack" ? "Tik op jouw leger, daarna op een vijandelijke buur." : "Tik op twee verbonden eigen gebieden."}</p>`;
-        let accessible = `<label>Vanuit<select id="rkFrom">${options(E.owned(state), own ? selected : null)}</select></label>`;
-        if (state.phase === "reinforce") {
-          if (state.pool && own) html += amount(state.pool, state.pool) + button(`Plaats legers · ${state.pool} beschikbaar`, "reinforce");
-          if (hand.length) {
-            if (!cards.length) cards = E.findSet(state) || [];
-            html += `<details class="rk-card-hand" ${required || handOpen ? "open" : ""}><summary>▱ ${hand.length} kaarten${required ? " · ruilen verplicht" : " · bekijk en ruil"}</summary><div class="rk-cards">${hand.map(id => `<button id="rkCard${id}" data-card="${id}" aria-pressed="${cards.includes(id)}" aria-label="${id < 42 ? E.territories[id].name : "Joker"}, ${["infanterie", "cavalerie", "artillerie", "joker"][E.cardSymbol(id)]}">${symbols[E.cardSymbol(id)]}<small>${id < 42 ? E.territories[id].name : "Joker"}</small></button>`).join("")}</div>${button(`Ruil set · +${E.tradeValue(state, cards)} legers`, "trade", !E.validSet(cards))}</details>`;
-          }
-          html += button(state.resumeAttack ? "Verder aanvallen →" : "Aanvallen →", "advance", state.pool > 0 || required, true);
-        } else if (state.phase === "attack") {
-          const enemies = own ? E.territories[selected].neighbors.filter(i => state.territories[i].owner !== state.current) : [];
-          if (target !== null && !enemies.includes(target)) target = null;
-          accessible += `<label>Vijandelijk buurland<select id="rkTarget">${options(enemies, target)}</select></label><label>Dobbelstenen<select id="rkDice">${[1,2,3].filter(n=>own && n<selection.armies).map(n=>`<option value="${n}" ${n===Math.min(diceChoice||3,selection.armies-1)?"selected":""}>${n} ${n===1?"dobbelsteen":"dobbelstenen"}</option>`).join("")}</select></label>`;
-          const invalid = !own || selection.armies < 2 || target === null;
-          if (own && target !== null) {
-            const maximum = Math.max(1, selection.armies-1), value = Math.min(commitChoice || maximum, maximum);
-            html = `<h3>Aanvallen</h3>${matchup(selected,target,"attack")}`;
-            if (encounter?.from === selected && encounter?.to === target && encounter.turn === state.turn) html += `<div class="rk-result"><b>${encounter.defendLoss ? "Gevechtsuitslag" : "Aanval afgeslagen"}</b><span>Jij −${encounter.attackLoss} · Tegenstander −${encounter.defendLoss}</span>${encounter.attack.length ? `<div class="rk-rolls">${encounter.attack.map(n=>die(n)).join("")}<i>tegen</i>${encounter.defend.map(n=>die(n,true)).join("")}</div>` : ""}</div>`;
-            html += `<div class="rk-chance"><b id="rkChance"></b><span>kans op verovering</span><div><i id="rkChanceBar"></i></div></div><label class="rk-commit-label" for="rkCommitRange">Legers voor blitz <output id="rkCommitCount">${value}</output></label><input id="rkCommitRange" type="range" min="1" max="${maximum}" value="${value}" ${invalid ? "disabled" : ""}><p id="rkReserve" class="rk-reserve"></p><p id="rkOdds" class="rk-odds"></p>`;
-          } else if (own) html += `<p class="rk-muted">${selection.armies > 1 ? "Tik op een vijandelijk buurland om aan te vallen." : "Er blijft altijd één leger achter. Dit gebied kan niet aanvallen."}</p>`;
-          html += `<div class="rk-buttons">${button("⚡ Blitz", "blitz", invalid)}${button("⚄ Eén worp", "attack", invalid, true)}</div>${button("Verplaatsen →", "advance", false, true)}`;
-        } else if (state.phase === "fortify") {
-          if (!state.fortified) {
-            const targets = own ? E.owned(state).filter(i=>i!==selected && E.connected(state,selected,i)) : [];
-            if (target !== null && !targets.includes(target)) target = null;
-            accessible += `<label>Naar verbonden eigen land<select id="rkTarget">${options(targets,target)}</select></label>`;
-            if (own && target !== null && selection.armies > 1) html = `<h3>Legers verplaatsen</h3>${matchup(selected,target,"transfer")}${amount(selection.armies-1,selection.armies-1)}${button("Legers verplaatsen", "fortify")}`;
-            else if (own) html += '<p class="rk-muted">Kies een verbonden eigen gebied als bestemming.</p>';
-          } else html += '<p class="rk-muted">Je legers zijn verplaatst.</p>';
-          html += button("Beurt beëindigen ✓", "endTurn");
-        }
-        html += `<details class="rk-accessible" ${accessibleOpen ? "open" : ""}><summary>Kiezen via landenlijst</summary>${accessible}</details>`;
-      }
-      if (isHuman() && !handoff && state.rules?.goal === "mission" && state.phase !== "won") {
-        html = `<details class="rk-mission"><summary>✉ Mijn geheime missie</summary><p>${esc(E.mission(state).text)}</p></details>`+html;
-      }
-      if (!handoff && isHuman() && ["attack","fortify"].includes(state.phase) && !state.pending && state.players[state.current].cards.length) {
-        html += `<details class="rk-card-hand" ${handOpen ? "open" : ""}><summary>▱ Mijn ${state.players[state.current].cards.length} kaarten</summary><div class="rk-cards">${state.players[state.current].cards.map(id=>`<button disabled aria-label="${id<42?E.territories[id].name:"Joker"}">${symbols[E.cardSymbol(id)]}<small>${id<42?E.territories[id].name:"Joker"}</small></button>`).join("")}</div><p class="rk-muted">Ruil sets tijdens het versterken. Verover deze beurt een gebied om een kaart te verdienen.</p></details>`;
-      }
-      $("rkControls").innerHTML = html;
+      $('rkContextHeading').hidden = !mode;
+      $('rkContextHeading').innerHTML = mode ? `<h3>${title}</h3>${mode === 'attack' ? '<strong id="rkChance"></strong>' : `<p>${esc(subtitle)}</p>`}` : '';
+      $('rkActors').hidden = !actors; $('rkActors').innerHTML = actors;
+      $('rkControls').hidden = !html; $('rkControls').innerHTML = html;
+      if (previousAmount!==null && previousAmount!==undefined && $('rkAmount')) { $('rkAmount').value=previousAmount; $('rkAmountRange').value=previousAmount; }
       board.clearPreview();
-      if (state.pending || (state.phase === "fortify" && target !== null)) previewTransfer();
+      if (mode === 'deploy') previewAmount();
+      else if (occupied || mode === 'fortify') previewTransfer();
       updateOdds();
-      $("rk").classList.toggle("rk-encounter-open", !!state.pending || (canAct && target !== null && ["attack","fortify"].includes(state.phase)));
-      $("rkDockToggle").setAttribute("aria-expanded", String(!$("rk").classList.contains("rk-dock-collapsed")));
-      $("rk").classList.toggle("rk-has-selection", selected !== null && isHuman() && !handoff);
-      if (focused && $(focused) && $("rkControls").contains($(focused)))
-        $(focused).focus({ preventScroll: true });
-      else if (wasInControls)
-        $("rkControls")
-          .querySelector("button:not(:disabled),select,input")
-          ?.focus({ preventScroll: true });
-      $("rkControls")
-        .querySelectorAll("button[data-card]")
-        .forEach((b) => {
-          b.disabled = !canAct;
-        });
+      // Cards and alternative country selectors are separate from the map action.
+      const handOpen = $('rkPrivateInfo').querySelector('.rk-card-hand')?.open;
+      const missionOpen = $('rkPrivateInfo').querySelector('.rk-mission')?.open;
+      let privateInfo = '';
+      if (canAct && state.rules?.goal === 'mission') privateInfo += `<details class="rk-mission" ${missionOpen?'open':''}><summary>✉ Mijn geheime missie</summary><p>${esc(E.mission(state).text)}</p></details>`;
+      if (canAct) {
+        const currentHandKey=`${state.current}/${state.turn}/${hand.join(',')}`;
+        if (phase==='reinforce' && handKey!==currentHandKey) {cards=E.findSet(state)||[];handKey=currentHandKey;}
+        privateInfo += `<details class="rk-card-hand" ${required||handOpen?'open':''}><summary>▱ Mijn ${hand.length} kaarten${required?' · ruilen verplicht':''}</summary>${hand.length ? `<div class="rk-cards">${hand.map(id=>`<button id="rkCard${id}" data-card="${id}" aria-pressed="${cards.includes(id)}" ${phase!=='reinforce'?'disabled':''} aria-label="${id<42?E.territories[id].name:'Joker'}, ${['infanterie','cavalerie','artillerie','joker'][E.cardSymbol(id)]}">${symbols[E.cardSymbol(id)]}<small>${id<42?E.territories[id].name:'Joker'}</small></button>`).join('')}</div>` : '<p>Verover deze beurt een gebied om een kaart te verdienen.</p>'}${phase==='reinforce'&&hand.length ? button(`Ruil set · +${E.tradeValue(state,cards)} legers`,'trade',!E.validSet(cards)) : '<p>Kaarten ruil je tijdens het versterken.</p>'}</details>`;
+      }
+      $('rkPrivateInfo').innerHTML = privateInfo;
+      let fields = `<label>${phase==='capital'?'Hoofdstad':'Vanuit'}<select id="rkFrom" ${!canAct||occupied?'disabled':''}>${options(E.owned(state),own?selected:null)}</select></label>`;
+      if (phase==='attack'||phase==='fortify') {
+        const targets = own ? (phase==='attack' ? E.territories[selected].neighbors.filter(i=>state.territories[i].owner!==state.current) : E.owned(state).filter(i=>i!==selected&&E.connected(state,selected,i))) : [];
+        fields += `<label>${phase==='attack'?'Vijandelijk buurland':'Naar eigen gebied'}<select id="rkTarget" ${!canAct||occupied?'disabled':''}>${options(targets,target)}</select></label>`;
+      }
+      $('rkSelectors').innerHTML = fields;
+      if (required && canAct) showInspector(true);
+      if (focused && $(focused) && $(focused).getClientRects().length) $(focused).focus({preventScroll:true});
+      else if (wasInControls && !mode) $('rkNext').focus({preventScroll:true});
+    }
+    function previewAmount() {
+      if (!$('rkDraftPreview') || selected === null || !$('rkAmount')) return;
+      const input=$('rkAmount'), n=Math.max(Number(input.min),Math.min(Number(input.max),Number(input.value)||1));
+      $('rkDraftPreview').textContent = `${state.territories[selected].armies} → ${state.territories[selected].armies+n} legers · ${state.pool-n} over`;
+      board.previewDraft(selected,n);
     }
     function render() {
       if (!state) return;
+      if (state.pending && isHuman() && !handoff) {selected=state.pending.from;target=state.pending.to;}
       const p = state.players[state.current];
       $("rkRound").textContent =
         `Ronde ${state.round} · ${state.players.length} spelers · ${({world:"Wereldverovering",domination:"70% veroveren",capital:"Hoofdsteden",mission:"Geheime missies"})[state.rules?.goal||"world"]}`;
@@ -1562,10 +1617,16 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
             : state.phase === "fortify"
               ? "Verplaats één keer via eigen landen, of beëindig je beurt."
               : "Het spel is beslist.";
+      if (!isHuman() && state.phase !== 'won') $('rkInstruction').textContent = `${p.name} speelt · ${phases[state.phase].toLowerCase()}`;
+      else if (state.phase==='reinforce' && !state.pool) $('rkInstruction').textContent='Alle legers staan. Je kunt gaan aanvallen.';
+      else if (state.phase==='deploy' && !state.pool) $('rkInstruction').textContent='Je startlegers staan. Geef de beurt door.';
+      else if (!state.pending && selected !== null && ['attack','fortify'].includes(state.phase)) $('rkInstruction').textContent = `${E.territories[selected].name} · ${state.phase==='attack'?'kies een gemarkeerde vijand of sleep je leger':'kies een verbonden eigen land'}`;
       const required = p.cards.length >= (state.resumeAttack ? 6 : 5), next = $("rkNext");
       next.dataset.action = state.phase === "fortify" ? "endTurn" : "advance";
       next.disabled = !isHuman() || handoff || !!state.pending || !["reinforce","attack","fortify","deploy"].includes(state.phase) || ((state.phase === "reinforce" || state.phase === "deploy") && (state.pool > 0 || (state.phase === "reinforce" && required)));
       next.textContent = state.phase === "fortify" ? "Beurt klaar ✓" : state.phase === "attack" ? "Verplaatsen →" : state.phase === "deploy" ? "Volgende speler →" : "Aanvallen →";
+      $('rkMapNext').disabled=next.disabled; $('rkMapNext').textContent=next.textContent; $('rkMapNext').dataset.action=next.dataset.action;
+      $('rkBack').setAttribute('aria-label',selected!==null && !state.pending?'Selectie annuleren':'Wereldmacht opslaan en naar het menu');
       $("rkHand").disabled = !isHuman() || handoff || state.phase === "won";
       $("rkHandCount").textContent = handoff || !isHuman() ? "—" : p.cards.length;
       $("rkHand").classList.toggle("rk-card-earned", !!state.conquered && !handoff && isHuman());
@@ -1615,10 +1676,25 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       clearTimeout(feedbackTimer); feedbackTimer = null; $("rkFeedback").hidden = true;
       board.close();
       save();
+      selected=null;target=null;overviewView=null;contextView=null;
+      $('rk').classList.remove('rk-focus-mode');
       active = false;
+      showInspector(false);
       api.close();
       api.menu();
     }
+    function dismiss() {
+      if (!active) return false;
+      if (!$('rkInspector').hidden) {
+        showInspector(false);
+        ($('rkActioncancel') || $('rkActionoccupy') || $('rkDockToggle')).focus({preventScroll:true});
+        return true;
+      }
+      if (!state?.pending && selected!==null) { cancelSelection(target===null); return true; }
+      if (!state?.pending && $('rk').classList.contains('rk-expanded')) { board.close(); return true; }
+      return false;
+    }
+    function back() { if (!dismiss()) leave(); }
     function setupNames() {
       const total = Number($("rkPlayerCount").value),
         previous = Number($("rkHumanCount").value) || 1;
@@ -1667,12 +1743,12 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       api.enter();
       if (!api.isActive()) return;
       active = true;
-      $("rk").classList.add("rk-dock-collapsed");
-      $("rkDockToggle").setAttribute("aria-expanded", "false");
+      showInspector(false);
       board.fit();
       if (state) {
         checkHandoff();
         render();
+        if (state.pending && isHuman() && !handoff) board.focusPair(state.pending.from,state.pending.to);
         schedule();
       } else {
         showStart();
@@ -1684,11 +1760,11 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       }
     }
     $("rkDockToggle").addEventListener("click", () => {
-      const collapsed = $("rk").classList.toggle("rk-dock-collapsed");
-      $("rkDockToggle").setAttribute("aria-expanded", String(!collapsed));
-      $("rkDockToggle").setAttribute("aria-label", collapsed ? "Spelacties uitklappen" : "Spelacties inklappen");
+      showInspector($('rkInspector').hidden,true);
     });
-    $("rkBack").addEventListener("click", leave);
+    $('rkCloseInspector').addEventListener('click',()=>{showInspector(false);$('rkDockToggle').focus({preventScroll:true});});
+    $('rkClearSelection').addEventListener('click',()=>cancelSelection(true));
+    $("rkBack").addEventListener("click", back);
     $("rkStartMenu").addEventListener("click", leave);
     $("rkPauseMenu").addEventListener("click", leave);
     $("rkPause").addEventListener("click", () => {
@@ -1721,12 +1797,10 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     });
     $("rkPool").addEventListener("pointerup", event => {
       if (!poolDrag || poolDrag.id !== event.pointerId) return;
-      const hit = document.elementFromPoint(event.clientX,event.clientY)?.closest("[data-country],[data-country-marker]");
-      if (draggedPool && hit && $("rkMap").contains(hit) && !blocked() && !modalOpen()) {
-        const id = Number(hit.dataset.country ?? hit.dataset.countryMarker);
+      const id = board.pickCountry(event.clientX,event.clientY);
+      if (draggedPool && id!==null && !blocked() && !modalOpen()) {
         if (state.territories[id].owner === state.current) {
-          selected = id; target = null;
-          apply({type:"reinforce",to:id,amount:state.pool});
+          choose(id);
         } else feedback("Kies een eigen land", "Versterkingen plaats je op jouw eigen kleur.");
       }
       cancelPoolDrag();
@@ -1736,17 +1810,14 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     $("rkPool").addEventListener("click", () => {
       if (draggedPool) { draggedPool = false; return; }
       if (blocked()) return;
-      $("rk").classList.remove("rk-dock-collapsed");
-      $("rkDockToggle").setAttribute("aria-expanded","true");
-      const accessible = $("rkControls").querySelector(".rk-accessible");
-      if (selected === null && accessible) accessible.open = true;
-      $(selected === null ? "rkFrom" : "rkAmount")?.focus({preventScroll:true});
+      showInspector(true);
+      $('rkInspector').querySelector('.rk-accessible').open=true;
+      $('rkFrom').focus({preventScroll:true});
     });
     $("rkHand").addEventListener("click", () => {
       if (blocked()) return;
-      $("rk").classList.remove("rk-dock-collapsed");
-      $("rkDockToggle").setAttribute("aria-expanded", "true");
-      const hand = $("rkControls").querySelector(".rk-card-hand");
+      showInspector(true);
+      const hand = $("rkPrivateInfo").querySelector(".rk-card-hand");
       if (hand) { hand.open = true; hand.scrollIntoView({block:"nearest"}); hand.querySelector("summary").focus({preventScroll:true}); }
       else feedback("Je kaarten", state.players[state.current].cards.length ? "Kaarten ruilen kan tijdens het versterken." : "Verover deze beurt een gebied om een kaart te verdienen.");
     });
@@ -1810,9 +1881,9 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       handoff = false;
       commitChoice = null;
       encounter = null;
+      diceChoice = null;
       $("rkFeedback").hidden = true;
-      $("rk").classList.add("rk-dock-collapsed");
-      $("rkDockToggle").setAttribute("aria-expanded", "false");
+      overviewView=null;contextView=null;showInspector(false);
       api.storage.set("rk.settings", settings);
       const stats = api.storage.get("rk.stats", { played: 0, won: 0 });
       stats.played = (stats.played || 0) + 1;
@@ -1827,8 +1898,18 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       handoff = false;
       api.close();
       render();
+      if (state.pending) board.focusPair(state.pending.from,state.pending.to);
       schedule();
     }
+    $('rk').addEventListener('keydown',event=>{
+      if (!$('rkInspector').hidden && event.key==='Tab') {
+        const items=[...$('rkInspector').querySelectorAll('button:not(:disabled),select:not(:disabled),summary')].filter(el=>el.getClientRects().length);
+        if (event.shiftKey && document.activeElement===items[0] || !event.shiftKey && document.activeElement===items.at(-1)) {event.preventDefault();(event.shiftKey?items.at(-1):items[0])?.focus();} return;
+      }
+      if (event.key!=='Escape' || document.querySelector('.modal.show,.overlay.show')) return;
+      if (!$('rkInspector').hidden) {event.preventDefault();event.stopImmediatePropagation();showInspector(false);$('rkDockToggle').focus({preventScroll:true});}
+      else if (selected!==null && !state?.pending) {event.preventDefault();event.stopImmediatePropagation();cancelSelection(target===null);}
+    });
     $("rkBeginTurn").addEventListener("click", beginTurn);
     function changeView(list) {
       $("rkViewMenu").open = false;
@@ -1869,7 +1950,16 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
         input.value = type === "all" ? b.dataset.max : Math.max(Number(input.min), Math.min(Number(input.max), Number(input.value)+(type === "more" ? 1 : -1)));
         $("rkAmountRange").value = input.value;
         previewTransfer();
+        previewAmount();
         return;
+      }
+      if (type==='cancel') { cancelSelection(); return; }
+      if (type==='minimum') { $('rkAmount').value=$('rkAmount').min; $('rkAmountRange').value=$('rkAmount').value; previewTransfer(); return; }
+      if (type==='previousDice'||type==='nextDice') {
+        const values=[0,...[1,2,3].filter(n=>n<state.territories[selected].armies)];
+        const index=values.indexOf(diceChoice||0);
+        diceChoice=values[(index+(type==='nextDice'?1:values.length-1))%values.length];
+        renderControls(); return;
       }
       if (type === "focus") { if (selected !== null && target !== null) board.focusPair(selected,target); return; }
       if (type === "new") {
@@ -1921,47 +2011,37 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     });
     function updateOdds() {
       if (!$("rkOdds") || !state || target === null) return;
-      const value = Math.min(Number($("rkCommitRange").value),state.territories[selected].armies-1), odds = value ? E.battleOdds(value, state.territories[target].armies, E.defenseDice(state,target), state.rules?.dice) : 0;
-      $("rkCommitCount").textContent = value;
-      $("rkChance").textContent = odds === null ? "—" : `${odds===1 ? "100" : odds===0 ? "0" : odds > .99 ? ">99" : odds < .01 ? "<1" : Math.round(odds*100)}%`;
-      $("rkChanceBar").style.width = `${odds === null ? 0 : odds*100}%`;
+      const maximum=state.territories[selected].armies-1, actualDice=Number($('rkDice')?.value)||0, manual=actualDice>0;
+      const value=manual?maximum:Math.min(Number($('rkCommitRange').value),maximum), odds=manual?null:value?E.battleOdds(value,state.territories[target].armies,E.defenseDice(state,target),state.rules?.dice):0;
+      if ($('rkCommitCount')) $('rkCommitCount').textContent=value;
+      $("rkChance").textContent = manual?`${actualDice} tegen ${Math.min(E.defenseDice(state,target),state.territories[target].armies)}`:odds === null ? "—" : `${odds===1 ? "100" : odds===0 ? "0" : odds > .99 ? ">99" : odds < .01 ? "<1" : Math.round(odds*100)}%`;
       const reserve = state.territories[selected].armies-value;
-      $("rkReserve").textContent = `${reserve} ${reserve===1 ? "blijft" : "blijven"} achter · ${value} ${value===1 ? "valt" : "vallen"} aan`;
+      $("rkReserve").textContent = manual?'Eén leger blijft achter.':`${reserve} ${reserve===1 ? "blijft" : "blijven"} achter · ${value} ${value===1 ? "valt" : "vallen"} aan`;
       $("rkFromCount").textContent = value;
-      $("rkFromCaption").textContent = "vallen aan";
+      $("rkFromCaption").textContent = manual?'beschikbaar':"vallen aan";
       const mode=state.rules?.dice === "balanced" ? "gebalanceerde blitz" : "willekeurige blitz";
-      $("rkOdds").textContent = `${mode}${E.defenseDice(state,target)===3 ? " · hoofdstad: 3 verdedigingsdobbelstenen" : ""}`;
+      $("rkOdds").textContent = manual?'Bij gelijkspel wint de verdediger.':`${mode}${E.defenseDice(state,target)===3 ? " · hoofdstad: 3 verdedigingsdobbelstenen" : ""}`;
     }
-    $("rk").addEventListener("toggle", event => {
-      if (event.target.classList?.contains("rk-mission") && event.target.open) {
-        $("rk").classList.remove("rk-dock-collapsed");
-        $("rkDockToggle").setAttribute("aria-expanded","true");
-      }
-    },true);
     $("rk").addEventListener("input", event => {
       if (event.target.id === "rkAmountRange") $("rkAmount").value = event.target.value;
       if (event.target.id === "rkAmount") $("rkAmountRange").value = event.target.value;
       if (["rkAmountRange","rkAmount"].includes(event.target.id)) previewTransfer();
+      if (["rkAmountRange","rkAmount"].includes(event.target.id)) previewAmount();
       if (event.target.id === "rkCommitRange") { commitChoice = Number(event.target.value); updateOdds(); }
     });
     $("rk").addEventListener("change", (event) => {
+      if (event.target.id==='rkAmount') {
+        const input=event.target;input.value=Math.max(Number(input.min),Math.min(Number(input.max),Number(input.value)||Number(input.min)));
+        $('rkAmountRange').value=input.value;previewAmount();previewTransfer();
+      }
       if (event.target.id === "rkFrom") {
-        commitChoice = null;
-        selected =
-          event.target.value === "" ? null : Number(event.target.value);
-        target = null;
-        $("rk").classList.remove("rk-dock-collapsed");
-        stop();
-        render();
+        if (event.target.value==='') cancelSelection(true);
+        else { choose(Number(event.target.value)); if (['attack','fortify'].includes(state.phase)) { showInspector(true); $('rkInspector').querySelector('.rk-accessible').open=true; $('rkTarget')?.focus({preventScroll:true}); } }
       }
       if (event.target.id === "rkTarget") {
-        target = event.target.value === "" ? null : Number(event.target.value);
-        stop();
-        updateMap();
-        renderControls();
+        if (event.target.value!=='') choose(Number(event.target.value));
       }
-      if (event.target.id === "rkDice")
-        diceChoice = Number(event.target.value);
+      if (event.target.id === "rkDice") { diceChoice=Number(event.target.value); renderControls(); }
     });
     $("rkMap").addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
@@ -1995,9 +2075,11 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       .forEach((el) =>
         watcher.observe(el, { attributes: true, attributeFilter: ["class"] }),
       );
+    watcher.observe($('rkInspector'),{attributes:true,attributeFilter:['hidden']});
     return {
       enter,
       leave,
+      dismiss,
       hasSave: () => E.validState(api.storage.get("rk.save", null)),
       save,
     };
@@ -2012,4 +2094,9 @@ const Wereldmacht = window.ReneRisk.create({
   music: predicate => Sfx.gate('rk', predicate), refreshSound: () => Sfx.refresh(),
 });
 $('#tileRk').addEventListener('click', () => window.openGame('rk'));
+const rkPreviousBack = window.appBack;
+window.appBack = () => {
+  if (current === 'rk' && !document.querySelector('.modal.show,.overlay.show,#limitOverlay.show,#errOverlay.show') && Wereldmacht.dismiss()) return true;
+  return rkPreviousBack();
+};
 /* RK_JS_END */

@@ -14,7 +14,7 @@
     </button>
   </div>
   <div class="rk-turn">
-    <button id="rkHand" class="rk-hand-button" aria-label="Mijn kaarten bekijken"><span>▱</span><b id="rkHandCount">0</b><small>Kaarten</small></button>
+
     <span id="rkPlayerBadge"></span>
     <div>
       <b id="rkPlayerName"></b>
@@ -50,7 +50,7 @@
           <button id="rkZoomIn" aria-label="Kaart inzoomen">+</button>
         </div>
       </div>
-      <p id="rkMapTip" class="rk-map-tip">Tik op een gebied of legerfiche. Tik op een continent hieronder om te vergroten.</p>
+      <p id="rkMapTip" class="rk-map-tip">Tik op een leger. Sleep over de achtergrond om de kaart te verschuiven; knijp met twee vingers om te zoomen.</p>
       <div id="rkMapViewport" class="rk-map-viewport" tabindex="0" aria-label="Geografische wereldkaart met 42 speelgebieden. Gebruik de zoomknoppen of de landenlijst.">
         <div id="rkMapSurface"><svg id="rkMap" viewBox="0 0 1440 760" xmlns="http://www.w3.org/2000/svg" aria-label="Wereldkaart met de 42 gebieden en gekleurde legerfiches"></svg></div>
       </div>
@@ -58,8 +58,17 @@
       <button id="rkPool" class="rk-pool" hidden aria-label="Versterkingen plaatsen"><svg viewBox="0 0 32 48" aria-hidden="true"><path d="M7 48V32L3 36L0 33L6 22L12 20H20L26 22L32 33L29 36L25 32V48H18V36H14V48Z" fill="currentColor"/><circle cx="16" cy="12" r="7" fill="#edcf96"/><path d="M7 10Q8 1 16 1Q24 1 25 10L22 13H10Z" fill="currentColor"/><path d="M9 8H23M10 26H22" stroke="#ffe5a9" stroke-width="2"/></svg><b id="rkPoolCount">3</b><span>PLAATSEN</span><small>Sleep naar een eigen land</small></button>
       <div id="rkPoolGhost" class="rk-pool-ghost" hidden aria-hidden="true">♟ <b></b></div>
       <div class="rk-map-status"><span id="rkMapTurn"></span><span id="rkMapSelection">Kies een eigen gebied op de kaart</span><button id="rkToActions" class="rk-map-button" hidden>Spelacties →</button></div>
-    <aside class="rk-command-panel" aria-label="Spelacties"><button id="rkDockToggle" class="rk-dock-toggle" aria-label="Spelacties inklappen" aria-expanded="true">⌄</button>
-      <div id="rkControls"></div>
+      <div id="rkContextHeading" class="rk-context-heading" hidden></div>
+      <div id="rkActors" class="rk-actors" hidden></div>
+      <div id="rkControls" class="rk-touch-controls" aria-label="Actie op de kaart" hidden></div>
+      <button id="rkClearSelection" class="rk-clear-selection" hidden>‹ Ander leger kiezen</button>
+      <button id="rkDockToggle" class="rk-inspector-toggle" aria-label="Landen, kaarten en beurtverslag bekijken" aria-expanded="false">☷</button>
+      <button id="rkMapNext" class="rk-next rk-map-next" disabled>Volgende fase →</button>
+      <button id="rkHand" class="rk-hand-button" aria-label="Mijn kaarten bekijken"><span>▱</span><b id="rkHandCount">0</b><small>Kaarten</small></button>
+    <aside id="rkInspector" class="rk-inspector" role="dialog" aria-modal="true" aria-label="Landen, kaarten en beurtverslag" hidden>
+      <div class="rk-inspector-heading"><h3>Speloverzicht</h3><button id="rkCloseInspector" aria-label="Speloverzicht sluiten">×</button></div>
+      <div id="rkPrivateInfo"></div>
+      <details class="rk-accessible"><summary>Landen kiezen uit een lijst</summary><div id="rkSelectors"></div></details>
       <details class="rk-history">
         <summary>Dobbelstenen en beurtverslag</summary>
         <div id="rkBattle" class="rk-battle"></div>
@@ -143,7 +152,7 @@
       <li>
         <b>Versterken.</b> Je krijgt minimaal 3 legers, of één per drie landen
         als dat meer is. Een compleet continent geeft extra legers. Plaats alle
-        versterkingen in je eigen landen. Sleep de legerreserve op de kaart naar een eigen land om alles daar te plaatsen. Je kunt ook een land aantikken en met de schuif een deel plaatsen.
+        versterkingen in je eigen landen. Tik op een eigen land of sleep de legerreserve erheen. De kaart zoomt in; kies het aantal en bevestig met het groene vinkje. Met het rode kruis ga je zonder plaatsing terug naar de vorige kaartweergave.
       </li>
       <li>
         <b>Aanvallen.</b> Kies een eigen land met minstens 2 legers en een
@@ -173,7 +182,7 @@
       </li>
     </ol>
     <p>
-      Gebruik de schuif om legers te plaatsen, te verplaatsen of achter te houden bij een blitzaanval. Blitz handelt het gevecht meteen af, totdat je gekozen aanvalslegers op zijn of je het gebied verovert. Kies bij de start voor willekeurige of gebalanceerde blitz; bij gebalanceerd zijn extreme uitslagen minder waarschijnlijk. Losse worpen gebruiken altijd gewone dobbelstenen. Bij snelle verovering win je na het bezetten van 30 gebieden.
+      Tik tijdens het aanvallen op een eigen leger en op een vijandelijke buur, of sleep het geselecteerde leger erheen. Tik op de centrale dobbelstenen om te werpen; met de pijlen ernaast kies je blitz of een losse worp. Gebruik de schuif om legers te plaatsen, te verplaatsen of achter te houden bij een blitzaanval. Blitz handelt het gevecht meteen af, totdat je gekozen aanvalslegers op zijn of je het gebied verovert. Kies bij de start voor willekeurige of gebalanceerde blitz; bij gebalanceerd zijn extreme uitslagen minder waarschijnlijk. Losse worpen gebruiken altijd gewone dobbelstenen. Bij snelle verovering win je na het bezetten van 30 gebieden.
       De stippellijnen verbinden continenten. Alaska en Kamtsjatka zijn ook
       buren. Elk spelersnummer blijft zichtbaar, zodat je geen kleuren hoeft te
       onderscheiden.
