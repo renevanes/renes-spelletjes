@@ -98,6 +98,8 @@ try {
   assert.ok(await p.evaluate(() => ReneWereldMap.contacts.every(([a,b]) => ReneRiskEngine.territories[ReneRiskEngine.byId[a]].neighbors.includes(ReneRiskEngine.byId[b]))), 'Every drawn land border allows a legal attack');
   // Selecting a piece on the geographic map must select that same game territory.
   await p.locator('#rkMap [data-marker="3"]').click();
+  assert.equal(await p.locator('#rkFrom').inputValue(), '', 'Tapping the current source again deselects it');
+  await p.locator('#rkMap [data-marker="3"]').click();
   assert.equal(await p.locator('#rkFrom').inputValue(), '3');
   if (!(await p.locator('#rkExpandMap').isVisible())) await p.locator('#rkViewMenu > summary').click();
   await p.locator('#rkExpandMap').click();
