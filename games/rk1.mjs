@@ -79,9 +79,11 @@ try {
   assert.deepEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('rk.save'))), saved);
   if (!(await p.locator('#rkListTab').isVisible())) await p.locator('#rkViewMenu > summary').click();
   await p.locator('#rkListTab').click();
+  await p.locator('[data-country-filter="own"]').click();
   await p.locator('#rkCountryList [data-country="3"]').focus();
   await p.keyboard.press('Enter');
-  assert.equal(await p.evaluate(() => document.activeElement.dataset.country), '3');
+  assert.equal(await p.locator('#rkFrom').inputValue(), '3');
+  assert.ok(await p.locator('#rkMapViewport').isVisible(),'Keyboard country selection returns to the map');
   if (!(await p.locator('#rkMapTab').isVisible())) await p.locator('#rkViewMenu > summary').click();
   await p.locator('#rkMapTab').click();
   await p.locator('#rkWorldView').click();

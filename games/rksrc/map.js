@@ -44,7 +44,7 @@
       surface.style.height = `${Math.max(h, height)}px`;
       svg.style.width = `${w}px`; svg.style.height = `${h}px`;
       svg.style.left = `${Math.max(0, (width-w)/2)}px`;
-      svg.style.top = `${Math.max(0, Math.min((height-h)/2, !expanded && matchMedia("(max-width:650px) and (orientation:portrait)").matches ? 70 : Infinity))}px`;
+      svg.style.top = `${Math.max(0,(height-h)/2)}px`;
       svg.classList.toggle("rk-map-detail", scale*zoom >= .55);
       $("rkZoomLabel").textContent = `${Math.round(zoom*100)}%`;
       $("rkZoomOut").disabled = zoom <= 1;
@@ -118,6 +118,9 @@
       const animation = node.animate([{opacity:0,transform:"translateY(8px)"},{opacity:1,offset:.2},{opacity:0,transform:"translateY(-25px)"}],{duration:1000,easing:"ease-out"});
       effects.add(animation); animation.finished.then(()=>{node.remove(); effects.delete(animation);},()=>node.remove());
     }
+    function clearEffects() {
+      effects.forEach(animation=>animation.cancel());effects.clear();$('rkMapEffects').replaceChildren();
+    }
     function focusContinent(id) {
       metrics();
       const matching = regions.filter((_, i) => E.territories[i].continent === id);
@@ -151,6 +154,13 @@
         node.classList.toggle("attackable", !handoff && state.phase === "attack" && selected !== null && state.territories[selected].owner === state.current && state.territories[selected].armies > 1 && t.owner !== state.current && E.territories[selected].neighbors.includes(i));
         node.classList.toggle('reachable', !handoff && state.phase==='fortify' && selected!==null && i!==selected && t.owner===state.current && E.connected(state,selected,i));
         const marker = markers[i];
+        const human=!handoff && !state.players[state.current].ai && !state.pending && state.phase!=='won';
+        const source=t.owner===state.current && t.armies>1;
+        const eligible=human && (['deploy','reinforce','capital'].includes(state.phase) ? t.owner===state.current && (state.phase==='capital'||state.pool>0) :
+          state.phase==='attack' ? source && E.territories[i].neighbors.some(j=>state.territories[j].owner!==state.current) || node.classList.contains('attackable') :
+          state.phase==='fortify' && !state.fortified ? selected!==null ? node.classList.contains('reachable') || i===selected : source && state.territories.some((other,j)=>j!==i && other.owner===state.current && E.connected(state,i,j)) : false);
+        node.classList.toggle('eligible',eligible);marker.classList.toggle('eligible',eligible);
+        marker.classList.toggle('unavailable',human && !eligible && i!==selected && i!==target);
         marker.querySelector(".rk-marker-disc").setAttribute("fill", mix(p.color,.18));
         marker.querySelector(".rk-armies").textContent = t.armies;
         marker.querySelector(".rk-armies").style.fontSize = t.armies > 999 ? "11px" : t.armies > 99 ? "14px" : "18px";
@@ -245,14 +255,14 @@
       if (event.detail === 0) { const hit = event.target.closest("[data-country],[data-country-marker]"); if (hit) onSelect(Number(hit.dataset.country ?? hit.dataset.countryMarker)); }
     });
     $("rk").addEventListener("keydown", event => {
-      if (event.key === "Escape" && expanded && selection.selected===null && $('rkInspector').hidden && !$("rk").classList.contains('rk-focus-mode') && !document.querySelector(".modal.show")) { event.preventDefault(); event.stopPropagation(); expand(false); $("rkViewMenu").querySelector("summary").focus(); }
+      if (event.key === "Escape" && expanded && selection.selected===null && $('rkInspector').hidden && $('rkCountryList').hidden && !$("rk").classList.contains('rk-focus-mode') && !document.querySelector(".modal.show")) { event.preventDefault(); event.stopPropagation(); expand(false); $("rkViewMenu").querySelector("summary").focus(); }
       if (event.key === "Tab" && expanded && !document.querySelector(".modal.show")) {
-        const items = [...$("rkBoardPanel").querySelectorAll('button:not(:disabled),[tabindex="0"]')].filter(el => !el.closest('[hidden],[inert]') && el.getClientRects().length);
+        const items = [...$("rkBoardPanel").querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),summary,[tabindex="0"]')].filter(el => !el.closest('[hidden],[inert]') && el.getClientRects().length);
         if ((event.shiftKey && document.activeElement === items[0]) || (!event.shiftKey && document.activeElement === items.at(-1))) { event.preventDefault(); (event.shiftKey ? items.at(-1) : items[0]).focus(); }
       }
     });
     new ResizeObserver(() => { const center = pointAt(lastWidth/2, lastHeight/2); if (metrics() && zoom>1) zoomAt(zoom, viewport.clientWidth/2, viewport.clientHeight/2, center); }).observe(viewport);
-    return { update, fit, snapshot, restore, focusCountry, pickCountry, focusContinent, focusPair, preview, previewDraft, clearPreview, effect, close: () => { pointers.clear(); gesture = null; cancelAnimationFrame(frame); frame = 0; clearArmyDrag();effects.forEach(a=>a.cancel()); effects.clear(); clearPreview(); if (expanded) expand(false); } };
+    return { update, fit, snapshot, restore, focusCountry, pickCountry, focusContinent, focusPair, preview, previewDraft, clearPreview, effect, clearEffects, close: () => { pointers.clear(); gesture = null; cancelAnimationFrame(frame); frame = 0; clearArmyDrag();clearEffects();clearPreview(); if (expanded) expand(false); } };
   }
   window.ReneWereldBoard = { create, palette };
 })();
