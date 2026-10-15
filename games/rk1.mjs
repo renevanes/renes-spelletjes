@@ -86,6 +86,14 @@ try {
   await p.setViewportSize({width:915,height:412});
   await p.waitForFunction(() => { const el = document.getElementById("rkMapViewport"); return el.scrollWidth <= el.clientWidth+1 && el.scrollHeight <= el.clientHeight+1; });
   assert.ok(await p.locator('#rkMapViewport').evaluate(el => el.scrollWidth <= el.clientWidth+1 && el.scrollHeight <= el.clientHeight+1));
+  // The fullscreen board hides the global phase bar, so its encounter must retain a phase action.
+  const australia = await p.evaluate(()=>[ReneRiskEngine.byId.westaus,ReneRiskEngine.byId.eastaus]);
+  await p.locator(`#rkMap [data-marker="${australia[0]}"]`).click();
+  await p.locator(`#rkMap [data-marker="${australia[1]}"]`).click();
+  await p.locator('#rkActionadvance').scrollIntoViewIfNeeded();
+  assert.ok(await p.locator('#rkActionadvance').isVisible(),'Fullscreen combat retains a way to advance the phase');
+  await p.locator('#rkMap [data-marker="0"]').click();
+  await p.locator('#rkViewMenu > summary').click();
   await p.locator('[data-continent="eu"]').click();
   assert.ok(parseInt(await p.locator('#rkZoomLabel').innerText()) > 100);
   assert.ok(await p.locator('#rkMap .rk-region-labels').isVisible());
@@ -124,7 +132,8 @@ try {
   for (const [width, height] of [[320, 844], [390, 844], [915, 412], [1280, 800]]) {
     await p.setViewportSize({ width, height });
     await p.waitForFunction(() => { const el=document.getElementById('rkMapViewport'); return el.scrollWidth<=el.clientWidth+1 && el.scrollHeight<=el.clientHeight+1; });
-    assert.ok(await p.locator('#rk').evaluate(el => el.scrollWidth <= el.clientWidth), `Game overflow at ${width}×${height}`);
+    const layout=await p.locator('#rk').evaluate(el=>({fits:el.scrollWidth<=el.clientWidth,width:el.scrollWidth,items:[...el.querySelectorAll('.rk-topbar>*,.rk-turn>*')].map(n=>({id:n.id||n.className,right:n.getBoundingClientRect().right}))}));
+    assert.ok(layout.fits, `Game overflow at ${width}×${height}: ${JSON.stringify(layout)}`);
     assert.ok(await p.locator('#rkMapViewport').evaluate(el => el.scrollWidth <= el.clientWidth+1 && el.scrollHeight <= el.clientHeight+1), `Whole map at ${width}×${height}`);
   }
   await p.screenshot({ path: 'games/rk-landscape.png', fullPage: true });
@@ -176,6 +185,7 @@ try {
   await a.locator('#tileRk').click();
   await a.locator('#rkStart').click();
   await a.waitForFunction(() => __sfx._state().now === 'rk', null, { timeout: 20000 });
+  await a.locator('#rkPause').click();
   await a.locator('#rkNew').click();
   await a.locator('#rkMusic').uncheck();
   await a.waitForFunction(() => __sfx._state().now === null);
