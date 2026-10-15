@@ -88,7 +88,7 @@ html.big-text #rkControls h3{font-size:19px}html.big-text #rkControls .rk-muted,
  #rkControls:has(>.rk-encounter)>.rk-encounter{grid-column:1;grid-row:span 2;grid-template-columns:1fr 20px 1fr;align-self:start}
  #rkControls:has(>#rkCommitRange)>.rk-encounter{grid-row:span 5}
  #rkControls:has(>.rk-encounter)>.rk-accessible,#rkControls:has(>.rk-encounter)>.rk-buttons,#rkControls:has(>.rk-encounter)>.rk-action,#rkControls:has(>.rk-encounter)>.rk-card-hand{grid-column:1/-1}
- #rkControls:has(>.rk-encounter)>#rkActionadvance,#rkControls:has(>.rk-encounter)>#rkActionendTurn{display:none}
+ #rk:not(.rk-expanded) #rkControls:has(>.rk-encounter)>#rkActionadvance,#rk:not(.rk-expanded) #rkControls:has(>.rk-encounter)>#rkActionendTurn{display:none}
  #rkControls:has(>.rk-encounter) .rk-troops{grid-template-columns:1fr;margin-top:0}
  #rkControls:has(>.rk-encounter) .rk-troops>input[type=range]{grid-column:1}
  #rkControls:has(>.rk-encounter) .rk-amount{justify-content:space-between}

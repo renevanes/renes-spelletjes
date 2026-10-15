@@ -86,6 +86,13 @@ try {
   await p.setViewportSize({width:915,height:412});
   await p.waitForFunction(() => { const el = document.getElementById("rkMapViewport"); return el.scrollWidth <= el.clientWidth+1 && el.scrollHeight <= el.clientHeight+1; });
   assert.ok(await p.locator('#rkMapViewport').evaluate(el => el.scrollWidth <= el.clientWidth+1 && el.scrollHeight <= el.clientHeight+1));
+  // The fullscreen board hides the global phase bar, so its encounter must retain a phase action.
+  const australia = await p.evaluate(()=>[ReneRiskEngine.byId.westaus,ReneRiskEngine.byId.eastaus]);
+  await p.locator(`#rkMap [data-marker="${australia[0]}"]`).click();
+  await p.locator(`#rkMap [data-marker="${australia[1]}"]`).click();
+  await p.locator('#rkActionadvance').scrollIntoViewIfNeeded();
+  assert.ok(await p.locator('#rkActionadvance').isVisible(),'Fullscreen combat retains a way to advance the phase');
+  await p.locator('#rkMap [data-marker="0"]').click();
   await p.locator('#rkViewMenu > summary').click();
   await p.locator('[data-continent="eu"]').click();
   assert.ok(parseInt(await p.locator('#rkZoomLabel').innerText()) > 100);
