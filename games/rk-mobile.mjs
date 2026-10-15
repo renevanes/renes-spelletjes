@@ -117,6 +117,12 @@ try {
   await p.locator('#rkActionoccupy').click();
   const occupied=await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')));
   assert.equal(occupied.territories[0].armies,remain);assert.equal(occupied.territories[1].armies,arrive);
+  await p.setViewportSize({width:320,height:844});
+  await p.evaluate(()=>document.documentElement.classList.add('big-text'));
+  assert.ok(await p.locator('#rkFeedback').isVisible());
+  assert.ok(await p.locator('#rk').evaluate(el=>el.scrollWidth<=el.clientWidth),'An active conquest notification must fit the narrow screen with large text');
+  await p.evaluate(()=>document.documentElement.classList.remove('big-text'));
+  await p.setViewportSize({width:390,height:844});
   assert.equal(await p.locator('#rkFrom').inputValue(),'1','The captured country becomes the next attacking country');
   assert.ok(await p.locator('#rkHand').evaluate(el=>el.classList.contains('rk-card-earned')));
   await p.locator('#rkNext').click();
