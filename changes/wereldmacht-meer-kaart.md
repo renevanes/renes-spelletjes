@@ -1,1 +1,0 @@
-Wereldmacht geeft de wereldkaart meer ruimte met een smalle beurtbalk, korte meldingen en land- en spelersinformatie die je zelf opent. Sleep je leger direct naar een doel, bekijk bestemmingen wanneer je ze nodig hebt en plaats steeds hetzelfde aantal legers zonder het opnieuw in te stellen. Ook je laatste verplaatsing kun je nu herstellen zolang je nog niet bent doorgegaan.

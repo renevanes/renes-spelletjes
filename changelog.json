@@ -328,5 +328,10 @@
   "v": "1.65",
   "date": "2026-10-15",
   "notes": "Wereldmacht helpt je tijdens elke beurt met een duidelijke volgende stap en gemarkeerde legers die je kunt gebruiken. Zoek landen op naam, filter op beschikbare of eigen landen en kies na je leger direct een geldige bestemming met een leesbare knop. De laatste legerplaatsing kun je ongedaan maken zolang je nog niet bent doorgegaan; de beurtfasen en je aantallen landen en legers zijn ook duidelijker in beeld."
+ },
+ {
+  "v": "1.66",
+  "date": "2026-10-15",
+  "notes": "Wereldmacht geeft de wereldkaart meer ruimte met een smalle beurtbalk, korte meldingen en land- en spelersinformatie die je zelf opent. Sleep je leger direct naar een doel, bekijk bestemmingen wanneer je ze nodig hebt en plaats steeds hetzelfde aantal legers zonder het opnieuw in te stellen. Ook je laatste verplaatsing kun je nu herstellen zolang je nog niet bent doorgegaan."
  }
 ]
