@@ -25,6 +25,13 @@ try {
     assert.ok(hit.ok,`${id} must be a large, directly reachable action without scrolling: ${JSON.stringify(hit)}`);
   }
   async function narrowFits(){assert.ok(await p.locator('#rk').evaluate(el=>el.scrollWidth<=el.clientWidth),'All controls fit the phone width');}
+  async function phaseFits(){
+    const fit=await p.locator('#rkContextHeading .rk-focus-phase').evaluate(el=>{
+      const r=el.getBoundingClientRect(),header=el.parentElement.getBoundingClientRect();
+      return {text:el.textContent,width:el.clientWidth,scrollWidth:el.scrollWidth,rect:r.toJSON(),header:header.toJSON(),viewport:[innerWidth,innerHeight]};
+    });
+    assert.ok(fit.width>0&&fit.scrollWidth<=fit.width+1&&fit.rect.left>=fit.header.left-1&&fit.rect.right<=fit.header.right+1,`The full phase remains readable inside its action header: ${JSON.stringify(fit)}`);
+  }
   async function mapRoom(focused=false){
     const layout=await p.locator('#rkMapViewport').evaluate(el=>{
       const r=el.getBoundingClientRect(),screen=document.getElementById('rk').getBoundingClientRect();
@@ -33,10 +40,11 @@ try {
     const minimum=layout.portrait ? .75 : focused ? .60 : .70;
     assert.ok(layout.fraction>=minimum,`The world retains ${minimum*100}% of the screen${focused?' during an action':''}: ${JSON.stringify(layout)}`);
     assert.ok(await p.locator('#rkInspector').isHidden(),'A map interaction never opens a detail window automatically');
+    if(focused)await phaseFits();
   }
 
-  await p.locator('#tileRk').click();await p.locator('#rkPlayerCount').selectOption('6');await p.locator('#rkGoal').selectOption('domination');await p.locator('#rkCardMode').selectOption('fixed');await p.locator('#rkStart').click();
-  const initial=await saved();assert.deepEqual(initial.rules,{goal:'domination',cards:'fixed',dice:'balanced',setup:'auto'});
+  await p.locator('#tileRk').click();assert.ok(await p.locator('#rkAutoAdvance').isChecked(),'Automatic advance starts enabled in the lobby');await p.locator('#rkPlayerCount').selectOption('6');await p.locator('#rkGoal').selectOption('domination');await p.locator('#rkCardMode').selectOption('fixed');await p.locator('#rkStart').click();
+  const initial=await saved();assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.settings')).autoAdvance),true);assert.deepEqual(initial.rules,{goal:'domination',cards:'fixed',dice:'balanced',setup:'auto'});
   assert.equal(await p.locator('#rkOwnership').getAttribute('aria-pressed'),'true');assert.match(await p.locator('#rkRound').innerText(),/70%/);
   assert.equal(await p.locator('#rkControls').isVisible(),false,'The world starts without an action form');
   await p.setViewportSize({width:915,height:412});await p.waitForTimeout(80);
@@ -47,7 +55,9 @@ try {
   await p.locator('#rkCloseInspector').click();
   await p.setViewportSize({width:390,height:844});await p.waitForTimeout(50);
   const own=initial.territories.findIndex(t=>t.owner===0),other=initial.territories.findIndex((t,i)=>t.owner===0&&i!==own);
-  await tapCountry(own);assert.ok(parseInt(await p.locator('#rkZoomLabel').innerText())>100,'Choosing a country focuses the action');
+  await tapCountry(own);assert.match(await p.locator('#rkContextHeading .rk-focus-phase').innerText(),/Fase 1\/3.*Versterken/i);assert.ok(parseInt(await p.locator('#rkZoomLabel').innerText())>100,'Choosing a country focuses the action');
+  for(const [width,height,big] of [[320,844,true],[390,844,false],[915,412,true]]){await p.setViewportSize({width,height});await p.evaluate(big=>document.documentElement.classList.toggle('big-text',big),big);await mapRoom(true);await free('#rkActionreinforce');}
+  await p.setViewportSize({width:390,height:844});await p.evaluate(()=>document.documentElement.classList.remove('big-text'));
   await free('#rkActionreinforce');await free('[data-action="all"]');await p.locator('#rkAmountRange').fill('1');assert.equal(await p.locator('#rkAmount').inputValue(),'1');
   assert.deepEqual(await saved(),initial,'Deployment is only a preview until confirmed');
   await p.locator('#rkActioncancel').click();assert.deepEqual(await saved(),initial);assert.equal(await p.locator('#rkZoomLabel').innerText(),'100%','Cancel restores the original camera');
@@ -57,9 +67,18 @@ try {
   assert.equal(await p.locator('#rkActionreinforce').isVisible(),true);assert.deepEqual(await saved(),initial);
   await p.locator('#rkAmountRange').fill('1');await p.locator('[data-action="more"]').click();assert.equal(Number(await p.locator('#rkAmount').inputValue()),2);
   await p.locator('[data-action="less"]').click();await p.locator('#rkActionreinforce').click();
-  let s=await saved();assert.equal(s.territories[own].armies,initial.territories[own].armies+1);assert.equal(s.pool,initial.pool-1);
-  await tapCountry(other);await p.locator('[data-action="all"]').click();await p.locator('#rkActionreinforce').click();
-  s=await saved();assert.equal(s.pool,0);assert.equal(s.territories[other].armies,initial.territories[other].armies+initial.pool-1);assert.ok(await p.locator('#rkNext').isEnabled());
+  let s=await saved();assert.equal(s.territories[own].armies,initial.territories[own].armies+1);assert.equal(s.pool,initial.pool-1);assert.equal(s.phase,'reinforce','A partial placement stays in the reinforcement phase');
+  await tapCountry(other);await p.locator('[data-action="all"]').click();
+  const confirmRect=await p.locator('#rkActionreinforce').boundingBox(),confirmPoint={x:confirmRect.x+confirmRect.width/2,y:confirmRect.y+confirmRect.height/2};
+  await p.touchscreen.tap(confirmPoint.x,confirmPoint.y);
+  const firstTap=await p.evaluate(pt=>({save:JSON.parse(localStorage.getItem('rk.save')),under:document.elementFromPoint(pt.x,pt.y)?.closest('button')?.id,nextDisabled:document.getElementById('rkNext').disabled,mapNextDisabled:document.getElementById('rkMapNext').disabled}),confirmPoint);
+  await p.touchscreen.tap(confirmPoint.x,confirmPoint.y);
+  assert.equal(firstTap.under,'rkNext','The second physical tap covers the newly exposed phase button');
+  assert.ok(firstTap.nextDisabled&&firstTap.mapNextDisabled,'Both phase controls briefly protect the automatic transition');
+  assert.equal(firstTap.save.phase,'attack');assert.deepEqual(await saved(),firstTap.save,'A rapid second tap at the placement position cannot skip attack or change the saved dice state');
+  s=await saved();assert.equal(s.pool,0);assert.equal(s.phase,'attack','The last human placement advances to attack without another tap');assert.equal(s.rng,initial.rng,'Advancing phases never rolls the dice');assert.match(await p.locator('#rkPhase').innerText(),/Fase 2\/3.*Aanvallen/i);assert.equal(s.territories[other].armies,initial.territories[other].armies+initial.pool-1);await p.waitForFunction(()=>!document.getElementById('rkNext').disabled);
+  await free('#rkNext');await p.locator('#rkNext').click();
+  s=await saved();assert.equal(s.phase,'fortify','A deliberate phase action works again after the brief tap guard');assert.equal(s.rng,firstTap.save.rng);
   const beforeReload=s;await menu();await p.reload();await p.locator('#tileRk').click();assert.deepEqual(await saved(),beforeReload);
 
   // A stack can be dragged directly from the world overview, without a preparatory source tap.
@@ -70,8 +89,9 @@ try {
   assert.equal(originZoom,'100%');await drag(await point(0),await point(1));
   assert.equal(await p.locator('#rkFrom').inputValue(),'0');assert.equal(await p.locator('#rkTarget').inputValue(),'1');
   assert.ok(await p.locator('#rkTargetChoices').isHidden(),'Dragging opens the battle without a destination panel');
-  await free('#rkActionblitz');assert.ok(await p.locator('#rkActors .rk-avatar').evaluateAll(nodes=>nodes.every(el=>!el.getClientRects().length)),'Battle actors keep their names and counts without map-covering portraits');assert.equal(await p.locator('#rkNext').isVisible(),false,'An active battle cannot accidentally skip the phase');
-  for(const [width,height] of [[320,844],[390,844],[915,412]]){await p.setViewportSize({width,height});await narrowFits();await mapRoom(true);await free('[data-action="previousDice"]');await free('[data-action="nextDice"]');await free('#rkActionblitz');}
+  await free('#rkActionblitz');assert.match(await p.locator('#rkContextHeading .rk-focus-phase').innerText(),/Fase 2\/3.*Aanvallen/i);assert.ok(await p.locator('#rkActors .rk-avatar').evaluateAll(nodes=>nodes.every(el=>!el.getClientRects().length)),'Battle actors keep their names and counts without map-covering portraits');assert.equal(await p.locator('#rkNext').isVisible(),false,'An active battle cannot accidentally skip the phase');
+  for(const [width,height,big] of [[320,844,true],[390,844,false],[915,412,true]]){await p.setViewportSize({width,height});await p.evaluate(big=>document.documentElement.classList.toggle('big-text',big),big);await narrowFits();await mapRoom(true);await free('[data-action="previousDice"]');await free('[data-action="nextDice"]');await free('#rkActionblitz');}
+  await p.evaluate(()=>document.documentElement.classList.remove('big-text'));
   assert.deepEqual(await saved(),preBattle);await p.locator('#rkCommitRange').fill('1');assert.match(await p.locator('#rkReserve').innerText(),/39 blijven achter/);
   await p.locator('[data-action="nextDice"]').click();assert.ok(await p.locator('#rkActionattack').isVisible());await p.locator('[data-action="previousDice"]').click();assert.ok(await p.locator('#rkActionblitz').isVisible());assert.deepEqual(await saved(),preBattle);
   await p.locator('#rkActionblitz').click();s=await saved();assert.equal(s.territories[0].armies,39);assert.match(await p.locator('.rk-result').innerText(),/Jij −1/);
@@ -80,7 +100,7 @@ try {
   // Conquest, resume halfway through occupation, one-tap continuation, then a single fortification.
   await fixture(()=>{window.__noSave=true;const s=ReneRiskEngine.newGame([{name:'Rene'},{name:'Nova',ai:true},{name:'Atlas',ai:true}],23,{dice:'balanced'});s.phase='attack';s.pool=0;s.territories[0]={owner:0,armies:40};s.territories[1]={owner:1,armies:3};s.territories[2]={owner:1,armies:1};localStorage.setItem('rk.save',JSON.stringify(s));});
   await tapCountry(0);await tapCountry(1);await free('#rkActionblitz');await p.locator('#rkActionblitz').click();
-  const captured=await saved();assert.ok(captured.pending);assert.ok(await p.locator('#rkActionoccupy').isVisible());
+  const captured=await saved();assert.match(await p.locator('#rkContextHeading .rk-focus-phase').innerText(),/Fase 2\/3.*Bezetten/i);assert.ok(captured.pending);assert.ok(await p.locator('#rkActionoccupy').isVisible());
   await p.locator('#rkAmountRange').fill(String(captured.pending.min));
   assert.equal(Number(await p.locator('#rkToCount').innerText()),captured.pending.min);assert.deepEqual(await saved(),captured,'Changing occupation never moves troops early');
   await menu();await p.reload();await p.locator('#tileRk').click();assert.deepEqual(await saved(),captured);assert.ok((await p.locator('#rkBattleRoute').getAttribute('d')).length>0,'Resuming a capture restores its map route');
@@ -89,7 +109,9 @@ try {
   const remain=Number(await p.locator('#rkFromCount').innerText()),arrive=Number(await p.locator('#rkToCount').innerText());assert.ok(remain>=1);assert.equal(arrive+remain,captured.territories[0].armies+captured.territories[1].armies);assert.equal(await p.locator('#rkMap [data-marker="0"] .rk-preview-armies').textContent(),String(remain));
   await p.locator('#rkActionoccupy').click();s=await saved();assert.equal(s.territories[0].armies,remain);assert.equal(s.territories[1].armies,arrive);assert.ok(await p.locator('#rkHand').evaluate(el=>el.classList.contains('rk-card-earned')));
   await tapCountry(2);assert.equal(await p.locator('#rk').getAttribute('data-interaction'),'attack','The captured stack attacks the next country with one tap');assert.equal(await p.locator('#rkFrom').inputValue(),'1');await p.locator('#rkActioncancel').click();
-  await p.locator('#rkNext').click();await tapCountry(1);await tapCountry(0);const preFortify=await saved();await p.locator('#rkAmountRange').fill('2');assert.deepEqual(await saved(),preFortify);
+  await p.locator('#rkNext').click();await tapCountry(1);await tapCountry(0);const preFortify=await saved();assert.match(await p.locator('#rkContextHeading .rk-focus-phase').innerText(),/Fase 3\/3.*Verplaatsen/i);
+  for(const [width,height,big] of [[320,844,true],[390,844,false],[915,412,true]]){await p.setViewportSize({width,height});await p.evaluate(big=>document.documentElement.classList.toggle('big-text',big),big);await mapRoom(true);await free('#rkActionfortify');}
+  await p.evaluate(()=>document.documentElement.classList.remove('big-text'));await p.locator('#rkAmountRange').fill('2');assert.deepEqual(await saved(),preFortify);
   await p.locator('#rkActioncancel').click();assert.deepEqual(await saved(),preFortify,'Cancelling a transfer does not use the fortification');
   await tapCountry(1);await tapCountry(0);await p.locator('#rkAmountRange').fill('2');const from=Number(await p.locator('#rkFromCount').innerText()),to=Number(await p.locator('#rkToCount').innerText());await free('#rkActionfortify');await p.locator('#rkActionfortify').click();s=await saved();assert.equal(s.territories[1].armies,from);assert.equal(s.territories[0].armies,to);assert.equal(s.fortified,true);
   await tapCountry(1);assert.equal(await p.locator('#rkActionfortify').count(),0,'A used fortification cannot open a second move');
@@ -109,7 +131,7 @@ try {
 
   // Manual setup and capitals retain the same touch-to-preview-to-confirm interaction.
   await fixture(()=>{window.__noSave=true;localStorage.setItem('rk.save',JSON.stringify(ReneRiskEngine.newGame([{name:'Rene'},{name:'CPU',ai:true}],31,{setup:'manual',goal:'capital',dice:'balanced'})));});
-  assert.match(await p.locator('#rkPhase').innerText(),/Startlegers/i);s=await saved();const startCountry=s.territories.findIndex(t=>t.owner===0);await tapCountry(startCountry);await free('#rkActionreinforce');await p.locator('#rkActionreinforce').click();const deployed=await saved();await menu();await p.reload();await p.locator('#tileRk').click();assert.deepEqual(await saved(),deployed);assert.ok(await p.locator('#rkNext').isEnabled());
+  assert.match(await p.locator('#rkPhase').innerText(),/Voorbereiding.*Startlegers/i);s=await saved();const startCountry=s.territories.findIndex(t=>t.owner===0);await tapCountry(startCountry);await free('#rkActionreinforce');await p.locator('#rkActionreinforce').click();const deployed=await saved();assert.equal(deployed.phase,'deploy','Placing a manual starting batch never skips the setup handoff');assert.equal(deployed.current,0);assert.equal(deployed.pool,0);await menu();await p.reload();await p.locator('#tileRk').click();assert.deepEqual(await saved(),deployed);assert.ok(await p.locator('#rkNext').isEnabled());
   await fixture(()=>{window.__noSave=true;localStorage.setItem('rk.save',JSON.stringify(ReneRiskEngine.newGame([{name:'Rene'},{name:'CPU',ai:true}],41,{goal:'capital',dice:'balanced'})));});
   s=await saved();const capital=s.territories.findIndex(t=>t.owner===0);await tapCountry(capital);await free('#rkActioncapital');await p.locator('#rkActioncapital').click();await p.waitForFunction(()=>JSON.parse(localStorage.getItem('rk.save')).phase==='reinforce');assert.equal(await p.locator('#rkMap .rk-capital').evaluateAll(nodes=>nodes.filter(n=>n.textContent==='♛').length),2);assert.ok((await saved()).pool>=5);
 
@@ -124,5 +146,5 @@ try {
   await p.locator('#rkBeginTurn').click();await p.locator('#rkDockToggle').click();await p.locator('.rk-mission summary').click();assert.equal(await p.locator('.rk-mission p').innerText(),await p.evaluate(()=>ReneRiskEngine.mission(JSON.parse(localStorage.getItem('rk.save'))).text));
   await menu();await p.reload();await p.locator('#tileRk').click();assert.equal(await p.locator('.rk-mission').count(),0);
   assert.deepEqual(errors,[]);await context.close();
-  console.log('PASS: map-first touch layouts and compact requested details; direct army dragging; previews/cancellation/camera restore; dice modes; resumed conquest; one-tap attack chains; fortification/cards; narrow large-text controls; setup/capitals/private handoffs');
+  console.log('PASS: rapid repeated placement taps cannot skip attack; map-first touch layouts and compact requested details; direct army dragging; previews/cancellation/camera restore; dice modes; resumed conquest; one-tap attack chains; fortification/cards; narrow large-text controls; setup/capitals/private handoffs');
 } finally {await browser.close();await new Promise(resolve=>server.close(resolve));}

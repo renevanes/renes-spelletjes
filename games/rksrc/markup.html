@@ -69,6 +69,7 @@
       </div>
       <button id="rkDockToggle" class="rk-inspector-toggle" aria-label="Landen, kaarten en beurtverslag bekijken" aria-expanded="false">☷ <span>Overzicht</span></button>
       <button id="rkMapNext" class="rk-next rk-map-next" disabled>Volgende fase →</button>
+      <span id="rkMapPhase" class="rk-map-phase"></span>
       <button id="rkHand" class="rk-hand-button" aria-label="Mijn kaarten bekijken"><span>▱</span><b id="rkHandCount">0</b><small>Kaarten</small></button>
     <aside id="rkInspector" class="rk-inspector" role="dialog" aria-modal="true" aria-label="Landen, kaarten en beurtverslag" data-panel="overview" hidden>
       <div class="rk-inspector-heading"><h3>Speloverzicht</h3><button id="rkCloseInspector" aria-label="Speloverzicht sluiten">×</button></div>
@@ -137,6 +138,7 @@
       <label>Blitzdobbelstenen<select id="rkDiceMode"><option value="balanced">Gebalanceerd · minder extreme uitslagen</option><option value="random">Willekeurig · gewone dobbelstenen</option></select></label>
       <label>Startlegers<select id="rkSetupMode"><option value="auto">Automatisch verdelen</option><option value="manual">Zelf plaatsen · om de beurt</option></select></label>
     </div>
+    <label class="rk-auto-option"><input id="rkAutoAdvance" type="checkbox" checked><b>Automatisch naar de aanvalsfase</b><small>Zodra alle versterkingen staan. Je kiest en bevestigt aanvallen zelf.</small></label>
     <div class="rk-sound-options"><label><input id="rkSound" type="checkbox" checked> Geluidseffecten</label><label><input id="rkMusic" type="checkbox" checked> Achtergrondmuziek</label></div><div id="rkNames" class="rk-names"></div>
     <p class="rk-note">
       Bij twee spelers worden de landen tussen jullie verdeeld; er zijn geen
@@ -151,6 +153,8 @@
 <div id="rkHelpModal" class="modal">
   <div class="sheet">
     <h3>Zo speel je Wereldmacht</h3>
+    <p>Je beurt heeft drie fasen: <b>1 Versterken → 2 Aanvallen → 3 Verplaatsen</b>. De huidige fase staat steeds in beeld. De knop <b>Volgende fase</b> wisselt alleen van fase; daarmee valt er nog geen leger aan en verplaats je nog niets. <b>Beurt afronden</b> geeft de beurt door.</p>
+    <p>Standaard ga je na het plaatsen van je laatste versterking automatisch naar de aanvalsfase. Je kunt dit uitzetten bij het starten of in het pauzemenu. Met <b>↶</b> herstel je de laatste plaatsing, inclusief deze automatische fasewissel, zolang je nog geen andere actie hebt uitgevoerd.</p>
     <p>De compacte beurtbalk laat zien wat je kunt doen. Via <b>Zoeken</b> kies je een land op naam. Met <b>Doelen</b> open je de geldige bestemmingen van je gekozen leger. Sleep een eigen leger direct naar een vijand of verbonden eigen land; je bekijkt de actie voordat je bevestigt. Tik nogmaals op je gekozen leger om de selectie te wissen. Met <b>↶</b> herstel je je laatste legerplaatsing of verplaatsing, zolang je nog niet bent doorgegaan of het spel hebt verlaten.</p>
     <p><b>Hoofdsteden:</b> kies aan het begin een eigen gebied als hoofdstad. Elke veroverde hoofdstad geeft 2 extra legers per beurt en verdedigt met maximaal 3 dobbelstenen. Wie alle hoofdsteden bezet, wint; een hoofdstad verliezen schakelt je dus niet meteen uit.</p>
     <p><b>Geheime missies:</b> bekijk je eigen opdracht via ‘Mijn geheime missie’. Je wint zodra je opdracht voltooid is. Bij doorgeven blijft deze opdracht verborgen.</p>
@@ -203,6 +207,7 @@
   <div class="sheet">
     <h3>Wereldmacht staat op pauze</h3>
     <p>Je spel wordt na elke actie opgeslagen.</p>
+    <label class="rk-auto-option"><input id="rkPauseAutoAdvance" type="checkbox" checked><b>Automatisch naar de aanvalsfase</b><small>Zodra alle versterkingen staan. Je kiest en bevestigt aanvallen zelf.</small></label>
     <button id="rkNew" class="btn" style="width:100%;margin-bottom:12px">Nieuw Wereldmacht-spel</button>
     <div class="row">
       <button id="rkPauseMenu" class="btn">Naar menu</button
