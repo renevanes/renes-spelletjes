@@ -32,6 +32,15 @@ try {
     assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.settings')).autoAdvance),enabled,'The pause option persists immediately');
     await p.locator('#rkContinue').click();
   }
+  async function autoEndTurn(enabled){
+    await p.locator('#rkPause').click();await p.locator('#rkPauseAutoEndTurn').setChecked(enabled);
+    assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.settings')).autoEndTurn),enabled,'The turn-completion preference persists immediately');
+    await p.locator('#rkContinue').click();
+  }
+  async function recordSaves(){await p.evaluate(()=>{
+    window.__rkWrites=[];const write=Storage.prototype.setItem;
+    Storage.prototype.setItem=function(key,value){if(key==='rk.save')window.__rkWrites.push(JSON.parse(value));return write.call(this,key,value);};
+  });}
   async function fixture(kind='reinforce'){
     if(await p.locator('#rk').evaluate(el=>el.classList.contains('active'))){
       if(await p.locator('#rkInspector').isVisible())await p.locator('#rkCloseInspector').click();
@@ -39,7 +48,7 @@ try {
     }
     await p.evaluate(kind=>{
       window.__noSave=true;
-      const E=ReneRiskEngine,s=E.newGame([{name:'Rene'},{name:'Nova',ai:true},{name:'Atlas',ai:true}],23,kind==='manual'?{setup:'manual'}:kind==='mission-win'?{goal:'mission'}:{});
+      const E=ReneRiskEngine,s=E.newGame(kind==='auto-human'?[{name:'Rene'},{name:'Medespeler'}]:[{name:'Rene'},{name:'Nova',ai:true},{name:'Atlas',ai:true}],23,kind==='manual'?{setup:'manual'}:['mission-win','fortify-win','auto-human'].includes(kind)?{goal:'mission'}:{});
       if(kind==='manual'){localStorage.setItem('rk.save',JSON.stringify(s));return;}
       s.territories=s.territories.map(()=>({owner:0,armies:3}));
       s.territories[1]={owner:1,armies:3};s.territories[E.byId.eastaus]={owner:2,armies:3};
@@ -47,7 +56,7 @@ try {
       if(kind==='attack'){
         s.phase='attack';s.pool=0;s.territories[1].owner=0;
         s.territories[E.byId.kamchatka]={owner:1,armies:2};s.territories[E.byId.japan].armies=1;
-      } else if(kind==='fortify'){
+      } else if(['fortify','auto-ai'].includes(kind)){
         s.phase='fortify';s.pool=0;s.territories=s.territories.map(()=>({owner:1,armies:2}));
         s.territories[0]={owner:0,armies:12};s.territories[3]={owner:0,armies:1};s.territories[E.byId.eastaus]={owner:2,armies:3};
       } else if(kind==='no-attack'){
@@ -62,6 +71,15 @@ try {
       if(kind==='mission-win'){
         s.territories=s.territories.map((t,i)=>({owner:i<18?0:i===41?2:1,armies:i>0&&i<18?2:1}));
         s.missions=['garrisons','territories','asia-africa'];s.pool=1;
+      }
+      if(kind==='auto-human'){
+        s.territories=s.territories.map((t,i)=>({owner:i<21?0:1,armies:1}));s.territories[0].armies=12;
+        s.phase='fortify';s.pool=0;s.conquered=true;s.missions=['garrisons','territories'];
+        s.players[0].cards=[0,1];s.players[1].cards=[2,3];s.discard=s.deck.filter(c=>c>3);s.deck=[];
+      }
+      if(kind==='fortify-win'){
+        s.territories=s.territories.map((t,i)=>({owner:i<18?0:i===41?2:1,armies:i<18?i===3?1:i===0?3:2:1}));
+        s.missions=['garrisons','territories','asia-africa'];s.phase='fortify';s.pool=0;s.conquered=true;
       }
       if(!E.validState(s))throw new Error('Invalid UX fixture');
       localStorage.setItem('rk.save',JSON.stringify(s));
@@ -221,6 +239,70 @@ try {
   assert.ok(await p.locator('#rkTargetChoices').isHidden());await tap('#rkTargetsToggle');assert.equal(await p.locator('#rkTargetChoices button').count(),1);await tap('#rkTargetChoices [data-quick-country="3"]');
   assert.ok(await p.locator('#rkActionfortify').isVisible());assert.deepEqual(await saved(),fortify);
   await tap('#rkActioncancel');
+  // Confirming a transfer completes one human turn atomically and keeps the handoff private.
+  await fixture('auto-human');await p.locator('#rkBeginTurn').click();const humanFortify=await saved();
+  const expectedHuman=await p.evaluate(s=>ReneRiskEngine.apply(ReneRiskEngine.apply(s,{type:'fortify',from:0,to:3,amount:2}),{type:'endTurn'}),humanFortify);
+  assert.notEqual(expectedHuman.rng,humanFortify.rng,'The empty deck exercises the real reshuffle and card-draw RNG');
+  await pickCountry(0,'alaska');await pickCountry(3,'alberta');await p.locator('#rkAmountRange').fill('2');
+  assert.match(await p.locator('#rkContextHeading h3').innerText(),/Beurt afronden/i);assert.match(await p.locator('#rkActionfortify').getAttribute('aria-label'),/verplaatsen en beurt afronden/i);
+  assert.deepEqual(await saved(),humanFortify,'A transfer preview does not complete the turn');await recordSaves();
+  const confirm=await p.locator('#rkActionfortify').boundingBox(),confirmPoint={x:confirm.x+confirm.width/2,y:confirm.y+confirm.height/2};
+  await p.touchscreen.tap(confirmPoint.x,confirmPoint.y);
+  const handoffHit=await p.evaluate(pt=>{const el=document.elementFromPoint(pt.x,pt.y);return el?.closest('button')?.id||el?.id||el?.className;},confirmPoint);
+  await p.touchscreen.tap(confirmPoint.x,confirmPoint.y);
+  assert.deepEqual(await saved(),expectedHuman,'Transfer and turn completion persist the exact engine result once');
+  assert.deepEqual(await p.evaluate(()=>window.__rkWrites),[expectedHuman],'No intermediate transfer state or repeated turn is saved');
+  assert.equal((await saved()).players[0].cards.length,humanFortify.players[0].cards.length+1,'Exactly one conquest card is awarded');
+  assert.ok(await p.locator('#rkHandoffModal').isVisible(),`Repeated transfer tap keeps the handoff open; second-tap target was ${handoffHit}`);
+  assert.equal(await p.locator('.rk-mission,[data-card]').count(),0,'Neither human sees private information before accepting the next turn');
+  console.log(`Auto-end handoff second-tap target: ${handoffHit}`);
+  await p.reload();await p.locator('#tileRk').click();assert.deepEqual(await saved(),expectedHuman,'Resuming the completed turn never draws a second card');
+  assert.ok(await p.locator('#rkHandoffModal').isVisible());assert.equal(await p.locator('.rk-mission,[data-card]').count(),0);
+  await p.locator('#rkBeginTurn').click();assert.ok(await p.locator('#rkUndoPlacement').isHidden(),'The next human cannot undo the previous player’s transfer');
+  await p.locator('#rkHand').click();assert.deepEqual(await p.locator('[data-card]').evaluateAll(nodes=>nodes.map(el=>Number(el.dataset.card))),expectedHuman.players[1].cards);
+
+  // An automatic completion starts the computer, which continues through its existing actions.
+  await fixture('auto-ai');const aiFortify=await saved();
+  const expectedAI=await p.evaluate(s=>ReneRiskEngine.apply(ReneRiskEngine.apply(s,{type:'fortify',from:0,to:3,amount:2}),{type:'endTurn'}),aiFortify);
+  await pickCountry(0,'alaska');await pickCountry(3,'alberta');await p.locator('#rkAmountRange').fill('2');await recordSaves();await tap('#rkActionfortify');
+  assert.deepEqual((await p.evaluate(()=>window.__rkWrites))[0],expectedAI,'The computer receives the completed turn directly');
+  await p.waitForFunction(before=>{const raw=localStorage.getItem('rk.save');if(raw===JSON.stringify(before))return false;window.__autoEndAI=JSON.parse(raw);return true;},expectedAI);
+  await p.locator('#rkPause').click();const aiAction=await p.evaluate(()=>window.__autoEndAI);
+  assert.equal(aiAction.current,1);assert.equal(aiAction.turn,expectedAI.turn);assert.equal(aiAction.phase,'reinforce');assert.equal(aiAction.pool,0);
+  assert.deepEqual(aiAction.players[0].cards,expectedAI.players[0].cards,'Computer scheduling cannot award another card to the previous human');await p.locator('#rkPauseMenu').click();
+
+  // The independent opt-out retains transfer undo, and settings or resume never finish a stored turn.
+  await fixture('fortify');await autoEndTurn(false);assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.settings')).autoAdvance),true);
+  const manualFortify=await saved();await pickCountry(0,'alaska');await pickCountry(3,'alberta');await p.locator('#rkAmountRange').fill('2');await tap('#rkActionfortify');
+  const moved=await saved(),expectedMoved=await p.evaluate(s=>ReneRiskEngine.apply(s,{type:'fortify',from:0,to:3,amount:2}),manualFortify);
+  assert.deepEqual(moved,expectedMoved);await tap('#rkUndoPlacement');assert.deepEqual(await saved(),manualFortify);
+  await pickCountry(0,'alaska');await pickCountry(3,'alberta');await p.locator('#rkAmountRange').fill('2');await tap('#rkActionfortify');
+  await autoEndTurn(true);assert.deepEqual(await saved(),moved,'Enabling automatic completion does not finish an already committed transfer');
+  await autoAdvance(false);assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.settings')).autoEndTurn),true,'Changing reinforcement advance leaves turn completion independent');
+  await p.locator('#rkPause').click();await p.locator('#rkNew').click();assert.ok(await p.locator('#rkAutoEndTurn').isChecked());assert.equal(await p.locator('#rkAutoAdvance').isChecked(),false);
+  await p.locator('#rkAutoEndTurn').uncheck();assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.settings')).autoAdvance),false);await p.locator('#rkResume').click();
+  await p.locator('#rkPause').click();await p.locator('#rkPauseMenu').click();await p.reload();await p.locator('#tileRk').click();assert.deepEqual(await saved(),moved);
+  for(const [width,height] of [[320,844],[915,412]]){
+    await p.setViewportSize({width,height});await p.evaluate(()=>document.documentElement.classList.add('big-text'));await p.locator('#rkPause').click();
+    for(const id of ['rkPauseAutoAdvance','rkPauseAutoEndTurn']){
+      assert.equal(await p.locator('#'+id).isChecked(),false,'Both independent preferences survive reload');
+      const row=p.locator('#'+id).locator('..');await row.scrollIntoViewIfNeeded();
+      assert.ok(await row.evaluate(el=>{const r=el.getBoundingClientRect();return r.height>=44&&r.width>=44&&r.top>=0&&r.bottom<=innerHeight+1&&el.scrollWidth<=el.clientWidth+1&&el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));}),'Each pause preference remains readable and reachable on small screens');
+    }
+    await p.locator('#rkContinue').scrollIntoViewIfNeeded();await tap('#rkContinue');
+  }
+  await p.setViewportSize({width:390,height:844});await p.evaluate(()=>document.documentElement.classList.remove('big-text'));
+  await autoAdvance(true);await autoEndTurn(true);assert.deepEqual(await saved(),moved,'Rendering and toggling preferences never end an already fortified turn');
+
+  // A transfer that wins a mission stays won and neither advances nor draws a conquest card.
+  await fixture('fortify-win');const beforeWin=await saved(),statsBeforeWin=await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.stats')||'{}'));
+  await pickCountry(0,'alaska');await pickCountry(3,'alberta');await p.locator('#rkAmountRange').fill('1');await tap('#rkActionfortify');
+  const wonByTransfer=await saved(),statsWon=await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.stats')));
+  assert.equal(wonByTransfer.phase,'won');assert.equal(wonByTransfer.current,beforeWin.current);assert.equal(wonByTransfer.turn,beforeWin.turn);assert.equal(wonByTransfer.winner,0);
+  assert.deepEqual(wonByTransfer.deck,beforeWin.deck);assert.deepEqual(wonByTransfer.players.map(p=>p.cards),beforeWin.players.map(p=>p.cards));assert.equal(wonByTransfer.rng,beforeWin.rng);
+  assert.equal(statsWon.finished,(statsBeforeWin.finished||0)+1);assert.equal(statsWon.won,(statsBeforeWin.won||0)+1);
+  await p.locator('#rkPause').click();await p.locator('#rkPauseMenu').click();await p.reload();await p.locator('#tileRk').click();assert.deepEqual(await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.stats'))),statsWon,'Resuming a won transfer records no second result');
+
   await fixture('no-attack');assert.match(await p.locator('#rkGuideTitle').innerText(),/Geen aanval mogelijk/);assert.ok(await p.locator('#rkGuideTitle').isVisible(),'A phone still explains why no attacking army can be chosen');
   assert.ok(await p.locator('#rkNext').isEnabled());assert.ok(await p.locator('#rkPickCountry').isHidden());
 
@@ -243,5 +325,5 @@ try {
   await p.locator('#rkPause').click();await p.locator('#rkPauseMenu').click();await p.reload();await p.locator('#tileRk').click();
   assert.deepEqual(await saved(),beforeReload);assert.ok(await p.locator('#rkUndoPlacement').isHidden());
   assert.deepEqual(errors,[]);
-  console.log('PASS: automatic human reinforcement transitions and exact undo; persistent lobby/pause opt-out; passive resume; mandatory/elimination card thresholds; map-first layouts and compact feedback/details; optional destinations; repeated-tap deselection; remembered/clamped placements; contextual turn guide; complete-world layouts; searchable and filtered countries; touch target choices; exact single-placement undo and phase guards; date-line attacks; fortification; fullscreen Back; safe resume');
+  console.log('PASS: atomic automatic turn completion, single card/RNG draw, private handoff and computer scheduling; independent preferences and opt-out undo; winning transfers; automatic human reinforcement transitions and exact undo; persistent lobby/pause opt-out; passive resume; mandatory/elimination card thresholds; map-first layouts and compact feedback/details; optional destinations; repeated-tap deselection; remembered/clamped placements; contextual turn guide; complete-world layouts; searchable and filtered countries; touch target choices; exact single-placement undo and phase guards; date-line attacks; fortification; fullscreen Back; safe resume');
 } finally {await browser.close();await new Promise(resolve=>server.close(resolve));}
