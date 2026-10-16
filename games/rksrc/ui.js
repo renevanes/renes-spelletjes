@@ -22,6 +22,11 @@
     fortify: "Verplaatsen",
     won: "Gewonnen",
   };
+  function phaseLabel(state) {
+    const step = ['reinforce','attack','fortify'].indexOf(state.phase)+1;
+    return step ? `Fase ${step}/3 · ${state.pending?'Bezetten':phases[state.phase]}`
+      : state.phase==='won' ? 'Spel afgelopen' : `Voorbereiding · ${phases[state.phase]}`;
+  }
   const symbols = ["♟", "♞", "♜", "★"];
   function create(api) {
     let state = api.storage.get("rk.save", null),
@@ -31,6 +36,7 @@
       cards = [],
       handoff = false,
       botTimer = null,
+      phaseGuardTimer = null,
       feedbackTimer = null,
       encounter = null,
       poolDrag = null,
@@ -49,7 +55,7 @@
     const storedInvalid = state !== null && !E.validState(state);
     if (storedInvalid) state = null;
     let settings = Object.assign(
-      { players: 3, humans: 1, difficulty: "normal", tempo: "normal", sound: true, music: true, goal: "world", cardMode: "progressive", dice: "balanced", setup: "auto" },
+      { players: 3, humans: 1, difficulty: "normal", tempo: "normal", sound: true, music: true, autoAdvance: true, goal: "world", cardMode: "progressive", dice: "balanced", setup: "auto" },
       api.storage.get("rk.settings", {}),
     );
     api.music?.(() => settings.music !== false);
@@ -62,6 +68,17 @@
     function stop() {
       clearTimeout(botTimer);
       botTimer = null;
+    }
+    function clearPhaseGuard() {
+      clearTimeout(phaseGuardTimer);
+      phaseGuardTimer=null;
+    }
+    function guardPhaseChange() {
+      // The new phase button can appear under the placement confirmation.
+      phaseGuardTimer=setTimeout(()=>{
+        phaseGuardTimer=null;
+        if (active && state) renderNext();
+      },400);
     }
     function cancelPoolDrag() { poolDrag = null; $("rkPoolGhost").hidden = true; }
     function feedback(title, detail = "") {
@@ -96,7 +113,16 @@
     function apply(action) {
       try {
         const previousTurn = state.turn, previousCapture = state.pending, previousState = state, view = contextView || overviewView;
-        state = E.apply(state, action);
+        let nextState = E.apply(state, action);
+        const autoAdvanced = action.type==='reinforce' && previousState.phase==='reinforce'
+          && !previousState.players[previousState.current].ai && !handoff && settings.autoAdvance!==false
+          && nextState.phase==='reinforce' && nextState.pool===0 && !nextState.pending
+          && nextState.players[nextState.current].cards.length < (nextState.resumeAttack?6:5);
+        // Treat the last placement and its phase change as one undoable action.
+        if (autoAdvanced) nextState=E.apply(nextState,{type:'advance'});
+        clearPhaseGuard();
+        if (autoAdvanced) guardPhaseChange();
+        state = nextState;
         lastPlacement = ['reinforce','fortify'].includes(action.type) && !previousState.players[previousState.current].ai && state.phase !== 'won'
           ? {before:previousState, after:state, amount:action.amount, country:action.to, type:action.type, view} : null;
         if (action.type==='reinforce' && !previousState.players[previousState.current].ai) draftAmount=action.amount;
@@ -129,7 +155,7 @@
           feedback(`${E.territories[selected].name} veroverd`, "Tik op de volgende vijandelijke buur om verder aan te vallen.");
         }
         if (action.type === "advance" && state.phase === "fortify") { selected = null; target = null; }
-        if (action.type === "reinforce") { feedback(`+${action.amount} legers`, E.territories[action.to].name); board.effect(action.to, `+${action.amount}`); }
+        if (action.type === "reinforce") { feedback(autoAdvanced?'Aanvalsfase gestart':`+${action.amount} legers`, `${E.territories[action.to].name}${autoAdvanced?'. Alle versterkingen staan. Kies zelf een aanval.':''}`); board.effect(action.to, `+${action.amount}`); }
         if (["attack", "blitz"].includes(action.type)) board.effect(action.to, state.pending ? "Veroverd!" : `−${state.lastBattle.defendLoss}`);
         if (action.type === "fortify") { feedback("Legers verplaatst", `${action.amount} naar ${E.territories[action.to].name}. Je kunt je beurt beëindigen.`); }
         if (action.type === "endTurn") $("rkFeedback").hidden = true;
@@ -139,7 +165,7 @@
           target = null; contextView = null; overviewView = null;
           commitChoice = null;
         }
-        if (['advance','endTurn'].includes(action.type)) changeView(false);
+        if (autoAdvanced || ['advance','endTurn'].includes(action.type)) changeView(false);
         if (action.type === "trade") showInspector(false);
         if (state.pending) {
           selected = state.pending.from;
@@ -149,7 +175,7 @@
         render();
         if (finishedSelection && view) board.restore(view);
         if (isHuman() && !handoff)
-          window.ReneEnhancements.announce(state.log[0]);
+          window.ReneEnhancements.announce(action.type==='advance'?phaseLabel(state):[state.log[0],state.phase!==previousState.phase?phaseLabel(state):''].filter(Boolean).join(' '));
         schedule();
         return true;
       } catch (error) {
@@ -315,7 +341,7 @@
       if (required) { title='Ruil eerst een kaartenset'; detail='Je krijgt extra legers om deze beurt te plaatsen.'; }
       else if (['reinforce','deploy'].includes(phase)) {
         title=state.pool ? `${state.pool} ${state.pool===1?'leger':'legers'} plaatsen` : 'Alle legers staan';
-        detail=state.pool ? 'Tik op jouw kleur, kies uit de lijst of sleep je reserve.' : phase==='deploy' ? 'Geef de beurt door aan de volgende speler.' : 'Klaar om aan te vallen. Ga door wanneer jij wilt.';
+        detail=state.pool ? `Tik op jouw kleur, kies uit de lijst of sleep je reserve.${phase==='reinforce'&&settings.autoAdvance!==false?' Na je laatste versterking begint de aanvalsfase.':''}` : phase==='deploy' ? 'Geef de beurt door aan de volgende speler.' : 'Alle versterkingen staan. Kies Volgende fase om naar aanvallen te gaan.';
       } else if (phase==='capital') { title='Kies je hoofdstad'; detail='Tik op een eigen land of kies het op naam.'; }
       else if (phase==='attack') {
         title=selected!==null ? `${E.territories[selected].name} · ${state.territories[selected].armies-1} beschikbaar` : available.length ? 'Kies je aanvallende leger' : 'Geen aanval mogelijk';
@@ -348,6 +374,7 @@
     function undoPlacement() {
       if (blocked() || state.pending || !lastPlacement || lastPlacement.after!==state) return;
       const previous=lastPlacement;
+      clearPhaseGuard();
       state=previous.before; lastPlacement=null;
       selected=null;target=null;contextView=null;overviewView=null;
       targetsOpen=false;
@@ -450,7 +477,7 @@
         html = `<div class="rk-victory"><h3>🏆 ${esc(state.players[state.winner].name)} wint!</h3><p>${state.round} rondes · ${E.owned(state,state.winner).length} gebieden</p>${button('Nieuw spel','new')}${button('Naar menu','menu',false,true)}</div>`;
       }
       $('rkContextHeading').hidden = !mode;
-      $('rkContextHeading').innerHTML = mode ? `<h3>${title}</h3>${mode === 'attack' ? '<strong id="rkChance"></strong>' : `<p>${esc(subtitle)}</p>`}` : '';
+      $('rkContextHeading').innerHTML = mode ? `<span class="rk-focus-phase">${esc(phaseLabel(state))}</span><h3>${title}</h3>${mode === 'attack' ? '<strong id="rkChance"></strong>' : `<p>${esc(subtitle)}</p>`}` : '';
       $('rkActors').hidden = !actors; $('rkActors').innerHTML = actors;
       $('rkControls').hidden = !html; $('rkControls').innerHTML = html;
       if (previousAmount!==null && previousAmount!==undefined && $('rkAmount')) { $('rkAmount').value=previousAmount; $('rkAmountRange').value=previousAmount; }
@@ -478,13 +505,24 @@
       if (required && canAct) showInspector(true,$('rkInspector').hidden,'cards');
       renderGuide();
       if (focused && $(focused) && $(focused).getClientRects().length) $(focused).focus({preventScroll:true});
-      else if (wasInControls && !mode) $('rkNext').focus({preventScroll:true});
+      else if (wasInControls && !mode) ($('rkNext').disabled?($('rkPickCountry').hidden?$('rkDockToggle'):$('rkPickCountry')):$('rkNext')).focus({preventScroll:true});
     }
     function previewAmount() {
       if (!$('rkDraftPreview') || selected === null || !$('rkAmount')) return;
       const input=$('rkAmount'), n=Math.max(Number(input.min),Math.min(Number(input.max),Number(input.value)||1));
       $('rkDraftPreview').textContent = `${state.territories[selected].armies} → ${state.territories[selected].armies+n} legers · ${state.pool-n} over`;
       board.previewDraft(selected,n);
+    }
+    function renderNext() {
+      const required=state.players[state.current].cards.length >= (state.resumeAttack?6:5), next=$('rkNext');
+      next.dataset.action=state.phase==='fortify'?'endTurn':'advance';
+      next.disabled=phaseGuardTimer!==null || !isHuman() || handoff || !!state.pending || !['reinforce','attack','fortify','deploy'].includes(state.phase) || (['reinforce','deploy'].includes(state.phase) && (state.pool>0 || (state.phase==='reinforce' && required)));
+      const caption=state.phase==='fortify'?'Einde van je beurt':state.phase==='deploy'?'Startlegers geplaatst':'Volgende fase';
+      const title=state.phase==='fortify'?'Beurt afronden ✓':state.phase==='attack'?'Verplaatsen →':state.phase==='deploy'?'Volgende speler →':'Aanvallen →';
+      const label=state.phase==='fortify'?'Beurt afronden en aan de volgende speler doorgeven':state.phase==='attack'?'Naar de verplaatsingsfase. Hiermee verplaats je nog geen legers.':state.phase==='deploy'?'Startplaatsing afronden en aan de volgende speler doorgeven':'Naar de aanvalsfase. Hiermee start je nog geen aanval.';
+      next.innerHTML=`<small>${caption}</small><span>${title}</span>`;
+      next.setAttribute('aria-label',label);
+      $('rkMapNext').disabled=next.disabled;$('rkMapNext').innerHTML=next.innerHTML;$('rkMapNext').dataset.action=next.dataset.action;$('rkMapNext').setAttribute('aria-label',label);
     }
     function render() {
       if (!state) return;
@@ -498,7 +536,8 @@
           : p.name;
       $("rkPlayerBadge").style.background = p.color;
       $("rkPlayerBadge").innerHTML = portrait(state.current);
-      $("rkPhase").textContent = state.pending ? "Bezetten" : phases[state.phase];
+      $("rkPhase").textContent = phaseLabel(state);
+      $('rkMapPhase').textContent = phaseLabel(state);
       const phaseOrder=['reinforce','attack','fortify'];
       $("rkPhaseSteps").querySelectorAll("[data-phase]").forEach(el => {
         el.classList.toggle("active", el.dataset.phase === state.phase);
@@ -522,11 +561,8 @@
         const owned=E.owned(state), armies=owned.reduce((sum,i)=>sum+state.territories[i].armies,0);
         $('rkInstruction').textContent=`${owned.length} landen · ${armies} legers${state.conquered?' · kaart verdiend':''}`;
       }
-      const required = p.cards.length >= (state.resumeAttack ? 6 : 5), next = $("rkNext");
-      next.dataset.action = state.phase === "fortify" ? "endTurn" : "advance";
-      next.disabled = !isHuman() || handoff || !!state.pending || !["reinforce","attack","fortify","deploy"].includes(state.phase) || ((state.phase === "reinforce" || state.phase === "deploy") && (state.pool > 0 || (state.phase === "reinforce" && required)));
-      next.textContent = state.phase === "fortify" ? "Beurt klaar ✓" : state.phase === "attack" ? "Verplaatsen →" : state.phase === "deploy" ? "Volgende speler →" : "Aanvallen →";
-      $('rkMapNext').disabled=next.disabled; $('rkMapNext').textContent=next.textContent; $('rkMapNext').dataset.action=next.dataset.action;
+      const required=p.cards.length >= (state.resumeAttack?6:5);
+      renderNext();
       $('rkBack').setAttribute('aria-label',selected!==null && !state.pending?'Selectie annuleren':'Wereldmacht opslaan en naar het menu');
       $("rkHand").disabled = !isHuman() || handoff || state.phase === "won";
       $("rkHandCount").textContent = handoff || !isHuman() ? "—" : p.cards.length;
@@ -573,6 +609,7 @@
     }
     function leave() {
       stop();
+      clearPhaseGuard();
       cancelPoolDrag();
       clearTimeout(feedbackTimer); feedbackTimer = null; $("rkFeedback").hidden = true;
       board.close();
@@ -639,6 +676,7 @@
       $("rkSetupMode").value = settings.setup;
       $("rkSound").checked = settings.sound !== false;
       $("rkMusic").checked = settings.music !== false;
+      syncAutoAdvance();
       api.close();
       api.modal("rkStartModal");
     }
@@ -675,6 +713,7 @@
     $("rkPause").addEventListener("click", () => {
       stop();
       save();
+      syncAutoAdvance();
       api.modal("rkPauseModal");
     });
     $("rkContinue").addEventListener("click", () => {
@@ -744,6 +783,15 @@
       api.storage.set("rk.settings", settings);
       api.refreshSound?.();
     });
+    function syncAutoAdvance() {
+      for (const id of ['rkAutoAdvance','rkPauseAutoAdvance']) $(id).checked=settings.autoAdvance!==false;
+    }
+    for (const id of ['rkAutoAdvance','rkPauseAutoAdvance']) $(id).addEventListener('change',()=>{
+      settings.autoAdvance=$(id).checked;
+      api.storage.set('rk.settings',settings);
+      syncAutoAdvance();
+      if (active && state) renderGuide();
+    });
     $("rkStart").addEventListener("click", async () => {
       if (
         state &&
@@ -768,6 +816,7 @@
         setup: $("rkSetupMode").value,
         sound: $("rkSound").checked,
         music: $("rkMusic").checked,
+        autoAdvance: $("rkAutoAdvance").checked,
       };
       const players = Array.from({ length: settings.players }, (_, i) => ({
         name:
@@ -777,6 +826,7 @@
         ai: i >= settings.humans,
       }));
       state = E.newGame(players, Date.now(), {goal:settings.goal,cards:settings.cardMode,dice:settings.dice,setup:settings.setup});
+      clearPhaseGuard();
       selected = null;
       target = null;
       cards = [];

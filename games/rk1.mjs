@@ -55,13 +55,14 @@ try {
   assert.equal(await p.locator('#rkFrom').inputValue(),'0');
   await p.locator('#rkAmount').fill('3');
   await p.locator('#rkActionreinforce').click();
-  await p.locator('#rkNext').click();
+  assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')).phase),'attack','The final reinforcement advances directly to attack');
   await p.locator('#rkMap [data-marker="0"]').click();
   await p.locator('#rkMap [data-marker="1"]').click();
   assert.equal(await p.locator('#rkTarget').inputValue(),'1');
   await p.locator('#rkDice').selectOption('3');
   for (let i = 0; i < 20 && !(await p.locator('#rkActionoccupy').count()); i++) await p.locator('#rkActionattack').click();
   await p.locator('#rkActionoccupy').click();
+  assert.ok(await p.locator('#rkUndoPlacement').isHidden(),'A resolved battle invalidates the earlier reinforcement undo');
   const saved = await p.evaluate(() => JSON.parse(localStorage.getItem('rk.save')));
   assert.equal(saved.territories[1].owner, 0);
   assert.ok(saved.territories[0].armies >= 1);
@@ -115,6 +116,9 @@ try {
   await p.locator('#rkActioncancel').click();
   await p.locator('#rkClearSelection').click();
   assert.ok(await p.locator('#rkMapNext').isVisible(),'The fullscreen board retains its phase action');
+  assert.match(await p.locator('#rkMapNext').innerText(),/Volgende fase/i);
+  assert.ok(await p.locator('#rkMapPhase').isVisible(),'The fullscreen world retains its current phase');
+  assert.match(await p.locator('#rkMapPhase').innerText(),/Fase 2\/3.*Aanvallen/i);
   await p.locator('#rkViewMenu > summary').click();
   await p.locator('[data-continent="eu"]').click();
   assert.ok(parseInt(await p.locator('#rkZoomLabel').innerText()) > 100);
@@ -188,7 +192,9 @@ try {
   await p.reload();
   await p.locator('#tileRk').click();
   const beforeAI = await p.evaluate(() => localStorage.getItem('rk.save'));
-  await p.waitForFunction(before => localStorage.getItem('rk.save') !== before, beforeAI);
+  await p.waitForFunction(before => {const raw=localStorage.getItem('rk.save');if(raw===before)return false;window.__firstAIAction=JSON.parse(raw);return true;}, beforeAI);
+  const firstAIAction=await p.evaluate(()=>window.__firstAIAction);
+  assert.equal(firstAIAction.pool,0);assert.equal(firstAIAction.phase,'reinforce','The computer keeps its existing separate phase-advance action');
   await p.locator('#rkPause').click();
   const paused = await p.evaluate(() => localStorage.getItem('rk.save'));
   await p.waitForTimeout(600);

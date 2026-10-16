@@ -17,6 +17,7 @@ try {
   await p.goto(`http://127.0.0.1:${server.address().port}/`);
   const saved=()=>p.evaluate(()=>JSON.parse(localStorage.getItem('rk.save')));
   async function tap(selector){
+    if(selector==='#rkNext'||selector==='#rkMapNext')await p.waitForFunction(selector=>!document.querySelector(selector).disabled,selector);
     const el=p.locator(selector);
     const hit=await el.evaluate(el=>{
       const r=el.getBoundingClientRect();
@@ -26,6 +27,11 @@ try {
     assert.ok(hit.ok,`${selector} must be a directly reachable touch target: ${JSON.stringify(hit)}`);
     const r=await el.boundingBox();await p.touchscreen.tap(r.x+r.width/2,r.y+r.height/2);
   }
+  async function autoAdvance(enabled){
+    await p.locator('#rkPause').click();await p.locator('#rkPauseAutoAdvance').setChecked(enabled);
+    assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.settings')).autoAdvance),enabled,'The pause option persists immediately');
+    await p.locator('#rkContinue').click();
+  }
   async function fixture(kind='reinforce'){
     if(await p.locator('#rk').evaluate(el=>el.classList.contains('active'))){
       if(await p.locator('#rkInspector').isVisible())await p.locator('#rkCloseInspector').click();
@@ -33,7 +39,7 @@ try {
     }
     await p.evaluate(kind=>{
       window.__noSave=true;
-      const E=ReneRiskEngine,s=E.newGame([{name:'Rene'},{name:'Nova',ai:true},{name:'Atlas',ai:true}],23,kind==='manual'?{setup:'manual'}:{});
+      const E=ReneRiskEngine,s=E.newGame([{name:'Rene'},{name:'Nova',ai:true},{name:'Atlas',ai:true}],23,kind==='manual'?{setup:'manual'}:kind==='mission-win'?{goal:'mission'}:{});
       if(kind==='manual'){localStorage.setItem('rk.save',JSON.stringify(s));return;}
       s.territories=s.territories.map(()=>({owner:0,armies:3}));
       s.territories[1]={owner:1,armies:3};s.territories[E.byId.eastaus]={owner:2,armies:3};
@@ -46,6 +52,16 @@ try {
         s.territories[0]={owner:0,armies:12};s.territories[3]={owner:0,armies:1};s.territories[E.byId.eastaus]={owner:2,armies:3};
       } else if(kind==='no-attack'){
         s.phase='attack';s.pool=0;s.territories.forEach(t=>{if(t.owner===0)t.armies=1;});
+      }
+      if(['required','resume-ready','resume-required'].includes(kind)){
+        const count=kind==='resume-required'?6:5;
+        s.players[0].cards=Array.from({length:count},(_,i)=>i);s.deck=s.deck.filter(c=>!s.players[0].cards.includes(c));
+        s.resumeAttack=kind!=='required';s.pool=1;
+      }
+      if(kind==='empty-reinforce')s.pool=0;
+      if(kind==='mission-win'){
+        s.territories=s.territories.map((t,i)=>({owner:i<18?0:i===41?2:1,armies:i>0&&i<18?2:1}));
+        s.missions=['garrisons','territories','asia-africa'];s.pool=1;
       }
       if(!E.validState(s))throw new Error('Invalid UX fixture');
       localStorage.setItem('rk.save',JSON.stringify(s));
@@ -127,17 +143,51 @@ try {
 
   // Undo restores exactly the latest committed placement, including the pool and action log.
   await pickCountry(0,'alaska');await mapRoom(true);await p.locator('#rkAmountRange').fill('1');await tap('#rkActionreinforce');await compactFeedback();
-  const first=await saved();assert.equal(first.pool,3);
+  const first=await saved();assert.equal(first.pool,3);assert.equal(first.phase,'reinforce','A partial placement cannot advance the phase');
   await pickCountry(3,'alberta');assert.equal(await p.locator('#rkAmount').inputValue(),'1','The previous placement amount is remembered for another country');await tap('[data-action="all"]');await tap('#rkActionreinforce');
-  assert.equal((await saved()).pool,0);assert.ok(await p.locator('#rkNext').isEnabled());
-  await tap('#rkUndoPlacement');assert.deepEqual(await saved(),first);
+  assert.equal((await saved()).pool,0);assert.equal((await saved()).phase,'attack','The final human placement advances automatically');await p.waitForFunction(()=>!document.getElementById('rkNext').disabled);assert.ok(await p.locator('#rkNext').isEnabled());assert.match(await p.locator('#rkPhase').innerText(),/Fase 2\/3.*Aanvallen/i);
+  await tap('#rkUndoPlacement');assert.deepEqual(await saved(),first,'Undo includes the automatic phase transition, reserve, dice state and action log');
   assert.equal(await p.locator('#rkMapEffects').locator('*').count(),0,'Undo also clears feedback for the cancelled placement');
   assert.ok(await p.locator('#rkNext').isDisabled());assert.ok(await p.locator('#rkUndoPlacement').isHidden());
   await pickCountry(0,'alaska');await tap('[data-action="all"]');await tap('#rkActionreinforce');
   await p.locator('#rkViewMenu > summary').click();await p.locator('#rkListTab').click();await tap('#rkNext');
-  assert.equal((await saved()).phase,'attack');assert.ok(await p.locator('#rkUndoPlacement').isHidden());
+  assert.equal((await saved()).phase,'fortify','The next explicit phase action progresses from attack to fortification');assert.ok(await p.locator('#rkUndoPlacement').isHidden(),'An explicit phase change invalidates the placement undo');assert.match(await p.locator('#rkPhase').innerText(),/Fase 3\/3.*Verplaatsen/i);assert.match(await p.locator('#rkNext').innerText(),/Einde van je beurt/i);assert.match(await p.locator('#rkNext').innerText(),/Beurt afronden/i);
   assert.ok(await p.locator('#rkCountryList').isHidden(),'Advancing the phase returns to the world');
   assert.ok(await p.locator('#rkPhaseSteps [data-phase="reinforce"]').evaluate(el=>el.classList.contains('complete')));
+
+  // The option is persistent, shared by lobby and pause, and does not run actions when toggled.
+  await fixture();await autoAdvance(false);const optedOut=await saved();
+  await pickCountry(0,'alaska');await tap('#rkActionreinforce');
+  const manuallyReady=await saved();assert.equal(manuallyReady.phase,'reinforce');assert.equal(manuallyReady.pool,0);assert.match(await p.locator('#rkPhase').innerText(),/Fase 1\/3.*Versterken/i);
+  assert.equal(manuallyReady.rng,optedOut.rng);assert.ok(await p.locator('#rkNext').isEnabled());
+  assert.match(await p.locator('#rkNext').innerText(),/Volgende fase/i);assert.match(await p.locator('#rkNext').getAttribute('aria-label'),/Naar de aanvalsfase/);
+  await p.locator('#rkPause').click();await p.locator('#rkPauseMenu').click();await p.reload();await p.locator('#tileRk').click();
+  assert.deepEqual(await saved(),manuallyReady,'Resuming a ready reinforcement phase does not silently advance it');
+  await p.locator('#rkPause').click();assert.equal(await p.locator('#rkPauseAutoAdvance').isChecked(),false);
+  await p.locator('#rkNew').click();assert.equal(await p.locator('#rkAutoAdvance').isChecked(),false,'The lobby reflects the pause preference');
+  await p.locator('#rkAutoAdvance').check();assert.equal(await p.evaluate(()=>JSON.parse(localStorage.getItem('rk.settings')).autoAdvance),true);
+  await p.locator('#rkResume').click();assert.deepEqual(await saved(),manuallyReady,'Enabling automatic advance never performs an existing saved action');
+  await p.locator('#rkPause').click();assert.ok(await p.locator('#rkPauseAutoAdvance').isChecked(),'The pause preference reflects the lobby');await p.locator('#rkContinue').click();
+  await tap('#rkNext');assert.equal((await saved()).phase,'attack');assert.match(await p.locator('#rkNext').getAttribute('aria-label'),/Naar de verplaatsingsfase/);
+  await fixture('empty-reinforce');const ready=await saved();await p.waitForTimeout(120);assert.deepEqual(await saved(),ready,'Loading a zero-reserve save remains passive even with automatic advance enabled');
+
+  // Mandatory trades still precede placement, including the different elimination-card threshold.
+  for(const kind of ['required','resume-required']){
+    await fixture(kind);const beforeTrade=await saved();assert.equal(beforeTrade.phase,'reinforce');assert.ok(await p.locator('#rkInspector').isVisible());
+    assert.ok(await p.locator('#rkNext').isDisabled());assert.equal(await p.locator('#rkActionreinforce').count(),0,'Mandatory cards cannot be bypassed by placing the reserve');
+    await tap('#rkActiontrade');const traded=await saved();assert.equal(traded.phase,'reinforce');assert.ok(traded.pool>beforeTrade.pool);
+    await pickCountry(0,'alaska');await tap('#rkActionreinforce');const afterTrade=await saved();
+    assert.equal(afterTrade.phase,'attack');assert.equal(afterTrade.pool,0);assert.equal(afterTrade.resumeAttack,false);assert.equal(afterTrade.rng,beforeTrade.rng);
+    await tap('#rkUndoPlacement');assert.deepEqual(await saved(),traded,'Undo after a traded placement keeps the completed trade while restoring reinforcement');
+  }
+  await fixture('resume-ready');const resumeReady=await saved();assert.ok(await p.locator('#rkInspector').isHidden(),'Five inherited cards do not force a trade while resuming an attack');
+  await pickCountry(0,'alaska');await tap('#rkActionreinforce');const resumedAttack=await saved();
+  assert.equal(resumedAttack.phase,'attack');assert.equal(resumedAttack.resumeAttack,false);assert.equal(resumedAttack.players[0].cards.length,5);assert.equal(resumedAttack.rng,resumeReady.rng);
+
+  // A reinforcement that completes a mission ends the game instead of opening the attack phase.
+  await fixture('mission-win');const almostWon=await saved();assert.equal(almostWon.territories.filter(t=>t.owner===0&&t.armies>=2).length,17);
+  await pickCountry(0,'alaska');await tap('#rkActionreinforce');const won=await saved();
+  assert.equal(won.phase,'won');assert.equal(won.winner,0);assert.equal(won.pool,0);assert.equal(won.rng,almostWon.rng);assert.ok(await p.locator('#rkNext').isDisabled());
 
   // Destination lists are optional; repeated source taps deselect without changing the game.
   await fixture('attack');const attack=await saved();
@@ -171,7 +221,7 @@ try {
   assert.ok(await p.locator('#rkTargetChoices').isHidden());await tap('#rkTargetsToggle');assert.equal(await p.locator('#rkTargetChoices button').count(),1);await tap('#rkTargetChoices [data-quick-country="3"]');
   assert.ok(await p.locator('#rkActionfortify').isVisible());assert.deepEqual(await saved(),fortify);
   await tap('#rkActioncancel');
-  await fixture('no-attack');assert.match(await p.locator('#rkGuideTitle').innerText(),/Geen aanval mogelijk/);
+  await fixture('no-attack');assert.match(await p.locator('#rkGuideTitle').innerText(),/Geen aanval mogelijk/);assert.ok(await p.locator('#rkGuideTitle').isVisible(),'A phone still explains why no attacking army can be chosen');
   assert.ok(await p.locator('#rkNext').isEnabled());assert.ok(await p.locator('#rkPickCountry').isHidden());
 
   // Undo during manual setup restores both the current batch and the starting-army allowance.
@@ -193,5 +243,5 @@ try {
   await p.locator('#rkPause').click();await p.locator('#rkPauseMenu').click();await p.reload();await p.locator('#tileRk').click();
   assert.deepEqual(await saved(),beforeReload);assert.ok(await p.locator('#rkUndoPlacement').isHidden());
   assert.deepEqual(errors,[]);
-  console.log('PASS: map-first layouts and compact feedback/details; optional destinations; repeated-tap deselection; remembered/clamped placements; contextual turn guide; complete-world layouts; searchable and filtered countries; touch target choices; exact single-placement undo and phase guards; date-line attacks; fortification; fullscreen Back; safe resume');
+  console.log('PASS: automatic human reinforcement transitions and exact undo; persistent lobby/pause opt-out; passive resume; mandatory/elimination card thresholds; map-first layouts and compact feedback/details; optional destinations; repeated-tap deselection; remembered/clamped placements; contextual turn guide; complete-world layouts; searchable and filtered countries; touch target choices; exact single-placement undo and phase guards; date-line attacks; fortification; fullscreen Back; safe resume');
 } finally {await browser.close();await new Promise(resolve=>server.close(resolve));}
