@@ -343,5 +343,10 @@
   "v": "1.68",
   "date": "2026-10-16",
   "notes": "Wereldmacht kan na een bevestigde verplaatsing automatisch je beurt afronden. Deze aparte optie staat standaard aan en is bij het starten en in het pauzemenu instelbaar; je voorkeur wordt onthouden. Met de optie uit kun je zoals voorheen zelf afronden en je laatste verplaatsing nog herstellen."
+ },
+ {
+  "v": "1.69",
+  "date": "2026-10-16",
+  "notes": "De app heet voortaan Games. De nieuwe naam staat op het startscherm van je telefoon, in het appmenu en bij informatie, updates en gedeelde meldingen. Je spellen, spelers en voortgang blijven behouden."
  }
 ]

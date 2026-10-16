@@ -1,12 +1,12 @@
 {
-  "versionCode": 69,
-  "versionName": "1.68",
-  "nativeLevel": 11,
-  "notes": "Wereldmacht kan na een bevestigde verplaatsing automatisch je beurt afronden. Deze aparte optie staat standaard aan en is bij het starten en in het pauzemenu instelbaar; je voorkeur wordt onthouden. Met de optie uit kun je zoals voorheen zelf afronden en je laatste verplaatsing nog herstellen.",
+  "versionCode": 70,
+  "versionName": "1.69",
+  "nativeLevel": 12,
+  "notes": "De app heet voortaan Games. De nieuwe naam staat op het startscherm van je telefoon, in het appmenu en bij informatie, updates en gedeelde meldingen. Je spellen, spelers en voortgang blijven behouden.",
   "web": "web/index.html",
-  "webSha256": "b090e57bd96e0d23dbbd2f20c27d76e0c988250f4f4f1141caeed513e9f9336e",
-  "webSig": "MEYCIQDTvCBg//QQS++qSDWmL0S8c9sS37/SP2P0PPhgZ0t7awIhAPFyAqyEZkKtNJI73ZVG5+Rb8cj0d0YaMxmxGB52nWO5",
+  "webSha256": "82378b8e173fb25a34cdbacf4d9db9a2ea54b513e35ae4c36fd1f2c958662428",
+  "webSig": "MEQCIAyn+KSt40dGONmZfIcE5DcE8Y8rdBvCuZBeqC/15E69AiB6uekRq/oNA6y4fJnKuUbQOGfoXEb89V2lW7jCJYkDZQ==",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
-  "nativeHash": "ffe3a952b0dc233a536c58bb092cf94cbd16661ed5a1c4dc2516213283333928"
+  "nativeHash": "157e7255acef0f79f0480b8faf45ec752ee5481ed6800a979dae8c05fceca91c"
 }
