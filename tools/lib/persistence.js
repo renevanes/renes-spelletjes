@@ -378,7 +378,7 @@
       !object(backup.data) ||
       !Object.keys(backup.data).length
     )
-      throw new Error("Dit is geen geldige back-up van Rene’s spelletjes.");
+      throw new Error("Dit is geen geldige back-up van Games.");
     if (
       typeof backup.version !== "string" ||
       !/^\d+\.\d+(?:\.\d+)?$/.test(backup.version) ||

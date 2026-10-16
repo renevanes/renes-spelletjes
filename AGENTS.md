@@ -1,4 +1,4 @@
-# AGENTS.md — working on "Rene's spelletjes"
+# AGENTS.md — working on "Games"
 
 Guide for every coding agent (OpenAI Codex, Claude Code, …) and for humans. Several agents may work on this
 repository **at the same time**; the rules below keep that safe. The owner is Rene (Dutch); he talks Dutch.

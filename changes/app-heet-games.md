@@ -1,0 +1,1 @@
+De app heet voortaan Games. De nieuwe naam staat op het startscherm van je telefoon, in het appmenu en bij informatie, updates en gedeelde meldingen. Je spellen, spelers en voortgang blijven behouden.

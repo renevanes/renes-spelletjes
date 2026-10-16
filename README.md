@@ -1,6 +1,6 @@
-# Rene's spelletjes
+# Games
 
-Android-app met spelletjes. Installeer: [apk/Renes-spelletjes.apk](apk/Renes-spelletjes.apk) — daarna werkt de app
+Android-app met spelletjes. Installeer: [Games voor Android](apk/Renes-spelletjes.apk) — daarna werkt de app
 zichzelf bij vanuit deze repository (`update.json`).
 
 ## Meedoen

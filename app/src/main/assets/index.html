@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f3d2a">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; media-src data: blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
-<title>Rene's spelletjes</title>
+<title>Games</title>
 <style>
 :root{
   --felt1:#1d6b45; --felt2:#0f3d2a; --ink:#f4f1e8; --muted:#b9cdbf;
@@ -2250,7 +2250,7 @@ html.light .favorite-choices button {
 <section id="menu" class="screen active">
   <header>
     <div class="menu-top"><button id="profBtn" class="prof-chip"></button><span style="flex:1"></span><button id="muteBtn" class="iconbtn" aria-label="Geluid: muziek en geluidseffecten">🔊</button><button id="setBtn" class="iconbtn" aria-label="Instellingen">⚙&#xFE0E;</button></div>
-    <h1><img id="appLogo" class="app-logo" alt="">Rene's spelletjes</h1>
+    <h1><img id="appLogo" class="app-logo" alt="">Games</h1>
     <p>Kies een spel om te spelen</p>
   </header>
   <button id="continueBtn" class="continue" hidden></button>
@@ -3609,13 +3609,13 @@ html.light .favorite-choices button {
     <h3>📌 Snelkoppelingen</h3>
     <p class="note" style="color:var(--muted);margin-top:0" id="scIntro">Zet een spel als eigen icoon op je beginscherm. Eén tik en je zit meteen in het spel.</p>
     <div id="scList"></div>
-    <p class="note" style="color:var(--muted)">Tip: houd ook het icoon van Rene's spelletjes ingedrukt — dan zie je je laatst gespeelde spellen. En houd in het menu een spel ingedrukt om er meteen een snelkoppeling van te maken.</p>
+    <p class="note" style="color:var(--muted)">Tip: houd ook het icoon van Games ingedrukt — dan zie je je laatst gespeelde spellen. En houd in het menu een spel ingedrukt om er meteen een snelkoppeling van te maken.</p>
     <div class="row sticky-actions"><button class="btn primary" data-close>Klaar</button></div>
   </div>
 </div>
 <div class="modal" id="aboutModal">
   <div class="sheet">
-    <div class="about-head"><div class="about-icon">🃏</div><div><h3>Rene's spelletjes</h3><div class="about-ver">Versie __VERSION__</div></div></div>
+    <div class="about-head"><div class="about-icon">🃏</div><div><h3>Games</h3><div class="about-ver">Versie __VERSION__</div></div></div>
     <div id="aboutBody"></div>
     <div class="row sticky-actions"><button class="btn" id="aboutUpd">Controleren op updates</button><button class="btn primary" data-close>Sluiten</button></div>
   </div>
@@ -4091,7 +4091,7 @@ html.light .favorite-choices button {
       !object(backup.data) ||
       !Object.keys(backup.data).length
     )
-      throw new Error("Dit is geen geldige back-up van Rene’s spelletjes.");
+      throw new Error("Dit is geen geldige back-up van Games.");
     if (
       typeof backup.version !== "string" ||
       !/^\d+\.\d+(?:\.\d+)?$/.test(backup.version) ||
@@ -29460,7 +29460,7 @@ window.onUpdate = info => {
 };
 window.onUpdateProgress = pct => {
   const b = $('#updBtn');
-  if (pct === -2) { b.disabled = false; b.textContent = 'Opnieuw'; $('#updText').textContent = "Zet 'Toestaan uit deze bron' aan voor Rene's spelletjes, ga terug en tik op Opnieuw."; }
+  if (pct === -2) { b.disabled = false; b.textContent = 'Opnieuw'; $('#updText').textContent = "Zet 'Toestaan uit deze bron' aan voor Games, ga terug en tik op Opnieuw."; }
   else if (pct === -1) { b.disabled = false; b.textContent = 'Opnieuw'; $('#updText').textContent = 'Bijwerken is niet gelukt. Probeer het nog eens.'; }
   else if (pct >= 100) { b.textContent = 'Installeren…'; }
   else { b.disabled = true; b.textContent = `Downloaden ${pct}%`; }
@@ -30166,7 +30166,7 @@ const Shell = (() => {
     let json;
     try { json = RenePersistence.createBackup(localStorage, APP_VERSION); }
     catch (_) { menuToast('Back-up maken is niet mogelijk: opslag is niet beschikbaar.', 3500); return; }
-    const name = `renes-spelletjes-${today()}.json`;
+    const name = `games-${today()}.json`;
     if (native('saveFile', name, json)) return;
     const a = document.createElement('a'), url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
     a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -30231,8 +30231,8 @@ const Shell = (() => {
     if (!fbFlush() && !fbBusy) {           // not possible right now (e.g. on a computer, or older app version): offer to share instead
       item.fresh = false; store.set('app.fbQueue', fbQueue().map(x => x.id === item.id ? item : x));
       const label = (GAMES.find(g => g.id === item.game) || { label: 'algemeen' }).label;
-      const txt = `Feedback voor Rene's spelletjes ${APP_VERSION}\nSoort: ${item.type}\nOver: ${label}${item.rating ? `\nWaardering: ${'★'.repeat(item.rating)}` : ''}\n\n${item.msg}`;
-      if (!native('shareText', 'Feedback Rene\'s spelletjes', txt)) menuToast('📮 Feedback bewaard; die wordt verstuurd zodra dat kan', 3000);
+      const txt = `Feedback voor Games ${APP_VERSION}\nSoort: ${item.type}\nOver: ${label}${item.rating ? `\nWaardering: ${'★'.repeat(item.rating)}` : ''}\n\n${item.msg}`;
+      if (!native('shareText', 'Feedback Games', txt)) menuToast('📮 Feedback bewaard; die wordt verstuurd zodra dat kan', 3000);
     }
   });
   setTimeout(fbFlush, 8000);               // send anything that is still waiting
@@ -30265,8 +30265,8 @@ const Shell = (() => {
   $('#errReport').addEventListener('click', () => { $('#errOverlay').classList.remove('show'); openFeedback({ type: 'probleem', msg: 'Er ging iets mis in ' + ((GAMES.find(g => g.id === SCREEN_GAME[current]) || {}).label || 'de app') + '. Wat deed je net? ' }); });
   $('#errReportShare') && $('#errReportShare').addEventListener('click', () => {
     const e = store.get('app.errors', []).slice(0, 5).map(x => `${x.t} [${x.s}] ${x.m} (${x.w})`).join('\n');
-    const txt = `Probleem in Rene's spelletjes ${APP_VERSION}\n${navigator.userAgent}\n\n${e}`;
-    if (!native('shareText', 'Probleem in Rene\'s spelletjes', txt)) { try { navigator.clipboard.writeText(txt); menuToast('Gekopieerd', 1200); } catch (_) {} }
+    const txt = `Probleem in Games ${APP_VERSION}\n${navigator.userAgent}\n\n${e}`;
+    if (!native('shareText', 'Probleem in Games', txt)) { try { navigator.clipboard.writeText(txt); menuToast('Gekopieerd', 1200); } catch (_) {} }
   });
 
   /* ---------- hooks ---------- */

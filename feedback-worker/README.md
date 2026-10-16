@@ -1,4 +1,4 @@
-# Feedback-ontvanger voor Rene's spelletjes
+# Feedback-ontvanger voor Games
 
 De app stuurt feedback naar deze kleine Cloudflare Worker. Die maakt van elk bericht een
 GitHub-issue in de privé repository `renevanes/renes-spelletjes-feedback`.

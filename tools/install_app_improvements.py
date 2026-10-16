@@ -63,7 +63,7 @@ if "  const K = k => k.startsWith('app.')" in html:
     let json;
     try { json = RenePersistence.createBackup(localStorage, APP_VERSION); }
     catch (_) { menuToast('Back-up maken is niet mogelijk: opslag is niet beschikbaar.', 3500); return; }
-    const name = `renes-spelletjes-${today()}.json`;
+    const name = `games-${today()}.json`;
     if (native('saveFile', name, json)) return;
     const a = document.createElement('a'), url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
     a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);

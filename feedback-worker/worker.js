@@ -1,4 +1,4 @@
-// Feedback-ontvanger voor Rene's spelletjes (Cloudflare Worker).
+// Feedback-ontvanger voor Games (Cloudflare Worker).
 // De app stuurt feedback hierheen; de worker maakt er een GitHub-issue van in een PRIVÉ repository.
 // Geheimen (GITHUB_TOKEN) staan alleen in Cloudflare, nooit in de app.
 const MAX = 20000;
@@ -7,7 +7,7 @@ const TYPES = { idee: '💡 Idee', probleem: '🐞 Probleem', compliment: '❤�
 export default {
   async fetch(req, env, ctx) {
     const url = new URL(req.url);
-    if (req.method === 'GET') return new Response('Rene\'s spelletjes feedback: ok', { status: 200 });
+    if (req.method === 'GET') return new Response('Games feedback: ok', { status: 200 });
     if (req.method !== 'POST' || url.pathname !== '/feedback') return new Response('Not found', { status: 404 });
     if (req.headers.get('X-App') !== 'renes-spelletjes') return new Response('Forbidden', { status: 403 });
 

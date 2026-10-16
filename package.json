@@ -1,7 +1,7 @@
 {
   "name": "renes-spelletjes",
   "private": true,
-  "description": "Rene's spelletjes – Android-spelletjesapp (WebView + Java). Zie AGENTS.md.",
+  "description": "Games – Android-spelletjesapp (WebView + Java). Zie AGENTS.md.",
   "scripts": {
     "build": "python3 tools/build_web.py",
     "build:debug": "python3 tools/build_web.py --no-minify",
