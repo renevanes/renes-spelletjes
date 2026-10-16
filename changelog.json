@@ -338,5 +338,10 @@
   "v": "1.67",
   "date": "2026-10-16",
   "notes": "Wereldmacht gaat standaard na het plaatsen van alle versterkingen automatisch naar de aanvalsfase; je kunt dit uitzetten bij het starten of in het pauzemenu. De huidige beurtfase blijft duidelijk in beeld en de knop ‘Volgende fase’ maakt duidelijk dat je alleen van fase wisselt. Ook na automatisch doorgaan kun je je laatste legerplaatsing nog herstellen voordat je verder speelt."
+ },
+ {
+  "v": "1.68",
+  "date": "2026-10-16",
+  "notes": "Wereldmacht kan na een bevestigde verplaatsing automatisch je beurt afronden. Deze aparte optie staat standaard aan en is bij het starten en in het pauzemenu instelbaar; je voorkeur wordt onthouden. Met de optie uit kun je zoals voorheen zelf afronden en je laatste verplaatsing nog herstellen."
  }
 ]

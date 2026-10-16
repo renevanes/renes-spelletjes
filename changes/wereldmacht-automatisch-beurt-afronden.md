@@ -1,1 +1,0 @@
-Wereldmacht kan na een bevestigde verplaatsing automatisch je beurt afronden. Deze aparte optie staat standaard aan en is bij het starten en in het pauzemenu instelbaar; je voorkeur wordt onthouden. Met de optie uit kun je zoals voorheen zelf afronden en je laatste verplaatsing nog herstellen.
