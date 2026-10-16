@@ -139,6 +139,7 @@
       <label>Startlegers<select id="rkSetupMode"><option value="auto">Automatisch verdelen</option><option value="manual">Zelf plaatsen · om de beurt</option></select></label>
     </div>
     <label class="rk-auto-option"><input id="rkAutoAdvance" type="checkbox" checked><b>Automatisch naar de aanvalsfase</b><small>Zodra alle versterkingen staan. Je kiest en bevestigt aanvallen zelf.</small></label>
+    <label class="rk-auto-option"><input id="rkAutoEndTurn" type="checkbox" checked><b>Na verplaatsen automatisch beurt afronden</b><small>Na een bevestigde verplaatsing gaat de beurt naar de volgende speler.</small></label>
     <div class="rk-sound-options"><label><input id="rkSound" type="checkbox" checked> Geluidseffecten</label><label><input id="rkMusic" type="checkbox" checked> Achtergrondmuziek</label></div><div id="rkNames" class="rk-names"></div>
     <p class="rk-note">
       Bij twee spelers worden de landen tussen jullie verdeeld; er zijn geen
@@ -155,6 +156,7 @@
     <h3>Zo speel je Wereldmacht</h3>
     <p>Je beurt heeft drie fasen: <b>1 Versterken → 2 Aanvallen → 3 Verplaatsen</b>. De huidige fase staat steeds in beeld. De knop <b>Volgende fase</b> wisselt alleen van fase; daarmee valt er nog geen leger aan en verplaats je nog niets. <b>Beurt afronden</b> geeft de beurt door.</p>
     <p>Standaard ga je na het plaatsen van je laatste versterking automatisch naar de aanvalsfase. Je kunt dit uitzetten bij het starten of in het pauzemenu. Met <b>↶</b> herstel je de laatste plaatsing, inclusief deze automatische fasewissel, zolang je nog geen andere actie hebt uitgevoerd.</p>
+    <p>Ook <b>Na verplaatsen automatisch beurt afronden</b> staat standaard aan. Je kiest eerst zelf de verplaatsing en bevestigt die; daarna krijgt de volgende speler de beurt. Dit geldt niet voor het bezetten van een veroverd land. Zet deze aparte optie uit bij het starten of in het pauzemenu als je zelf wilt afronden en je laatste verplaatsing nog wilt kunnen herstellen.</p>
     <p>De compacte beurtbalk laat zien wat je kunt doen. Via <b>Zoeken</b> kies je een land op naam. Met <b>Doelen</b> open je de geldige bestemmingen van je gekozen leger. Sleep een eigen leger direct naar een vijand of verbonden eigen land; je bekijkt de actie voordat je bevestigt. Tik nogmaals op je gekozen leger om de selectie te wissen. Met <b>↶</b> herstel je je laatste legerplaatsing of verplaatsing, zolang je nog niet bent doorgegaan of het spel hebt verlaten.</p>
     <p><b>Hoofdsteden:</b> kies aan het begin een eigen gebied als hoofdstad. Elke veroverde hoofdstad geeft 2 extra legers per beurt en verdedigt met maximaal 3 dobbelstenen. Wie alle hoofdsteden bezet, wint; een hoofdstad verliezen schakelt je dus niet meteen uit.</p>
     <p><b>Geheime missies:</b> bekijk je eigen opdracht via ‘Mijn geheime missie’. Je wint zodra je opdracht voltooid is. Bij doorgeven blijft deze opdracht verborgen.</p>
@@ -208,6 +210,7 @@
     <h3>Wereldmacht staat op pauze</h3>
     <p>Je spel wordt na elke actie opgeslagen.</p>
     <label class="rk-auto-option"><input id="rkPauseAutoAdvance" type="checkbox" checked><b>Automatisch naar de aanvalsfase</b><small>Zodra alle versterkingen staan. Je kiest en bevestigt aanvallen zelf.</small></label>
+    <label class="rk-auto-option"><input id="rkPauseAutoEndTurn" type="checkbox" checked><b>Na verplaatsen automatisch beurt afronden</b><small>Na een bevestigde verplaatsing gaat de beurt naar de volgende speler.</small></label>
     <button id="rkNew" class="btn" style="width:100%;margin-bottom:12px">Nieuw Wereldmacht-spel</button>
     <div class="row">
       <button id="rkPauseMenu" class="btn">Naar menu</button

@@ -1316,7 +1316,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     const storedInvalid = state !== null && !E.validState(state);
     if (storedInvalid) state = null;
     let settings = Object.assign(
-      { players: 3, humans: 1, difficulty: "normal", tempo: "normal", sound: true, music: true, autoAdvance: true, goal: "world", cardMode: "progressive", dice: "balanced", setup: "auto" },
+      { players: 3, humans: 1, difficulty: "normal", tempo: "normal", sound: true, music: true, autoAdvance: true, autoEndTurn: true, goal: "world", cardMode: "progressive", dice: "balanced", setup: "auto" },
       api.storage.get("rk.settings", {}),
     );
     api.music?.(() => settings.music !== false);
@@ -1381,10 +1381,14 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
           && nextState.players[nextState.current].cards.length < (nextState.resumeAttack?6:5);
         // Treat the last placement and its phase change as one undoable action.
         if (autoAdvanced) nextState=E.apply(nextState,{type:'advance'});
+        const autoEnded=action.type==='fortify' && previousState.phase==='fortify'
+          && !previousState.players[previousState.current].ai && !handoff && settings.autoEndTurn!==false
+          && nextState.phase==='fortify' && !nextState.pending;
+        if (autoEnded) nextState=E.apply(nextState,{type:'endTurn'});
         clearPhaseGuard();
         if (autoAdvanced) guardPhaseChange();
         state = nextState;
-        lastPlacement = ['reinforce','fortify'].includes(action.type) && !previousState.players[previousState.current].ai && state.phase !== 'won'
+        lastPlacement = !autoEnded && ['reinforce','fortify'].includes(action.type) && !previousState.players[previousState.current].ai && state.phase !== 'won'
           ? {before:previousState, after:state, amount:action.amount, country:action.to, type:action.type, view} : null;
         if (action.type==='reinforce' && !previousState.players[previousState.current].ai) draftAmount=action.amount;
         targetsOpen=false;
@@ -1418,7 +1422,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
         if (action.type === "advance" && state.phase === "fortify") { selected = null; target = null; }
         if (action.type === "reinforce") { feedback(autoAdvanced?'Aanvalsfase gestart':`+${action.amount} legers`, `${E.territories[action.to].name}${autoAdvanced?'. Alle versterkingen staan. Kies zelf een aanval.':''}`); board.effect(action.to, `+${action.amount}`); }
         if (["attack", "blitz"].includes(action.type)) board.effect(action.to, state.pending ? "Veroverd!" : `−${state.lastBattle.defendLoss}`);
-        if (action.type === "fortify") { feedback("Legers verplaatst", `${action.amount} naar ${E.territories[action.to].name}. Je kunt je beurt beëindigen.`); }
+        if (action.type === "fortify") { feedback(autoEnded?'Beurt afgerond':'Legers verplaatst', `${action.amount} naar ${E.territories[action.to].name}. ${autoEnded?`${state.players[state.current].name} is aan de beurt.`:'Je kunt je beurt beëindigen.'}`); }
         if (action.type === "endTurn") $("rkFeedback").hidden = true;
         const finishedSelection = ["reinforce","fortify","capital","advance","endTurn","occupy"].includes(action.type);
         if (finishedSelection) {
@@ -1426,7 +1430,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
           target = null; contextView = null; overviewView = null;
           commitChoice = null;
         }
-        if (autoAdvanced || ['advance','endTurn'].includes(action.type)) changeView(false);
+        if (autoAdvanced || autoEnded || ['advance','endTurn'].includes(action.type)) changeView(false);
         if (action.type === "trade") showInspector(false);
         if (state.pending) {
           selected = state.pending.from;
@@ -1434,7 +1438,8 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
         }
         if (state.winner !== null) stop();
         render();
-        if (finishedSelection && view) board.restore(view);
+        if (autoEnded) board.fit();
+        else if (finishedSelection && view) board.restore(view);
         if (isHuman() && !handoff)
           window.ReneEnhancements.announce(action.type==='advance'?phaseLabel(state):[state.log[0],state.phase!==previousState.phase?phaseLabel(state):''].filter(Boolean).join(' '));
         schedule();
@@ -1720,6 +1725,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       } else if (mode === 'occupy' || mode === 'fortify') {
         title = mode === 'occupy' ? 'Veroverd! Verplaats je legers' : 'Legers verplaatsen';
         subtitle = mode === 'occupy' && state.lastBattle ? `Jij −${state.lastBattle.attackLoss} · Tegenstander −${state.lastBattle.defendLoss}` : 'Verplaats één keer via je eigen gebieden';
+        if (mode==='fortify' && settings.autoEndTurn!==false) {title='Beurt afronden';subtitle='';}
         actors = actor(selected,'from','blijft')+actor(target,'to','wordt');
         const min = mode === 'occupy' ? state.pending.min : 1, max = mode === 'occupy' ? state.pending.max : t.armies-1;
         const value = mode === 'occupy' ? state.pending.suggested ?? max : max;
@@ -1741,6 +1747,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       $('rkContextHeading').innerHTML = mode ? `<span class="rk-focus-phase">${esc(phaseLabel(state))}</span><h3>${title}</h3>${mode === 'attack' ? '<strong id="rkChance"></strong>' : `<p>${esc(subtitle)}</p>`}` : '';
       $('rkActors').hidden = !actors; $('rkActors').innerHTML = actors;
       $('rkControls').hidden = !html; $('rkControls').innerHTML = html;
+      if (mode==='fortify') $('rkActionfortify').setAttribute('aria-label',settings.autoEndTurn!==false?'Legers verplaatsen en beurt afronden':'Legers verplaatsen');
       if (previousAmount!==null && previousAmount!==undefined && $('rkAmount')) { $('rkAmount').value=previousAmount; $('rkAmountRange').value=previousAmount; }
       board.clearPreview();
       if (mode === 'deploy') previewAmount();
@@ -1937,7 +1944,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       $("rkSetupMode").value = settings.setup;
       $("rkSound").checked = settings.sound !== false;
       $("rkMusic").checked = settings.music !== false;
-      syncAutoAdvance();
+      syncAutoOptions();
       api.close();
       api.modal("rkStartModal");
     }
@@ -1974,11 +1981,12 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
     $("rkPause").addEventListener("click", () => {
       stop();
       save();
-      syncAutoAdvance();
+      syncAutoOptions();
       api.modal("rkPauseModal");
     });
     $("rkContinue").addEventListener("click", () => {
       api.close();
+      if (state) render();
       schedule();
     });
     $("rkHelp").addEventListener("click", () => {
@@ -2044,13 +2052,14 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       api.storage.set("rk.settings", settings);
       api.refreshSound?.();
     });
-    function syncAutoAdvance() {
+    function syncAutoOptions() {
       for (const id of ['rkAutoAdvance','rkPauseAutoAdvance']) $(id).checked=settings.autoAdvance!==false;
+      for (const id of ['rkAutoEndTurn','rkPauseAutoEndTurn']) $(id).checked=settings.autoEndTurn!==false;
     }
-    for (const id of ['rkAutoAdvance','rkPauseAutoAdvance']) $(id).addEventListener('change',()=>{
-      settings.autoAdvance=$(id).checked;
+    for (const [id,key] of [['rkAutoAdvance','autoAdvance'],['rkPauseAutoAdvance','autoAdvance'],['rkAutoEndTurn','autoEndTurn'],['rkPauseAutoEndTurn','autoEndTurn']]) $(id).addEventListener('change',()=>{
+      settings[key]=$(id).checked;
       api.storage.set('rk.settings',settings);
-      syncAutoAdvance();
+      syncAutoOptions();
       if (active && state) renderGuide();
     });
     $("rkStart").addEventListener("click", async () => {
@@ -2078,6 +2087,7 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
         sound: $("rkSound").checked,
         music: $("rkMusic").checked,
         autoAdvance: $("rkAutoAdvance").checked,
+        autoEndTurn: $("rkAutoEndTurn").checked,
       };
       const players = Array.from({ length: settings.players }, (_, i) => ({
         name:
@@ -2129,6 +2139,10 @@ window.ReneWereldMap = {"width":1440,"height":760,"source":"Natural Earth — pu
       else if (selected!==null && !state?.pending) {event.preventDefault();event.stopImmediatePropagation();cancelSelection(target===null);}
     });
     $("rkBeginTurn").addEventListener("click", beginTurn);
+    $('rkHandoffModal').addEventListener('click',event=>{
+      // A second tap on the previous action must not dismiss the handoff.
+      if (event.target===event.currentTarget) {event.preventDefault();event.stopImmediatePropagation();}
+    },true);
     function changeView(list) {
       if (list) {clearTimeout(feedbackTimer);$('rkFeedback').hidden=true;}
       $("rkViewMenu").open = false;
