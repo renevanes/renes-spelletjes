@@ -333,5 +333,10 @@
   "v": "1.66",
   "date": "2026-10-15",
   "notes": "Wereldmacht geeft de wereldkaart meer ruimte met een smalle beurtbalk, korte meldingen en land- en spelersinformatie die je zelf opent. Sleep je leger direct naar een doel, bekijk bestemmingen wanneer je ze nodig hebt en plaats steeds hetzelfde aantal legers zonder het opnieuw in te stellen. Ook je laatste verplaatsing kun je nu herstellen zolang je nog niet bent doorgegaan."
+ },
+ {
+  "v": "1.67",
+  "date": "2026-10-16",
+  "notes": "Wereldmacht gaat standaard na het plaatsen van alle versterkingen automatisch naar de aanvalsfase; je kunt dit uitzetten bij het starten of in het pauzemenu. De huidige beurtfase blijft duidelijk in beeld en de knop ‘Volgende fase’ maakt duidelijk dat je alleen van fase wisselt. Ook na automatisch doorgaan kun je je laatste legerplaatsing nog herstellen voordat je verder speelt."
  }
 ]

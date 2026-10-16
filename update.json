@@ -1,11 +1,11 @@
 {
-  "versionCode": 67,
-  "versionName": "1.66",
+  "versionCode": 68,
+  "versionName": "1.67",
   "nativeLevel": 11,
-  "notes": "Wereldmacht geeft de wereldkaart meer ruimte met een smalle beurtbalk, korte meldingen en land- en spelersinformatie die je zelf opent. Sleep je leger direct naar een doel, bekijk bestemmingen wanneer je ze nodig hebt en plaats steeds hetzelfde aantal legers zonder het opnieuw in te stellen. Ook je laatste verplaatsing kun je nu herstellen zolang je nog niet bent doorgegaan.",
+  "notes": "Wereldmacht gaat standaard na het plaatsen van alle versterkingen automatisch naar de aanvalsfase; je kunt dit uitzetten bij het starten of in het pauzemenu. De huidige beurtfase blijft duidelijk in beeld en de knop \u2018Volgende fase\u2019 maakt duidelijk dat je alleen van fase wisselt. Ook na automatisch doorgaan kun je je laatste legerplaatsing nog herstellen voordat je verder speelt.",
   "web": "web/index.html",
-  "webSha256": "fa407a9bce895647e076713ec86c53b4a56645fcf04d680e72c2a2439fb37a95",
-  "webSig": "MEQCIFQf/yL6vwdkeBoWB1OUVdfx66phAfWVpgxYEudKhl0XAiA5AcP6e3A0vfDhZzp76RBE/n/fmt0nW7tfhLNwqiolfA==",
+  "webSha256": "44e17f0f8129d379e7fe9223b5fb98237d0419015d4eabc8cb91c511991e263f",
+  "webSig": "MEUCIQD0nvySih9YeMHIPvhzXzw3s3X/6hyL86WTqIB4/MJ5FgIgaiZQEoiMbxPsm2JL9nnhN6y0WmWMZt7/ildLyfL/3Ss=",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "ffe3a952b0dc233a536c58bb092cf94cbd16661ed5a1c4dc2516213283333928"
