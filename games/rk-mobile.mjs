@@ -28,9 +28,15 @@ try {
   async function phaseFits(){
     const fit=await p.locator('#rkContextHeading .rk-focus-phase').evaluate(el=>{
       const r=el.getBoundingClientRect(),header=el.parentElement.getBoundingClientRect();
-      return {text:el.textContent,width:el.clientWidth,scrollWidth:el.scrollWidth,rect:r.toJSON(),header:header.toJSON(),viewport:[innerWidth,innerHeight]};
+      return {text:el.textContent,font:getComputedStyle(el).fontFamily,width:el.clientWidth,scrollWidth:el.scrollWidth,rect:r.toJSON(),header:header.toJSON(),viewport:[innerWidth,innerHeight]};
     });
     assert.ok(fit.width>0&&fit.scrollWidth<=fit.width+1&&fit.rect.left>=fit.header.left-1&&fit.rect.right<=fit.header.right+1,`The full phase remains readable inside its action header: ${JSON.stringify(fit)}`);
+  }
+  async function broadPhaseFits(){
+    const badge=p.locator('#rkContextHeading .rk-focus-phase');
+    const original=await badge.evaluate(el=>{const original=el.style.fontFamily;el.style.fontFamily='"DejaVu Sans", sans-serif';return original;});
+    try {await phaseFits();}
+    finally {await badge.evaluate((el,font)=>el.style.fontFamily=font,original);}
   }
   async function mapRoom(focused=false){
     const layout=await p.locator('#rkMapViewport').evaluate(el=>{
@@ -40,7 +46,7 @@ try {
     const minimum=layout.portrait ? .75 : focused ? .60 : .70;
     assert.ok(layout.fraction>=minimum,`The world retains ${minimum*100}% of the screen${focused?' during an action':''}: ${JSON.stringify(layout)}`);
     assert.ok(await p.locator('#rkInspector').isHidden(),'A map interaction never opens a detail window automatically');
-    if(focused)await phaseFits();
+    if(focused){await phaseFits();if(await p.evaluate(()=>innerWidth===320&&document.documentElement.classList.contains('big-text')))await broadPhaseFits();}
   }
 
   await p.locator('#tileRk').click();assert.ok(await p.locator('#rkAutoAdvance').isChecked(),'Automatic advance starts enabled in the lobby');await p.locator('#rkPlayerCount').selectOption('6');await p.locator('#rkGoal').selectOption('domination');await p.locator('#rkCardMode').selectOption('fixed');await p.locator('#rkStart').click();
