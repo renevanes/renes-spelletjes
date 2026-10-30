@@ -1,11 +1,11 @@
 {
-  "versionCode": 70,
-  "versionName": "1.69",
+  "versionCode": 71,
+  "versionName": "1.70",
   "nativeLevel": 12,
-  "notes": "De app heet voortaan Games. De nieuwe naam staat op het startscherm van je telefoon, in het appmenu en bij informatie, updates en gedeelde meldingen. Je spellen, spelers en voortgang blijven behouden.",
+  "notes": "Nieuw spel: **Dakrenner**! Ren, spring en maak salto's over de daken van de stad: glijd onder buizen door, loop tegen muren op, slinger aan stangen en glij langs kabels. 32 levels in vier werelden met medailles, gouden schoentjes, nieuwe outfits, een geest van je beste run en een eindeloze run.",
   "web": "web/index.html",
-  "webSha256": "82378b8e173fb25a34cdbacf4d9db9a2ea54b513e35ae4c36fd1f2c958662428",
-  "webSig": "MEQCIAyn+KSt40dGONmZfIcE5DcE8Y8rdBvCuZBeqC/15E69AiB6uekRq/oNA6y4fJnKuUbQOGfoXEb89V2lW7jCJYkDZQ==",
+  "webSha256": "2becb582f4febc548850e28d45254eba0788ed08e66fb967985257cd84b2beb1",
+  "webSig": "MEYCIQCm/Gczzjc3W4P1tEuTpIHAiyLRbLGrRb++w4p+VThiLwIhAKlMN3Qj5Xmm0UXt7Z1g0f6G4dUx511htF6JPurfw8ai",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "157e7255acef0f79f0480b8faf45ec752ee5481ed6800a979dae8c05fceca91c"
