@@ -1,0 +1,33 @@
+<div class="modal" id="drStartModal">
+  <div class="sheet">
+    <h3>🏃 Dakrenner</h3>
+    <p class="note" style="color:var(--muted);margin-top:0">Ren, spring en flip over de daken van de stad! Glijd onder buizen door, loop tegen muren op, slinger aan stangen en land je salto's op je voeten. Wie haalt goud?</p>
+    <button id="drContinue" class="dr-cont" hidden></button>
+    <div class="dr-modes" id="drModes"></div>
+    <div class="opt-label" style="margin-top:4px">Outfit <small id="drOutNote" style="color:var(--muted)"></small></div>
+    <div class="dr-outfits" id="drOutfits"></div>
+    <div id="drOpts"></div>
+    <div class="stats" id="drStats"></div>
+    <div class="row sticky-actions"><button class="btn" id="drStartBack">Menu</button></div>
+  </div>
+</div>
+<div class="modal center" id="drPauseModal">
+  <div class="sheet">
+    <h3>Pauze</h3>
+    <p id="drPInfo" class="dr-pinfo"></p>
+    <div class="col">
+      <button class="btn primary" id="drPResume">▶ Verder</button>
+      <div class="row"><button class="btn" id="drPCheck">🚩 Naar vlag</button><button class="btn" id="drPRestart">↻ Opnieuw</button></div>
+      <div id="drPOpts"></div>
+      <div class="row"><button class="btn" id="drPLevels">Levels</button><button class="btn" id="drPQuit">Stoppen</button></div>
+    </div>
+  </div>
+</div>
+<div class="modal center" id="drEndModal">
+  <div class="sheet">
+    <div id="drEndPic"></div>
+    <h3 id="drEndTitle"></h3>
+    <div id="drEndText"></div>
+    <div class="row" id="drEndBtns"></div>
+  </div>
+</div>

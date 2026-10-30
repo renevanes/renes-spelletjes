@@ -1,0 +1,1 @@
+Nieuw spel: **Dakrenner**! Ren, spring en maak salto's over de daken van de stad: glijd onder buizen door, loop tegen muren op, slinger aan stangen en glij langs kabels. 32 levels in vier werelden met medailles, gouden schoentjes, nieuwe outfits, een geest van je beste run en een eindeloze run.
