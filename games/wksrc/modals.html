@@ -1,0 +1,32 @@
+<div class="modal" id="wkStartModal">
+  <div class="sheet">
+    <h3>🐶 Woef tegen Karel</h3>
+    <div id="wkHero" class="wk-hero"></div>
+    <button id="wkContinue" class="wk-cont" hidden></button>
+    <button id="wkPlay" class="btn primary wk-play">🗺️ Spelen</button>
+    <p class="note" style="color:var(--muted);margin-top:0;font-size:14px">Uitvinder Karel de wasbeer bouwt gemene machines. Woef de speurhond verslaat ze, maar niet met spierkracht: met slimme ideeën! Kijk goed rond, pak dingen op en zoek uit hoe elke machine kapotgaat.</p>
+    <div id="wkOpts"></div>
+    <div class="stats" id="wkStats"></div>
+    <div class="row sticky-actions"><button class="btn" id="wkStartBack">Menu</button></div>
+  </div>
+</div>
+<div class="modal center" id="wkPauseModal">
+  <div class="sheet">
+    <h3>Pauze</h3>
+    <p id="wkPInfo" class="wk-pinfo"></p>
+    <div class="col">
+      <button class="btn primary" id="wkPResume">▶ Verder</button>
+      <div class="row"><button class="btn" id="wkPRestart">↻ Opnieuw</button><button class="btn" id="wkPMap">🗺️ Kaart</button></div>
+      <div id="wkPOpts"></div>
+      <button class="btn" id="wkPQuit">Stoppen</button>
+    </div>
+  </div>
+</div>
+<div class="modal center" id="wkEndModal">
+  <div class="sheet">
+    <div id="wkEndPic"></div>
+    <h3 id="wkEndTitle"></h3>
+    <div id="wkEndText"></div>
+    <div class="row" id="wkEndBtns"></div>
+  </div>
+</div>

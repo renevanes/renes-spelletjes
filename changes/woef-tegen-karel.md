@@ -1,0 +1,1 @@
+Nieuw spel: **Woef tegen Karel**! Uitvinder Karel de wasbeer bouwt gekke machines, en speurhond Woef moet uitzoeken hoe hij ze slim verslaat: duw, pak, combineer en blaf. 15 machines in drie werelden, een grote finale, hints als je vastzit en sterren om te verzamelen.
