@@ -1,11 +1,11 @@
 {
-  "versionCode": 72,
-  "versionName": "1.71",
+  "versionCode": 73,
+  "versionName": "1.72",
   "nativeLevel": 12,
-  "notes": "Nieuw spel: **Woef tegen Karel**! Uitvinder Karel de wasbeer bouwt gekke machines, en speurhond Woef moet uitzoeken hoe hij ze slim verslaat: duw, pak, combineer en blaf. 15 machines in drie werelden, een grote finale, hints als je vastzit en sterren om te verzamelen.",
+  "notes": "Mijnenveger: kies 2, 3 of 5 levens, dan ben je niet meteen af als je een mijn raakt. Nieuw scherm **Statistieken**: je winkans per niveau en per aantal levens, beste en gemiddelde tijd, reeksen en je laatste potjes.",
   "web": "web/index.html",
-  "webSha256": "459fb3eb788558015daef844d23fbbb76948c4eba8b8c4b312ffe632338bdd6c",
-  "webSig": "MEYCIQDyGnVVqmTS1Anjw7P3nJfA5nq5iUZohDjYs36qdL/qOQIhAOJXXsZKdykgBo8U3utINUF3nNp0wcBvZ8rkkuBzHXjW",
+  "webSha256": "9a60c059551760b930894b8b5c75289458389daf234e6eff09fd3d30a3bdaf1f",
+  "webSig": "MEQCICgL2HiEtsvuLhG+YcdeQDXVZqY1AKwDaDaHqvRLv09bAiBs8KkrMKfLhxrJDXKw8dmdLMBzZrSseRvzDbx1ym6DYQ==",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "157e7255acef0f79f0480b8faf45ec752ee5481ed6800a979dae8c05fceca91c"

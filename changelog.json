@@ -358,5 +358,10 @@
   "v": "1.71",
   "date": "2026-10-30",
   "notes": "Nieuw spel: **Woef tegen Karel**! Uitvinder Karel de wasbeer bouwt gekke machines, en speurhond Woef moet uitzoeken hoe hij ze slim verslaat: duw, pak, combineer en blaf. 15 machines in drie werelden, een grote finale, hints als je vastzit en sterren om te verzamelen."
+ },
+ {
+  "v": "1.72",
+  "date": "2026-11-02",
+  "notes": "Mijnenveger: kies 2, 3 of 5 levens, dan ben je niet meteen af als je een mijn raakt. Nieuw scherm **Statistieken**: je winkans per niveau en per aantal levens, beste en gemiddelde tijd, reeksen en je laatste potjes."
  }
 ]
