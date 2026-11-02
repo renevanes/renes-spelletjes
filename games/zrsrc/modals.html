@@ -1,0 +1,72 @@
+<div class="modal" id="zrStartModal">
+  <div class="sheet">
+    <div class="zr-hero"><canvas id="zrHeroCv" width="480" height="150"></canvas><h3>Zandrijk</h3></div>
+    <p class="note zr-intro">Oogst gloeiend kristal in de woestijn, bouw een basis op de rotsen, train een leger en versla de andere facties. Pas op voor de zandkruiper!</p>
+    <button id="zrContinue" class="zr-cont" hidden></button>
+    <div class="zr-modes" id="zrModes">
+      <button class="zr-mode main" data-m="camp"><span class="ic">🗺️</span><b>Veldtocht</b><small id="zrCampSum"></small></button>
+      <button class="zr-mode" data-m="skirm"><span class="ic">⚔️</span><b>Vrij spel</b><small>Kies je factie, tegenstanders en kaart</small></button>
+    </div>
+    <details class="zr-help"><summary>Hoe speel je?</summary>
+      <ul>
+        <li><b>Tik</b> op je eenheid om hem te kiezen, tik op nog een eenheid om hem erbij te nemen. <b>Dubbeltik</b> kiest alle eenheden van die soort in beeld.</li>
+        <li><b>Tik op de grond</b> om te rijden, <b>tik op een vijand</b> om aan te vallen. Oogsters stuur je naar kristal.</li>
+        <li><b>Schuif</b> met één vinger over de grond, <b>knijp</b> met twee vingers om in en uit te zoomen.</li>
+        <li>Bouw met de knoppen rechts (of onder). Een klaar gebouw plaats je op <b>rots</b>, dicht bij je basis.</li>
+        <li>Energie te kort? Dan gaat alles langzamer en doen torens het niet.</li>
+        <li>Kogels zijn goed tegen soldaten, raketten tegen voertuigen en artillerie tegen groepen.</li>
+      </ul>
+    </details>
+    <div id="zrOpts"></div>
+    <div class="stats" id="zrStats"></div>
+    <div class="row sticky-actions"><button class="btn" id="zrStartBack">Menu</button></div>
+  </div>
+</div>
+<div class="modal" id="zrCampModal">
+  <div class="sheet">
+    <h3>🗺️ Veldtocht</h3>
+    <div id="zrCampMap"><canvas id="zrCampCv" width="640" height="360"></canvas><div id="zrNodes"></div></div>
+    <div class="zr-facs" id="zrCampFacs"></div>
+    <div id="zrCampList" class="zr-mlist"></div>
+    <div class="row sticky-actions"><button class="btn" id="zrCampBack">Terug</button></div>
+  </div>
+</div>
+<div class="modal center" id="zrBriefModal">
+  <div class="sheet">
+    <div class="zr-brief-top"><img id="zrBriefEmb" alt=""><div><small id="zrBriefSub"></small><h3 id="zrBriefTitle"></h3></div></div>
+    <div id="zrBriefText"></div>
+    <div id="zrBriefObj" class="zr-objs"></div>
+    <div class="opt"><div class="opt-label">Moeilijkheid</div><div class="seg" id="zrBriefDiff"></div></div>
+    <div class="row"><button class="btn" id="zrBriefBack">Terug</button><button class="btn primary" id="zrBriefGo">▶ Start missie</button></div>
+  </div>
+</div>
+<div class="modal" id="zrSkirmModal">
+  <div class="sheet">
+    <h3>⚔️ Vrij spel</h3>
+    <div class="opt-label">Jouw factie</div>
+    <div class="zr-fcards" id="zrFCards"></div>
+    <div id="zrSkOpts"></div>
+    <div class="row sticky-actions"><button class="btn" id="zrSkBack">Terug</button><button class="btn primary" id="zrSkGo">▶ Start</button></div>
+  </div>
+</div>
+<div class="modal center" id="zrPauseModal">
+  <div class="sheet">
+    <h3>Pauze</h3>
+    <p id="zrPInfo" class="zr-pinfo"></p>
+    <div id="zrPObj" class="zr-objs"></div>
+    <div class="col">
+      <button class="btn primary" id="zrPResume">▶ Verder</button>
+      <div id="zrPOpts"></div>
+      <div class="row"><button class="btn" id="zrPRestart">↻ Opnieuw</button><button class="btn" id="zrPQuit">Stoppen</button></div>
+    </div>
+  </div>
+</div>
+<div class="modal center" id="zrEndModal">
+  <div class="sheet">
+    <div id="zrEndPic"></div>
+    <h3 id="zrEndTitle"></h3>
+    <div id="zrEndStars"></div>
+    <div id="zrEndText"></div>
+    <div class="row" id="zrEndBtns"></div>
+  </div>
+</div>
