@@ -390,6 +390,14 @@ html.light .pin-pad button{background:rgba(0,0,0,.07)}
 .zs-cap{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);margin:0 0 4px 9%}
 .zs-fleet{display:flex;gap:5px;font-size:8px;letter-spacing:-1px;color:#cfe3f7}
 .zs-fleet span.sunk{color:#e5344a;text-decoration:line-through;opacity:.7}
+#zsArea.live{justify-content:space-between}#zsArea.live .zs-wrap-target{width:min(100%,47vh)}#zsArea.live .zs-wrap-own{width:min(58%,29vh)}
+.zs-live{width:min(100%,520px);background:rgba(0,0,0,.28);border-radius:12px;padding:6px 10px;font-size:12px;flex:none}
+.zs-lrow{display:flex;align-items:center;gap:8px;min-height:20px}.zs-ltit{color:var(--muted);font-weight:700;flex:none}
+.zs-lrow b{font-variant-numeric:tabular-nums;white-space:nowrap;max-width:34%;overflow:hidden;text-overflow:ellipsis}.zs-lrow b.l{color:#7fe0a8}.zs-lrow b.r{color:#ff9a8a}
+.zs-lbar{flex:1;height:8px;border-radius:4px;background:#e5534b;overflow:hidden;min-width:40px}.zs-lbar i{display:block;height:100%;background:#2fb36a;transition:width .4s}
+.zs-lwait{color:var(--muted);font-style:italic}
+.zs-lst{display:flex;flex-direction:column;gap:1px;color:var(--muted);font-size:11.5px;margin-top:3px}.zs-lst b{color:var(--ink);font-weight:600}.zs-lst span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (orientation:landscape){#zsArea.playing.live{flex-wrap:wrap;align-content:center;justify-content:space-evenly}#zsArea.live .zs-live{width:100%;max-width:none;order:-1;padding:4px 10px}#zsArea.live .zs-lst{display:none}#zsArea.live .zs-wrap-target{width:min(52vw,calc(100vh - 160px))}#zsArea.live .zs-wrap-own{width:min(40vw,calc(100vh - 190px))}}
 .zs-board{position:relative;display:grid;grid-template-columns:repeat(11,1fr);aspect-ratio:1;width:100%;user-select:none}
 .zs-lbl{display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(207,227,247,.6);font-weight:700}
 .zs-board::before{content:'';position:absolute;left:calc(100% / 11);top:calc(100% / 11);right:0;bottom:0;border-radius:6px;background:linear-gradient(115deg,rgba(255,255,255,0) 40%,rgba(255,255,255,.10) 50%,rgba(255,255,255,0) 60%) 0 0/300% 100%,var(--zsWater) 0 0/160px 160px;box-shadow:inset 0 0 0 2px rgba(150,210,255,.25),inset 0 0 30px rgba(0,20,50,.6);animation:zsWave 16s linear infinite}
@@ -520,6 +528,10 @@ html.light .pin-pad button{background:rgba(0,0,0,.07)}
 .ms-mode.on{background:rgba(229,52,74,.3)}
 #msWrap{position:relative;flex:1;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
 #msCanvas{position:absolute;left:0;top:0;display:block}
+.ms-live{display:flex;align-items:center;gap:8px;padding:5px 10px;background:rgba(0,0,0,.28);font-size:12.5px;color:var(--muted);min-height:34px}
+.ms-live[hidden]{display:none}.ms-ltxt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ms-ltxt b{color:var(--ink);font-variant-numeric:tabular-nums}.ms-ltxt .ok{color:#7fe0a8}.ms-ltxt .warn{color:#ffb86b}
+.ms-kchip{flex:none;border-radius:999px;padding:5px 11px;font-size:13px;font-weight:700;background:rgba(255,255,255,.1);color:var(--ink);border:1px solid rgba(255,255,255,.15)}
+.ms-kchip[aria-pressed=true]{background:var(--accent);color:#2b2100;border-color:transparent}
 #msToast{position:absolute;left:50%;top:10px;transform:translate(-50%,-8px);background:rgba(10,20,14,.82);padding:7px 14px;border-radius:999px;font-size:15px;white-space:nowrap;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:5;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 #msToast.show{opacity:1;transform:translate(-50%,0)}
 .ms-levels{display:grid;gap:8px;margin:10px 0}
@@ -2849,6 +2861,7 @@ html.big-text .wk-crit,html.big-text .wk-karel{font-size:16px}
     <button class="iconbtn" id="msNew" aria-label="Nieuw spel">↻</button>
     <button class="iconbtn" id="msOptBtn" aria-label="Opties">⚙&#xFE0E;</button>
   </div>
+  <div class="ms-live" id="msLive" hidden><span class="ms-ltxt" id="msLiveTxt"></span><button class="ms-kchip" id="msKans" aria-pressed="false">🎲 Kansen</button></div>
   <div id="msWrap"><canvas id="msCanvas"></canvas><div id="msToast" role="status" aria-live="polite"></div></div>
 </section>
 
@@ -3236,6 +3249,7 @@ html.big-text .wk-crit,html.big-text .wk-karel{font-size:16px}
     <p class="note" style="color:var(--muted);margin-top:0">Tik om een vakje te openen. Het getal zegt hoeveel mijnen eromheen liggen. Druk lang (of gebruik 🚩) om een vlag te zetten. Tik op een getal met genoeg vlaggen eromheen om de rest te openen. Knijp om in te zoomen.</p>
     <div class="ms-levels" id="msLevels"></div>
     <div class="opt"><div class="opt-label">Levens <small class="ms-optnote">Met meer levens ben je niet meteen af als je een mijn raakt. Tijden en winkansen tellen per aantal levens.</small></div><div id="msLivesOpt"></div></div>
+    <div class="opt"><div class="opt-label">Statistieken tijdens het spel <small class="ms-optnote">Hoeveel van het veld vrij is, veilige vakjes over, de kans op een mijn bij een gok, en de knop 🎲 Kansen. Met Kansen aan telt je tijd niet als beste tijd.</small></div><div id="msLiveOpt"></div></div>
     <div class="opt"><div class="opt-label">Geluidseffecten</div><div id="msSoundOpt"></div></div>
     <div class="opt"><div class="opt-label">Achtergrondmuziek</div><div id="msMusicOpt"></div></div>
     <div class="stats" id="msStats"></div>
@@ -11800,7 +11814,7 @@ $('#tileRs').addEventListener('click', () => Sprinter.enter());
 const Zeeslag = (() => {
   const N = 10, COLS = 'ABCDEFGHIJ';
   const FLEET = [{ n: 'Vliegdekschip', len: 5 }, { n: 'Slagschip', len: 4 }, { n: 'Kruiser', len: 3 }, { n: 'Onderzeeër', len: 3 }, { n: 'Torpedobootjager', len: 2 }];
-  const ZD = { mode: 'cpu', level: 'normaal', extra: true, noTouch: true, name1: 'Speler 1', name2: 'Speler 2', sound: true };
+  const ZD = { mode: 'cpu', level: 'normaal', extra: true, noTouch: true, name1: 'Speler 1', name2: 'Speler 2', sound: true, live: true };
   const opt = Object.assign({}, ZD, store.get('zs.settings', {}));
   Sfx.gate('zs', () => opt.music !== false); if (opt.music === undefined) opt.music = opt.sound !== false;
   const saveOpt = () => store.set('zs.settings', opt);
@@ -11873,18 +11887,19 @@ const Zeeslag = (() => {
   }
 
   /* ---------- computer opponent ---------- */
-  function aiPick(b) {
+  function aiPick(b, lvl) {
+    lvl = lvl || rule('level');
     const open = []; for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (!b.shots[r][c]) open.push([r, c]);
     if (!open.length) return null;
     const isHit = (r, c) => r >= 0 && c >= 0 && r < N && c < N && b.shots[r][c] === 2 && !shipAt(b, r, c).sunk;
     const free = (r, c) => r >= 0 && c >= 0 && r < N && c < N && !b.shots[r][c];
     const hits = []; for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (isHit(r, c)) hits.push([r, c]);
     const rnd = a => a[Math.floor(Math.random() * a.length)];
-    if (rule('level') === 'makkelijk') {
+    if (lvl === 'makkelijk') {
       if (hits.length && Math.random() < .5) { const n = []; for (const [r, c] of hits) for (const [dr, dc] of [[0, 1], [1, 0], [0, -1], [-1, 0]]) if (free(r + dr, c + dc)) n.push([r + dr, c + dc]); if (n.length) return rnd(n); }
       return rnd(open);
     }
-    if (rule('level') === 'normaal') {
+    if (lvl === 'normaal') {
       if (hits.length) {
         // two hits in a row: continue along the line
         for (const [r, c] of hits) for (const [dr, dc] of [[0, 1], [1, 0]]) if (isHit(r + dr, c + dc)) {
@@ -11913,11 +11928,164 @@ const Zeeslag = (() => {
     return picks[0] || rnd(open);
   }
 
+  /* ---------- live tijdens het spel: winkans door de rest van het potje vaak na te spelen ----------
+     Wat de kijker niet weet (waar de schepen van de tegenstander liggen) wordt niet gebruikt: elke keer wordt een
+     ligging getrokken die klopt met alle schoten tot nu toe. De kijker schiet in de proef als de normale computer,
+     de computer op zijn eigen niveau. Rekenen gebeurt in kleine stukjes, zodat het spel soepel blijft. */
+  const copyBoard = b => ({ ships: b.ships.map(x => ({ n: x.n, len: x.len, cells: x.cells && x.cells.map(c => c.slice()), hits: x.hits, sunk: x.sunk })), shots: b.shots.map(r => r.slice()) });
+  function sampleHidden(b) {
+    const out = copyBoard(b), occ = Array.from({ length: N }, () => Array(N).fill(0)), noT = rule('noTouch');
+    for (const x of out.ships) if (x.sunk) for (const [r, c] of x.cells) occ[r][c] = 1;
+    const hitsOpen = []; for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (b.shots[r][c] === 2 && !occ[r][c]) hitsOpen.push([r, c]);
+    const todo = out.ships.filter(x => !x.sunk); todo.forEach(x => { x.cells = null; x.hits = 0; });
+    const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+    const valid = cells => {
+      let h = 0;
+      for (const [r, c] of cells) {
+        if (r < 0 || c < 0 || r >= N || c >= N || occ[r][c]) return false;
+        const v = b.shots[r][c]; if (v === 1 || v === 3) return false; if (v === 2) h++;
+        if (noT) for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) { const y = r + dr, x = c + dc; if (y >= 0 && x >= 0 && y < N && x < N && occ[y][x]) return false; }
+      }
+      return h < cells.length;   // helemaal raak = gezonken, en dat zou je dan al weten
+    };
+    const mark = (cells, v) => { for (const [r, c] of cells) occ[r][c] = v; };
+    let budget = 4000;
+    const rec = rest => {
+      if (--budget < 0) return false;
+      const open = hitsOpen.find(([r, c]) => !occ[r][c]);
+      if (!rest.length) return !open;
+      if (open) {
+        const [hr, hc] = open, tries = [];
+        for (const x of rest) for (const h of [true, false]) for (let k = 0; k < x.len; k++) tries.push([x, h ? cellsOf(hr, hc - k, x.len, true) : cellsOf(hr - k, hc, x.len, false)]);
+        for (const [x, cells] of shuffle(tries)) if (valid(cells)) { mark(cells, 1); x.cells = cells; if (rec(rest.filter(y => y !== x))) return true; mark(cells, 0); x.cells = null; }
+        return false;
+      }
+      const x = rest[0];
+      for (let k = 0; k < 40; k++) { const cells = cellsOf(Math.floor(Math.random() * N), Math.floor(Math.random() * N), x.len, Math.random() < .5); if (valid(cells)) { mark(cells, 1); x.cells = cells; if (rec(rest.slice(1))) return true; mark(cells, 0); x.cells = null; } }
+      return false;
+    };
+    if (!rec(shuffle(todo.slice()))) return null;
+    for (const x of todo) x.hits = x.cells.filter(([r, c]) => b.shots[r][c] === 2).length;
+    return out;
+  }
+  /* Snelle proefpotjes: het bord als platte rij van 100 (schot 0/1/2/3, scheepsnummer), zonder tussendoor nieuwe
+     lijsten te maken. Zelfde manier van schieten als de computer (makkelijk / normaal / moeilijk). */
+  function fastBoard(b) {
+    const s = new Int8Array(100), id = new Int8Array(100).fill(-1), len = [], hit = [], sunk = [], cells = [];
+    for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) s[r * 10 + c] = b.shots[r][c];
+    b.ships.forEach((x, k) => { len.push(x.len); hit.push(x.hits); sunk.push(x.sunk); cells.push(x.cells.map(([r, c]) => r * 10 + c)); for (const i of cells[k]) id[i] = k; });
+    return { s, id, len, hit, sunk, cells, left: sunk.filter(v => !v).length };
+  }
+  function fastFire(B, i, noT) {
+    if (B.s[i]) return 0;
+    const k = B.id[i]; if (k < 0) { B.s[i] = 1; return 1; }
+    B.s[i] = 2; if (++B.hit[k] < B.len[k]) return 2;
+    B.sunk[k] = true; B.left--;
+    if (noT) for (const j of B.cells[k]) { const r = (j / 10) | 0, c = j % 10; for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) { const y = r + dr, x = c + dc; if (y >= 0 && x >= 0 && y < 10 && x < 10 && !B.s[y * 10 + x]) B.s[y * 10 + x] = 3; } }
+    return 3;
+  }
+  const FREE = (B, r, c) => r >= 0 && c >= 0 && r < 10 && c < 10 && !B.s[r * 10 + c];
+  const HIT = (B, r, c) => r >= 0 && c >= 0 && r < 10 && c < 10 && B.s[r * 10 + c] === 2 && !B.sunk[B.id[r * 10 + c]];
+  const PICK = new Int16Array(100), SCORE = new Float32Array(100), D4 = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+  function fastPick(B, lvl) {
+    let nh = 0, no = 0;
+    for (let i = 0; i < 100; i++) { if (!B.s[i]) no++; else if (B.s[i] === 2 && !B.sunk[B.id[i]]) nh++; }
+    if (!no) return -1;
+    const nbrs = () => { let n = 0; for (let i = 0; i < 100; i++) if (B.s[i] === 2 && !B.sunk[B.id[i]]) { const r = (i / 10) | 0, c = i % 10; for (const [dr, dc] of D4) if (FREE(B, r + dr, c + dc)) PICK[n++] = (r + dr) * 10 + c + dc; } return n; };
+    const anyOpen = parity => { let n = 0; for (let i = 0; i < 100; i++) if (!B.s[i] && (!parity || (((i / 10) | 0) + i % 10) % 2 === 0)) PICK[n++] = i; return n; };
+    const rnd = n => PICK[(Math.random() * n) | 0];
+    if (lvl === 'makkelijk') { if (nh && Math.random() < .5) { const n = nbrs(); if (n) return rnd(n); } return rnd(anyOpen(false)); }
+    if (lvl === 'normaal') {
+      if (nh) {
+        for (let i = 0; i < 100; i++) if (B.s[i] === 2 && !B.sunk[B.id[i]]) { const r = (i / 10) | 0, c = i % 10;
+          for (const [dr, dc] of [[0, 1], [1, 0]]) if (HIT(B, r + dr, c + dc)) {
+            let y = r, x = c; while (HIT(B, y - dr, x - dc)) { y -= dr; x -= dc; }
+            let yy = y, xx = x; while (HIT(B, yy, xx)) { yy += dr; xx += dc; }
+            let n = 0; if (FREE(B, yy, xx)) PICK[n++] = yy * 10 + xx; if (FREE(B, y - dr, x - dc)) PICK[n++] = (y - dr) * 10 + x - dc;
+            if (n) return rnd(n);
+          } }
+        const n = nbrs(); if (n) return rnd(n);
+      }
+      const n = anyOpen(true); return n ? rnd(n) : rnd(anyOpen(false));
+    }
+    SCORE.fill(0);
+    for (let k = 0; k < B.len.length; k++) { if (B.sunk[k]) continue; const L = B.len[k];
+      for (let r = 0; r < 10; r++) for (let c = 0; c < 10; c++) for (let h = 0; h < 2; h++) {
+        if (h ? c + L > 10 : r + L > 10) continue;
+        let ok = true, cover = 0;
+        for (let t = 0; t < L; t++) { const i = h ? r * 10 + c + t : (r + t) * 10 + c, v = B.s[i]; if (v === 1 || v === 3 || (v === 2 && B.sunk[B.id[i]])) { ok = false; break; } if (v === 2) cover++; }
+        if (!ok || (nh && !cover)) continue;
+        const w = nh ? 1 + cover * 30 : 1;
+        for (let t = 0; t < L; t++) { const i = h ? r * 10 + c + t : (r + t) * 10 + c; if (!B.s[i]) SCORE[i] += w; }
+      } }
+    let best = -1, pick = -1;
+    for (let i = 0; i < 100; i++) if (!B.s[i]) { const v = SCORE[i] + Math.random() * .01; if (v > best) { best = v; pick = i; } }
+    return pick;
+  }
+  function playOut(boards, turn, lv) {
+    const F = boards.map(fastBoard), noT = rule('noTouch'), extra = rule('extra');
+    for (let guard = 0; guard < 260; guard++) {
+      const T = F[1 - turn], i = fastPick(T, lv[turn]); if (i < 0) return turn;
+      const res = fastFire(T, i, noT);
+      if (!T.left) return turn;
+      if (!(res > 1 && extra)) turn = 1 - turn;
+    }
+    return -1;
+  }
+  let live = null, liveOld = null, liveGen = 0;
+  const LIVE_N = 80;
+  const viewer = () => S.mode === 'cpu' ? 0 : S.turn;
+  function liveStart() {
+    const g = ++liveGen; clearTimeout(liveStart.t);
+    if (!S || S.phase !== 'play' || !opt.live) { live = null; return; }
+    const v = viewer(), lv = S.mode === 'cpu' ? ['normaal', S.level] : ['normaal', 'normaal'];
+    if (live && live.n >= 20 && live.pv != null) liveOld = live;   // tot de nieuwe kans er is, blijft de vorige staan
+    const prev = liveOld && liveOld.v === v ? liveOld.pv : null;
+    const st = { v, w: [0, 0], n: 0, prev, pv: null, key: S.shots[0] + S.shots[1] };
+    live = st;
+    const step = () => {
+      if (g !== liveGen || !S || S.phase !== 'play') return;
+      const t0 = performance.now();
+      while (st.n < LIVE_N && performance.now() - t0 < 8) {
+        const hidden = sampleHidden(S.boards[1 - v]);
+        if (hidden) { const boards = []; boards[v] = copyBoard(S.boards[v]); boards[1 - v] = hidden; const w = playOut(boards, S.turn, lv); if (w >= 0) st.w[w]++; }
+        st.n++;
+      }
+      const tot = st.w[0] + st.w[1]; if (tot) st.pv = Math.round(st.w[v] / tot * 100);
+      if (st.n >= LIVE_N || (st.n >= 24 && !st.shown)) { st.shown = true; liveShow(); }   // weinig tekenwerk: tussenstand één keer, dan de uitkomst
+      if (st.n < LIVE_N) liveStart.t = setTimeout(step, 30);
+    };
+    liveStart.t = setTimeout(step, 60);
+  }
+  function liveStats(i) {
+    const opp = S.boards[1 - i], left = opp.ships.reduce((a, x) => a + (x.sunk ? 0 : x.len - x.hits), 0), acc = S.shots[i] ? Math.round(S.hits[i] / S.shots[i] * 100) + '%' : '–';
+    return `${S.shots[i]} ${S.shots[i] === 1 ? 'schot' : 'schoten'} · ${acc} raak · nog ${left} ${left === 1 ? 'vakje' : 'vakjes'} te raken`;
+  }
+  function liveHtml() {
+    if (!S || S.phase !== 'play' || !opt.live) return '';
+    const n0 = esc(name(0)), n1 = esc(name(1));
+    let bar = '<span class="zs-lwait">winkans berekenen…</span>';
+    const L = live && live.n >= 20 && live.pv != null ? live : liveOld;
+    if (L) {
+      const p0 = L.v === 0 ? L.pv : 100 - L.pv, d = L === live && L.prev != null ? L.pv - L.prev : 0;
+      const arrow = Math.abs(d) < 4 ? '' : d > 0 ? ' ▲' : ' ▼';
+      bar = `<b class="l">${n0} ${p0}%${L.v === 0 ? arrow : ''}</b><span class="zs-lbar" role="img" aria-label="Winkans ${n0} ${p0} procent, ${n1} ${100 - p0} procent"><i style="width:${p0}%"></i></span><b class="r">${L.v === 1 ? arrow : ''}${100 - p0}% ${n1}</b>`;
+    }
+    return `<div class="zs-live" id="zsLive"><div class="zs-lrow"><span class="zs-ltit">Winkans</span>${bar}</div><div class="zs-lst"><span><b>${n0}</b>: ${liveStats(0)}</span><span><b>${n1}</b>: ${liveStats(1)}</span></div></div>`;
+  }
+  function liveShow() {
+    const el = $('#zsLive'); if (!el) return;
+    const t = document.createElement('div'); t.innerHTML = liveHtml(); const nw = t.firstElementChild;
+    if (!nw) { el.remove(); return; }
+    // alleen de regel met de kans vervangen (de cijfers per vloot staan al goed): minder werk voor de telefoon
+    const a = el.querySelector('.zs-lrow'), b2 = nw.querySelector('.zs-lrow'); if (a && b2 && a.innerHTML !== b2.innerHTML) a.innerHTML = b2.innerHTML;
+  }
+
   /* ---------- game flow ---------- */
   const name = i => S.mode === 'cpu' ? (i === 0 ? 'Jij' : 'Computer') : (i === 0 ? opt.name1 : opt.name2) || 'Speler ' + (i + 1);
   function newGame() {
     if (S && S.phase === 'play') record(-1, true); // een lopend potje wegleggen telt als verloren (opgegeven)
-    zgen++; clearTimeout(aiTimer); busy = false;
+    zgen++; clearTimeout(aiTimer); busy = false; liveGen++; clearTimeout(liveStart.t); live = null; liveOld = null;
     S = { mode: opt.mode, level: opt.level, noTouch: opt.noTouch, extra: opt.extra, boards: [emptyBoard(), emptyBoard()], phase: 'place', placer: 0, turn: 0, shots: [0, 0], hits: [0, 0], last: null, names: [opt.name1, opt.name2] };
     if (S.mode === 'cpu') randomize(S.boards[1]);
     sel = 0; horiz = true; busy = false;
@@ -12091,6 +12259,7 @@ const Zeeslag = (() => {
   }
   function render() {
     if (!S) { area.innerHTML = ''; return; }
+    if (S.phase === 'play' && opt.live && (!live || live.key !== S.shots[0] + S.shots[1] || live.v !== viewer())) liveStart();
     if (S.phase === 'place') {
       const b = S.boards[S.placer];
       $('#zsStatus').textContent = S.mode === '2p' ? `${name(S.placer)}: plaats je vloot` : 'Plaats je vloot';
@@ -12106,8 +12275,8 @@ const Zeeslag = (() => {
     }
     const me = S.mode === 'cpu' ? 0 : S.turn, opp = 1 - me, over = S.phase === 'over';
     $('#zsStatus').textContent = over ? 'Afgelopen' : S.mode === 'cpu' ? (S.turn === 0 ? 'Jouw beurt 🎯' : 'Computer denkt na…') : `${name(S.turn)} is aan de beurt`;
-    area.className = 'playing';
-    area.innerHTML = `<div class="zs-wrap-target"><div class="zs-cap">${S.mode === 'cpu' ? 'Vloot van de computer' : 'Vloot van ' + esc(name(opp))} ${fleetHtml(opp, true)}</div>${boardHtml(opp, over ? 'reveal' : 'target')}</div>
+    area.className = 'playing' + (opt.live && !over ? ' live' : '');
+    area.innerHTML = liveHtml() + `<div class="zs-wrap-target"><div class="zs-cap">${S.mode === 'cpu' ? 'Vloot van de computer' : 'Vloot van ' + esc(name(opp))} ${fleetHtml(opp, true)}</div>${boardHtml(opp, over ? 'reveal' : 'target')}</div>
       <div class="zs-wrap-own"><div class="zs-cap">${S.mode === 'cpu' ? 'Jouw vloot' : 'Vloot van ' + esc(name(me))} ${fleetHtml(me)}</div>${boardHtml(me, 'own')}</div>`;
   }
   function animateShot(bi, r, c, done) {
@@ -12165,6 +12334,7 @@ const Zeeslag = (() => {
         : `<div class="opt"><div class="opt-label">Namen</div><div class="names2"><input data-name="name1" maxlength="12" value="${esc(opt.name1)}" placeholder="Speler 1"><input data-name="name2" maxlength="12" value="${esc(opt.name2)}" placeholder="Speler 2"></div></div>`) +
       `<div class="opt"><div class="opt-label">Nog een keer schieten na raak</div>${seg('extra', [[true, 'Aan'], [false, 'Uit']])}</div>
       <div class="opt"><div class="opt-label">Schepen mogen elkaar niet raken</div>${seg('noTouch', [[true, 'Aan'], [false, 'Uit']])}</div>
+      <div class="opt"><div class="opt-label">Statistieken tijdens het spel <small class="ms-optnote">Live winkans, schoten, raak-% en hoeveel vakjes nog te raken zijn.</small></div>${seg('live', [[true, 'Aan'], [false, 'Uit']])}</div>
       <div class="opt"><div class="opt-label">Geluidseffecten</div>${seg('sound', [[true, 'Aan'], [false, 'Uit']])}</div><div class="opt"><div class="opt-label">Achtergrondmuziek</div>${seg('music', [[true, 'Aan'], [false, 'Uit']])}</div>
       <div class="td-info">Vloot: vliegdekschip (5), slagschip (4), kruiser (3), onderzeeër (3) en torpedobootjager (2). Wie als eerste de hele vloot van de ander laat zinken, wint.</div>
       <div class="stats"><div class="stat"><b>${stats.played}</b><small>Gespeeld</small></div><div class="stat"><b>${stats.won}</b><small>Gewonnen</small></div><div class="stat"><b>${stats.shots ? Math.round(stats.hits / stats.shots * 100) : 0}%</b><small>Raak</small></div></div>
@@ -12172,7 +12342,7 @@ const Zeeslag = (() => {
       <button class="btn ms-statsbtn" id="zsStatsBtn">📊 Statistieken en winkansen</button>`;
     $('#zsResume').hidden = !(S && S.phase === 'play');
   }
-  $('#zsStartList').addEventListener('click', e => { const b = e.target.closest('button[data-key]'); if (!b) return; opt[b.dataset.key] = JSON.parse(b.dataset.val); saveOpt(); renderStart(); });
+  $('#zsStartList').addEventListener('click', e => { const b = e.target.closest('button[data-key]'); if (!b) return; opt[b.dataset.key] = JSON.parse(b.dataset.val); saveOpt(); renderStart(); if (b.dataset.key === 'live') { live = null; liveGen++; render(); } });
   $('#zsStartList').addEventListener('input', e => { const i = e.target.closest('input[data-name]'); if (i) { opt[i.dataset.name] = i.value.trim().slice(0, 12); saveOpt(); } });
   $('#zsGo').addEventListener('click', () => newGame());
   $('#zsResume').addEventListener('click', () => { closeModals(); if (S.mode === 'cpu' && S.turn === 1) cpuTurn(); });
@@ -12222,8 +12392,8 @@ const Zeeslag = (() => {
     else if (S.mode === 'cpu' && S.turn === 1 && S.phase === 'play') cpuTurn();
     else if (S.mode === '2p' && S.phase === 'play') cover(`Beurt voor ${esc(name(S.turn))}`, 'Tik om verder te spelen');
   }
-  function leave() { clearTimeout(aiTimer); save(); busy = false; $('#zsCover').classList.remove('show'); closeModals(); show('menu'); refreshMenu(); }
-  window.__zs = { get S() { return S; }, aiPick, fire, randomize, emptyBoard, opt, shoot, newGame, donePlacing, get stats() { return stats; }, openStats, end };
+  function leave() { clearTimeout(aiTimer); liveGen++; clearTimeout(liveStart.t); live = null; save(); busy = false; $('#zsCover').classList.remove('show'); closeModals(); show('menu'); refreshMenu(); }
+  window.__zs = { get S() { return S; }, aiPick, fire, randomize, emptyBoard, opt, shoot, newGame, donePlacing, get stats() { return stats; }, openStats, end, sampleHidden, playOut, copyBoard, get live() { return live; }, render };
   return { enter, leave, hasSave: () => !!store.get('zs.save', null) };
 })();
 $('#tileZs').addEventListener('click', () => Zeeslag.enter());
@@ -34085,7 +34255,7 @@ $('#tileGg').addEventListener('click', () => Goldmine.enter());
 const Mines = (() => {
   const LEVELS = { makkelijk: { r: 9, c: 9, m: 10, name: 'Makkelijk' }, normaal: { r: 16, c: 16, m: 40, name: 'Normaal' }, moeilijk: { r: 30, c: 16, m: 99, name: 'Moeilijk' } };
   const LIVES = [1, 2, 3, 5];
-  const D = { level: 'makkelijk', sound: true, flagMode: false, lives: 1 };
+  const D = { level: 'makkelijk', sound: true, flagMode: false, lives: 1, live: true, kans: false };
   const opt = Object.assign({}, D, store.get('ms.settings', {}));
   if (!LIVES.includes(+opt.lives)) opt.lives = 1;
   const saveOpt = () => store.set('ms.settings', opt);
@@ -34110,11 +34280,11 @@ const Mines = (() => {
     G.p++;
     if (won) {
       G.w++; G.sum += t; G.streak++; G.top = Math.max(G.top, G.streak); if (!S.hits) G.hits++;
-      S.newBest = G.best == null || t < G.best; if (S.newBest) G.best = t;
+      S.newBest = !S.helped && (G.best == null || t < G.best); if (S.newBest) G.best = t;
       stats.won++; stats.streak++;
-      if (lv === 1 && (stats.best[S.lvl] == null || t < stats.best[S.lvl])) stats.best[S.lvl] = t;
+      if (lv === 1 && !S.helped && (stats.best[S.lvl] == null || t < stats.best[S.lvl])) stats.best[S.lvl] = t;
     } else { G.streak = 0; G.clr += clr; G.nl++; stats.streak = 0; }
-    stats.hist.push({ l: S.lvl, lv, w: won ? 1 : 0, q: gaveUp ? 1 : 0, t, c: won ? 100 : clr, h: S.hits || 0, d: Date.now() });
+    stats.hist.push({ l: S.lvl, lv, w: won ? 1 : 0, q: gaveUp ? 1 : 0, t, c: won ? 100 : clr, h: S.hits || 0, k: S.helped ? 1 : 0, d: Date.now() });
     if (stats.hist.length > 100) stats.hist.splice(0, stats.hist.length - 100);
     saveStats();
   }
@@ -34131,7 +34301,7 @@ const Mines = (() => {
   function newGame(lvl) {
     if (S && S.counted && !S.over) record(false, true); // een begonnen potje wegleggen telt als verloren (opgegeven)
     const L = LEVELS[lvl || opt.level]; opt.level = lvl || opt.level; saveOpt();
-    S = { lvl: opt.level, rows: L.r, cols: L.c, mines: L.m, mine: Array(L.r * L.c).fill(0), adj: Array(L.r * L.c).fill(0), st: Array(L.r * L.c).fill(0), first: true, over: false, won: false, time: 0, counted: false, lost: -1, lives: opt.lives, hits: 0 };
+    S = { lvl: opt.level, rows: L.r, cols: L.c, mines: L.m, mine: Array(L.r * L.c).fill(0), adj: Array(L.r * L.c).fill(0), st: Array(L.r * L.c).fill(0), first: true, over: false, won: false, time: 0, counted: false, lost: -1, lives: opt.lives, hits: 0, helped: !!(opt.live && opt.kans) };
     anim.clear(); booms = []; confetti = []; layout(true); hud(); save(); dirty = true; closeModals();
   }
   const idx = (r, c) => r * S.cols + c;
@@ -34203,7 +34373,108 @@ const Mines = (() => {
     const lv = S ? S.lives || 1 : 1, el = $('#msLives');
     el.hidden = lv <= 1;
     if (lv > 1) { const left = Math.max(0, lv - (S.hits || 0)); el.textContent = '❤️'.repeat(left) + '🖤'.repeat(lv - left); el.setAttribute('aria-label', `Nog ${left} van ${lv} levens`); }
-    $('#msLeft').textContent = flagsLeft(); $('#msTime').textContent = fmt(S ? S.time : 0); $('#msFlag').classList.toggle('on', opt.flagMode); $('#msFlag').textContent = opt.flagMode ? '🚩' : '⛏'; }
+    $('#msLeft').textContent = flagsLeft(); liveRender(); $('#msTime').textContent = fmt(S ? S.time : 0); $('#msFlag').classList.toggle('on', opt.flagMode); $('#msFlag').textContent = opt.flagMode ? '🚩' : '⛏'; }
+
+  /* ---------- kansen: hoe groot is de kans op een mijn per dicht vakje? ----------
+     Exact: de dichte vakjes langs de rand vallen uiteen in groepjes die via de getallen aan elkaar hangen; per groepje
+     worden alle mogelijke mijnverdelingen doorgelopen, en die worden gewogen met het aantal manieren waarop de overige
+     mijnen in de rest van het veld kunnen liggen. Vlaggen tellen niet mee (die kunnen fout zijn); ontplofte mijnen wel. */
+  const LF = [0]; for (let i = 1; i <= 1000; i++) LF[i] = LF[i - 1] + Math.log(i);
+  const logC = (n, k) => k < 0 || k > n ? -Infinity : LF[n] - LF[k] - LF[n - k];
+  let pr = null, prKey = '';
+  function mineProbs() {
+    const key = S.st.join('') + '|' + S.adj.join(''); if (pr && prKey === key) return pr; prKey = key;
+    const n = S.rows * S.cols, unk = i => S.st[i] === 0 || S.st[i] === 2;
+    let M = S.mines; for (let i = 0; i < n; i++) if (S.st[i] === 3) M--;
+    const cons = [], inF = new Int32Array(n).fill(-1);
+    for (let i = 0; i < n; i++) {
+      if (S.st[i] !== 1 || !S.adj[i]) continue;
+      const cells = [], ns = nb(i); let need = S.adj[i];
+      for (const j of ns) { if (S.st[j] === 3) need--; else if (unk(j)) cells.push(j); }
+      if (cells.length) cons.push({ cells, need });
+    }
+    // groepjes: vakjes die samen in een getal voorkomen horen bij elkaar
+    const par = new Int32Array(n).map((_, i) => i), find = x => { while (par[x] !== x) { par[x] = par[par[x]]; x = par[x]; } return x; };
+    for (const c of cons) for (let k = 1; k < c.cells.length; k++) par[find(c.cells[k])] = find(c.cells[0]);
+    const groups = new Map();
+    for (const c of cons) { const r = find(c.cells[0]); if (!groups.has(r)) groups.set(r, { cells: [], cons: [] }); groups.get(r).cons.push(c); }
+    for (const g of groups.values()) { const seen = new Set(); for (const c of g.cons) for (const j of c.cells) if (!seen.has(j)) { seen.add(j); g.cells.push(j); } }
+    let U = 0; const front = new Uint8Array(n); for (const g of groups.values()) for (const j of g.cells) front[j] = 1;
+    for (let i = 0; i < n; i++) if (unk(i) && !front[i]) U++;
+    let exact = true; const comps = [];
+    for (const g of groups.values()) {
+      const m = g.cells.length, pos = new Map(g.cells.map((j, k) => [j, k]));
+      const cc = g.cons.map(c => ({ idx: c.cells.map(j => pos.get(j)), need: c.need, have: 0, open: c.cells.length }));
+      const of = Array.from({ length: m }, () => []); cc.forEach((c, k) => c.idx.forEach(x => of[x].push(k)));
+      const W = new Map(), CNT = new Map(), val = new Int8Array(m); let nodes = 0, ok = true;
+      const rec = (x, k) => {
+        if (++nodes > 250000) { ok = false; return; }
+        if (x === m) { W.set(k, (W.get(k) || 0) + 1); let a = CNT.get(k); if (!a) CNT.set(k, a = new Float64Array(m)); for (let t = 0; t < m; t++) if (val[t]) a[t]++; return; }
+        for (const v of [0, 1]) {
+          let good = true;
+          for (const ci of of[x]) { const c = cc[ci]; c.open--; c.have += v; if (c.have > c.need || c.have + c.open < c.need) good = false; }
+          val[x] = v;
+          if (good) rec(x + 1, k + v);
+          for (const ci of of[x]) { const c = cc[ci]; c.open++; c.have -= v; }
+          if (!ok) return;
+        }
+      };
+      rec(0, 0);
+      if (!ok) { exact = false; break; }
+      comps.push({ cells: g.cells, W, CNT });
+    }
+    const p = new Float32Array(n).fill(NaN);
+    if (!exact) {
+      // te veel mogelijkheden (zeldzaam): schatting per getal, en de gemiddelde kans in de rest
+      let nu = 0; for (let i = 0; i < n; i++) if (unk(i)) nu++;
+      const d = nu ? Math.max(0, Math.min(1, M / nu)) : 0, fx = new Float32Array(n);
+      for (const c of cons) for (const j of c.cells) fx[j] = Math.max(fx[j], c.need / c.cells.length);
+      for (let i = 0; i < n; i++) if (unk(i)) p[i] = front[i] ? fx[i] : d;
+      return pr = { p, front, rest: d, exact: false, ...bestOf(p) };
+    }
+    const conv = (a, b) => { const o = new Map(); for (const [ka, va] of a) for (const [kb, vb] of b) o.set(ka + kb, (o.get(ka + kb) || 0) + va * vb); return o; };
+    const lw = K => logC(U, M - K);
+    let all = new Map([[0, 1]]); for (const c of comps) all = conv(all, c.W);
+    let mx = -Infinity; for (const [K] of all) mx = Math.max(mx, lw(K));
+    if (!isFinite(mx)) return pr = { p, front, rest: NaN, exact: false, ...bestOf(p) };
+    let Z = 0, inner = 0;
+    for (const [K, v] of all) { const w = v * Math.exp(lw(K) - mx); Z += w; if (U) inner += w * (M - K) / U; }
+    for (let a = 0; a < comps.length; a++) {
+      let other = new Map([[0, 1]]); comps.forEach((c, b) => { if (b !== a) other = conv(other, c.W); });
+      const A = comps[a];
+      for (const [kA, cnt] of A.CNT) {
+        let R = 0; for (const [Ko, v] of other) { const lc = lw(kA + Ko); if (isFinite(lc)) R += v * Math.exp(lc - mx); }
+        A.cells.forEach((j, t) => { p[j] = (isNaN(p[j]) ? 0 : p[j]) + cnt[t] * R / Z; });
+      }
+      for (const j of A.cells) if (isNaN(p[j])) p[j] = 0;
+    }
+    const rest = U ? inner / Z : NaN;
+    if (U) for (let i = 0; i < n; i++) if (unk(i) && !front[i]) p[i] = rest;
+    return pr = { p, front, rest, exact: true, ...bestOf(p) };
+  }
+  function bestOf(p) { let best = -1, bp = 2; for (let i = 0; i < p.length; i++) if (S.st[i] === 0 && !isNaN(p[i]) && p[i] < bp - 1e-9) { bp = p[i]; best = i; } return { best, bp }; }
+
+  /* ---------- live regel boven het bord ---------- */
+  function liveRender() {
+    const el = $('#msLive'), on = !!(S && opt.live), was = el.hidden; el.hidden = !on;
+    if (was !== el.hidden && current === 'ms') layout(!!(S && S.first));   // de regel neemt ruimte: bord opnieuw passen
+    if (!on) return;
+    const safe = S.rows * S.cols - S.mines, open = S.st.filter(v => v === 1).length, unk = S.st.filter(v => v === 0 || v === 2).length;
+    const known = S.st.filter(v => v === 3).length, dens = unk ? Math.round((S.mines - known) / unk * 100) : 0;
+    const parts = [`Vrij <b>${Math.round(open / safe * 100)}%</b>`, `<b>${safe - open}</b> te gaan`];
+    if (opt.kans && !S.first && !S.over) {
+      const P = mineProbs();
+      if (P.best >= 0) parts.push(P.bp < 1e-9 ? `<span class="ok">✔ zeker veilig: groen</span>` : `<span class="warn">beste gok <b>${Math.round((1 - P.bp) * 100)}%</b> veilig${P.exact ? '' : ' (≈)'}</span>`);
+      if (!isNaN(P.rest) && P.bp >= 1e-9) parts.push(`rest <b>${Math.round(P.rest * 100)}%</b>`);
+    } else parts.push(S.first ? 'eerste tik is veilig' : `mijnkans <b>${dens}%</b>`);
+    $('#msLiveTxt').innerHTML = parts.join(' · ');
+    const k = $('#msKans'); k.setAttribute('aria-pressed', opt.kans ? 'true' : 'false');
+  }
+  $('#msKans').addEventListener('click', () => {
+    opt.kans = !opt.kans; saveOpt();
+    if (opt.kans && S && !S.over) { if (!S.helped && S.counted) toast('🎲 Kansen aan: deze tijd telt niet als beste tijd'); S.helped = true; save(); }
+    sfx('tap'); dirty = true; liveRender();
+  });
 
   /* ---------- layout / view ---------- */
   function layout(reset) {
@@ -34262,6 +34533,7 @@ const Mines = (() => {
     // board frame
     ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 6; ctx.fillStyle = '#5b3d22'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(ox - 6, oy - 6, S.cols * s + 12, S.rows * s + 12, 10) : ctx.rect(ox - 6, oy - 6, S.cols * s + 12, S.rows * s + 12); ctx.fill(); ctx.restore();
     const c0 = Math.max(0, Math.floor(-ox / s)), c1 = Math.min(S.cols - 1, Math.ceil((W - ox) / s)), r0 = Math.max(0, Math.floor(-oy / s)), r1 = Math.min(S.rows - 1, Math.ceil((H - oy) / s));
+    const KPR = opt.live && opt.kans && !S.first && !S.over ? mineProbs() : null, KP = KPR && KPR.p;
     let animating = false;
     for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) {
       const i = idx(r, c), x = ox + c * s, y = oy + r * s, v = (r + c) & 1, st = S.st[i];
@@ -34276,6 +34548,10 @@ const Mines = (() => {
       // closed (or flagged) grass tile with a soft shadow onto open neighbours
       const pr = anim.get(-1 - i); let dy = 0; if (pr != null) { const k = (now - pr) / 220; if (k < 1) { dy = Math.sin(k * Math.PI) * s * .08; animating = true; } else anim.delete(-1 - i); }
       ctx.drawImage(SP['c' + v], x, y + dy, s + .5, s + .5);
+      if (st === 0 && KP) { const q = KP[i], edge = KPR.front[i]; if (!isNaN(q) && (edge || q < 1e-9 || q > 1 - 1e-9)) {
+        // zeker veilig = groen, zeker mijn = rood, daartussen van lichtgeel naar oranjerood; de rest van het veld blijft zoals hij is
+        ctx.fillStyle = q < 1e-9 ? 'rgba(40,200,110,.6)' : q > 1 - 1e-9 ? 'rgba(229,52,74,.62)' : `rgba(255,${Math.round(225 - 150 * q)},${Math.round(90 - 60 * q)},${(.25 + .35 * q).toFixed(2)})`; ctx.fillRect(x + 1, y + dy + 1, s - 2, s - 2);
+        if (s >= 22) { ctx.fillStyle = '#fff'; ctx.font = `800 ${Math.round(s * .36)}px system-ui,Roboto,sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 3; ctx.fillText(Math.round(q * 100), x + s / 2, y + dy + s / 2 + 1); ctx.shadowBlur = 0; } } }
       if (st === 2) {
         const a0 = anim.get(i); let k = 1; if (a0 != null) { k = Math.min(1, (now - a0) / 180); if (k < 1) animating = true; else anim.delete(i); }
         const sc = .3 + .7 * (k < 1 ? 1 - Math.pow(1 - k, 3) * (1 - .2 * Math.sin(k * 9)) : 1);
@@ -34352,7 +34628,7 @@ const Mines = (() => {
     $('#msEndEmoji').textContent = won ? '🏆' : '💥';
     $('#msEndTitle').textContent = won ? 'Veld vrijgemaakt!' : 'Boem!';
     const lv = S.lives || 1, G = grp(S.lvl, lv), lvTxt = lv > 1 ? ` · ${lv} levens` : '';
-    $('#msEndText').innerHTML = won ? `${LEVELS[S.lvl].name}${lvTxt} in <b>${fmt(S.time)}</b>${S.hits && lv > 1 ? ` (${S.hits}× geraakt)` : ''}${S.newBest ? '<br>🎉 Nieuwe beste tijd!' : G.best != null ? `<br>Beste tijd: ${fmt(G.best)}` : ''}`
+    $('#msEndText').innerHTML = won ? `${LEVELS[S.lvl].name}${lvTxt} in <b>${fmt(S.time)}</b>${S.hits && lv > 1 ? ` (${S.hits}× geraakt)` : ''}${S.newBest ? '<br>🎉 Nieuwe beste tijd!' : G.best != null ? `<br>Beste tijd: ${fmt(G.best)}` : ''}${S.helped ? '<br><small>🎲 Met Kansen gespeeld: telt niet als beste tijd</small>' : ''}`
       : `Je raakte een mijn${lv > 1 ? ' en je levens zijn op' : ''}. ${S.st.filter(v => v === 1).length ? `Je had ${Math.round(S.st.filter(v => v === 1).length / (S.rows * S.cols - S.mines) * 100)}% van het veld vrij.` : ''} Probeer het nog eens!`;
     $('#msEndOdds').textContent = G.p ? `Jouw winkans op ${LEVELS[S.lvl].name.toLowerCase()}${lvTxt}: ${odds(G)}% (${G.w} van ${G.p})${G.streak > 1 ? ` · ${G.streak} op rij` : ''}` : '';
     openModal('msEndModal');
@@ -34385,6 +34661,7 @@ const Mines = (() => {
   function renderStart() {
     $('#msLevels').innerHTML = Object.entries(LEVELS).map(([k, L]) => { const G = grp(k, opt.lives), o = odds(G); return `<button data-lvl="${k}" class="${opt.level === k ? 'on' : ''}"><b>${L.name}</b><small>${L.c}×${L.r} · ${L.m} mijnen</small><span>${G.best != null ? '⏱ ' + fmt(G.best) : '–'}<small>${o == null ? 'winkans –' : 'winkans ' + o + '%'}</small></span></button>`; }).join('');
     $('#msLivesOpt').innerHTML = `<div class="seg">${LIVES.map(n => `<button data-lives="${n}" class="${opt.lives === n ? 'on' : ''}" aria-label="${livesName(n)}">${n === 1 ? '1 (klassiek)' : n + ' ❤️'}</button>`).join('')}</div>`;
+    $('#msLiveOpt').innerHTML = `<div class="seg">${[[true, 'Aan'], [false, 'Uit']].map(([v, l]) => `<button data-live='${v}' class="${opt.live === v ? 'on' : ''}">${l}</button>`).join('')}</div>`;
     $('#msSoundOpt').innerHTML = `<div class="seg">${[[true, 'Aan'], [false, 'Uit']].map(([v, l]) => `<button data-snd='${v}' class="${opt.sound === v ? 'on' : ''}">${l}</button>`).join('')}</div>`;
     $('#msMusicOpt').innerHTML = `<div class="seg">${[[true, 'Aan'], [false, 'Uit']].map(([v, l]) => `<button data-mus='${v}' class="${opt.music === v ? 'on' : ''}">${l}</button>`).join('')}</div>`;
     const pct = stats.played ? Math.round(stats.won / stats.played * 100) : 0;
@@ -34392,6 +34669,7 @@ const Mines = (() => {
     $('#msResume').hidden = !(S && !S.over && !S.first);
   }
   $('#msLevels').addEventListener('click', e => { const b = e.target.closest('button[data-lvl]'); if (!b) return; opt.level = b.dataset.lvl; saveOpt(); renderStart(); });
+  $('#msLiveOpt').addEventListener('click', e => { const b = e.target.closest('button[data-live]'); if (!b) return; opt.live = b.dataset.live === 'true'; saveOpt(); renderStart(); if (S) { hud(); layout(false); } });
   $('#msLivesOpt').addEventListener('click', e => { const b = e.target.closest('button[data-lives]'); if (!b) return; opt.lives = +b.dataset.lives; saveOpt(); renderStart(); });
   $('#msSoundOpt').addEventListener('click', e => { const b = e.target.closest('button[data-snd]'); if (!b) return; opt.sound = b.dataset.snd === 'true'; saveOpt(); renderStart(); });
   $('#msMusicOpt').addEventListener('click', e => { const b = e.target.closest('button[data-mus]'); if (!b) return; opt.music = b.dataset.mus === 'true'; saveOpt(); renderStart(); Sfx.refresh(); });
@@ -34410,6 +34688,7 @@ const Mines = (() => {
     show('ms');
     const saved = store.get('ms.save', null);
     if (!S && saved && saved.mine) { S = saved; if (!S.lives) S.lives = 1; if (!S.hits) S.hits = 0; }
+    if (S) liveRender();
     layout(true);
     if (!running) { running = true; timerT = 0; raf = requestAnimationFrame(frame); }
     if (S) hud();
@@ -34417,7 +34696,7 @@ const Mines = (() => {
     dirty = true;
   }
   function leave() { running = false; cancelAnimationFrame(raf); save(); closeModals(); show('menu'); refreshMenu(); }
-  window.__ms = { get S() { return S; }, newGame, reveal, flag, chord, get view() { return view; }, get stats() { return stats; }, opt, openStats, grp };
+  window.__ms = { get S() { return S; }, newGame, reveal, flag, chord, get view() { return view; }, get stats() { return stats; }, opt, openStats, grp, mineProbs };
   return { enter, leave, hasSave: () => !!store.get('ms.save', null) };
 })();
 $('#tileMs').addEventListener('click', () => Mines.enter());
