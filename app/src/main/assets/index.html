@@ -546,6 +546,8 @@ html.light .pin-pad button{background:rgba(0,0,0,.07)}
 .ms-lvtable .r.on{outline:2px solid var(--accent)}.ms-lvtable .r small{color:var(--muted)}
 .ms-lvtable .bar{width:80px;height:8px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden}.ms-lvtable .bar i{display:block;height:100%;background:var(--accent)}
 .ms-stnote{color:var(--muted);font-size:13px}
+.zs-odds-line{font-size:14px;color:var(--muted);margin:8px 2px 0}.zs-odds-line b{color:var(--ink)}
+.zs-duo span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #gg{background:#120d10}
 #gg .topbar{background:#22171c;gap:4px}
 .gg-hud{flex:1;display:flex;align-items:center;justify-content:center;gap:14px;font-size:16px;white-space:nowrap}
@@ -3841,7 +3843,17 @@ html.big-text .wk-crit,html.big-text .wk-karel{font-size:16px}
     <div class="big-emoji" id="zsEndEmoji">🏆</div>
     <h3 id="zsEndTitle"></h3>
     <p id="zsEndText"></p>
+    <p class="ms-endodds" id="zsEndOdds"></p>
     <div class="row"><button class="btn" id="zsEndMenu">Menu</button><button class="btn" id="zsEndView">👀 Bord</button><button class="btn primary" id="zsEndNew">Nog een keer ▶</button></div>
+    <button class="btn ms-statsbtn" id="zsEndStats">📊 Statistieken</button>
+  </div>
+</div>
+<div class="modal" id="zsStatsModal">
+  <div class="sheet">
+    <h3>📊 Statistieken Zeeslag</h3>
+    <div class="seg ms-stlvl" id="zsStTab"></div>
+    <div id="zsStBody"></div>
+    <div class="row sticky-actions"><button class="btn primary" id="zsStClose">Sluiten</button></div>
   </div>
 </div>
 <div class="modal" id="rsStartModal">
@@ -11792,7 +11804,35 @@ const Zeeslag = (() => {
   const opt = Object.assign({}, ZD, store.get('zs.settings', {}));
   Sfx.gate('zs', () => opt.music !== false); if (opt.music === undefined) opt.music = opt.sound !== false;
   const saveOpt = () => store.set('zs.settings', opt);
+  /* Statistieken: totalen tegen de computer (played/won/shots/hits, zoals altijd), per niveau in g[niveau],
+     de laatste 100 potjes in hist, en met z'n tweeën per tweetal namen in duo. */
   let stats = Object.assign({ played: 0, won: 0, shots: 0, hits: 0 }, store.get('zs.stats', {}));
+  if (!stats.g) stats.g = {};
+  if (!Array.isArray(stats.hist)) stats.hist = [];
+  if (!stats.duo) stats.duo = {};
+  const saveStats = () => store.set('zs.stats', stats);
+  const LVLS = [['makkelijk', 'Makkelijk'], ['normaal', 'Normaal'], ['moeilijk', 'Moeilijk']];
+  const zgrp = l => stats.g[l] || (stats.g[l] = { p: 0, w: 0, streak: 0, top: 0, sh: 0, hi: 0, best: null, sumW: 0, left: 0, sunkL: 0, nl: 0 });
+  const zodds = G => G.p ? Math.round(G.w / G.p * 100) : null;
+  const duoKey = () => [opt.name1 || 'Speler 1', opt.name2 || 'Speler 2'].join('|');
+  /* Afgelopen potje (of opgegeven: een nieuw spel tijdens een lopend potje) één keer bijhouden */
+  function record(winner, gaveUp) {
+    if (!S || S.recorded || S.phase === 'place') return;
+    S.recorded = true;
+    if (S.mode === '2p') {
+      const k = (S.names || [opt.name1, opt.name2]).map((n, i) => n || 'Speler ' + (i + 1)).join('|'), D = stats.duo[k] || (stats.duo[k] = { p: 0, w: [0, 0] });
+      if (!gaveUp) { D.p++; D.w[winner]++; }
+      saveStats(); return;
+    }
+    const G = zgrp(S.level), won = !gaveUp && winner === 0;
+    const sunk = S.boards[1].ships.filter(x => x.sunk).length, left = S.boards[0].ships.filter(x => !x.sunk).length;
+    G.p++; G.sh += S.shots[0]; G.hi += S.hits[0];
+    if (won) { G.w++; G.streak++; G.top = Math.max(G.top, G.streak); G.sumW += S.shots[0]; G.left += left; S.newBest = G.best == null || S.shots[0] < G.best; if (S.newBest) G.best = S.shots[0]; }
+    else { G.streak = 0; G.sunkL += sunk; G.nl++; }
+    stats.hist.push({ l: S.level, w: won ? 1 : 0, q: gaveUp ? 1 : 0, s: S.shots[0], h: S.hits[0], k: sunk, o: left, d: Date.now() });
+    if (stats.hist.length > 100) stats.hist.splice(0, stats.hist.length - 100);
+    saveStats();
+  }
   const sfx = (n, a) => { if (opt.sound) Sfx.play(n, a); };
   const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   let S = null, busy = false, sel = 0, horiz = true, aiTimer = 0, zgen = 0;
@@ -11876,8 +11916,9 @@ const Zeeslag = (() => {
   /* ---------- game flow ---------- */
   const name = i => S.mode === 'cpu' ? (i === 0 ? 'Jij' : 'Computer') : (i === 0 ? opt.name1 : opt.name2) || 'Speler ' + (i + 1);
   function newGame() {
+    if (S && S.phase === 'play') record(-1, true); // een lopend potje wegleggen telt als verloren (opgegeven)
     zgen++; clearTimeout(aiTimer); busy = false;
-    S = { mode: opt.mode, level: opt.level, noTouch: opt.noTouch, extra: opt.extra, boards: [emptyBoard(), emptyBoard()], phase: 'place', placer: 0, turn: 0, shots: [0, 0], hits: [0, 0], last: null };
+    S = { mode: opt.mode, level: opt.level, noTouch: opt.noTouch, extra: opt.extra, boards: [emptyBoard(), emptyBoard()], phase: 'place', placer: 0, turn: 0, shots: [0, 0], hits: [0, 0], last: null, names: [opt.name1, opt.name2] };
     if (S.mode === 'cpu') randomize(S.boards[1]);
     sel = 0; horiz = true; busy = false;
     closeModals(); render();
@@ -11929,12 +11970,14 @@ const Zeeslag = (() => {
   function end(winner) {
     S.phase = 'over'; S.winner = winner; busy = false; store.del('zs.save'); render();
     const cpu = S.mode === 'cpu', meWon = winner === 0;
-    if (cpu && meWon) stats.won++; store.set('zs.stats', stats);
+    if (cpu && meWon) stats.won++; record(winner, false);
     sfx(cpu && !meWon ? 'lose' : 'win');
     const acc = S.shots[winner] ? Math.round(S.hits[winner] / S.shots[winner] * 100) : 0;
     $('#zsEndEmoji').textContent = cpu && !meWon ? '🏴‍☠️' : '🏆';
     $('#zsEndTitle').textContent = cpu ? (meWon ? 'Gewonnen! Hele vloot tot zinken gebracht' : 'De computer heeft gewonnen') : `${name(winner)} wint!`;
-    $('#zsEndText').innerHTML = `${S.shots[winner]} schoten · ${acc}% raak` + (cpu ? `<br><small>Gewonnen: ${stats.won} van ${stats.played}</small>` : '');
+    $('#zsEndText').innerHTML = `${S.shots[winner]} schoten · ${acc}% raak` + (cpu && meWon && S.newBest && zgrp(S.level).p > 1 ? '<br>🎉 Minste schoten ooit op dit niveau!' : '');
+    if (cpu) { const G = zgrp(S.level); $('#zsEndOdds').textContent = `Jouw winkans tegen ${S.level === 'normaal' ? 'de normale' : 'de ' + S.level + 'e'} computer: ${zodds(G)}% (${G.w} van ${G.p})${G.streak > 1 ? ` · ${G.streak} op rij` : ''}`; }
+    else { const k = (S.names || []).map((n, i) => n || 'Speler ' + (i + 1)).join('|'), D = stats.duo[k]; $('#zsEndOdds').textContent = D ? `${name(0)} – ${name(1)}: ${D.w[0]} – ${D.w[1]}` : ''; }
     const lost = cpu && !meWon;
     if (lost) { msg('👀 Zo lag de vloot van de computer', 2600); const t = area.querySelector('.zs-wrap-target'); if (t) t.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
     setTimeout(() => { if (S && S.phase === 'over' && current === 'zs') openModal('zsEndModal'); }, lost ? 3200 : 600);
@@ -12124,7 +12167,9 @@ const Zeeslag = (() => {
       <div class="opt"><div class="opt-label">Schepen mogen elkaar niet raken</div>${seg('noTouch', [[true, 'Aan'], [false, 'Uit']])}</div>
       <div class="opt"><div class="opt-label">Geluidseffecten</div>${seg('sound', [[true, 'Aan'], [false, 'Uit']])}</div><div class="opt"><div class="opt-label">Achtergrondmuziek</div>${seg('music', [[true, 'Aan'], [false, 'Uit']])}</div>
       <div class="td-info">Vloot: vliegdekschip (5), slagschip (4), kruiser (3), onderzeeër (3) en torpedobootjager (2). Wie als eerste de hele vloot van de ander laat zinken, wint.</div>
-      <div class="stats"><div class="stat"><b>${stats.played}</b><small>Gespeeld</small></div><div class="stat"><b>${stats.won}</b><small>Gewonnen</small></div><div class="stat"><b>${stats.shots ? Math.round(stats.hits / stats.shots * 100) : 0}%</b><small>Raak</small></div></div>`;
+      <div class="stats"><div class="stat"><b>${stats.played}</b><small>Gespeeld</small></div><div class="stat"><b>${stats.won}</b><small>Gewonnen</small></div><div class="stat"><b>${stats.shots ? Math.round(stats.hits / stats.shots * 100) : 0}%</b><small>Raak</small></div></div>
+      <p class="zs-odds-line">${opt.mode === 'cpu' ? 'Jouw winkans: ' + LVLS.map(([k, l]) => `${l.toLowerCase()} <b>${zodds(zgrp(k)) == null ? '–' : zodds(zgrp(k)) + '%'}</b>`).join(' · ') : (() => { const D = stats.duo[duoKey()]; return D && D.p ? `${esc(opt.name1)} – ${esc(opt.name2)}: <b>${D.w[0]} – ${D.w[1]}</b>` : 'Nog niet tegen elkaar gespeeld met deze namen.'; })()}</p>
+      <button class="btn ms-statsbtn" id="zsStatsBtn">📊 Statistieken en winkansen</button>`;
     $('#zsResume').hidden = !(S && S.phase === 'play');
   }
   $('#zsStartList').addEventListener('click', e => { const b = e.target.closest('button[data-key]'); if (!b) return; opt[b.dataset.key] = JSON.parse(b.dataset.val); saveOpt(); renderStart(); });
@@ -12138,6 +12183,36 @@ const Zeeslag = (() => {
   $('#zsEndMenu').addEventListener('click', () => { closeModals(); leave(); });
   $('#zsBack').addEventListener('click', () => leave());
 
+  /* ---------- statistieken en winkansen ---------- */
+  let stTab = null;
+  const fmtN = (v, d) => v == null || !isFinite(v) ? '–' : (Math.round(v * 10 ** (d || 0)) / 10 ** (d || 0)).toString().replace('.', ',');
+  function openStats() { stTab = S && S.mode === '2p' ? 'duo' : (S ? S.level : opt.level); renderStats(); openModal('zsStatsModal'); }
+  function renderStats() {
+    $('#zsStTab').innerHTML = LVLS.map(([k, l]) => `<button data-st="${k}" class="${stTab === k ? 'on' : ''}">${l}</button>`).join('') + `<button data-st="duo" class="${stTab === 'duo' ? 'on' : ''}">👥 Samen</button>`;
+    if (stTab === 'duo') {
+      const rows = Object.entries(stats.duo).filter(([, D]) => D.p).sort((a, b) => b[1].p - a[1].p);
+      $('#zsStBody').innerHTML = rows.length ? `<div class="ms-lvtable">` + rows.map(([k, D]) => { const [a, b] = k.split('|'), pa = Math.round(D.w[0] / D.p * 100); return `<div class="r zs-duo"><span>${esc(a)} <b>${D.w[0]}</b> – <b>${D.w[1]}</b> ${esc(b)}</span><span class="bar"><i style="width:${pa}%"></i></span><span>${pa}% <small>(${D.p})</small></span></div>`; }).join('') + `</div><p class="note ms-stnote">Winkans van de eerste naam tegen de tweede, per tweetal namen.</p>`
+        : `<p class="note ms-stnote">Nog geen potjes met z'n tweeën gespeeld.</p>`;
+      return;
+    }
+    const G = zgrp(stTab), o = zodds(G), L = LVLS.find(x => x[0] === stTab)[1];
+    const h = stats.hist.filter(x => x.l === stTab), last = h.slice(-20), lo = last.length ? Math.round(last.filter(x => x.w).length / last.length * 100) : null;
+    let trend = '';
+    if (last.length >= 5 && o != null && G.p > last.length) { const d = lo - o; trend = d >= 5 ? ' · je wordt beter 📈' : d <= -5 ? ' · laatste tijd minder 📉' : ''; }
+    const acc = G.sh ? Math.round(G.hi / G.sh * 100) : null;
+    $('#zsStBody').innerHTML =
+      `<div class="ms-odds"><div class="ring" style="--p:${o || 0}"><b>${o == null ? '–' : o + '%'}</b></div><div class="mstxt"><b>Winkans tegen de computer · ${L.toLowerCase()}</b><small>${G.p ? `${G.w} van de ${G.p} gewonnen${lo != null && last.length >= 5 ? `<br>Laatste ${last.length}: ${lo}%${trend}` : ''}` : 'Nog niet gespeeld op dit niveau.'}</small></div></div>` +
+      `<div class="stats ms-stgrid">` + [['Gespeeld', G.p], ['Gewonnen', G.w], ['Raak', acc == null ? '–' : acc + '%'], ['Minste schoten', G.best == null ? '–' : G.best], ['Gem. schoten bij winst', G.w ? fmtN(G.sumW / G.w) : '–'], ['Reeks', G.streak], ['Langste reeks', G.top], ['Schepen over bij winst', G.w ? fmtN(G.left / G.w, 1) : '–'], ['Gezonken bij verlies', G.nl ? fmtN(G.sunkL / G.nl, 1) + ' van 5' : '–']]
+        .map(([l, v]) => `<div class="stat"><b>${v}</b><small>${l}</small></div>`).join('') + `</div>` +
+      (last.length ? `<div class="ms-hist"><div class="lbl">Laatste ${last.length} potjes (oud → nieuw)</div><div class="dots" role="img" aria-label="${last.filter(x => x.w).length} van de laatste ${last.length} gewonnen">${last.map(x => `<i class="${x.w ? 'w' : x.q ? 'q' : ''}" title="${x.w ? 'Gewonnen in ' + x.s + ' schoten' : x.q ? 'Opgegeven' : 'Verloren (' + x.k + ' van 5 gezonken)'}"></i>`).join('')}</div></div>` : '') +
+      `<div class="ms-lvtable"><div class="lbl" style="font-size:13px;color:var(--muted)">Winkans per niveau</div>` + LVLS.map(([k, l]) => { const g = zgrp(k), q = zodds(g); return `<div class="r${k === stTab ? ' on' : ''}"><span>${l}</span><span class="bar"><i style="width:${q || 0}%"></i></span><span>${q == null ? '<small>–</small>' : q + '% <small>(' + g.p + ')</small>'}</span></div>`; }).join('') + `</div>` +
+      `<p class="note ms-stnote">Alles samen tegen de computer: ${stats.won} van ${stats.played} gewonnen (${stats.played ? Math.round(stats.won / stats.played * 100) : 0}%). Een potje dat je wegzet voor een nieuw potje telt als verloren (grijs).</p>`;
+  }
+  $('#zsStTab').addEventListener('click', e => { const b = e.target.closest('button[data-st]'); if (!b) return; stTab = b.dataset.st; renderStats(); });
+  $('#zsStClose').addEventListener('click', () => { closeModals(); if (!S || S.phase === 'over' || S.phase === 'place' && !S.boards[0].ships.some(x => x.cells)) { renderStart(); openModal('zsStartModal'); } });
+  $('#zsStartList').addEventListener('click', e => { if (e.target.closest('#zsStatsBtn')) { closeModals(); openStats(); } });
+  $('#zsEndStats').addEventListener('click', () => { closeModals(); openStats(); });
+
   function enter() {
     makeArt(); show('zs');
     const saved = store.get('zs.save', null);
@@ -12148,7 +12223,7 @@ const Zeeslag = (() => {
     else if (S.mode === '2p' && S.phase === 'play') cover(`Beurt voor ${esc(name(S.turn))}`, 'Tik om verder te spelen');
   }
   function leave() { clearTimeout(aiTimer); save(); busy = false; $('#zsCover').classList.remove('show'); closeModals(); show('menu'); refreshMenu(); }
-  window.__zs = { get S() { return S; }, aiPick, fire, randomize, emptyBoard, opt, shoot, newGame, donePlacing };
+  window.__zs = { get S() { return S; }, aiPick, fire, randomize, emptyBoard, opt, shoot, newGame, donePlacing, get stats() { return stats; }, openStats, end };
   return { enter, leave, hasSave: () => !!store.get('zs.save', null) };
 })();
 $('#tileZs').addEventListener('click', () => Zeeslag.enter());

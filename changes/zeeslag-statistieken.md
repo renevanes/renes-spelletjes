@@ -1,0 +1,1 @@
+Zeeslag: nieuw scherm **Statistieken** met je winkans tegen de computer per niveau (met je laatste potjes en of je beter wordt), minste schoten, raak-percentage en reeksen. Met z'n tweeën zie je de stand per tweetal namen.
