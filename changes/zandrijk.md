@@ -1,1 +1,0 @@
-Nieuw spel: **Zandrijk**! Oogst gloeiend kristal in de woestijn, bouw een basis op de rotsen, train soldaten en tanks en versla de Zonnegilde, de Stormclan of de IJzerbond. Speel de veldtocht van negen missies of vrij spel tegen één of twee computertegenstanders, en pas op voor de zandkruiper!

@@ -1,1 +1,0 @@
-Klaverjassen: de computerspelers spelen en bieden een stuk sterker. Ze trekken troef, smeren punten bij hun maat, gooien geen tien onder een aas, geven geen roem weg en letten bij het bieden op wie er gepast heeft.

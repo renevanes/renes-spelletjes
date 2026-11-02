@@ -1,11 +1,11 @@
 {
-  "versionCode": 75,
-  "versionName": "1.74",
+  "versionCode": 76,
+  "versionName": "1.75",
   "nativeLevel": 12,
-  "notes": "Statistieken tijdens het spel. **Zeeslag**: een live winkans die na elk schot wordt bijgewerkt, en per vloot het aantal schoten, raak-% en hoeveel vakjes nog te raken zijn. **Mijnenveger**: een regel met hoeveel van het veld vrij is en de kans op een mijn bij een gok, plus de knop \ud83c\udfb2 Kansen die per vakje de kans op een mijn laat zien (dan telt je tijd niet als beste tijd). Beide uit te zetten in de opties.",
+  "notes": "Klaverjassen: de computerspelers spelen en bieden een stuk sterker. Ze trekken troef, smeren punten bij hun maat, gooien geen tien onder een aas, geven geen roem weg en letten bij het bieden op wie er gepast heeft.\nNieuw spel: **Zandrijk**! Oogst gloeiend kristal in de woestijn, bouw een basis op de rotsen, train soldaten en tanks en versla de Zonnegilde, de Stormclan of de IJzerbond. Speel de veldtocht van negen missies of vrij spel tegen \u00e9\u00e9n of twee computertegenstanders, en pas op voor de zandkruiper!",
   "web": "web/index.html",
-  "webSha256": "ab4be57676f1c61626bd8730ded04b342e7b27b298dac9a6eb697b1293cd0130",
-  "webSig": "MEYCIQDS8gtNDkoINxAnP/Y3ARUVJWBa1a0D/5wenHyny7oiUAIhAOzCXc0cL7KjXIHfAiMxm9AoBdvO+4jbyqP5a4tHtUNC",
+  "webSha256": "d5694e638a74e173da1bca570853fb1fdc3d44e897e77403fa596770bcb16b60",
+  "webSig": "MEQCIBCRyZgBBbN5/QrMxhkN0NZFYHsu7QWNPfsQvJZTfXp3AiAdOJacuguqALnehO/377Yq/L0tv2hDytY0Q9oQOMGtag==",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "157e7255acef0f79f0480b8faf45ec752ee5481ed6800a979dae8c05fceca91c"

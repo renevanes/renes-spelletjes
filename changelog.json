@@ -373,5 +373,10 @@
   "v": "1.74",
   "date": "2026-11-02",
   "notes": "Statistieken tijdens het spel. **Zeeslag**: een live winkans die na elk schot wordt bijgewerkt, en per vloot het aantal schoten, raak-% en hoeveel vakjes nog te raken zijn. **Mijnenveger**: een regel met hoeveel van het veld vrij is en de kans op een mijn bij een gok, plus de knop 🎲 Kansen die per vakje de kans op een mijn laat zien (dan telt je tijd niet als beste tijd). Beide uit te zetten in de opties."
+ },
+ {
+  "v": "1.75",
+  "date": "2026-11-02",
+  "notes": "Klaverjassen: de computerspelers spelen en bieden een stuk sterker. Ze trekken troef, smeren punten bij hun maat, gooien geen tien onder een aas, geven geen roem weg en letten bij het bieden op wie er gepast heeft.\nNieuw spel: **Zandrijk**! Oogst gloeiend kristal in de woestijn, bouw een basis op de rotsen, train soldaten en tanks en versla de Zonnegilde, de Stormclan of de IJzerbond. Speel de veldtocht van negen missies of vrij spel tegen één of twee computertegenstanders, en pas op voor de zandkruiper!"
  }
 ]
