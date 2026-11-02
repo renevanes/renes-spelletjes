@@ -1,0 +1,1 @@
+Mijnenveger: kies 2, 3 of 5 levens, dan ben je niet meteen af als je een mijn raakt. Nieuw scherm **Statistieken**: je winkans per niveau en per aantal levens, beste en gemiddelde tijd, reeksen en je laatste potjes.

@@ -520,10 +520,32 @@ html.light .pin-pad button{background:rgba(0,0,0,.07)}
 .ms-mode.on{background:rgba(229,52,74,.3)}
 #msWrap{position:relative;flex:1;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
 #msCanvas{position:absolute;left:0;top:0;display:block}
+#msToast{position:absolute;left:50%;top:10px;transform:translate(-50%,-8px);background:rgba(10,20,14,.82);padding:7px 14px;border-radius:999px;font-size:15px;white-space:nowrap;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:5;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+#msToast.show{opacity:1;transform:translate(-50%,0)}
 .ms-levels{display:grid;gap:8px;margin:10px 0}
 .ms-levels button{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;text-align:left;background:rgba(0,0,0,.25);border:2px solid transparent;border-radius:14px;padding:10px 14px;color:var(--ink)}
 .ms-levels button b{font-size:17px} .ms-levels button small{color:var(--muted);grid-column:1} .ms-levels button span{grid-column:2;grid-row:1/3;align-self:center;font-variant-numeric:tabular-nums;color:var(--muted)}
 .ms-levels button.on{border-color:var(--accent);background:rgba(242,193,78,.15)}
+.ms-levels button span small{display:block;font-size:12px;text-align:right}
+.ms-lives{letter-spacing:1px;font-size:15px}.ms-lives.hit{animation:msHit .5s ease}
+@keyframes msHit{30%{transform:scale(1.35)}}
+@media (prefers-reduced-motion:reduce){.ms-lives.hit{animation:none}}
+.ms-optnote{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+.ms-statsbtn{width:100%;margin-top:10px}
+.ms-endodds{color:var(--muted);font-size:14px;margin:-4px 0 10px}
+.ms-stlvl{margin:4px 0 8px}
+.ms-odds{display:flex;align-items:center;gap:14px;background:rgba(0,0,0,.25);border-radius:16px;padding:12px 14px;margin:6px 0 10px}
+.ms-odds .ring{--p:0;width:72px;height:72px;border-radius:50%;flex:none;display:grid;place-items:center;background:conic-gradient(var(--accent) calc(var(--p)*1%),rgba(255,255,255,.12) 0)}
+.ms-odds .ring b{width:56px;height:56px;border-radius:50%;background:#16322a;display:grid;place-items:center;font-size:17px;font-variant-numeric:tabular-nums}
+.ms-odds .mstxt{flex:1;min-width:0}.ms-odds .mstxt b{display:block;font-size:16px}.ms-odds .mstxt small{display:block;color:var(--muted);font-size:13px;line-height:1.35}
+.ms-stgrid{grid-template-columns:repeat(3,1fr)}
+.ms-hist{margin:10px 0 4px}.ms-hist .lbl{font-size:13px;color:var(--muted);margin-bottom:6px}
+.ms-hist .dots{display:flex;gap:4px;flex-wrap:wrap}.ms-hist .dots i{width:14px;height:14px;border-radius:4px;background:#e5344a}.ms-hist .dots i.w{background:#2fb36a}.ms-hist .dots i.q{background:rgba(255,255,255,.25)}
+.ms-lvtable{margin-top:10px;display:grid;gap:6px}
+.ms-lvtable .r{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;background:rgba(0,0,0,.2);border-radius:12px;padding:8px 12px;font-variant-numeric:tabular-nums}
+.ms-lvtable .r.on{outline:2px solid var(--accent)}.ms-lvtable .r small{color:var(--muted)}
+.ms-lvtable .bar{width:80px;height:8px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden}.ms-lvtable .bar i{display:block;height:100%;background:var(--accent)}
+.ms-stnote{color:var(--muted);font-size:13px}
 #gg{background:#120d10}
 #gg .topbar{background:#22171c;gap:4px}
 .gg-hud{flex:1;display:flex;align-items:center;justify-content:center;gap:14px;font-size:16px;white-space:nowrap}
@@ -2820,12 +2842,12 @@ html.big-text .wk-crit,html.big-text .wk-karel{font-size:16px}
 <section id="ms" class="screen">
   <div class="topbar">
     <button class="iconbtn" id="msBack" aria-label="Terug">‹</button>
-    <div class="ms-hud"><span>💣 <b id="msLeft">10</b></span><span>⏱ <b id="msTime">0:00</b></span></div>
+    <div class="ms-hud"><span>💣 <b id="msLeft">10</b></span><span id="msLives" class="ms-lives" hidden></span><span>⏱ <b id="msTime">0:00</b></span></div>
     <button class="iconbtn ms-mode" id="msFlag" aria-label="Vlagmodus">⛏</button>
     <button class="iconbtn" id="msNew" aria-label="Nieuw spel">↻</button>
     <button class="iconbtn" id="msOptBtn" aria-label="Opties">⚙&#xFE0E;</button>
   </div>
-  <div id="msWrap"><canvas id="msCanvas"></canvas></div>
+  <div id="msWrap"><canvas id="msCanvas"></canvas><div id="msToast" role="status" aria-live="polite"></div></div>
 </section>
 
 <!-- ============ GOUDGRAVER ============ -->
@@ -3211,9 +3233,11 @@ html.big-text .wk-crit,html.big-text .wk-karel{font-size:16px}
     <h3>💣 Mijnenveger</h3>
     <p class="note" style="color:var(--muted);margin-top:0">Tik om een vakje te openen. Het getal zegt hoeveel mijnen eromheen liggen. Druk lang (of gebruik 🚩) om een vlag te zetten. Tik op een getal met genoeg vlaggen eromheen om de rest te openen. Knijp om in te zoomen.</p>
     <div class="ms-levels" id="msLevels"></div>
+    <div class="opt"><div class="opt-label">Levens <small class="ms-optnote">Met meer levens ben je niet meteen af als je een mijn raakt. Tijden en winkansen tellen per aantal levens.</small></div><div id="msLivesOpt"></div></div>
     <div class="opt"><div class="opt-label">Geluidseffecten</div><div id="msSoundOpt"></div></div>
     <div class="opt"><div class="opt-label">Achtergrondmuziek</div><div id="msMusicOpt"></div></div>
     <div class="stats" id="msStats"></div>
+    <button class="btn ms-statsbtn" id="msStatsBtn">📊 Statistieken en winkansen</button>
     <div class="row sticky-actions"><button class="btn" id="msStartBack">Menu</button><button class="btn" id="msResume" hidden>Verder</button><button class="btn primary" id="msGo">Nieuw spel ▶</button></div>
   </div>
 </div>
@@ -3222,7 +3246,22 @@ html.big-text .wk-crit,html.big-text .wk-karel{font-size:16px}
     <div class="big-emoji" id="msEndEmoji">🏆</div>
     <h3 id="msEndTitle"></h3>
     <p id="msEndText"></p>
+    <p class="ms-endodds" id="msEndOdds"></p>
     <div class="row"><button class="btn" id="msEndMenu">Niveau kiezen</button><button class="btn primary" id="msEndNew">Nog een keer ▶</button></div>
+    <button class="btn ms-statsbtn" id="msEndStats">📊 Statistieken</button>
+  </div>
+</div>
+<div class="modal" id="msStatsModal">
+  <div class="sheet">
+    <h3>📊 Statistieken</h3>
+    <div class="seg ms-stlvl" id="msStLvl"></div>
+    <div class="seg ms-stlvl" id="msStLives"></div>
+    <div class="ms-odds" id="msStOdds"></div>
+    <div class="stats ms-stgrid" id="msStGrid"></div>
+    <div class="ms-hist" id="msStHist"></div>
+    <div class="ms-lvtable" id="msStTable"></div>
+    <p class="note ms-stnote" id="msStTotal"></p>
+    <div class="row sticky-actions"><button class="btn primary" id="msStClose">Sluiten</button></div>
   </div>
 </div>
 <div class="modal" id="ggStartModal">
@@ -33970,11 +34009,43 @@ $('#tileGg').addEventListener('click', () => Goldmine.enter());
    ================================================================ */
 const Mines = (() => {
   const LEVELS = { makkelijk: { r: 9, c: 9, m: 10, name: 'Makkelijk' }, normaal: { r: 16, c: 16, m: 40, name: 'Normaal' }, moeilijk: { r: 30, c: 16, m: 99, name: 'Moeilijk' } };
-  const D = { level: 'makkelijk', sound: true, flagMode: false };
+  const LIVES = [1, 2, 3, 5];
+  const D = { level: 'makkelijk', sound: true, flagMode: false, lives: 1 };
   const opt = Object.assign({}, D, store.get('ms.settings', {}));
+  if (!LIVES.includes(+opt.lives)) opt.lives = 1;
   const saveOpt = () => store.set('ms.settings', opt);
+  /* Statistieken: totalen (played/won/streak; best = beste tijd met 1 leven, voor tegel en trofee) plus per niveau
+     én aantal levens in g['niveau|levens'], en de laatste 100 potjes in hist. Oude statistieken blijven gelden. */
   let stats = Object.assign({ played: 0, won: 0, best: {}, streak: 0 }, store.get('ms.stats', {}));
+  if (!stats.g) stats.g = {};
+  if (!Array.isArray(stats.hist)) stats.hist = [];
+  for (const k of Object.keys(stats.best || {})) { const G = grp(k, 1); if (G.best == null) G.best = stats.best[k]; }
   const saveStats = () => store.set('ms.stats', stats);
+  function grp(lvl, lives) {
+    const k = lvl + '|' + lives;
+    if (!stats.g[k]) stats.g[k] = { p: 0, w: 0, best: null, sum: 0, streak: 0, top: 0, clr: 0, nl: 0, hits: 0 };
+    return stats.g[k];
+  }
+  /* Een potje telt mee zodra het eerste vakje open is; afgelopen (gewonnen, verloren of opgegeven) = één regel erbij */
+  function record(won, gaveUp) {
+    if (!S || !S.counted || S.recorded) return;
+    S.recorded = true;
+    const lv = S.lives || 1, G = grp(S.lvl, lv), t = Math.floor(S.time);
+    const safe = S.rows * S.cols - S.mines, open = S.st.filter(v => v === 1).length, clr = Math.round(open / safe * 100);
+    G.p++;
+    if (won) {
+      G.w++; G.sum += t; G.streak++; G.top = Math.max(G.top, G.streak); if (!S.hits) G.hits++;
+      S.newBest = G.best == null || t < G.best; if (S.newBest) G.best = t;
+      stats.won++; stats.streak++;
+      if (lv === 1 && (stats.best[S.lvl] == null || t < stats.best[S.lvl])) stats.best[S.lvl] = t;
+    } else { G.streak = 0; G.clr += clr; G.nl++; stats.streak = 0; }
+    stats.hist.push({ l: S.lvl, lv, w: won ? 1 : 0, q: gaveUp ? 1 : 0, t, c: won ? 100 : clr, h: S.hits || 0, d: Date.now() });
+    if (stats.hist.length > 100) stats.hist.splice(0, stats.hist.length - 100);
+    saveStats();
+  }
+  const odds = G => G.p ? Math.round(G.w / G.p * 100) : null;
+  let toastT = 0;
+  function toast(t) { const e = $('#msToast'); e.textContent = t; e.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => e.classList.remove('show'), 1800); }
   Sfx.gate('ms', () => opt.music !== false); if (opt.music === undefined) opt.music = opt.sound !== false;
   const sfx = (n, a, p) => { if (opt.sound) Sfx.play(n, a, p); };
   const wrap = $('#msWrap'), cv = $('#msCanvas'), ctx = cv.getContext('2d');
@@ -33983,8 +34054,9 @@ const Mines = (() => {
 
   /* ---------- game state ---------- */
   function newGame(lvl) {
+    if (S && S.counted && !S.over) record(false, true); // een begonnen potje wegleggen telt als verloren (opgegeven)
     const L = LEVELS[lvl || opt.level]; opt.level = lvl || opt.level; saveOpt();
-    S = { lvl: opt.level, rows: L.r, cols: L.c, mines: L.m, mine: Array(L.r * L.c).fill(0), adj: Array(L.r * L.c).fill(0), st: Array(L.r * L.c).fill(0), first: true, over: false, won: false, time: 0, counted: false, lost: -1 };
+    S = { lvl: opt.level, rows: L.r, cols: L.c, mines: L.m, mine: Array(L.r * L.c).fill(0), adj: Array(L.r * L.c).fill(0), st: Array(L.r * L.c).fill(0), first: true, over: false, won: false, time: 0, counted: false, lost: -1, lives: opt.lives, hits: 0 };
     anim.clear(); booms = []; confetti = []; layout(true); hud(); save(); dirty = true; closeModals();
   }
   const idx = (r, c) => r * S.cols + c;
@@ -34000,7 +34072,7 @@ const Mines = (() => {
   function reveal(i0) {
     if (S.over || S.st[i0] !== 0) return;
     if (S.first) { plant(i0); S.first = false; if (!S.counted) { S.counted = true; stats.played++; saveStats(); } }
-    if (S.mine[i0]) return lose(i0);
+    if (S.mine[i0]) return hit(i0);
     const now = performance.now(), q = [[i0, 0]], seen = new Set([i0]); let n = 0;
     while (q.length) {
       const [i, d] = q.shift(); if (S.st[i] !== 0) continue; S.st[i] = 1; n++; anim.set(i, now + d * 22);
@@ -34011,19 +34083,28 @@ const Mines = (() => {
   }
   function chord(i) {
     if (S.st[i] !== 1 || !S.adj[i]) return;
-    const ns = nb(i), flags = ns.filter(j => S.st[j] === 2).length;
+    const ns = nb(i), flags = ns.filter(j => S.st[j] === 2 || S.st[j] === 3).length;
     if (flags !== S.adj[i]) { for (const j of ns) if (S.st[j] === 0) anim.set(-1 - j, performance.now()); dirty = true; return; }
-    const hit = ns.find(j => S.st[j] === 0 && S.mine[j]); if (hit != null) return lose(hit);
+    for (const j of ns) if (S.st[j] === 0 && S.mine[j]) { hit(j); if (S.over) return; }
     for (const j of ns) if (S.st[j] === 0) reveal(j);
   }
   function flag(i) {
-    if (S.over || S.st[i] === 1) return;
+    if (S.over || S.st[i] === 1 || S.st[i] === 3) return;
     S.st[i] = S.st[i] === 2 ? 0 : 2; anim.set(i, performance.now()); sfx(S.st[i] === 2 ? 'msFlag' : 'msUnflag', null, pan(i)); vibrate(20); dirty = true; hud(); save();
   }
+  /* Mijn geraakt: met levens over ontploft hij zichtbaar (vakje 3 = bekende mijn) en speel je door */
+  function hit(i) {
+    S.hits = (S.hits || 0) + 1;
+    if (S.hits >= (S.lives || 1)) return lose(i);
+    S.st[i] = 3; booms.push({ i, t: performance.now() }); sfx('boom'); vibrate(80);
+    const el = $('#msLives'); el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit');
+    const left = S.lives - S.hits; toast(`💥 Mijn geraakt! Nog ${left} ${left === 1 ? 'leven' : 'levens'}`);
+    dirty = true; hud(); checkWin(); save();
+  }
   function lose(i) {
-    S.over = true; S.lost = i; stats.streak = 0; saveStats(); store.del('ms.save');
+    S.over = true; S.lost = i; record(false, false); store.del('ms.save');
     const now = performance.now(); booms.push({ i, t: now }); sfx('boom'); vibrate(120);
-    const rest = []; for (let j = 0; j < S.mine.length; j++) if (S.mine[j] && j !== i && S.st[j] !== 2) rest.push(j);
+    const rest = []; for (let j = 0; j < S.mine.length; j++) if (S.mine[j] && j !== i && S.st[j] !== 2 && S.st[j] !== 3) rest.push(j);
     const r0 = Math.floor(i / S.cols), c0 = i % S.cols;
     rest.sort((a, b) => Math.hypot(Math.floor(a / S.cols) - r0, a % S.cols - c0) - Math.hypot(Math.floor(b / S.cols) - r0, b % S.cols - c0));
     rest.forEach((j, k) => { const t = now + 250 + k * 70; booms.push({ i: j, t }); if (k < 12) setTimeout(() => sfx('pop'), 250 + k * 70); });
@@ -34033,17 +34114,21 @@ const Mines = (() => {
   function checkWin() {
     const closed = S.st.reduce((a, v, i) => a + (v !== 1 ? 1 : 0), 0);
     if (closed !== S.mines) return;
-    S.over = true; S.won = true; for (let i = 0; i < S.mine.length; i++) if (S.mine[i]) S.st[i] = 2;
-    stats.won++; stats.streak++; const t = Math.floor(S.time); const prev = stats.best[S.lvl]; S.newBest = prev == null || t < prev; if (S.newBest) stats.best[S.lvl] = t; saveStats(); store.del('ms.save');
+    S.over = true; S.won = true; for (let i = 0; i < S.mine.length; i++) if (S.mine[i] && S.st[i] !== 3) S.st[i] = 2;
+    record(true, false); store.del('ms.save');
     sfx('pfWin'); vibrate(60);
     for (let k = 0; k < 90; k++) confetti.push({ x: W * Math.random(), y: -20 - Math.random() * H * .3, vx: (Math.random() - .5) * 80, vy: 80 + Math.random() * 160, r: Math.random() * 6, vr: (Math.random() - .5) * 8, c: ['#ffd23f', '#e5344a', '#3d9bff', '#2fb36a', '#ffffff'][k % 5], t: performance.now() });
     dirty = true; hud(); const S0 = S; setTimeout(() => { if (S === S0) showEnd(true); }, 1400);
   }
   const pan = i => { const c = i % S.cols; return ((c + .5) / S.cols - .5) * .8; };
   function save() { if (S && !S.over && !S.first) store.set('ms.save', S); }
-  const flagsLeft = () => S ? S.mines - S.st.filter(v => v === 2).length : 0;
+  const flagsLeft = () => S ? S.mines - S.st.filter(v => v === 2 || v === 3).length : 0;
   const fmt = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
-  function hud() { $('#msLeft').textContent = flagsLeft(); $('#msTime').textContent = fmt(S ? S.time : 0); $('#msFlag').classList.toggle('on', opt.flagMode); $('#msFlag').textContent = opt.flagMode ? '🚩' : '⛏'; }
+  function hud() {
+    const lv = S ? S.lives || 1 : 1, el = $('#msLives');
+    el.hidden = lv <= 1;
+    if (lv > 1) { const left = Math.max(0, lv - (S.hits || 0)); el.textContent = '❤️'.repeat(left) + '🖤'.repeat(lv - left); el.setAttribute('aria-label', `Nog ${left} van ${lv} levens`); }
+    $('#msLeft').textContent = flagsLeft(); $('#msTime').textContent = fmt(S ? S.time : 0); $('#msFlag').classList.toggle('on', opt.flagMode); $('#msFlag').textContent = opt.flagMode ? '🚩' : '⛏'; }
 
   /* ---------- layout / view ---------- */
   function layout(reset) {
@@ -34106,6 +34191,7 @@ const Mines = (() => {
     for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) {
       const i = idx(r, c), x = ox + c * s, y = oy + r * s, v = (r + c) & 1, st = S.st[i];
       ctx.drawImage(SP['o' + v], x, y, s + .5, s + .5);
+      if (st === 3) { ctx.fillStyle = 'rgba(229,52,74,.45)'; ctx.fillRect(x, y, s, s); ctx.drawImage(SP.mine, x, y, s, s); continue; }
       if (st === 1) {
         const a0 = anim.get(i); let k = 1; if (a0 != null) { k = Math.min(1, Math.max(0, (now - a0) / 160)); if (k < 1) animating = true; else anim.delete(i); }
         if (S.adj[i] && !S.mine[i]) { ctx.globalAlpha = k; ctx.drawImage(SP['n' + S.adj[i]], x, y, s, s); ctx.globalAlpha = 1; }
@@ -34190,11 +34276,40 @@ const Mines = (() => {
   function showEnd(won) {
     $('#msEndEmoji').textContent = won ? '🏆' : '💥';
     $('#msEndTitle').textContent = won ? 'Veld vrijgemaakt!' : 'Boem!';
-    $('#msEndText').innerHTML = won ? `${LEVELS[S.lvl].name} in <b>${fmt(S.time)}</b>${S.newBest ? '<br>🎉 Nieuwe beste tijd!' : stats.best[S.lvl] != null ? `<br>Beste tijd: ${fmt(stats.best[S.lvl])}` : ''}` : 'Je raakte een mijn. Probeer het nog eens!';
+    const lv = S.lives || 1, G = grp(S.lvl, lv), lvTxt = lv > 1 ? ` · ${lv} levens` : '';
+    $('#msEndText').innerHTML = won ? `${LEVELS[S.lvl].name}${lvTxt} in <b>${fmt(S.time)}</b>${S.hits && lv > 1 ? ` (${S.hits}× geraakt)` : ''}${S.newBest ? '<br>🎉 Nieuwe beste tijd!' : G.best != null ? `<br>Beste tijd: ${fmt(G.best)}` : ''}`
+      : `Je raakte een mijn${lv > 1 ? ' en je levens zijn op' : ''}. ${S.st.filter(v => v === 1).length ? `Je had ${Math.round(S.st.filter(v => v === 1).length / (S.rows * S.cols - S.mines) * 100)}% van het veld vrij.` : ''} Probeer het nog eens!`;
+    $('#msEndOdds').textContent = G.p ? `Jouw winkans op ${LEVELS[S.lvl].name.toLowerCase()}${lvTxt}: ${odds(G)}% (${G.w} van ${G.p})${G.streak > 1 ? ` · ${G.streak} op rij` : ''}` : '';
     openModal('msEndModal');
   }
+  /* ---------- statistieken en winkansen ---------- */
+  let stLvl = null, stLives = null;
+  const livesName = n => n === 1 ? '1 leven' : n + ' levens';
+  function openStats() { stLvl = (S && S.lvl) || opt.level; stLives = (S && S.counted ? S.lives : opt.lives) || 1; renderStats(); openModal('msStatsModal'); }
+  function renderStats() {
+    $('#msStLvl').innerHTML = Object.entries(LEVELS).map(([k, L]) => `<button data-stl="${k}" class="${stLvl === k ? 'on' : ''}">${L.name}</button>`).join('');
+    $('#msStLives').innerHTML = LIVES.map(n => `<button data-stv="${n}" class="${stLives === n ? 'on' : ''}" aria-label="${livesName(n)}">${n === 1 ? '1 ❤️' : n + ' ❤️'}</button>`).join('');
+    const G = grp(stLvl, stLives), o = odds(G), L = LEVELS[stLvl];
+    const h = stats.hist.filter(x => x.l === stLvl && x.lv === stLives), last = h.slice(-20), lo = last.length ? Math.round(last.filter(x => x.w).length / last.length * 100) : null;
+    let trend = '';
+    if (last.length >= 5 && o != null && G.p > last.length) { const d = lo - o; trend = d >= 5 ? ' · je wordt beter 📈' : d <= -5 ? ' · laatste tijd minder 📉' : ''; }
+    $('#msStOdds').innerHTML = `<div class="ring" style="--p:${o || 0}"><b>${o == null ? '–' : o + '%'}</b></div><div class="mstxt"><b>Winkans ${L.name.toLowerCase()} · ${livesName(stLives)}</b><small>${G.p ? `${G.w} van de ${G.p} gewonnen${lo != null && last.length >= 5 ? `<br>Laatste ${last.length}: ${lo}%${trend}` : ''}` : 'Nog niet gespeeld met deze instelling.'}</small></div>`;
+    const avg = G.w ? fmt(G.sum / G.w) : '–';
+    $('#msStGrid').innerHTML = [['Gespeeld', G.p], ['Gewonnen', G.w], ['Beste tijd', G.best != null ? fmt(G.best) : '–'], ['Gem. tijd', avg], ['Reeks', G.streak], ['Langste reeks', G.top],
+      ['Vrij bij verlies', G.nl ? Math.round(G.clr / G.nl) + '%' : '–'], ...(stLives > 1 ? [['Zonder raken', G.hits]] : [])].map(([l, v]) => `<div class="stat"><b>${v}</b><small>${l}</small></div>`).join('');
+    $('#msStHist').innerHTML = last.length ? `<div class="lbl">Laatste ${last.length} potjes (oud → nieuw)</div><div class="dots" role="img" aria-label="${last.filter(x => x.w).length} van de laatste ${last.length} gewonnen">${last.map(x => `<i class="${x.w ? 'w' : x.q ? 'q' : ''}" title="${x.w ? 'Gewonnen in ' + fmt(x.t) : x.q ? 'Opgegeven' : 'Verloren (' + x.c + '% vrij)'}"></i>`).join('')}</div>` : '';
+    $('#msStTable').innerHTML = `<div class="lbl" style="font-size:13px;color:var(--muted)">Winkans per aantal levens (${L.name.toLowerCase()})</div>` + LIVES.map(n => { const g = grp(stLvl, n), q = odds(g); return `<div class="r${n === stLives ? ' on' : ''}"><span>${livesName(n)}</span><span class="bar"><i style="width:${q || 0}%"></i></span><span>${q == null ? '<small>–</small>' : q + '% <small>(' + g.p + ')</small>'}</span></div>`; }).join('');
+    const tot = stats.played ? Math.round(stats.won / stats.played * 100) : 0;
+    $('#msStTotal').textContent = `Alles samen: ${stats.won} van ${stats.played} gewonnen (${tot}%). Een potje dat je wegzet voor een nieuw potje telt als verloren (grijs).`;
+  }
+  $('#msStLvl').addEventListener('click', e => { const b = e.target.closest('button[data-stl]'); if (!b) return; stLvl = b.dataset.stl; renderStats(); });
+  $('#msStLives').addEventListener('click', e => { const b = e.target.closest('button[data-stv]'); if (!b) return; stLives = +b.dataset.stv; renderStats(); });
+  $('#msStClose').addEventListener('click', () => { closeModals(); if (!S || S.over || S.first) { renderStart(); openModal('msStartModal'); } else dirty = true; });
+  $('#msStatsBtn').addEventListener('click', () => { closeModals(); openStats(); });
+  $('#msEndStats').addEventListener('click', () => { closeModals(); openStats(); });
   function renderStart() {
-    $('#msLevels').innerHTML = Object.entries(LEVELS).map(([k, L]) => `<button data-lvl="${k}" class="${opt.level === k ? 'on' : ''}"><b>${L.name}</b><small>${L.c}×${L.r} · ${L.m} mijnen</small><span>${stats.best[k] != null ? '⏱ ' + fmt(stats.best[k]) : '–'}</span></button>`).join('');
+    $('#msLevels').innerHTML = Object.entries(LEVELS).map(([k, L]) => { const G = grp(k, opt.lives), o = odds(G); return `<button data-lvl="${k}" class="${opt.level === k ? 'on' : ''}"><b>${L.name}</b><small>${L.c}×${L.r} · ${L.m} mijnen</small><span>${G.best != null ? '⏱ ' + fmt(G.best) : '–'}<small>${o == null ? 'winkans –' : 'winkans ' + o + '%'}</small></span></button>`; }).join('');
+    $('#msLivesOpt').innerHTML = `<div class="seg">${LIVES.map(n => `<button data-lives="${n}" class="${opt.lives === n ? 'on' : ''}" aria-label="${livesName(n)}">${n === 1 ? '1 (klassiek)' : n + ' ❤️'}</button>`).join('')}</div>`;
     $('#msSoundOpt').innerHTML = `<div class="seg">${[[true, 'Aan'], [false, 'Uit']].map(([v, l]) => `<button data-snd='${v}' class="${opt.sound === v ? 'on' : ''}">${l}</button>`).join('')}</div>`;
     $('#msMusicOpt').innerHTML = `<div class="seg">${[[true, 'Aan'], [false, 'Uit']].map(([v, l]) => `<button data-mus='${v}' class="${opt.music === v ? 'on' : ''}">${l}</button>`).join('')}</div>`;
     const pct = stats.played ? Math.round(stats.won / stats.played * 100) : 0;
@@ -34202,6 +34317,7 @@ const Mines = (() => {
     $('#msResume').hidden = !(S && !S.over && !S.first);
   }
   $('#msLevels').addEventListener('click', e => { const b = e.target.closest('button[data-lvl]'); if (!b) return; opt.level = b.dataset.lvl; saveOpt(); renderStart(); });
+  $('#msLivesOpt').addEventListener('click', e => { const b = e.target.closest('button[data-lives]'); if (!b) return; opt.lives = +b.dataset.lives; saveOpt(); renderStart(); });
   $('#msSoundOpt').addEventListener('click', e => { const b = e.target.closest('button[data-snd]'); if (!b) return; opt.sound = b.dataset.snd === 'true'; saveOpt(); renderStart(); });
   $('#msMusicOpt').addEventListener('click', e => { const b = e.target.closest('button[data-mus]'); if (!b) return; opt.music = b.dataset.mus === 'true'; saveOpt(); renderStart(); Sfx.refresh(); });
   $('#msGo').addEventListener('click', () => newGame(opt.level));
@@ -34218,7 +34334,7 @@ const Mines = (() => {
   function enter() {
     show('ms');
     const saved = store.get('ms.save', null);
-    if (!S && saved && saved.mine) { S = saved; }
+    if (!S && saved && saved.mine) { S = saved; if (!S.lives) S.lives = 1; if (!S.hits) S.hits = 0; }
     layout(true);
     if (!running) { running = true; timerT = 0; raf = requestAnimationFrame(frame); }
     if (S) hud();
@@ -34226,7 +34342,7 @@ const Mines = (() => {
     dirty = true;
   }
   function leave() { running = false; cancelAnimationFrame(raf); save(); closeModals(); show('menu'); refreshMenu(); }
-  window.__ms = { get S() { return S; }, newGame, reveal, flag, chord, get view() { return view; } };
+  window.__ms = { get S() { return S; }, newGame, reveal, flag, chord, get view() { return view; }, get stats() { return stats; }, opt, openStats, grp };
   return { enter, leave, hasSave: () => !!store.get('ms.save', null) };
 })();
 $('#tileMs').addEventListener('click', () => Mines.enter());
