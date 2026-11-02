@@ -1,11 +1,11 @@
 {
-  "versionCode": 73,
-  "versionName": "1.72",
+  "versionCode": 74,
+  "versionName": "1.73",
   "nativeLevel": 12,
-  "notes": "Mijnenveger: kies 2, 3 of 5 levens, dan ben je niet meteen af als je een mijn raakt. Nieuw scherm **Statistieken**: je winkans per niveau en per aantal levens, beste en gemiddelde tijd, reeksen en je laatste potjes.",
+  "notes": "Zeeslag: nieuw scherm **Statistieken** met je winkans tegen de computer per niveau (met je laatste potjes en of je beter wordt), minste schoten, raak-percentage en reeksen. Met z'n twee\u00ebn zie je de stand per tweetal namen.",
   "web": "web/index.html",
-  "webSha256": "9a60c059551760b930894b8b5c75289458389daf234e6eff09fd3d30a3bdaf1f",
-  "webSig": "MEQCICgL2HiEtsvuLhG+YcdeQDXVZqY1AKwDaDaHqvRLv09bAiBs8KkrMKfLhxrJDXKw8dmdLMBzZrSseRvzDbx1ym6DYQ==",
+  "webSha256": "bf57e99aa5911741536500a49a752bcf8b4b012b3d4bbe5406c310a922e1799d",
+  "webSig": "MEUCIAp8PZsStzF+UsJ0OYwtruHxkvmwhxf98ObMm/k/thsBAiEA12fheNu307JfEli3hsQfyWUjRHEE/ru8EsY1FElLl44=",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "157e7255acef0f79f0480b8faf45ec752ee5481ed6800a979dae8c05fceca91c"

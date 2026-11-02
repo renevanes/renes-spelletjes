@@ -363,5 +363,10 @@
   "v": "1.72",
   "date": "2026-11-02",
   "notes": "Mijnenveger: kies 2, 3 of 5 levens, dan ben je niet meteen af als je een mijn raakt. Nieuw scherm **Statistieken**: je winkans per niveau en per aantal levens, beste en gemiddelde tijd, reeksen en je laatste potjes."
+ },
+ {
+  "v": "1.73",
+  "date": "2026-11-02",
+  "notes": "Zeeslag: nieuw scherm **Statistieken** met je winkans tegen de computer per niveau (met je laatste potjes en of je beter wordt), minste schoten, raak-percentage en reeksen. Met z'n tweeën zie je de stand per tweetal namen."
  }
 ]
