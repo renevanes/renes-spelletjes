@@ -36,7 +36,7 @@
     const mr = miniCv.getBoundingClientRect(); if (mr.width > 10) { miniCv.width = Math.round(mr.width * Math.min(2, devicePixelRatio || 1)); miniCv.height = Math.round(mr.height * Math.min(2, devicePixelRatio || 1)); }
     if (S && !raf) drawStill();
   }
-  addEventListener('resize', () => { if (current === 'zr') setTimeout(fit, 60); });
+  addEventListener('resize', () => { if (current === 'zr') setTimeout(() => { fit(); placeInfo(); }, 60); });
   function drawStill() { if (S) { RD.frame(S, 1, frameOpts(true)); miniTick(true); } else if (GS && GS.demo) drawDemo(); }
   const frameOpts = still => ({ sel: GS && GS.sel, selB: GS && GS.selB, ghost: GS && GS.placing ? ghostInfo() : null, box: GS && GS.box, marks: GS && GS.marks, speed: opt.speed, still });
 
@@ -118,7 +118,7 @@
   }
 
   /* ---------- HUD (HTML, only touched when a value changes) ---------- */
-  const E = { cry: $('#zrCry'), pow: $('#zrPow'), obj: $('#zrObj'), sel: $('#zrSelInfo'), cmd: $('#zrCmd'), place: $('#zrPlaceTxt'), placeOk: $('#zrPlaceOk'), sell: $('#zrSell'), rep: $('#zrRep'), box: $('#zrBox') };
+  const E = { cry: $('#zrCry'), pow: $('#zrPow'), obj: $('#zrObj'), info: $('#zrInfo'), cmd: $('#zrCmd'), place: $('#zrPlaceTxt'), placeOk: $('#zrPlaceOk'), sell: $('#zrSell'), rep: $('#zrRep'), box: $('#zrBox') };
   let hudK = '', objK = '', selK = '', buildT = 0;
   function hud() {
     const P = H(); if (!P) return;
@@ -131,7 +131,8 @@
     if (S.obj && S.t % 8 === 0) {
       const ok = objText(); if (ok !== objK) { objK = ok; E.obj.innerHTML = ok; E.obj.classList.toggle('on', !!ok); const r = E.obj.getBoundingClientRect(); scr.style.setProperty('--toastY', ok ? Math.max(56, r.bottom - stageEl.getBoundingClientRect().top + 8) + 'px' : '56px'); }
     } else if (!S.obj && objK !== '-') { objK = '-'; E.obj.classList.remove('on'); scr.style.setProperty('--toastY', '56px'); }
-    const sk = selKey(); if (sk !== selK) { selK = sk; renderSel(); }
+    const sk = selKey(); if (sk !== selK) { selK = sk; renderSel(); placeInfo(); }
+    updInfo();
     if (now() - buildT > 160) { buildT = now(); renderBuild(); }
     scr.classList.toggle('radar', radarOn());
   }
@@ -153,19 +154,110 @@
     E.sell.classList.toggle('sure', !!GS.sellSure); E.sell.querySelector('small').textContent = GS.sellSure ? 'Zeker?' : 'Verkoop';
     E.rep.classList.toggle('on', !!(b && b.rep));
     document.querySelectorAll('#zrCmd .zr-g').forEach((el, i) => { const em = el.querySelector('em'), n = GS.groups[i].length; em.textContent = n; em.classList.toggle('on', n > 0); });
-    let txt = '';
-    if (b) txt = `${BT[b.t].nm} · ${Math.round(b.hp / b.mhp * 100)}%${b.rep ? ' · repareert' : ''}`;
-    else if (hasU) { const c = {}; for (const id of GS.sel) { const u = S.E[id]; if (u) c[u.t] = (c[u.t] || 0) + 1; } txt = Object.entries(c).map(([t, n]) => `${n}× ${UT[t].nm}`).join(', '); }
-    E.sel.textContent = txt; E.sel.classList.toggle('on', !!txt);
   }
 
+  /* ---------- the info card: what is this, what does it do, how is it doing ---------- */
+  const SPD_NM = s => s >= 2.6 ? 'snel' : s >= 1.5 ? 'gemiddeld' : 'traag';
+  const ARMOUR_NM = { inf: 'geen pantser', licht: 'licht pantser', zwaar: 'zwaar pantser' };
+  const HS_NM = { seek: 'Zoekt kristal', go: 'Rijdt naar kristal', mine: 'Oogst kristal', ret: 'Naar de raffinaderij', toraf: 'Naar de raffinaderij', qwait: 'Wacht bij de raffinaderij', unload: 'Lost kristal', noraf: 'Geen raffinaderij! Bouw er een.', none: 'Geen kristal meer in de buurt' };
+  const facOk = (t, fid) => !UT[t] || !UT[t].fac || UT[t].fac === fid;
+  const names = ts => ts.map(t => (BT[t] || UT[t]).nm).join(', ');
+  function strongVs(wt) { const m = MULT[wt]; let best = Object.keys(ARM_NM).filter(a => m[a] >= 1); if (!best.length) { const mx = Math.max(...Object.values(m)); best = Object.keys(m).filter(a => m[a] === mx); } return best.map(a => ARM_NM[a]).join(' en '); }
+  function makesOf(t, fid) { const cat = t === 'kaz' ? 'inf' : t === 'fab' ? 'veh' : null; return cat ? Object.keys(UT).filter(u => UT[u].cat === cat && facOk(u, fid) && (TIER[u] || 1) <= S.tier) : []; }
+  function unlocksOf(t, fid) { const mk = makesOf(t, fid); return [...Object.keys(BT), ...Object.keys(UT)].filter(x => x !== t && !mk.includes(x) && ((BT[x] || UT[x]).req || []).includes(t) && facOk(x, fid) && (TIER[x] || 1) <= S.tier); }
+  function factsOf(t, fid, type) {
+    const T = BT[t] || UT[t], f = [];
+    if (type) { f.push(`💎 ${T.cost}`); if (T.bt) f.push(`⏱ ${T.bt} s`); }
+    if (BT[t]) {
+      if (T.pw > 0) f.push(`⚡ +${T.pw} energie`); else if (T.pw < 0) f.push(`⚡ −${-T.pw} energie`);
+      if (T.cap) f.push(`📦 ${T.cap} opslag`);
+      if (T.wt) f.push(`🎯 ${WNAME[T.wt]}, sterk tegen ${strongVs(T.wt)}`);
+    } else {
+      if (T.wt) f.push(`🎯 ${WNAME[T.wt]}, sterk tegen ${strongVs(T.wt)}`);
+      if (T.harv) f.push(`💎 laadt ${T.harv}`);
+      f.push(`🛡 ${ARMOUR_NM[T.arm]}`, `🏃 ${SPD_NM(T.spd)}`);
+      if (T.regen) f.push('✚ herstelt zich');
+    }
+    return f;
+  }
+  function infoTarget() {
+    if (!GS || !S) return null;
+    if (GS.infoT) return { k: 'type', t: GS.infoT };
+    if (GS.selB && S.E[GS.selB]) return { k: 'b', e: S.E[GS.selB] };
+    if (GS.sel.size === 1) { const u = S.E[[...GS.sel][0]]; if (u) return { k: 'u', e: u }; }
+    if (GS.sel.size > 1) return { k: 'multi' };
+    if (GS.info === -1 && S.kr && S.kr.st !== 'gone') return { k: 'kr' };
+    if (GS.info > 0) { const e = S.E[GS.info]; if (e && !e.dead && (e.k === 'b' ? S.exp[Core.tileOf(S, e.x, e.y)] : RD.visAt(e.x, e.y))) return { k: e.k, e }; }
+    return null;
+  }
+  const iconKr = (() => { let c = null; return () => { if (c) return c; const k = Art.mk(96, 96), g = k.getContext('2d'), gr = g.createRadialGradient(40, 40, 6, 48, 52, 44); gr.addColorStop(0, '#f6d898'); gr.addColorStop(1, '#a8743a'); g.fillStyle = gr; g.beginPath(); g.ellipse(48, 54, 40, 26, 0, 0, 7); g.fill(); g.strokeStyle = 'rgba(110,70,30,.6)'; g.lineWidth = 3; for (const r of [14, 24, 34]) { g.beginPath(); g.ellipse(48, 54, r, r * .62, 0, 3.6, 5.8); g.stroke(); } g.fillStyle = '#5a3a20'; g.beginPath(); g.ellipse(48, 46, 9, 6, 0, 0, 7); g.fill(); return (c = k.toDataURL()); }; })();
+  function infoKey(I) {
+    if (!I) return '';
+    const P = H(), lvl = x => Math.round(x * 20);
+    if (I.k === 'type') return 't' + I.t + Core.techOk(S, S.human, I.t) + opt.infoMin;
+    if (I.k === 'kr') return 'kr' + opt.infoMin;
+    if (I.k === 'multi') { let hp = 0, mh = 0; for (const id of GS.sel) { const u = S.E[id]; if (u) { hp += u.hp; mh += u.mhp || UT[u.t].hp; } } return 'm' + [...GS.sel].join(',') + ':' + lvl(hp / Math.max(1, mh)) + opt.infoMin; }
+    const e = I.e, mh = e.mhp || UT[e.t].hp; let k = I.k + e.id + ':' + Math.round(e.hp / mh * 50) + ':' + opt.infoMin;
+    if (e.o === S.human) {
+      if (I.k === 'b') { const q = e.t === 'kaz' ? P.q.i : e.t === 'fab' ? P.q.v : e.t === 'bouw' ? P.q.b : null; k += ':' + lvl(e.bp) + e.rep + P.low + P.ready + (q && q[0] ? q[0].t + lvl(q[0].p) + q.length : ''); }
+      else k += ':' + (e.hs || '') + Math.round((e.car || 0) / 25);
+    }
+    return k;
+  }
+  function renderInfo(I) {
+    const el = E.info;
+    if (!I) { el.classList.remove('on'); el.innerHTML = ''; return; }
+    const P = H(), mine = !I.e || I.e.o === S.human, fac = I.e ? S.P[I.e.o].fac : P.fac, fid = FAC(fac).id;
+    let icon, nm, desc, facts = [], stat = [], hp = null, tag = '', chips = '';
+    if (I.k === 'kr') { icon = iconKr(); nm = 'Zandkruiper'; desc = INFO.kruiper; tag = '<span class="zr-itag bad">Gevaar</span>'; }
+    else if (I.k === 'multi') {
+      const c = {}; let h2 = 0, m2 = 0; for (const id of GS.sel) { const u = S.E[id]; if (!u) continue; c[u.t] = (c[u.t] || 0) + 1; h2 += u.hp; m2 += u.mhp || UT[u.t].hp; }
+      icon = iconFor(Object.keys(c)[0] || 'sol'); nm = `${GS.sel.size} eenheden`; hp = h2 / Math.max(1, m2);
+      chips = Object.entries(c).map(([t, n]) => `<button class="zr-ichip" data-t="${t}"><img src="${iconFor(t)}" alt="">${n}× ${esc(UT[t].nm)}</button>`).join('');
+      desc = 'Tik op een soort om alleen die te kiezen.';
+    } else {
+      const t = I.k === 'type' ? I.t : I.e.t, T = BT[t] || UT[t];
+      icon = iconFor(t, fac); nm = T.nm; desc = INFO[t] || T.tip || ''; facts = factsOf(t, fid, I.k === 'type');
+      if (BT[t]) { const mk = makesOf(t, fid), un = unlocksOf(t, fid); if (mk.length) stat.push('<span class="zr-imk">Maakt: ' + esc(names(mk)) + '</span>'); if (un.length) stat.push('<span class="zr-imk">Nodig voor: ' + esc(names(un)) + '</span>'); }
+      if (I.k === 'type') { const r = Core.techOk(S, S.human, t) ? '' : reqText(t); if (r) stat.unshift(`<span class="zr-iwarn">🔒 ${esc(r)}</span>`); }
+      else {
+        const e = I.e; hp = e.hp / (e.mhp || T.hp);
+        if (!mine) tag = `<span class="zr-itag" style="--fc:${FAC(fac).col}">Vijand · ${esc(FAC(fac).nm)}</span>`;
+        else if (I.k === 'b') {
+          if (e.bp < 1) stat.unshift(`<span>🏗️ Wordt gebouwd: ${Math.round(e.bp * 100)}%</span>`);
+          if (e.rep) stat.unshift('<span class="zr-igood">🔧 Wordt gerepareerd</span>');
+          if (P.low && T.pw < 0) stat.unshift(`<span class="zr-iwarn">⚠ Te weinig energie: ${T.wt ? 'schiet niet' : t === 'radar' ? 'radar uit' : 'werkt langzaam'}</span>`);
+          if (e.sl) facts.push('🧱 op beton');
+          const q = t === 'kaz' ? P.q.i : t === 'fab' ? P.q.v : t === 'bouw' ? P.q.b : null;
+          if (t === 'bouw' && P.ready) stat.unshift(`<span class="zr-igood">✓ ${esc(BT[P.ready].nm)} is klaar: tik hem aan in de bouwbalk om te plaatsen</span>`);
+          else if (q && q[0]) stat.unshift(`<span>${t === 'kaz' ? 'Traint' : 'Bouwt'}: ${esc((BT[q[0].t] || UT[q[0].t]).nm)} ${Math.round(q[0].p * 100)}%${q.length > 1 ? ` (+${q.length - 1})` : ''}</span>`);
+        } else if (T.harv) { stat.unshift(`<span>${esc(HS_NM[e.hs] || 'Wacht')} · lading ${Math.floor(e.car || 0)}/${T.harv}</span>`); }
+      }
+    }
+    const hpCls = hp == null ? '' : hp > .6 ? 'ok' : hp > .3 ? 'mid' : 'low';
+    el.innerHTML = `<img class="zr-iimg" src="${icon}" alt=""><div class="zr-ibody"><div class="zr-ihead"><b>${esc(nm)}</b><button class="zr-imin" aria-label="${opt.infoMin ? 'Meer uitleg' : 'Minder uitleg'}">${opt.infoMin ? '▸' : '▾'}</button>${I.k === 'type' || (!mine && I.k !== 'multi') || I.k === 'kr' ? '<button class="zr-iclose" aria-label="Sluiten">✕</button>' : ''}</div>${tag}`
+      + (hp != null ? `<div class="zr-ihp ${hpCls}"><i style="width:${Math.max(2, Math.round(hp * 100))}%"></i><span>${Math.round(hp * 100)}%</span></div>` : '')
+      + (opt.infoMin ? '' : `<p class="zr-idesc">${esc(desc)}</p>` + (facts.length ? `<div class="zr-ifacts">${facts.map(f => `<span>${esc(f)}</span>`).join('')}</div>` : '') + (chips ? `<div class="zr-ichips">${chips}</div>` : ''))
+      + (stat.length ? `<div class="zr-istat">${(opt.infoMin ? stat.slice(0, 1) : stat).join('')}</div>` : '') + '</div>';
+    el.classList.add('on'); el.classList.toggle('min', !!opt.infoMin); placeInfo();
+  }
+  // keep the card just above the command buttons (they wrap to two rows on narrow screens)
+  function placeInfo() { if (!E.info.classList.contains('on')) return; const st = stageEl.getBoundingClientRect(), c = E.cmd.getBoundingClientRect(); E.info.style.bottom = Math.round(c.height > 0 ? st.bottom - c.top + 6 : 8) + 'px'; }
+  let infoK = '';
+  function updInfo(force) {
+    if (GS && GS.infoT && GS.infoTU && now() > GS.infoTU) { GS.infoT = null; GS.infoTU = 0; } const I = GS && GS.placing ? null : infoTarget(), k = infoKey(I); if (force || k !== infoK) { infoK = k; renderInfo(I); } }
+  const clearInfo = () => { if (GS) { GS.info = 0; GS.infoT = null; } };
+
   /* ---------- the build bar ---------- */
-  const buildEl = $('#zrBuild'), tabsEl = $('#zrTabs'), icons = {};
-  function iconFor(t) {
-    const P = H(), f = P.fac, key = f + t; if (icons[key]) return icons[key];
-    const c = BT[t] ? Art.buildingIcon(RD.blds[f], t, 96) : Art.unitIcon(f, t, 96);
+  const buildEl = $('#zrBuild'), tabsEl = $('#zrTabs'), icons = {}, bldIcons = {};
+  function iconFor(t, fac) {
+    const f = fac ?? H().fac, key = f + t; if (icons[key]) return icons[key];
+    const c = BT[t] ? Art.buildingIcon(RD.blds[f] || bldIcons[f] || (bldIcons[f] = Art.buildings(f)), t, 96) : Art.unitIcon(f, t, 96);
     return (icons[key] = c.toDataURL());
   }
+  // soft hyphens so long names break nicely on two lines in the narrow build buttons
+  const SHY = ['Energie|centrale', 'Raffina|derij', 'Opslag|silo', 'Beton|plaat', 'Voertuig|fabriek', 'Verdedigings|toren', 'Reparatie|plaats', 'Raket|paal', 'Raket|soldaat', 'Raket|werper', 'Zonne|straler', 'Bliksem|wagen', 'Verken|ner'];
+  const shy = nm => { let h = esc(nm); for (const w of SHY) h = h.replace(w.replace('|', ''), w.replace('|', '&shy;')); return h; };
   const listFor = tab => (tab === 'b' ? BUILD_LIST : tab === 'i' ? INF_LIST : VEH_LIST).filter(t => (TIER[t] || 1) <= S.tier && (!UT[t] || !UT[t].fac || UT[t].fac === FAC(H().fac).id));
   let buildKey = '';
   function renderBuild(force) {
@@ -174,7 +266,7 @@
     const k = tab + '|' + list.map(t => t + (Core.techOk(S, S.human, t) ? 1 : 0)).join(',') + '|' + P.ready + '|' + S.tier + '|' + P.fac;
     if (force || k !== buildKey) {
       buildKey = k;
-      buildEl.innerHTML = list.map(t => { const T = BT[t] || UT[t]; return `<button class="zr-bi" data-t="${t}"><img src="${iconFor(t)}" alt=""><i class="zr-prog"></i><b>${esc(T.nm)}</b><small>${T.cost}</small><em></em></button>`; }).join('');
+      buildEl.innerHTML = list.map(t => { const T = BT[t] || UT[t]; return `<button class="zr-bi" data-t="${t}"><img src="${iconFor(t)}" alt=""><i class="zr-prog"></i><b>${shy(T.nm)}</b><small>${T.cost}</small><em></em></button>`; }).join('');
     }
     for (const el of buildEl.children) {
       const t = el.dataset.t, ok = Core.techOk(S, S.human, t), n = q.filter(x => x.t === t).length, head = q[0] && q[0].t === t ? q[0] : null;
@@ -190,14 +282,21 @@
   tabsEl.addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (!b || !GS) return; GS.tab = b.dataset.tab; sfx('zrClick'); renderBuild(true); });
   const reqText = t => { const T = BT[t] || UT[t], P = H(); if ((TIER[t] || 1) > S.tier) return 'nog niet in deze missie'; const miss = (T.req || []).filter(r => !P.bc[r]).map(r => BT[r].nm.toLowerCase()); return miss.length ? 'Nodig: ' + miss.join(' en ') : ''; };
   let bpT = 0, bpEl = null, bpLong = false;
-  buildEl.addEventListener('pointerdown', e => { const b = e.target.closest('.zr-bi'); if (!b) return; bpEl = b; bpLong = false; clearTimeout(bpT); bpT = setTimeout(() => { bpLong = true; cancelItem(b.dataset.t); }, 550); Sfx.play('__warm'); });
+  buildEl.addEventListener('pointerdown', e => { const b = e.target.closest('.zr-bi'); if (!b) return; bpEl = b; bpLong = false; clearTimeout(bpT); bpT = setTimeout(() => { bpLong = true; holdItem(b.dataset.t); }, 550); Sfx.play('__warm'); });
   const bpUp = () => { clearTimeout(bpT); };
   buildEl.addEventListener('pointerup', bpUp); buildEl.addEventListener('pointercancel', bpUp); buildEl.addEventListener('pointerleave', bpUp);
   buildEl.addEventListener('scroll', () => clearTimeout(bpT), { passive: true });
   buildEl.addEventListener('click', e => { const b = e.target.closest('.zr-bi'); if (!b || !S || bpLong) return; buildTap(b.dataset.t); });
+  // hold a button: cancel what is queued, otherwise explain what it is
+  function holdItem(t) {
+    const P = H(), cat = Core.catOf(t);
+    if ((cat === 'b' && P.ready === t) || P.q[cat].some(x => x.t === t)) { cancelItem(t); return; }
+    GS.infoT = t; GS.infoTU = 0; GS.seenT[t] = 1; updInfo(true); sfx('zrClick'); vib(10);
+  }
   function buildTap(t) {
     const P = H();
-    if (!Core.techOk(S, S.human, t)) { sfx('zrNo'); toast(reqText(t) || 'Nog niet beschikbaar', 'info'); return; }
+    if (!GS.seenT[t]) { GS.seenT[t] = 1; GS.infoT = t; GS.infoTU = now() + 7000; }
+    if (!Core.techOk(S, S.human, t)) { GS.infoT = t; GS.infoTU = 0; updInfo(true); sfx('zrNo'); toast(reqText(t) || 'Nog niet beschikbaar', 'info'); return; }
     if (BT[t]) {
       if (P.ready === t) { startPlacing(t); return; }
       if (P.ready) { sfx('zrNo'); toast(`Plaats eerst de ${BT[P.ready].nm.toLowerCase()}`, 'info'); GS.tab = 'b'; renderBuild(true); return; }
@@ -217,7 +316,7 @@
     const P = H(), T = BT[t], v = RD.view();
     let s = Core.findSpot(S, S.human, t, (v.x0 + v.x1) / 2, (v.y0 + v.y1) / 2, false) || Core.findSpot(S, S.human, t, P.base.x, P.base.y, false);
     if (!s) { const b = S.B.find(b => b.o === S.human) || P.base; s = { x: Math.round((b.x || P.base.x)), y: Math.round((b.y || P.base.y) + 3) }; }
-    GS.placing = t; GS.ghost = { x: s.x, y: s.y }; GS.sel.clear(); GS.selB = 0;
+    GS.placing = t; GS.ghost = { x: s.x, y: s.y }; GS.sel.clear(); GS.selB = 0; clearInfo();
     const c = { x: s.x + T.w / 2, y: s.y + T.h / 2 }; if (c.x < v.x0 + 1 || c.x > v.x1 - 1 || c.y < v.y0 + 1 || c.y > v.y1 - 1) RD.center(c.x, c.y);
     scr.classList.add('placing'); E.place.textContent = T.nm; updGhost(); sfx('zrClick');
   }
@@ -289,8 +388,9 @@
     const w = RD.toWorld(sx, sy), h = S.human;
     if (GS.placing) { moveGhost(w); sfx('zrClick'); return; }
     if (GS.rally) { const b = S.E[GS.selB]; GS.rally = false; if (b) { Core.cmd(S, h, { c: 'rally', b: b.id, x: w.x, y: w.y }); toast('Verzamelpunt gezet', 'good'); mark(w, false); sfx('zrAck'); } return; }
-    GS.sellSure = 0;
+    GS.sellSure = 0; GS.infoT = null;
     const e = pick(sx, sy), t = now();
+    if (!(e && !GS.sel.size && (e === S.kr || (e.k && e.o !== h)))) GS.info = 0;
     if (e && e.k === 'u' && e.o === h) {
       if (GS.selB) GS.selB = 0;
       if (lastTap && lastTap.id === e.id && t - lastTap.t < 380) { selectType(e); lastTap = null; return; }
@@ -308,8 +408,8 @@
     if (e && (e === S.kr || e.o !== h) && ids.length) {
       Core.cmd(S, h, { c: 'attack', ids, tg: e === S.kr ? -1 : e.id }); mark(e === S.kr ? e : Core.center(e), true); sfx('zrAck2'); return;
     }
-    if (e && e.k && e.o !== h && !ids.length) { toast(`${FAC(S.P[e.o].fac).nm}: ${(e.k === 'b' ? BT[e.t] : UT[e.t]).nm}`, 'info'); return; }
-    if (e === S.kr && e) { toast('De zandkruiper! Blijf op de rotsen.', 'info'); return; }
+    if (e && e.k && e.o !== h && !ids.length) { GS.info = GS.info === e.id ? 0 : e.id; GS.selB = 0; sfx('zrSel'); return; }
+    if (e === S.kr && e) { GS.info = GS.info === -1 ? 0 : -1; GS.selB = 0; sfx('zrSel'); return; }
     if (ids.length) { Core.cmd(S, h, { c: 'move', ids, x: w.x, y: w.y }); mark(w, false); sfx('zrAck'); return; }
     if (GS.selB) { GS.selB = 0; }
   }
@@ -330,7 +430,13 @@
   /* ---------- command buttons ---------- */
   E.box.addEventListener('click', () => { if (!GS) return; GS.boxMode = !GS.boxMode; E.box.classList.toggle('on', GS.boxMode); sfx('zrClick'); if (GS.boxMode) toast('Sleep een kader over je eenheden', 'info'); });
   $('#zrStop').addEventListener('click', () => { if (!GS || !GS.sel.size) return; Core.cmd(S, S.human, { c: 'stop', ids: [...GS.sel] }); sfx('zrAck'); });
-  $('#zrDesel').addEventListener('click', () => { if (!GS) return; GS.sel.clear(); GS.selB = 0; GS.rally = false; sfx('zrClick'); });
+  $('#zrDesel').addEventListener('click', () => { if (!GS) return; GS.sel.clear(); GS.selB = 0; GS.rally = false; clearInfo(); sfx('zrClick'); });
+  E.info.addEventListener('click', e => {
+    if (!GS || !S) return; const b = e.target.closest('button');
+    if (b && b.classList.contains('zr-iclose')) { clearInfo(); sfx('zrClick'); updInfo(true); return; }
+    if (b && b.classList.contains('zr-ichip')) { const t = b.dataset.t; for (const id of [...GS.sel]) if (!S.E[id] || S.E[id].t !== t) GS.sel.delete(id); sfx('zrSel'); selK = ''; updInfo(true); return; }
+    if (b && b.classList.contains('zr-imin')) { opt.infoMin = !opt.infoMin; saveOpt(); sfx('zrClick'); updInfo(true); }
+  });
   E.rep.addEventListener('click', () => { const b = GS && S.E[GS.selB]; if (!b) return; if (b.hp >= b.mhp) { toast('Dit gebouw is heel', 'info'); return; } Core.cmd(S, S.human, { c: 'brep', b: b.id }); sfx('zrClick'); selK = ''; });
   E.sell.addEventListener('click', () => {
     const b = GS && S.E[GS.selB]; if (!b) return;
@@ -383,7 +489,7 @@
   function begin(cfg, meta, restored) {
     closeModals(); releaseInput();
     S = restored || Core.newGame(cfg);
-    GS = { view: 'play', meta, sel: new Set(), selB: 0, groups: [[], [], []], tab: 'b', placing: null, ghost: null, box: null, boxMode: false, marks: [], endAt: 0, resultsUp: false, low: false, rally: false, sellSure: 0, t0: Date.now() };
+    GS = { view: 'play', meta, sel: new Set(), selB: 0, info: 0, infoT: null, seenT: {}, groups: [[], [], []], tab: 'b', placing: null, ghost: null, box: null, boxMode: false, marks: [], endAt: 0, resultsUp: false, low: false, rally: false, sellSure: 0, t0: Date.now() };
     if (restored && restored._ui) { GS.groups = restored._ui.groups || GS.groups; delete restored._ui; }
     RD.setGame(S, true); hudK = objK = selK = buildKey = ''; GS.low = H().low;
     scr.classList.add('play'); scr.classList.remove('placing'); E.box.classList.remove('on');
@@ -598,7 +704,7 @@
 
   /* ---------- test hooks ---------- */
   window.__zr = {
-    get S() { return S; }, get G() { return GS; }, R: RD, opt, stats: () => stats, Core, AI, UT, BT, MISSIONS, FACTIONS, TPS,
+    get S() { return S; }, get G() { return GS; }, R: RD, Art, opt, stats: () => stats, Core, AI, UT, BT, MISSIONS, FACTIONS, TPS,
     startMission, startSkirmish, openStart, openPause, openCamp, openSkirm, quit, saveGame, cur: () => current, frames: () => frames.slice(), quality: () => quality,
     running: () => raf > 0 || raf === -1, manual(v) { if (GS) GS.manual = !!v; if (!v) kick(); }, step(n) { for (let i = 0; i < n && S && !S.res; i++) stepGame(); },
     cmd: c => Core.cmd(S, S.human, c), toClient(x, y) { const r = cv.getBoundingClientRect(), p = RD.toScreen(x, y); return { x: r.left + p.x, y: r.top + p.y }; },

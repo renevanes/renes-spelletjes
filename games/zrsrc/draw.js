@@ -7,7 +7,7 @@
     function create(cv, bgCv, fogCv, ovCv) {
       const g0 = cv.getContext('2d'), ov = ovCv.getContext('2d'), bgc = bgCv.getContext('2d', { alpha: false }); let g = g0, ovDrawn = false;
       const R = { dbg: {}, W: 0, H: 0, dpr: 1, cam: { x: 0, y: 0, z: 36 }, q: 0, S: null, chunks: [], cx: 0, cy: 0, sheets: {}, blds: {}, wrecks: {}, P: [], D: [], Z: [], stampQ: [], bgDirty: true, lastStamp: 0, fogV: -1, t: 0, zoomT: 0, lastZ: 0, bgT: 0 };
-      const FX = Art.fx(), CRY = Art.crystals(), BGV = { x0: 0, y0: 0, z: 0, ok: false, tf: '' };
+      const FX = Art.fx(), CRY = Art.crystals(), BGV = { x0: 0, y0: 0, z: 0, ok: false, tf: '' }, GRP = { p: null };
       let fog = null, fogc = null, fogImg = null;
       R.resize = (w, h, dpr) => { R.W = w; R.H = h; R.dpr = dpr; cv.width = ovCv.width = Math.round(w * dpr); cv.height = ovCv.height = Math.round(h * dpr); BGV.ok = false; ovDrawn = true; clamp(); };
       R.setQuality = q => { R.q = q; BGV.ok = false; };
@@ -48,6 +48,7 @@
         const zz = z * d, x0w = BGV.x0, y0w = BGV.y0, x1w = x0w + W / z, y1w = y0w + H / z;
         const cx0 = Math.max(0, Math.floor(x0w / CH)), cx1 = Math.min(R.cx - 1, Math.floor(x1w / CH)), cy0 = Math.max(0, Math.floor(y0w / CH)), cy1 = Math.min(R.cy - 1, Math.floor(y1w / CH));
         for (let cy = cy0; cy <= cy1; cy++) for (let cx = cx0; cx <= cx1; cx++) { const ch = chunkAt(cy * R.cx + cx), px = Math.floor((cx * CH - x0w) * zz), py = Math.floor((cy * CH - y0w) * zz); bgc.drawImage(ch, px, py, Math.ceil((cx * CH + ch.width / PXT - x0w) * zz) - px, Math.ceil((cy * CH + ch.height / PXT - y0w) * zz) - py); }
+        if (R.q < 3 && zz > PXT * 1.15) { if (!GRP.p) GRP.p = bgc.createPattern(Art.grain(), 'repeat'); const m = v => ((Math.round(-v * zz) % 256) + 256) % 256; GRP.p.setTransform(new DOMMatrix([1, 0, 0, 1, m(x0w), m(y0w)])); bgc.globalAlpha = Math.min(1, (zz / PXT - 1.15) * 1.6); bgc.fillStyle = GRP.p; bgc.fillRect(0, 0, dw, dh); bgc.globalAlpha = 1; }
         const tx0 = Math.max(0, Math.floor(x0w - 1)), tx1 = Math.min(S.W - 1, Math.ceil(x1w)), ty0 = Math.max(0, Math.floor(y0w - 1)), ty1 = Math.min(S.H - 1, Math.ceil(y1w)), cs = CRY.size / PX * zz;
         for (let y = ty0; y <= ty1; y++) for (let x = tx0; x <= tx1; x++) {
           const k = S.cry[y * S.W + x]; if (!k) continue;
@@ -92,8 +93,8 @@
           const B = R.blds[f], o = {};
           for (const t in B) {
             const s = B[t];
-            if (s.c) { const sb = Math.max(2, Math.round(s.box * k)), c2 = Art.mk(sb * DIRS, sb); c2.getContext('2d').drawImage(s.c, 0, 0, s.box * DIRS, s.box, 0, 0, sb * DIRS, sb); o[t] = { c: c2, box: sb }; }
-            else { const c2 = Art.mk(Math.max(2, Math.round(s.width * k)), Math.max(2, Math.round(s.height * k))); const g2 = c2.getContext('2d'); g2.imageSmoothingQuality = 'high'; g2.drawImage(s, 0, 0, c2.width, c2.height); o[t] = c2; }
+            if (s.c) { const kk = k / (s.c.res || 1), sb = Math.max(2, Math.round(s.box * kk)), c2 = Art.mk(sb * DIRS, sb), g2 = c2.getContext('2d'); g2.imageSmoothingQuality = 'high'; g2.drawImage(s.c, 0, 0, s.box * DIRS, s.box, 0, 0, sb * DIRS, sb); o[t] = { c: c2, box: sb }; }
+            else { const kk = k / (s.res || 1), c2 = Art.mk(Math.max(2, Math.round(s.width * kk)), Math.max(2, Math.round(s.height * kk))); const g2 = c2.getContext('2d'); g2.imageSmoothingQuality = 'high'; g2.drawImage(s, 0, 0, c2.width, c2.height); o[t] = c2; }
           }
           SC.blds[f] = o;
         }

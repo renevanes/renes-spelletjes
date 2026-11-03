@@ -90,6 +90,32 @@
       start: 'mcv', enemies: [{ fac: 0, diff: 1, start: 'mcv' }, { fac: 1, diff: 0, start: 'mcv' }], obj: [{ t: 'destroy' }],
       brief: 'Zonnegilde en Stormclan hebben zich tegen ons verbonden. Bouw de sterkste basis van Zandrijk, met je Kolos voorop, en vernietig ze allebei.' },
   ];
+  // what a building or unit is for (the info card when you select one, or hold a button in the build bar)
+  const INFO = {
+    bouw: 'Je hoofdgebouw. Hier worden al je andere gebouwen gemaakt. Raak je hem kwijt, dan kun je niets nieuws meer bouwen.',
+    plaat: 'Een betonvloer op de rots. Gebouwen die erop staan, krijgen een kwart minder schade.',
+    cent: 'Maakt energie. Heb je te weinig energie, dan werken je gebouwen langzaam, schieten torens niet en valt de radar uit.',
+    raff: 'Hier brengen oogsters het kristal heen: zo verdien je geld. Je krijgt er een oogster bij.',
+    silo: 'Extra opslag voor kristal. Is alles vol, dan kunnen je oogsters niet meer lossen.',
+    kaz: 'Traint soldaten. Kies ze bij Soldaten in de bouwbalk.',
+    fab: 'Bouwt voertuigen: oogsters, verkenners en tanks. Kies ze bij Voertuigen in de bouwbalk.',
+    radar: 'Laat het kaartje zien (met genoeg energie) en geeft nieuwe techniek, zoals zware tanks en raketten.',
+    toren: 'Schiet met een kanon op vijanden in de buurt. Werkt alleen met genoeg energie.',
+    rep: 'Repareert voertuigen. Kies een voertuig en tik dan op de reparatieplaats.',
+    rpaal: 'Schiet raketten tot ver weg, sterk tegen voertuigen. Werkt alleen met genoeg energie.',
+    sol: 'Goedkope soldaat met een geweer. Sterk tegen soldaten, zwak tegen tanks.',
+    raks: 'Soldaat met raketten. Sterk tegen tanks en voertuigen, maar herlaadt langzaam.',
+    verk: 'Snelle wagen die ver kan kijken. Handig om de kaart te verkennen.',
+    lt: 'Snelle tank die alles een beetje kan.',
+    zt: 'Langzame tank met dik pantser en een groot kanon.',
+    rw: 'Schiet van heel ver en raakt groepen tegelijk, maar niet van dichtbij. Zet hem achter je tanks.',
+    oog: 'Haalt kristal uit het zand en brengt het naar de raffinaderij. Pas op voor de zandkruiper!',
+    stral: 'Bundelt zonlicht tot een hete straal die zelfs dik pantser smelt.',
+    bliks: 'Snelle wagen met bliksem die overspringt naar drie vijanden.',
+    kolos: 'Enorme tank met twee kanonnen. Traag, maar herstelt zichzelf.',
+    kruiper: 'De zandkruiper woont in het open zand en slokt soms een eenheid op. Op rots ben je veilig. Schiet erop, dan duikt hij weg.',
+  };
+  const ARM_NM = { inf: 'soldaten', licht: 'lichte voertuigen', zwaar: 'tanks', geb: 'gebouwen' };
   const OBJ_TXT = o => o.t === 'build' ? `Bouw ${o.n > 1 ? o.n + '× ' : 'een '}${BT[o.b].nm.toLowerCase()}` : o.t === 'collect' ? `Verzamel ${o.n} kristal` : o.t === 'protect' ? 'Houd minstens één oogster over'
     : o.t === 'survive' ? `Houd ${o.min} minuten stand` : o.t === 'army' ? `Verzamel een leger van ${o.n} eenheden` : o.t === 'destroy' ? 'Vernietig alle vijandelijke gebouwen' : '';
   // match configurations for a campaign mission (adj: campaign difficulty -1/0/+1; auto: let the computer play the player too)

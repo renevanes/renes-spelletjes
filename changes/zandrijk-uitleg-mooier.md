@@ -1,0 +1,1 @@
+Zandrijk: tik op een gebouw of eenheid en je ziet meteen wat het is en wat het doet: energie, opslag, wat het maakt of bouwt en hoe het ervoor staat. Houd een knop in de bouwbalk vast voor uitleg, en tik op een vijand om te zien wat het is. De gebouwen en eenheden zijn mooier getekend, met daken, muren, ramen en lampjes, en de woestijn is scherper.

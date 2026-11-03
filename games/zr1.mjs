@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 // Zandrijk browser test on the real UI with real touch input (Playwright + CDP touch events).
 //   node games/zr1.mjs [path-to-index.html]      (default build/work/zrtest/index.html, or APP_HTML)
-//   PART = all | main | portrait | save | camp | sound | perf   (comma separated)
+//   PART = all | main | portrait | save | camp | sound | perf | info   (comma separated)
 import { chromium } from 'playwright';
 import path from 'path'; import { fileURLToPath } from 'url';
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -295,6 +295,71 @@ if (want('perf')) {
   await ev(p, () => __zr.openPause()); await wait(p, 600); ok('pauze: lus staat stil', !(await ev(p, () => __zr.running())));
   await p.ctx.close();
 }
+/* ================= info card: what is this building / unit? (landscape and portrait) ================= */
+if (want('info')) {
+  for (const o of [LAND, PORT]) {
+    const p = await page(o), nm = o === LAND ? 'liggend' : 'staand';
+    await openGame(p);
+    await ev(p, () => { __zr.startSkirmish({ fac: 0, opp: 1, diff: 1, size: 'middel', cry: 3000, seed: 77, kr: true }); const S = __zr.S; S.P[0].ai = 1; __zr.AI.init(S, S.P[0]); S.P[0].A.next = 1e9; S.P[1].A.next = 1e9; __zr.manual(true); __zr.step(5 * 60 * 15); S.P[0].ai = null; __zr.manual(false); });
+    await wait(p, 300);
+    const card = () => ev(p, () => { const e = document.getElementById('zrInfo'); return { on: e.classList.contains('on'), txt: e.textContent, r: e.getBoundingClientRect().toJSON(), cmd: document.getElementById('zrCmd').getBoundingClientRect().toJSON() }; });
+    ok(`${nm}: zonder selectie geen infokaart`, !(await card()).on);
+    // tap an own building (barracks) with a real tap
+    const kz = await ev(p, () => { const b = __zr.S.B.find(b => b.o === 0 && b.t === 'kaz'); __zr.R.cam.z = 40; __zr.R.center(b.x + 1, b.y - 2); return b.id; });
+    await wait(p, 200); let pt = await ev(p, id => { const b = __zr.S.E[id]; return __zr.toClient(b.x + 1, b.y + .7); }, kz);
+    await tap(p, pt.x, pt.y); await wait(p, 250);
+    let c = await card();
+    ok(`${nm}: tik op kazerne toont uitleg`, c.on && c.txt.includes('Kazerne') && c.txt.includes('Traint soldaten') && c.txt.includes('Maakt: Soldaat') && c.txt.includes('energie'), c.txt.slice(0, 120));
+    ok(`${nm}: kaart staat boven de knoppen en binnen het scherm`, c.r.bottom <= c.cmd.top + 1 && c.r.top >= 0 && c.r.left >= 0 && c.r.right <= (await ev(p, () => document.getElementById('zrStage').getBoundingClientRect().right)) + 1, JSON.stringify([c.r.top, c.r.bottom, c.cmd.top]));
+    // production status on the factory
+    await ev(p, () => { const S = __zr.S; __zr.cmd({ c: 'build', t: 'lt' }); __zr.G.selB = S.B.find(b => b.o === 0 && b.t === 'fab').id; }); await wait(p, 400);
+    c = await card(); ok(`${nm}: fabriek toont wat hij bouwt`, /Bouwt: .*%/.test(c.txt), c.txt.slice(0, 160));
+    // low power warning
+    await ev(p, () => { window.__zrSpeed = 1e-9; __zr.S.P[0].low = true; }); await wait(p, 400);
+    c = await card(); ok(`${nm}: te weinig energie staat erbij`, c.txt.includes('Te weinig energie'));
+    await ev(p, () => { __zr.S.P[0].low = false; delete window.__zrSpeed; });
+    // taps on the map go through the card: tap the ground under the card with units selected
+    const ids = await ev(p, () => { const S = __zr.S, L = S.U.filter(u => u.o === 0 && __zr.UT[u.t].wt).slice(0, 6).map(u => u.id); __zr.G.selB = 0; __zr.G.sel = new Set(L); __zr.R.center(S.W / 2, S.H / 2); return L; }); await wait(p, 300);
+    c = await card(); ok(`${nm}: meerdere eenheden: soorten met aantallen`, c.on && /\d+ eenheden/.test(c.txt) && /\d× /.test(c.txt), c.txt.slice(0, 100));
+    const under = { x: c.r.left + c.r.width * .5, y: c.r.top + c.r.height * .55 };
+    const goal = await ev(p, ([x, y]) => { const r = document.getElementById('zrCv').getBoundingClientRect(), w = __zr.R.toWorld(x - r.left, y - r.top); return w; }, [under.x, under.y]);
+    await tap(p, under.x, under.y); await wait(p, 200);
+    ok(`${nm}: tik door de kaart heen geeft een rijopdracht`, await ev(p, ([ids, g]) => ids.some(id => { const u = __zr.S.E[id]; return u && (u.st === 'move' || Math.hypot(u.gx - g.x, u.gy - g.y) < 3); }), [ids, goal]));
+    // narrow the selection with a chip
+    const t0 = await ev(p, () => document.querySelector('#zrInfo .zr-ichip')?.dataset.t);
+    if (t0) { await tapEl(p, '#zrInfo .zr-ichip'); await wait(p, 200); ok(`${nm}: tik op een soort kiest alleen die`, await ev(p, t => __zr.sel().every(id => __zr.S.E[id].t === t) && __zr.sel().length > 0, t0)); }
+    // one unit: weapon, armour, speed
+    await ev(p, () => { const u = __zr.S.U.find(u => u.o === 0 && u.t === 'oog'); __zr.G.sel = new Set([u.id]); }); await wait(p, 300);
+    c = await card(); ok(`${nm}: oogster: lading en wat hij doet`, c.txt.includes('Oogster') && c.txt.includes('lading') && c.txt.includes('pantser'), c.txt.slice(0, 160));
+    // collapse and expand (remembered)
+    await tapEl(p, '#zrInfo .zr-imin'); await wait(p, 200);
+    c = await card(); ok(`${nm}: inklappen: korte kaart`, c.on && !c.txt.includes('Haalt kristal') && await ev(p, () => __zr.opt.infoMin === true));
+    await tapEl(p, '#zrInfo .zr-imin'); await wait(p, 200); ok(`${nm}: uitklappen`, (await card()).txt.includes('Haalt kristal'));
+    // an enemy building without a selection
+    await tapEl(p, '#zrDesel'); await wait(p, 150);
+    const eb = await ev(p, () => { const S = __zr.S; S.exp.fill(1); const b = S.B.find(b => b.o === 1 && b.t === 'bouw'); __zr.R.center(b.x + 1.5, b.y - 1); return b.id; }); await wait(p, 250);
+    pt = await ev(p, id => { const b = __zr.S.E[id]; return __zr.toClient(b.x + 1.5, b.y + .8); }, eb); await tap(p, pt.x, pt.y); await wait(p, 250);
+    c = await card(); ok(`${nm}: vijandelijk gebouw: uitleg met de naam van de vijand`, c.on && c.txt.includes('Vijand') && c.txt.includes('Bouwplaats'), c.txt.slice(0, 80));
+    ok(`${nm}: tik op vijand zonder selectie valt niet aan en selecteert niets`, await ev(p, () => __zr.sel().length === 0 && !__zr.G.selB));
+    await tapEl(p, '#zrInfo .zr-iclose'); await wait(p, 200); ok(`${nm}: sluiten`, !(await card()).on);
+    // hold a build button: explanation; hold a queued one: cancel
+    await ev(p, () => { __zr.G.tab = 'b'; document.querySelector('#zrTabs [data-tab="b"]').click(); }); await wait(p, 300);
+    const holdEl = async sel => { const r = await ev(p, s => { document.querySelector(s).scrollIntoView({ block: 'nearest', inline: 'nearest' }); const q = document.querySelector(s).getBoundingClientRect(); return { x: q.left + q.width / 2, y: q.top + q.height / 2 }; }, sel); await touch(p, 'start', 1, r.x, r.y); await wait(p, 750); await touch(p, 'end', 1); await wait(p, 200); };
+    await holdEl('#zrBuild [data-t="silo"]');
+    c = await card(); ok(`${nm}: knop vasthouden legt uit wat het is`, c.on && c.txt.includes('Opslagsilo') && c.txt.includes('opslag') && c.txt.includes('💎 150'), c.txt.slice(0, 100));
+    ok(`${nm}: vasthouden bouwt niets`, await ev(p, () => !__zr.S.P[0].q.b.some(x => x.t === 'silo')));
+    await ev(p, () => { __zr.S.P[0].ready = null; __zr.cmd({ c: 'build', t: 'toren' }); }); await wait(p, 300);
+    await holdEl('#zrBuild [data-t="toren"]');
+    ok(`${nm}: vasthouden van iets in de wachtrij annuleert nog steeds`, await ev(p, () => !__zr.S.P[0].q.b.some(x => x.t === 'toren')));
+    const lockT = await ev(p, () => [...document.querySelectorAll('#zrBuild .zr-bi.lock')].map(e => e.dataset.t)[0]);
+    if (lockT) { await tapEl(p, `#zrBuild [data-t="${lockT}"]`); await wait(p, 250); c = await card(); ok(`${nm}: tik op een slot: wat je nog nodig hebt`, c.txt.includes('🔒'), c.txt.slice(0, 120)); }
+    ok(`${nm}: namen in de bouwbalk niet afgekapt`, await ev(p, () => [...document.querySelectorAll('#zrBuild .zr-bi b')].every(b => b.scrollHeight <= b.clientHeight + 1 && b.scrollWidth <= b.clientWidth + 1)));
+    await p.screenshot({ path: path.join(here, '..', 'build', 'gfx', `zr_info_${o === LAND ? 'l' : 'p'}.png`) });
+    ok(`${nm}: spel blijft eindig`, await finite(p));
+    await p.close();
+  }
+}
+
 console.log('\nconsole/page errors:', errs.length ? errs.slice(0, 8).join('\n') : 'geen');
 ok('geen consolefouten', errs.length === 0);
 console.log(`\n${res.filter(Boolean).length} geslaagd, ${res.filter(r => !r).length} mislukt`);
