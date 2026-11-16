@@ -1,11 +1,11 @@
 {
-  "versionCode": 78,
-  "versionName": "1.77",
+  "versionCode": 79,
+  "versionName": "1.78",
   "nativeLevel": 12,
-  "notes": "Nieuw spel: **Logigram**! Zoek met slimme aanwijzingen uit wie welk huisdier heeft, waar iemand woont of hoe oud iedereen is, en zet \u2713 en \u2717 in het rooster. Elke puzzel is nieuw, heeft precies \u00e9\u00e9n oplossing en kan zonder gokken: kies Makkelijk, Normaal, Moeilijk of Expert, of speel elke dag de puzzel van de dag, en vraag een hint als je vastzit.",
+  "notes": "Nieuw spel: **Woordzoeker**! Zoek de verstopte woorden in het letterrooster door van de eerste naar de laatste letter te vegen (of tik ze allebei aan), in meer dan dertig thema's en vier niveaus van Makkelijk tot Expert. Met hints, een puzzel van de dag en een geheim woord dat je met de overgebleven letters kunt raden.",
   "web": "web/index.html",
-  "webSha256": "7e92658d809428df0384c7d914ed8fc934b3f70b74e2b580c1009eaa7b90a896",
-  "webSig": "MEYCIQC2+EC3W8BWMjUPS0u+Mllp5FUGLBObSqy3igNV6tiVFQIhANK0thtwu5uSEu3x7UtJL4mj50cwHWlhzi5wJaYKRM2K",
+  "webSha256": "568ec506d5c6267042191af352d472a57fe67b61c2cf93a3bc9c8ad64310b2eb",
+  "webSig": "MEUCIGbx0/ur1TW6ziv0h3NdJeLXSzP24fob6ajF59X3OqrHAiEAhA8swtFUl0upWZCI0EKrWH/SiCIfe5J/eYTMOQLMhNM=",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "157e7255acef0f79f0480b8faf45ec752ee5481ed6800a979dae8c05fceca91c"
