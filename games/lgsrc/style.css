@@ -1,0 +1,86 @@
+#lg{background:radial-gradient(120% 80% at 50% 0%,#2a4a5e 0%,#15263a 60%,#0f1b29 100%)}
+#lg .topbar{background:#142335;gap:4px;padding:6px 6px}
+.lg-head{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:10px}
+#lgTitle{font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.lg-pill{flex:0 0 auto;background:rgba(255,255,255,.12);border-radius:99px;padding:3px 10px;font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
+#lgMain{flex:1;display:flex;flex-direction:column;min-height:0}
+#lgBox{position:relative;flex:1 1 auto;min-height:0;overflow:hidden}
+#lgCv{position:absolute;left:0;top:0;display:block;touch-action:none;user-select:none;-webkit-user-select:none}
+#lg.busy #lgCv{opacity:.25}
+#lgPulse{position:absolute;display:none;border:3px solid #ffb300;border-radius:9px;pointer-events:none;box-shadow:0 0 12px rgba(255,190,0,.85);animation:lgPulse 1.1s ease-in-out infinite}
+#lgPulse.off{opacity:0;animation:none}
+@keyframes lgPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.12);opacity:.65}}
+#lgTip{position:absolute;left:6px;right:6px;bottom:calc(6px + env(safe-area-inset-bottom));z-index:20;background:#fffcf2;color:#2a2219;border-radius:16px;padding:10px 12px 8px;box-shadow:0 -4px 22px rgba(0,0,0,.45);transform:translateY(14px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .15s,transform .15s,visibility .15s}
+#lgTip.show{opacity:1;visibility:visible;transform:none;pointer-events:auto}
+#lgTip p{margin:0 0 8px;font-size:14.5px;line-height:1.42}
+.lg-tipb{display:flex;gap:8px;justify-content:flex-end}
+.lg-tipb button{padding:8px 14px;border-radius:11px;background:rgba(0,0,0,.08);color:#2a2219;font-weight:700;font-size:14px}
+.lg-tipb button.go{background:#2a9d6f;color:#fff}
+#lgToast{position:absolute;left:50%;top:10px;z-index:25;transform:translate(-50%,-8px);opacity:0;pointer-events:none;background:rgba(12,22,34,.94);color:#fff;padding:8px 14px;border-radius:12px;font-size:14px;max-width:90%;width:max-content;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.4);transition:opacity .2s,transform .2s}
+#lgToast.show{opacity:1;transform:translate(-50%,0)}
+#lgBusy{position:absolute;inset:0;z-index:30;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-size:16px}
+#lgBusy.show{display:flex}
+.lg-spin{width:46px;height:46px;border-radius:50%;border:5px solid rgba(255,255,255,.18);border-top-color:var(--accent);animation:lgSpin .8s linear infinite}
+@keyframes lgSpin{to{transform:rotate(360deg)}}
+#lgSide{position:relative;flex:0 0 41%;min-height:0;display:flex;flex-direction:column;background:linear-gradient(180deg,#172a3d,#112031);border-top:1px solid rgba(255,255,255,.08);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+#lg.lg-col #lgSide{flex:0 0 auto}#lg.lg-col #lgPanel{display:none}
+#lgTools{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px}
+#lgTools button{position:relative;background:rgba(255,255,255,.1);border:2px solid transparent;border-radius:13px;color:var(--ink);padding:4px 0 3px;display:flex;flex-direction:column;align-items:center;gap:0;touch-action:manipulation;box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 2px 0 rgba(0,0,0,.25)}
+#lgTools button[hidden]{display:none}
+#lgTools button:active{transform:translateY(1px);background:rgba(255,255,255,.18)}
+#lgTools button:disabled{opacity:.35}
+#lgTools button b{font-size:19px;line-height:1.2;font-weight:600}#lgTools button small{font-size:11px;color:var(--muted)}
+#lgTools button.on{border-color:var(--accent);background:rgba(242,193,78,.18)}
+#lgPen b{color:#ffb1a8}#lgPen.yes b{color:#7fe3b4}
+#lgTabs{display:flex;margin:6px 0;background:rgba(0,0,0,.25);border-radius:12px;padding:3px;gap:2px;flex:0 0 auto}
+#lgTabs button{flex:1;padding:7px 4px;border-radius:9px;color:var(--muted);font-weight:700;font-size:14px}
+#lgTabs button small{font-weight:600;opacity:.75;margin-left:3px}
+#lgTabs button.on{background:var(--accent);color:#2b2100}
+#lgPanel{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#lgClues{list-style:none;margin:0;padding:0 1px 6px;display:flex;flex-direction:column;gap:6px}
+#lgClues li{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.07);font-size:15px;line-height:1.38;cursor:pointer;transition:background .15s}
+#lgClues li:active{background:rgba(255,255,255,.13)}
+#lgClues li b{flex:0 0 24px;height:24px;border-radius:50%;background:var(--accent);color:#2b2100;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:-1px}
+#lgClues li.done span{opacity:.42;text-decoration:line-through;text-decoration-thickness:2px}
+#lgClues li.done b{background:rgba(255,255,255,.18);color:var(--ink)}
+#lgClues li.hint{background:rgba(255,215,94,.2);box-shadow:inset 0 0 0 2px #ffd75e}
+.lg-sumtop{margin:2px 2px 6px;font-size:13px;color:var(--muted)}
+#lgSum table{width:100%;border-collapse:collapse;font-size:13.5px}
+#lgSum th,#lgSum td{padding:6px 4px;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);white-space:nowrap}
+#lgSum thead th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.3px;font-weight:700}
+#lgSum tbody th{color:var(--accent)}
+#lgSum td.q{color:rgba(255,255,255,.3)}
+.lg-sw{display:inline-block;width:11px;height:11px;border-radius:50%;border:1px solid rgba(255,255,255,.6);margin-right:4px;vertical-align:-1px}
+.lg-em{margin-right:3px}
+#lg.land #lgMain{flex-direction:row}
+#lg.land #lgSide{flex:0 0 clamp(290px,40vw,430px);border-top:0;border-left:1px solid rgba(255,255,255,.08);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+#lg.land .topbar{min-height:44px;padding:3px 6px}
+html.big-text #lgClues li{font-size:17px}html.big-text #lgClues li b{flex-basis:27px;height:27px;font-size:14px}
+html.big-text #lgTools button small{font-size:12.5px}html.big-text #lgTools button b{font-size:21px}
+html.big-text #lgTip p{font-size:16.5px}html.big-text #lgSum table{font-size:15px}html.big-text #lgTabs button{font-size:15.5px}
+#lgStartModal .sheet,#lgMenuModal .sheet,#lgEndModal .sheet{background:linear-gradient(180deg,#1f3549,#132435)}
+#lgStartModal .sticky-actions{background:#132435}
+.lg-hero{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.lg-hero h3{margin:0}.lg-hero p{margin:2px 0 0;font-size:14px}
+.lg-logo{flex:0 0 52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:30px;background:linear-gradient(135deg,#4fc3b0,#1d3c6e);box-shadow:0 3px 10px rgba(0,0,0,.3)}
+.lg-cont{width:100%;display:flex;align-items:center;gap:12px;text-align:left;padding:10px 12px;border-radius:16px;margin:0 0 10px;background:linear-gradient(135deg,rgba(242,193,78,.3),rgba(242,193,78,.1));border:1px solid rgba(242,193,78,.55)}
+.lg-cont[hidden]{display:none}
+.lg-cont span{flex:1;display:flex;flex-direction:column}.lg-cont b{font-size:16px}.lg-cont small{color:var(--muted);font-size:12.5px}
+.lg-cont em,#lgDaily em{font-style:normal;font-weight:800;background:var(--accent);color:#2b2100;border-radius:99px;padding:6px 11px;font-size:14px;white-space:nowrap}
+#lgDaily{width:100%;display:flex;align-items:center;gap:12px;text-align:left;padding:10px 12px;border-radius:16px;margin:0 0 10px;background:linear-gradient(115deg,rgba(79,195,176,.3),rgba(79,195,176,.08));border:1px solid rgba(79,195,176,.6);color:var(--ink)}
+.lg-dico{font-size:28px;line-height:1}.lg-dtx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}.lg-dtx b{font-size:16px}.lg-dtx small{color:var(--muted);font-size:12.5px}
+#lgDaily.done em{background:rgba(255,255,255,.14);color:#7fe3b4}
+.lg-levels{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}
+.lg-levels button{background:rgba(255,255,255,.07);border:2px solid transparent;border-radius:14px;padding:9px 10px 8px;text-align:left;display:flex;flex-direction:column;gap:1px}
+.lg-levels button b{font-size:16px}.lg-levels button small{color:var(--muted);font-size:12px;line-height:1.3}
+.lg-levels button span{margin-top:3px;font-size:13px;color:#ffe27a;font-variant-numeric:tabular-nums}
+.lg-levels button.on{border-color:var(--accent);background:rgba(242,193,78,.14)}
+@media (orientation:landscape){.lg-levels{grid-template-columns:repeat(4,1fr)}}
+.lg-go{margin:0 0 12px}
+.lg-help{margin:0 0 12px;background:rgba(0,0,0,.2);border-radius:12px;padding:8px 12px;text-align:left}
+.lg-help summary{font-weight:700;cursor:pointer;padding:2px 0}
+.lg-help ul{padding-left:18px;margin:8px 0 4px}.lg-help li{margin:6px 0;font-size:14px;line-height:1.42;color:var(--ink)}
+.lg-minfo{font-size:13.5px;margin:-4px 0 12px}
+#lgMenuModal .opt{text-align:left}
+#lg button:focus:not(:focus-visible),#lgStartModal button:focus:not(:focus-visible),#lgMenuModal button:focus:not(:focus-visible),#lgEndModal button:focus:not(:focus-visible){outline:none}
+#lg.tipping #lgClues{padding-bottom:150px}
