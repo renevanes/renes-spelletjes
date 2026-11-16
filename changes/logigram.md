@@ -1,1 +1,0 @@
-Nieuw spel: **Logigram**! Zoek met slimme aanwijzingen uit wie welk huisdier heeft, waar iemand woont of hoe oud iedereen is, en zet ✓ en ✗ in het rooster. Elke puzzel is nieuw, heeft precies één oplossing en kan zonder gokken: kies Makkelijk, Normaal, Moeilijk of Expert, of speel elke dag de puzzel van de dag, en vraag een hint als je vastzit.

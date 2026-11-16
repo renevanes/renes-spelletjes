@@ -1,11 +1,11 @@
 {
-  "versionCode": 77,
-  "versionName": "1.76",
+  "versionCode": 78,
+  "versionName": "1.77",
   "nativeLevel": 12,
-  "notes": "Zandrijk: tik op een gebouw of eenheid en je ziet meteen wat het is en wat het doet: energie, opslag, wat het maakt of bouwt en hoe het ervoor staat. Houd een knop in de bouwbalk vast voor uitleg, en tik op een vijand om te zien wat het is. De gebouwen en eenheden zijn mooier getekend, met daken, muren, ramen en lampjes, en de woestijn is scherper.",
+  "notes": "Nieuw spel: **Logigram**! Zoek met slimme aanwijzingen uit wie welk huisdier heeft, waar iemand woont of hoe oud iedereen is, en zet \u2713 en \u2717 in het rooster. Elke puzzel is nieuw, heeft precies \u00e9\u00e9n oplossing en kan zonder gokken: kies Makkelijk, Normaal, Moeilijk of Expert, of speel elke dag de puzzel van de dag, en vraag een hint als je vastzit.",
   "web": "web/index.html",
-  "webSha256": "e841a03482112feffd877cc8f7c4c8d364da69fb4da0f2bf26ea0067f81f02f7",
-  "webSig": "MEUCIQD6Pg0JXzaYK5lMKBigbOw0SufD5+T9OO5jBnUJ20J00QIgTAKqWEZEhqCt93Iz9Q1/2d0McREf24ndiu9oEQ4fVq0=",
+  "webSha256": "7e92658d809428df0384c7d914ed8fc934b3f70b74e2b580c1009eaa7b90a896",
+  "webSig": "MEYCIQC2+EC3W8BWMjUPS0u+Mllp5FUGLBObSqy3igNV6tiVFQIhANK0thtwu5uSEu3x7UtJL4mj50cwHWlhzi5wJaYKRM2K",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "157e7255acef0f79f0480b8faf45ec752ee5481ed6800a979dae8c05fceca91c"
