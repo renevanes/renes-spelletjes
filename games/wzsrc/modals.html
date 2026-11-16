@@ -1,0 +1,32 @@
+<div class="modal" id="wzStartModal">
+  <div class="sheet">
+    <div class="wz-hero"><img id="wzHeroImg" alt=""><div><h3>Woordzoeker</h3><small>Zoek alle woorden in het letterrooster</small></div></div>
+    <button id="wzCont" class="wz-cont" hidden></button>
+    <button id="wzDaily" class="wz-daily"></button>
+    <div class="opt-label">Niveau</div>
+    <div class="wz-levels" id="wzLevels"></div>
+    <details class="wz-themes" id="wzThemeBox"><summary id="wzThemeSum"></summary><div id="wzThemes"></div></details>
+    <details class="wz-help"><summary>Hoe speel je?</summary>
+      <ul>
+        <li><b>Veeg</b> met je vinger van de eerste naar de laatste letter van een woord. Of <b>tik</b> op de eerste letter en daarna op de laatste.</li>
+        <li>Woorden staan in een rechte lijn: naar rechts en naar beneden, op hogere niveaus ook schuin en <b>achterstevoren</b>.</li>
+        <li>Een gevonden woord krijgt een kleur en wordt in de lijst doorgestreept.</li>
+        <li>Vast? <b>💡</b> laat de eerste letter van een woord oplichten. Nog een keer tikken toont de volgende letter.</li>
+        <li><b>IJ</b> telt als twee letters: een I en een J, elk in een eigen vakje.</li>
+        <li><b>Geheim woord</b>: de letters die aan het eind overblijven, vormen samen een woord. Raad jij het? (Niet bij Expert: daar staan lokwoorden die bijna goed zijn.)</li>
+      </ul>
+    </details>
+    <div id="wzOpts"></div>
+    <div class="stats" id="wzStats"></div>
+    <div class="row sticky-actions"><button class="btn" id="wzStartBack">Menu</button><button class="btn primary" id="wzGo">Spelen ▶</button></div>
+  </div>
+</div>
+<div class="modal center" id="wzEndModal">
+  <div class="sheet">
+    <div class="big-emoji" id="wzEndEmoji">🎉</div>
+    <h3 id="wzEndTitle">Opgelost!</h3>
+    <div class="wz-endstats" id="wzEndStats"></div>
+    <p id="wzEndText"></p>
+    <div class="row"><button class="btn" id="wzEndMenu">Menu</button><button class="btn primary" id="wzEndNext">Nieuwe puzzel ▶</button></div>
+  </div>
+</div>

@@ -1,0 +1,25 @@
+<!-- ============ WOORDZOEKER ============ -->
+<section id="wz" class="screen">
+  <div class="topbar">
+    <button class="iconbtn" id="wzBack" aria-label="Terug">‹</button>
+    <div class="wz-head"><b id="wzTitle">Woordzoeker</b><small id="wzSub"></small></div>
+    <span class="wz-pill" id="wzClock" aria-label="Tijd">0:00</span>
+    <button class="iconbtn" id="wzHint" aria-label="Hint">💡<i id="wzHintN"></i></button>
+    <button class="iconbtn" id="wzMenu" aria-label="Menu">☰</button>
+  </div>
+  <div id="wzMain">
+    <div id="wzStage"><div id="wzBox"><canvas id="wzBoard"></canvas><canvas id="wzFx"></canvas></div></div>
+    <div id="wzSide">
+      <div id="wzListHead"><span id="wzCount">0/0</span><span id="wzTheme"></span><button id="wzRetry" aria-label="Opnieuw">↻</button></div>
+      <div id="wzList"></div>
+      <div id="wzSecret" hidden>
+        <div class="wz-sec-t"><span>🤫</span><div><b>Geheim woord</b><small id="wzSecTxt">Alle woorden gevonden! De letters die over zijn, vormen samen een woord. Tik ze in de goede volgorde.</small></div></div>
+        <div id="wzSlots"></div>
+        <div id="wzTiles"></div>
+        <div class="wz-sec-b"><button class="btn small" id="wzSecClear">Wissen</button><button class="btn small" id="wzSecShow">Laat zien</button></div>
+      </div>
+    </div>
+    <div id="wzConf"></div>
+    <div id="wzToast"></div>
+  </div>
+</section>

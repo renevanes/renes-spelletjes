@@ -1,0 +1,1 @@
+Nieuw spel: **Woordzoeker**! Zoek de verstopte woorden in het letterrooster door van de eerste naar de laatste letter te vegen (of tik ze allebei aan), in meer dan dertig thema's en vier niveaus van Makkelijk tot Expert. Met hints, een puzzel van de dag en een geheim woord dat je met de overgebleven letters kunt raden.
