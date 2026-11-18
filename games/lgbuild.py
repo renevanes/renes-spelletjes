@@ -58,6 +58,8 @@ sfx = {
   'lgClr':    "[() => { const d = buf(.22); tone(d, 0, 520, 380, .05, .03, .24, .003); return d; }, .04, .16, 1]",
   'lgTap':    "[() => { const d = buf(.1); tone(d, 0, 1150, 1000, .012, .015, .22, .003); return d; }, .02, .11, 1]",
   'lgStrike': "[() => { const d = buf(.36); wash(d, 0, .24, 900, 2600, .45, .03, .06, 1.4, 'bp'); tone(d, 0, 330, 300, .05, .04, .12, .004); return d; }, .05, .18, 2]",
+  'lgOk':     "[() => { const d = buf(.8); bell(d, 0, 1046.5, .2, .3); bell(d, .1, 1318.5, .2, .34); bell(d, .2, 1568, .18, .4); return d; }, .3, .24, 1]",
+  'lgBad':    "[() => { const d = buf(.7); tone(d, 0, 392, 370, .12, .05, .22, .004); tone(d, .14, 330, 311, .16, .06, .2, .004); return d; }, .2, .22, 1]",
   'lgHint':   "[() => { const d = buf(.9); bell(d, 0, 1174.7, .22, .35); bell(d, .12, 1568, .2, .4); return d; }, .3, .24, 1]",
   'lgUndo':   "[() => { const d = buf(.36); tone(d, 0, 820, 560, .1, .06, .26, .004, .15); return d; }, .08, .2, 1]",
   'lgNew':    "[() => { const d = buf(1.1); [523.3, 659.3, 784].forEach((f, i) => bell(d, i * .07, f, .2, .4)); wash(d, 0, .5, 600, 2400, .05, .1, .15, 1.2, 'bp'); return d; }, .3, .24, 1]",
@@ -96,7 +98,7 @@ g = {
  'statRow': "['lg', `${S.lg.won || 0} logigrammen opgelost · ${S.lg.noHint || 0} zonder hint${S.lg.dailyWon ? ' · ' + S.lg.dailyWon + ' dagpuzzels' : ''}${S.lg.best && S.lg.best.expert != null ? ' · expert in ' + Math.floor(S.lg.best.expert / 60) + ':' + String(S.lg.best.expert % 60).padStart(2, '0') : ''}`]",
  'wipe': ['lg.stats', 'lg.save', 'lg.settings'],
  'trophies': ("    ['lg1', '🔎', 'Speurneus', 'Los je eerste logigram op', S => (S.lg.won || 0) >= 1],\n"
-              "    ['lg2', '🧠', 'Zonder spieken', 'Los een moeilijk logigram op zonder hints', S => (S.lg.hardNoHint || 0) >= 1],\n"
+              "    ['lg2', '🧠', 'Zonder spieken', 'Los een moeilijk logigram op zonder hints of controleren', S => (S.lg.hardNoHint || 0) >= 1],\n"
               "    ['lg3', '🎓', 'Meesterbrein', 'Los een logigram op Expert op', S => (S.lg.expert || 0) >= 1],\n"
               "    ['lg4', '📅', 'Dagelijkse denker', 'Los 7 puzzels van de dag op in Logigram', S => (S.lg.dailyWon || 0) >= 7],\n"
               "    ['lg5', '⚡', 'Bliksemdenker', 'Los een normaal logigram op binnen 3 minuten', S => !!(S.lg.best && S.lg.best.normaal != null && S.lg.best.normaal <= 180)],\n"

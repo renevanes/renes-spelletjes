@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync } from 'node:fs';
 // Logigram browser test on the real UI with real touch input (Playwright + CDP touch events).
 //   node games/lg1.mjs [path-to-index.html]      (default build/work/lgtest/index.html, or APP_HTML)
-//   PART = all | main | save | land | big | back | daily | opts | perf   (comma separated)
+//   PART = all | main | save | land | big | back | daily | opts | perf | check   (comma separated)
 import { chromium } from 'playwright';
 import path from 'path'; import { fileURLToPath } from 'url';
 const here = path.dirname(fileURLToPath(import.meta.url)), GFX = path.join(here, '..', 'build', 'gfx'); mkdirSync(GFX, { recursive: true });
@@ -327,6 +327,60 @@ if (want('opts')) {
 }
 
 /* ================= performance (6× slower CPU) ================= */
+/* ================= Controleer: wrong marks are hatched in red until fixed ================= */
+if (want('check')) {
+  for (const o of [PORT, LAND]) {
+    const nm = o === PORT ? 'staand' : 'liggend', p = await page(o);
+    await openGame(p); await newPuzzle(p, 'makkelijk');
+    // red pixels inside a cell on the canvas (the hatching)
+    const red = (a, bb) => ev(p, ([a, b]) => { const cv = document.getElementById('lgCv'), r = __lg.cellXY(a, b), q = cv.getBoundingClientRect(), d = cv.width / q.width, g = cv.getContext('2d');
+      const x = Math.round((r.x - q.left - r.s / 2 + 3) * d), y = Math.round((r.y - q.top - r.s / 2 + 3) * d), w = Math.round((r.s - 6) * d), D = g.getImageData(x, y, w, w).data; let n = 0;
+      for (let i = 0; i < D.length; i += 4) if (D[i] > 170 && D[i + 1] < 120 && D[i + 2] < 120) n++; return n / (w * w); }, [a, bb]);
+    const tb = await ev(p, () => { const e = document.getElementById('lgCheck'), r = e.getBoundingClientRect(); return { vis: r.width > 30 && r.right <= innerWidth && r.bottom <= innerHeight, txt: e.textContent }; });
+    ok(`${nm}: knop Controleer zichtbaar`, tb.vis && tb.txt.includes('Controleer'));
+    await tapEl(p, '#lgCheck'); await wait(p, 200);
+    ok(`${nm}: leeg rooster: nog niets ingevuld`, (await ev(p, () => document.getElementById('lgToast').textContent)).includes('nog niets'));
+    // one wrong ✓ (with its automatic ✗) and one right ✗
+    const sc = await solCells(p), [sa, sb] = sc[0], [ga, gb] = sc[2];
+    const N = await ev(p, () => __lg.S.P.N), other = Math.floor(sb / N) * N + ((sb % N) + 1) % N;
+    await tapCell(p, sa, other, 700);
+    ok(`${nm}: foute ✓ gezet`, (await mark(p, sa, other)) === 2);
+    ok(`${nm}: zonder controle geen arcering`, (await red(sa, other)) < .01);
+    await tapEl(p, '#lgCheck'); await wait(p, 600);
+    const st = await ev(p, () => ({ n: __lg.S.chk.size, c: __lg.S.checks, toast: document.getElementById('lgToast').textContent }));
+    ok(`${nm}: controle vindt de fouten`, st.n > 0 && st.c === 1 && /\d+ fout/.test(st.toast), JSON.stringify(st));
+    ok(`${nm}: foute ✓ rood gearceerd`, (await red(sa, other)) > .04, (await red(sa, other)).toFixed(3));
+    await tapCell(p, ga, gb, 700); await tapEl(p, '#lgCheck'); await wait(p, 500);
+    ok(`${nm}: goede ✓ niet gearceerd`, (await mark(p, ga, gb)) === 2 && (await red(ga, gb)) < .01, (await red(ga, gb)).toFixed(3));
+    const wrongAuto = await ev(p, ([a, b]) => { const S = __lg.S, T = S.P.K * S.P.N; return [...S.chk].filter(k => S.mk[k] === 3).length; }, [sa, other]);
+    ok(`${nm}: ook foute automatische ✗ gearceerd`, wrongAuto > 0, wrongAuto);
+    await p.screenshot({ path: path.join(GFX, `lg_check_${o === PORT ? 'p' : 'l'}.png`) });
+    // fix it: the hatching disappears
+    await tapCell(p, sa, other); await wait(p, 300);
+    ok(`${nm}: verbeterd: arcering weg`, (await mark(p, sa, other)) !== 2 && (await red(sa, other)) < .01);
+    // keep a wrong mark, save and reload: the hatching comes back
+    await tapCell(p, sa, other); await wait(p, 100); if ((await mark(p, sa, other)) !== 2) await tapCell(p, sa, other, 700);
+    await tapEl(p, '#lgCheck'); await wait(p, 300); await ev(p, () => window.appBack()); await wait(p, 300);
+    const n0 = await ev(p, () => __lg.S.chk.size);
+    await p.reload(); await wait(p, 600); await openGame(p);
+    if (await vis(p, 'lgStartModal')) { await tapEl(p, '#lgCont button, #lgCont'); await wait(p, 400); }
+    ok(`${nm}: na herladen nog gearceerd`, (await ev(p, () => __lg.S && __lg.S.chk.size)) === n0 && (await red(sa, other)) > .04);
+    // all right: "Alles klopt"
+    await tapCell(p, sa, other); await wait(p, 100); if ((await mark(p, sa, other)) === 2) await tapCell(p, sa, other);
+    if ((await mark(p, sa, other)) !== 0 && (await mark(p, sa, other)) !== 1) await tapCell(p, sa, other);
+    await ev(p, ([a, b]) => { const S = __lg.S, T = S.P.K * S.P.N; for (let i = 0; i < S.mk.length; i++) if (S.mk[i] && __lg.Core.wrongMark(S.P, S.mk, Math.floor(i / T), i % T)) { S.mk[i] = 0; } }, [sa, other]);
+    await tapCell(p, sa, sb, 700); await tapEl(p, '#lgCheck'); await wait(p, 300);
+    ok(`${nm}: alles goed: "Alles klopt"`, (await ev(p, () => document.getElementById('lgToast').textContent)).includes('Alles klopt'));
+    // solve: the end screen mentions the checks, and it does not count as "zonder hint"
+    const nh = await ev(p, () => __lg.stats().noHint);
+    await solveByTaps(p); await wait(p, 1800);
+    ok(`${nm}: opgelost, eindscherm noemt de controles`, (await vis(p, 'lgEndModal')) && (await ev(p, () => document.getElementById('lgEndText').textContent)).includes('gecontroleerd'));
+    ok(`${nm}: telt niet als "zonder hint"`, (await ev(p, () => __lg.stats().noHint)) === nh);
+    ok(`${nm}: knop Controleer uit na oplossen`, await ev(p, () => document.getElementById('lgCheck').disabled));
+    await p.close();
+  }
+}
+
 if (want('perf')) {
   const p = await page(PORT);
   await openGame(p);

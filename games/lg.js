@@ -616,7 +616,7 @@ const Logigram = (() => {
   const big = () => document.documentElement.classList.contains('big-text');
   const LDESC = { makkelijk: 'Is en is niet', normaal: 'Ouder, jonger en of', moeilijk: 'Precies, paren en lijsten', expert: 'Alles door elkaar' };
   // paper and ink
-  const C = { paper: '#fffaf0', paper2: '#f8efdc', line: '#dccfb3', block: '#4d4134', ink: '#2c2620', head: '#6b5a45', sel: 'rgba(255,205,70,.28)', selH: '#ffe7a3', hint: '#ffd75e', ref: 'rgba(80,190,150,.25)', yes: '#2a9d6f', no: '#55626e', auto: '#aab4bd', bad: '#e04848', badBg: '#fde1e1' };
+  const C = { paper: '#fffaf0', paper2: '#f8efdc', line: '#dccfb3', block: '#4d4134', ink: '#2c2620', head: '#6b5a45', sel: 'rgba(255,205,70,.28)', selH: '#ffe7a3', hint: '#ffd75e', ref: 'rgba(80,190,150,.25)', yes: '#2a9d6f', no: '#55626e', auto: '#aab4bd', bad: '#e04848', badBg: '#fde1e1', chk: '#d63a3a' };
 
   /* ---------- game state ----------
      S = { P (the puzzle), mk (marks), t (seconds), hints, undo [[changes]], redo, struck [clue -> bool], daily (date or null), lvl, done } */
@@ -713,6 +713,18 @@ const Logigram = (() => {
     const q = Math.max(8, Math.ceil(s / 4) * 4);
     return sprite(`m${m}${bad ? 1 : 0}|${q}`, q, q, () => mark(0, 0, q, m, 1, bad));
   }
+  // a wrong mark found by "Controleer": red diagonal stripes and a red frame
+  function hatchSpr(s) {
+    const q = Math.max(8, Math.ceil(s / 4) * 4);
+    return sprite(`h|${q}`, q, q, () => {
+      g.save(); g.beginPath(); g.rect(1, 1, q - 2, q - 2); g.clip();
+      g.fillStyle = 'rgba(224,72,72,.16)'; g.fillRect(0, 0, q, q);
+      g.strokeStyle = 'rgba(214,58,58,.7)'; g.lineWidth = Math.max(1.5, q * .085); g.beginPath();
+      for (let k = -q; k < q * 2; k += q / 4.5) { g.moveTo(k, q); g.lineTo(k + q, 0); }
+      g.stroke(); g.restore();
+      g.strokeStyle = C.chk; g.lineWidth = Math.max(2, q * .08); g.strokeRect(2, 2, q - 4, q - 4);
+    });
+  }
   function fitText(t, w) { if (measure(t) <= w) return t; while (t.length > 1 && measure(t + '…') > w) t = t.slice(0, -1); return t + '…'; }
   function label(it, x, y, maxW, fs, align, bold) {
     g.font = `${bold ? 800 : 600} ${fs}px ${FONT}`; g.textBaseline = 'middle';
@@ -779,8 +791,9 @@ const Logigram = (() => {
         if (hb && hb.a === a && hb.b === b) { g.fillStyle = C.hint; g.fillRect(x, y, cs, cs); }
         let k = 1; const an = anim.get(key);
         if (an) { const p = (t - an[0] - an[1]) / 170; if (p >= 1) anim.delete(key); else { animating = true; k = p < 0 ? (an[2] ? 0 : 1) : ease(p); } }
-        const m = mk[key], bad = opt.err && m && Core.wrongMark(P, mk, a, b);
+        const m = mk[key], wrong = m && (opt.err || (S.chk && S.chk.has(key))) && Core.wrongMark(P, mk, a, b), bad = opt.err && wrong, hatch = wrong && S.chk && S.chk.has(key);
         if (bad) { g.fillStyle = C.badBg; g.fillRect(x + 1, y + 1, cs - 2, cs - 2); }
+        if (hatch) g.drawImage(hatchSpr(cs), x, y, cs, cs);
         if (m && k > .01) { const sp = markSpr(m, cs, bad); if (k === 1) g.drawImage(sp, x, y, cs, cs); else { const d = cs * k; g.drawImage(sp, x + (cs - d) / 2, y + (cs - d) / 2, d, d); } }
       }
       g.strokeStyle = C.line; g.lineWidth = 1; g.beginPath();
@@ -906,6 +919,24 @@ const Logigram = (() => {
     if (h.clue >= 0) { const li = $(`#lgClues li[data-i="${h.clue}"]`); if (li) { const pn = $('#lgPanel'); pn.scrollTop = Math.max(0, li.offsetTop - pn.offsetTop - 4); } }
     sfx('lgHint'); need(); saveSoon();
   }
+  // Controleer: compare every mark with the solution and hatch the wrong ones (they stay hatched until fixed)
+  function doCheck() {
+    if (!S || S.done || busy) return;
+    hideHint(); sel = null;
+    const P = S.P, T = P.K * P.N, bad = []; let filled = 0;
+    for (const [a, b] of Core.pairs(P)) { if (!S.mk[a * T + b]) continue; filled++; if (Core.wrongMark(P, S.mk, a, b)) bad.push([a, b]); }
+    S.chk = new Set(); for (const [a, b] of bad) { S.chk.add(a * T + b); S.chk.add(b * T + a); }
+    if (filled) { S.checks = (S.checks || 0) + 1; stats.checks = (stats.checks || 0) + 1; saveStats(); }
+    if (!filled) { toast('Je hebt nog niets ingevuld.'); sfx('lgTap'); }
+    else if (!bad.length) { toast(`✓ Alles klopt! ${filled} ${filled === 1 ? 'vakje' : 'vakjes'} ingevuld, geen fouten.`, 2200); sfx('lgOk'); }
+    else {
+      bad.forEach(([a, b], i) => popCell(a, b, i * 40, true));
+      const vis = bad.some(([a, b]) => { const r = cellRect(a, b), B = base(); return r.x >= B.x + Lay.leftW && r.y >= B.y + Lay.topH && r.x + r.s <= V.W && r.y + r.s <= V.H; });
+      if (!vis) reveal(bad[0][0], bad[0][1]);
+      toast(`⚠️ ${bad.length} ${bad.length === 1 ? 'fout' : 'fouten'} gevonden: ${bad.length === 1 ? 'het vakje is' : 'de vakjes zijn'} rood gearceerd.`, 2600); sfx('lgBad'); vibrate(20);
+    }
+    need(); saveSoon();
+  }
   function applyHint() { const h = hintS; if (!h) return; hideHint(); doMark(h.a, h.b, h.k === 'err' ? 0 : h.v); }
   function hideHint() { if (!hintS) return; hintS = null; $('#lgTip').classList.remove('show'); scr.classList.remove('tipping'); renderSide(); need(); }
   function win() {
@@ -918,7 +949,7 @@ const Logigram = (() => {
     const lvl = S.lvl, t = Math.floor(S.t), best = stats.best[lvl];
     S.newBest = best == null || t < best; if (S.newBest) stats.best[lvl] = t;
     stats.won++; stats.wonBy[lvl] = (stats.wonBy[lvl] || 0) + 1; stats.time += t;
-    if (!S.hints) { stats.noHint++; if (lvl === 'moeilijk' || lvl === 'expert') stats.hardNoHint++; }
+    if (!S.hints && !S.checks) { stats.noHint++; if (lvl === 'moeilijk' || lvl === 'expert') stats.hardNoHint++; }
     if (lvl === 'expert') stats.expert++;
     if (S.daily) { if (!stats.daily[S.daily]) stats.dailyWon++; stats.daily[S.daily] = Math.min(stats.daily[S.daily] || 1e9, t); const ks = Object.keys(stats.daily).sort(); while (ks.length > 60) delete stats.daily[ks.shift()]; }
     saveStats(); store.del('lg.save'); renderAll(); sfx('lgWin'); vibrate(30);
@@ -937,7 +968,7 @@ const Logigram = (() => {
     if (tab === 's') renderSum();
     $('#lgUndo').disabled = !S.undo.length || S.done; $('#lgRedo').disabled = !S.redo.length || S.done;
     const pen = $('#lgPen'); pen.hidden = opt.tap !== 'kies'; pen.innerHTML = `<b>${opt.pen === YES ? '✓' : '✗'}</b><small>Teken</small>`; pen.classList.toggle('yes', opt.pen === YES);
-    $('#lgHintB').disabled = !!S.done;
+    $('#lgHintB').disabled = !!S.done; $('#lgCheck').disabled = !!S.done;
   }
   function itemHtml(P, gi) { const it = Core.itemOf(P, gi); return (it.sw ? `<i class="lg-sw" style="background:${it.sw}"></i>` : it.em ? `<span class="lg-em">${it.em}</span>` : '') + esc(it.sh); }
   function renderSum() {
@@ -960,7 +991,7 @@ const Logigram = (() => {
   $('#lgTools').addEventListener('click', e => {
     const b = e.target.closest('button[data-b]'); if (!b || !S) return;
     const k = b.dataset.b;
-    if (k === 'undo') undo(); else if (k === 'redo') redo(); else if (k === 'hint') doHint();
+    if (k === 'undo') undo(); else if (k === 'redo') redo(); else if (k === 'hint') doHint(); else if (k === 'check') doCheck();
     else if (k === 'pen') { opt.pen = opt.pen === YES ? NO : YES; saveOpt(); sfx('lgTap'); renderSide(); }
     else if (k === 'fit') { const toFit = !(V.cs <= Lay.fitAll + .5); V.fit = toFit; V.cs = toFit ? Lay.fitAll : Lay.cs0; V.ox = 0; V.oy = 0; clampPan(); $('#lgFit').classList.toggle('on', toFit && Lay.fitAll < Lay.cs0 - .5); sfx('lgTap'); need(); }
   });
@@ -988,7 +1019,7 @@ const Logigram = (() => {
       spent += now() - (end - 10);
       if (!r.done) { setTimeout(run, 0); return; }
       lastGen = Math.round(spent); window.__lgGenWall = Math.round(now() - t0);
-      S = { P: r.value, mk: Core.newMarks(r.value), t: 0, hints: 0, undo: [], redo: [], struck: [], daily: daily || null, lvl: L, done: false };
+      S = { P: r.value, mk: Core.newMarks(r.value), t: 0, hints: 0, checks: 0, chk: new Set(), undo: [], redo: [], struck: [], daily: daily || null, lvl: L, done: false };
       stats.played++; saveStats();
       busy = false; scr.classList.remove('busy'); $('#lgBusy').classList.remove('show');
       sel = null; anim.clear(); V.ready = false; V.fit = false; tab = 'c'; setTab('c');
@@ -1001,7 +1032,7 @@ const Logigram = (() => {
   function save() {
     clearTimeout(saveT); saveT = 0;
     if (!S || S.done) return;
-    try { store.set('lg.save', { v: 1, P: S.P, mk: Core.packMarks(S.P, S.mk), t: Math.floor(S.t * 10) / 10, hints: S.hints, undo: S.undo.slice(-150), redo: S.redo.slice(-150), struck: S.struck, daily: S.daily, lvl: S.lvl, trimmed: S.trimmed || S.undo.length > 150 }); } catch (e) {}
+    try { store.set('lg.save', { v: 1, P: S.P, mk: Core.packMarks(S.P, S.mk), t: Math.floor(S.t * 10) / 10, hints: S.hints, checks: S.checks || 0, chk: S.chk ? [...S.chk] : [], undo: S.undo.slice(-150), redo: S.redo.slice(-150), struck: S.struck, daily: S.daily, lvl: S.lvl, trimmed: S.trimmed || S.undo.length > 150 }); } catch (e) {}
   }
   const saveSoon = () => { if (!saveT) saveT = setTimeout(save, 500); };
   function load() {
@@ -1011,7 +1042,7 @@ const Logigram = (() => {
       const P = d.P, T = P.K * P.N;
       if (P.ent.length !== T || P.cats.length !== P.K || P.cats.some(c => c.items.length !== P.N)) return null;
       const ok = ch => Array.isArray(ch) && ch.every(c => Array.isArray(c) && c.length === 4 && c.every(v => Number.isInteger(v)) && c[0] < T && c[1] < T);
-      return { P, mk: Core.unpackMarks(P, d.mk), t: Number.isFinite(d.t) ? d.t : 0, hints: d.hints | 0, undo: (d.undo || []).filter(ok), redo: (d.redo || []).filter(ok), struck: Array.isArray(d.struck) ? d.struck : [], daily: d.daily || null, lvl: d.lvl, done: false, trimmed: !!d.trimmed };
+      return { P, mk: Core.unpackMarks(P, d.mk), t: Number.isFinite(d.t) ? d.t : 0, hints: d.hints | 0, checks: d.checks | 0, chk: new Set((Array.isArray(d.chk) ? d.chk : []).filter(k => Number.isInteger(k) && k >= 0 && k < T * T)), undo: (d.undo || []).filter(ok), redo: (d.redo || []).filter(ok), struck: Array.isArray(d.struck) ? d.struck : [], daily: d.daily || null, lvl: d.lvl, done: false, trimmed: !!d.trimmed };
     } catch (e) { return null; }
   }
 
@@ -1025,6 +1056,7 @@ const Logigram = (() => {
     <li>Tik op een vakje om ✗, ✓ of leeg te zetten. <b>Lang drukken</b> zet meteen een ✓. Bij een ✓ worden de andere vakjes in die rij en kolom van het blokje vanzelf weggestreept.</li>
     <li>Lees de aanwijzingen goed en tik op een aanwijzing om hem door te strepen als je hem gebruikt hebt. Weet je iets via een ✓ in een ander blokje? Neem het over!</li>
     <li>Elke puzzel heeft precies één oplossing. Je hoeft nooit te gokken: goed nadenken is genoeg.</li>
+    <li>Twijfel je of alles klopt? <b>☑ Controleer</b> vergelijkt wat je hebt ingevuld met de oplossing en arceert foute ✓ en ✗ in rood. Verbeter je het vakje, dan verdwijnt de arcering.</li>
     <li>Vast? <b>💡 Hint</b> laat de volgende stap zien en vertelt waarom. Bij <b>Overzicht</b> zie je wat je al gevonden hebt.</li>
     <li>Schuif met één vinger over het rooster en knijp met twee vingers om in of uit te zoomen. Tik op een naam boven of naast het rooster om hem helemaal te lezen.</li></ul></details>`;
   function openStart() {
@@ -1043,13 +1075,13 @@ const Logigram = (() => {
   function openMenu() {
     if (!S) { openStart(); return; }
     hideHint(); $('#lgMOpts').innerHTML = optRows(); $('#lgHelpM').innerHTML = HELP; $('#lgMRestart').disabled = !!S.done;
-    $('#lgMInfo').textContent = `${LV[S.lvl].name}${S.daily ? ' · puzzel van de dag' : ''} · ${S.P.K} soorten × ${S.P.N} · ⏱ ${fmt(S.t)} · ${S.hints} ${S.hints === 1 ? 'hint' : 'hints'}`;
+    $('#lgMInfo').textContent = `${LV[S.lvl].name}${S.daily ? ' · puzzel van de dag' : ''} · ${S.P.K} soorten × ${S.P.N} · ⏱ ${fmt(S.t)} · ${S.hints} ${S.hints === 1 ? 'hint' : 'hints'}${S.checks ? ` · ${S.checks}× gecontroleerd` : ''}`;
     openModal('lgMenuModal'); sfx('lgTap');
   }
   function openEnd() {
     const L = LV[S.lvl], t = Math.floor(S.t), b = stats.best[S.lvl];
     $('#lgEndTitle').textContent = S.daily ? 'Puzzel van de dag opgelost!' : 'Logigram opgelost!';
-    $('#lgEndText').innerHTML = `${L.name} in <b>${fmt(t)}</b>${S.newBest ? ' · 🎉 nieuwe beste tijd!' : b != null ? ` · beste tijd ${fmt(b)}` : ''}<br><small>${S.hints ? `${S.hints} ${S.hints === 1 ? 'hint' : 'hints'} gebruikt` : 'Helemaal zonder hints!'} · ${stats.won} ${stats.won === 1 ? 'logigram' : 'logigrammen'} opgelost</small>`;
+    $('#lgEndText').innerHTML = `${L.name} in <b>${fmt(t)}</b>${S.newBest ? ' · 🎉 nieuwe beste tijd!' : b != null ? ` · beste tijd ${fmt(b)}` : ''}<br><small>${S.hints || S.checks ? [S.hints ? `${S.hints} ${S.hints === 1 ? 'hint' : 'hints'}` : '', S.checks ? `${S.checks}× gecontroleerd` : ''].filter(Boolean).join(' en ') + ' gebruikt' : 'Helemaal zonder hulp!'} · ${stats.won} ${stats.won === 1 ? 'logigram' : 'logigrammen'} opgelost</small>`;
     openModal('lgEndModal');
   }
   const newOrAsk = (fn) => {
@@ -1111,7 +1143,7 @@ const Logigram = (() => {
   }
   window.__lg = {
     get S() { return S; }, get V() { return V; }, get Lay() { return Lay; }, get hint() { return hintS; }, opt, stats: () => stats, Core,
-    startNew, openStart, openMenu, leave, save, load, doMark, doHint, applyHint, undo, redo, restart, reveal, hit, setZoom, check,
+    startNew, openStart, openMenu, leave, save, load, doMark, doHint, doCheck, applyHint, undo, redo, restart, reveal, hit, setZoom, check,
     cellXY(a, b) { const r = cellRect(a, b), q = cv.getBoundingClientRect(); return { x: q.left + r.x + r.s / 2, y: q.top + r.y + r.s / 2, s: r.s, vis: r.x >= base().x + Lay.leftW - 1 && r.y >= base().y + Lay.topH - 1 && r.x + r.s <= V.W + 1 && r.y + r.s <= V.H + 1 }; },
     running: () => raf !== 0, drawStats: reset => { const r = { n: DS.n, avg: DS.n ? DS.ms / DS.n : 0, max: DS.max }; if (reset) { DS.n = 0; DS.ms = 0; DS.max = 0; } return r; }, busy: () => busy, genMs: () => lastGen, timerOn: () => !!timer,
   };
