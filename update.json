@@ -1,11 +1,11 @@
 {
-  "versionCode": 79,
-  "versionName": "1.78",
+  "versionCode": 80,
+  "versionName": "1.79",
   "nativeLevel": 12,
-  "notes": "Nieuw spel: **Woordzoeker**! Zoek de verstopte woorden in het letterrooster door van de eerste naar de laatste letter te vegen (of tik ze allebei aan), in meer dan dertig thema's en vier niveaus van Makkelijk tot Expert. Met hints, een puzzel van de dag en een geheim woord dat je met de overgebleven letters kunt raden.",
+  "notes": "Logigram: nieuwe knop **Controleer**. Die kijkt of je ergens een verkeerde \u2713 of \u2717 hebt gezet en arceert die vakjes in rood. Verbeter je een vakje, dan verdwijnt de arcering vanzelf.",
   "web": "web/index.html",
-  "webSha256": "568ec506d5c6267042191af352d472a57fe67b61c2cf93a3bc9c8ad64310b2eb",
-  "webSig": "MEUCIGbx0/ur1TW6ziv0h3NdJeLXSzP24fob6ajF59X3OqrHAiEAhA8swtFUl0upWZCI0EKrWH/SiCIfe5J/eYTMOQLMhNM=",
+  "webSha256": "affafb8ab91ab0e414cb0fbb7c239ac3042c195ea70cbe08b03ddb18017270f8",
+  "webSig": "MEUCICIMRHo4hMX9E8oOlJnxPrF89ND+JrR3f47ZwY4RQ7ejAiEAl/ZTp/hKBxLhEW6BiVR7LKTXxDxxwMqcBT1ysedIG74=",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "157e7255acef0f79f0480b8faf45ec752ee5481ed6800a979dae8c05fceca91c"
