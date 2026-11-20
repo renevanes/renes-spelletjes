@@ -22,7 +22,7 @@ g = {
   <div id="sdWrap">
     <div id="sdBoard"></div>
     <div id="sdSide">
-      <div id="sdTools"><button data-t="undo"><b>↶</b><small>Terug</small></button><button data-t="erase"><b>⌫</b><small>Wissen</small></button><button data-t="pencil" id="sdPencil"><b>✎</b><small>Potlood</small></button><button data-t="check" id="sdCheck"><b>☑</b><small>Controle</small></button><button data-t="hint"><b>💡</b><small>Hint</small></button></div>
+      <div id="sdTools"><button data-t="undo"><b>↶</b><small>Terug</small></button><button data-t="erase"><b>⌫</b><small>Wissen</small></button><button data-t="pencil" id="sdPencil"><b>✎</b><small>Potlood</small></button><button data-t="lamp" id="sdLamp"><b>🔦</b><small>Zaklamp</small></button><button data-t="check" id="sdCheck"><b>☑</b><small>Controle</small></button><button data-t="hint"><b>💡</b><small>Hint</small></button></div>
       <div id="sdHint" aria-live="polite"></div>
       <div id="sdPad"></div>
     </div>
@@ -55,7 +55,8 @@ g = {
         <li><b>XYZ-vleugel</b> – zoals de Y-vleugel, maar het middelste vakje kan zelf ook C zijn.</li>
         <li><b>XY-ketting</b> – een rij vakjes met elk twee mogelijkheden die elkaar doorgeven: één van de uiteinden is zeker hetzelfde cijfer.</li>
       </ul>
-      <p>Twijfel je? <b>☑ Controle</b> kijkt of je ingevulde cijfers kloppen (fout = rood gearceerd) en of in je potloodnotities het juiste cijfer nog staat (zo niet: oranje rand). Het blijft gemarkeerd tot je dat vakje verandert.</p>
+      <p><b>🔦 Zaklamp</b> – kies een cijfer (of houd een cijfer op het toetsenbord vast): dat cijfer blijft oplichten. Lichte vakjes zijn de plekken waar het nog kan, donkere vakjes vallen af.</p>
+      <p>Twijfel je? <b>☑ Controle</b> kijkt of je ingevulde cijfers kloppen: foute cijfers lichten even rood op.</p>
       <p>Tip: zet met ✎ potloodnotities. Bij moeilijke stappen laat de hint alle mogelijke cijfers zien, met de cijfers die afvallen in het rood.</p>
     </details>
     <div id="sdOptList"></div>
@@ -85,8 +86,12 @@ g = {
 .sd-c.given{color:#231f18;font-weight:700}
 .sd-c.peer{background:#ece6d4} .sd-c.same{background:#f6dd8f} .sd-c.sel{background:#ffd75e}
 .sd-c.bad{color:#d3263a} .sd-c.bad.user{background:#fde1e1} .sd-c.bad.sel{background:#ffc9c0}
-#sdBoard .sd-c.chk{background:repeating-linear-gradient(45deg,#fde1e1 0 5px,#f6b9b9 5px 9px);box-shadow:inset 0 0 0 2px #d3263a;color:#c21d32}
-#sdBoard .sd-c.chkn{box-shadow:inset 0 0 0 3px #f08a24}
+#sdBoard .sd-c.lit:not(.sel){background:#fff6cf} #sdBoard .sd-c.dark:not(.sel){background:#cfc8b6} #sdBoard .sd-c.lamp:not(.sel){background:#ffcf3f;box-shadow:inset 0 0 0 2px #e0a800}
+.sd-n i.lp{background:#ffcf3f;color:#3a2f10;font-weight:800}
+#sdLamp b{position:relative} #sdLamp b em{position:absolute;right:-12px;top:-4px;font-style:normal;font-size:12px;font-weight:800;background:#ffcf3f;color:#3a2f10;border-radius:8px;min-width:16px;padding:0 3px;line-height:16px}
+#sdPad button.lamp{box-shadow:0 3px 0 #b9ae93,0 0 0 3px #ffcf3f inset}
+@keyframes sdChk{0%{opacity:.4}12%{opacity:1}80%{opacity:1}100%{opacity:.75}}
+#sdBoard .sd-c.chk{animation:sdChk 3s ease both;background:repeating-linear-gradient(45deg,#fde1e1 0 5px,#f6b9b9 5px 9px);box-shadow:inset 0 0 0 2px #d3263a;color:#c21d32}
 #sdToast{position:absolute;left:50%;top:64px;transform:translate(-50%,-8px);opacity:0;transition:opacity .25s,transform .25s;background:rgba(18,26,38,.94);color:#fff;padding:9px 14px;border-radius:12px;font-size:14.5px;line-height:1.35;z-index:6;pointer-events:none;width:max-content;max-width:92%;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.35)}
 #sdToast.show{opacity:1;transform:translate(-50%,0)}
 html.big-text #sdToast{font-size:16.5px}
@@ -95,7 +100,7 @@ html.big-text #sdToast{font-size:16.5px}
 .sd-n{position:absolute;inset:6%;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);font-size:calc(var(--s) / 34);font-weight:600;color:#7a7364;line-height:1}
 .sd-n i{font-style:normal;display:flex;align-items:center;justify-content:center;border-radius:3px} .sd-n i.hl{background:#ffd75e;color:#3a2f10}
 #sdSide{display:flex;flex-direction:column;gap:10px;width:min(calc(100vw - 16px),560px)}
-#sdTools{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+#sdTools{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
 #sdTools button{background:rgba(255,255,255,.1);border:2px solid transparent;border-radius:14px;color:var(--ink);padding:6px 0 4px;display:flex;flex-direction:column;align-items:center;gap:1px;-webkit-tap-highlight-color:transparent}
 #sdTools button b{font-size:20px;line-height:1.1} #sdTools button small{font-size:11px;color:var(--muted)}
 #sdTools button.on{border-color:var(--accent);background:rgba(242,193,78,.2)}
@@ -119,8 +124,8 @@ html.big-text #sdHint{font-size:16.5px} html.big-text .sd-hh b{font-size:18px}
 @media (orientation:landscape) and (max-height:600px){
   #sdWrap{flex-direction:row;gap:14px;padding:8px 12px}
   #sdBoard{--s:min(calc(100vh - 80px),calc(100vw - 340px))}
-  #sdSide{width:300px} #sdPad{grid-template-columns:repeat(3,1fr)} #sdPad button{padding:6px 0 2px}
-  #sdHint{padding:8px 10px;font-size:13.5px} #sdHint p{max-height:calc(100vh - 210px);overflow-y:auto;margin:4px 0 6px}
+  #sdSide{width:300px} #sdTools{grid-template-columns:repeat(3,1fr)} #sdPad{grid-template-columns:repeat(3,1fr)} #sdPad button{padding:6px 0 2px}
+  #sdHint{padding:8px 10px;font-size:13.5px} #sdHint p{max-height:calc(100vh - 270px);overflow-y:auto;margin:4px 0 6px}
 }''',
  'js': js,
  'gamesEntry': "  { id: 'sd', label: 'Sudoku', emoji: '🔢', bg: ['#4a78a8', '#1c2c3c'], enter: () => Sudoku.enter(), tile: 'tileSd' },\n",

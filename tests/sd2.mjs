@@ -57,7 +57,7 @@ await newGame(p, 'expert');
 const seen = new Set(); let n = 0, multi = 0, problem = '';
 while (n < 81 && !(await ev(p, () => __sd.S.over))) { const r = await oneHint(p); if (r.bad) { problem = r.bad; break; } r.names.forEach(x => seen.add(x.replace(/ in .*| één .*/, ''))); if (r.steps > 1) multi++; n++; }
 ok(!problem && await ev(p, () => __sd.S.over && __sd.S.val.every((v, i) => v === __sd.S.sol[i])), 'expert: helemaal opgelost met alleen hints, elke stap goed', problem || `${n} hints`);
-ok(multi > 0 && [...seen].some(x => /vleugel|Zwaardvis/.test(x)), 'expert: uitleg in meerdere stappen, met een X-vleugel, Y-vleugel of zwaardvis', [...seen].join(', '));
+ok(multi > 0 && [...seen].some(x => /vleugel|Zwaardvis|Wolkenkrabber|Vlieger|Korte ketting|Kleurketen|XY-ketting|Kwal|Viertal/.test(x)), 'expert: uitleg in meerdere stappen, met een expert- of meestertechniek', [...seen].join(', '));
 await wait(p, 1300); if (await ev(p, () => document.getElementById('sdEndModal').classList.contains('show'))) await p.click('#sdEndNew'); await wait(p, 200);
 for (let r = 0; r < 2; r++) {
   await newGame(p, 'meester'); const seen4 = new Set(); let n4 = 0, bad4 = '';
@@ -130,33 +130,65 @@ c = await card(p); ok(c.txt.length > 100, 'meester: uitleg van de meesterstap', 
 await p.screenshot({ path: GFX + 'sd_hint_meester.png' });
 await p.close();
 
-/* ---- Controle: wrong numbers striped red, notes without the right digit framed orange, until changed ---- */
+/* ---- Controle: only filled-in numbers, wrong ones flash red for a moment ---- */
 for (const o of [PORT, LAND]) {
   const nm = o === PORT ? 'staand' : 'liggend';
   p = await page(o); await p.tap('#tileSd'); await wait(p, 300);
   await ev(p, () => { __sd.opt.errors = 'uit'; }); await newGame(p, 'normaal');
-  const vis = await ev(p, () => { const r = document.getElementById('sdCheck').getBoundingClientRect(); return r.width > 40 && r.right <= innerWidth && r.bottom <= innerHeight; });
+  const vis = await ev(p, () => { const r = document.getElementById('sdCheck').getBoundingClientRect(); return r.width > 36 && r.right <= innerWidth && r.bottom <= innerHeight; });
   ok(vis, `${nm}: knop Controle zichtbaar`);
   await p.click('#sdCheck'); await wait(p, 100);
-  ok((await p.textContent('#sdToast')).includes('nog niets'), `${nm}: leeg: nog niets ingevuld`);
+  ok((await p.textContent('#sdToast')).includes('nog geen'), `${nm}: leeg: nog geen cijfers ingevuld`);
   const [g1, g2, w1, n1] = await ev(p, () => { const S = __sd.S, e = []; for (let i = 0; i < 81; i++) if (!S.puz[i]) e.push(i); return e.slice(0, 4); });
   await ev(p, ([g1, g2, w1, n1]) => { const S = __sd.S; __sd.select(g1); __sd.place(S.sol[g1]); __sd.select(g2); __sd.place(S.sol[g2]); __sd.select(w1); __sd.place(S.sol[w1] % 9 + 1);
     __sd.opt.pencil = true; __sd.select(n1); for (const d of [1, 2, 3, 4, 5, 6, 7, 8, 9]) if (d !== S.sol[n1] && (d % 3 === 0 || d === 1)) __sd.place(d); __sd.opt.pencil = false; }, [g1, g2, w1, n1]);
-  await p.click('#sdCheck'); await wait(p, 700);
+  await p.click('#sdCheck'); await wait(p, 400);
   const r = await ev(p, ([g1, w1, n1]) => ({ w: document.querySelector(`.sd-c[data-i="${w1}"]`).className, g: document.querySelector(`.sd-c[data-i="${g1}"]`).className, n: document.querySelector(`.sd-c[data-i="${n1}"]`).className, t: document.getElementById('sdToast').textContent, c: __sd.S.checks }), [g1, w1, n1]);
-  ok(r.w.includes('chk') && !r.g.includes('chk') && r.c === 1, `${nm}: fout cijfer rood gearceerd, goede niet`, r.t);
-  ok(r.n.includes('chkn') && /1 cijfer klopt niet/.test(r.t) && /potlood/.test(r.t), `${nm}: potlood zonder het juiste cijfer oranje omrand, melding klopt`);
+  ok(r.w.includes('chk') && !r.g.includes('chk') && r.c === 1 && /1 cijfer klopt niet/.test(r.t), `${nm}: fout cijfer licht rood op, goede niet`, r.t);
+  ok(!r.n.includes('chk') && !/potlood/.test(r.t), `${nm}: potloodnotities worden niet gecontroleerd`);
   await p.screenshot({ path: GFX + `sd_check_${o === PORT ? 'p' : 'l'}.png` });
-  await ev(p, w1 => { __sd.select(w1); __sd.place(__sd.S.sol[w1]); }, w1); await wait(p, 100);
-  ok(!(await ev(p, i => document.querySelector(`.sd-c[data-i="${i}"]`).classList.contains('chk'), w1)), `${nm}: verbeterd: arcering weg`);
-  await ev(p, n1 => { __sd.select(n1); __sd.erase(); }, n1);
+  await wait(p, 3000);
+  ok(!(await ev(p, i => document.querySelector(`.sd-c[data-i="${i}"]`).className.includes('chk'), w1)), `${nm}: arcering na een paar seconden weg`);
+  ok(await ev(p, () => !('chk' in JSON.parse(localStorage.getItem('sd.save') || '{}'))), `${nm}: niet bewaard`);
+  await ev(p, w1 => { __sd.select(w1); __sd.place(__sd.S.sol[w1]); }, w1);
   await p.click('#sdCheck'); await wait(p, 200);
   ok((await p.textContent('#sdToast')).includes('kloppen'), `${nm}: alles goed: "Alle … cijfers kloppen"`, await p.textContent('#sdToast'));
   if (o === PORT) {
-    const nh = await ev(p, () => __sd.S && JSON.parse(localStorage.getItem('sd.stats') || '{}').noHelp || 0);
+    const nh = await ev(p, () => JSON.parse(localStorage.getItem('sd.stats') || '{}').noHelp || 0);
     await ev(p, () => { const S = __sd.S; for (let i = 0; i < 81; i++) if (S.val[i] !== S.sol[i]) { __sd.select(i); __sd.place(S.sol[i]); } }); await wait(p, 1400);
     ok((await p.textContent('#sdEndText')).includes('gecontroleerd') && (await ev(p, () => JSON.parse(localStorage.getItem('sd.stats')).noHelp || 0)) === nh, 'eindscherm noemt de controle, telt niet als zonder hulp');
   }
+  await p.close();
+}
+
+/* ---- Zaklamp: one digit stays lit ---- */
+for (const o of [PORT, LAND]) {
+  const nm = o === PORT ? 'staand' : 'liggend';
+  p = await page(o); await p.tap('#tileSd'); await wait(p, 300); await newGame(p, 'normaal');
+  const vis = await ev(p, () => { const r = document.getElementById('sdLamp').getBoundingClientRect(); return r.width > 36 && r.right <= innerWidth && r.bottom <= innerHeight; });
+  ok(vis, `${nm}: knop Zaklamp zichtbaar`);
+  const d = await ev(p, () => { const S = __sd.S, c = {}; S.puz.forEach(v => { if (v) c[v] = (c[v] || 0) + 1; }); return +Object.entries(c).sort((a, b) => b[1] - a[1])[0][0]; });
+  await p.tap('#sdLamp'); await wait(p, 100);
+  ok((await p.textContent('#sdLamp small')).includes('Kies') && await ev(p, () => document.querySelectorAll('#sdPad button.lamp').length === 9), `${nm}: zaklamp vraagt om een cijfer`);
+  const before = await ev(p, () => __sd.S.val.join(''));
+  await p.tap(`#sdPad button[data-d="${d}"]`); await wait(p, 150);
+  const st = await ev(p, d => { const S = __sd.S, c = i => document.querySelector(`.sd-c[data-i="${i}"]`).className; let lampOk = true, darkOk = true, litOk = true;
+    for (let i = 0; i < 81; i++) { const v = S.val[i], cl = c(i), blocked = !v && __sd.S.val.some((x, j) => x === d && j !== i && (Math.floor(j / 9) === Math.floor(i / 9) || j % 9 === i % 9 || (Math.floor(j / 27) === Math.floor(i / 27) && Math.floor(j % 9 / 3) === Math.floor(i % 9 / 3))));
+      if (v === d && !cl.includes('lamp')) lampOk = false; if (blocked && !cl.includes('dark')) darkOk = false; if (!v && !blocked && !cl.includes('lit')) litOk = false; }
+    return { lamp: S.lamp, lampOk, darkOk, litOk, badge: document.querySelector('#sdLamp em')?.textContent }; }, d);
+  ok(st.lamp === d && st.lampOk && st.darkOk && st.litOk && st.badge === String(d), `${nm}: cijfer ${d} licht op, plekken waar het kan licht, de rest donker`, JSON.stringify(st));
+  ok((await ev(p, () => __sd.S.val.join(''))) === before, `${nm}: kiezen zet geen cijfer in het rooster`);
+  // stays on while selecting and placing other numbers
+  await ev(p, () => { const S = __sd.S, i = S.puz.findIndex(v => !v); __sd.select(i); __sd.place(S.sol[i]); }); await wait(p, 100);
+  ok(await ev(p, d => __sd.S.lamp === d && document.querySelectorAll('.sd-c.lamp').length >= 1, d), `${nm}: blijft aan bij selecteren en invullen`);
+  await p.screenshot({ path: GFX + `sd_lamp_${o === PORT ? 'p' : 'l'}.png` });
+  // long press on another number: lamp switches
+  const d2 = d % 9 + 1, box = await ev(p, d2 => { const r = document.querySelector(`#sdPad button[data-d="${d2}"]`).getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, d2);
+  const cnt = await ev(p, () => __sd.S.val.join(''));
+  await p.mouse.move(box.x, box.y); await p.mouse.down(); await wait(p, 700); await p.mouse.up(); await wait(p, 150);
+  ok(await ev(p, ([d2, c]) => __sd.S.lamp === d2 && __sd.S.val.join('') === c, [d2, cnt]), `${nm}: cijfer vasthouden zet de zaklamp op dat cijfer`);
+  await p.tap('#sdLamp'); await wait(p, 100);
+  ok(await ev(p, () => !__sd.S.lamp && !document.querySelector('.sd-c.lit, .sd-c.dark')), `${nm}: zaklamp uit`);
   await p.close();
 }
 

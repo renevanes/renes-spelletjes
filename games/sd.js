@@ -439,30 +439,24 @@ const Sudoku = (() => {
     S.val[u.i] = u.val; S.notes[u.i] = u.notes; sel = u.i; sfx('tap'); save(); render();
   }
   function erase() { if (!S || S.over || sel < 0 || fixed(sel)) return; if (!S.val[sel] && !S.notes[sel]) return; undo.push({ i: sel, val: S.val[sel], notes: S.notes[sel] }); S.val[sel] = 0; S.notes[sel] = 0; sfx('tap'); save(); render(); }
-  /* Controle: compare what you filled in with the solution; wrong numbers get red stripes, notes that miss the right digit an orange frame
-     (they stay marked until you change that cell) */
-  let toastT = 0;
+  /* Controle: compare the filled-in numbers with the solution; wrong ones flash red stripes for a moment (not the pencil notes) */
+  let toastT = 0, chkT = 0;
   function toast(t, ms = 2600) { const el = $('#sdToast'); el.textContent = t; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), ms); }
+  const CHK_MS = 3000;
+  function clearCheck() { clearTimeout(chkT); if (chkMarks) { chkMarks = null; render(); } }
+  let chkMarks = null;
   function check() {
     if (!S || S.over) return;
     if (HX) closeHint();
-    const bad = [], miss = []; let filled = 0, noted = 0;
-    for (let i = 0; i < 81; i++) {
-      if (fixed(i)) continue;
-      if (S.val[i]) { filled++; if (S.val[i] !== S.sol[i]) bad.push(i); }
-      else if (S.notes[i]) { noted++; if (!(S.notes[i] & BIT(S.sol[i]))) miss.push(i); }
-    }
-    if (!filled && !noted) { toast('Je hebt nog niets ingevuld.'); sfx('tap'); return; }
-    S.checks = (S.checks || 0) + 1; S.chk = {}; S.chkN = {};
-    for (const i of bad) S.chk[i] = S.val[i];
-    for (const i of miss) S.chkN[i] = S.notes[i];
-    const parts = [];
-    if (bad.length) parts.push(`⚠️ ${bad.length} ${bad.length === 1 ? 'cijfer klopt' : 'cijfers kloppen'} niet (rood gearceerd)`);
-    else if (filled) parts.push(`✓ Alle ${filled} ingevulde ${filled === 1 ? 'cijfer klopt' : 'cijfers kloppen'}`);
-    if (miss.length) parts.push(`bij ${miss.length} ${miss.length === 1 ? 'vakje mist' : 'vakjes mist'} het juiste cijfer in je potlood (oranje)`);
-    else if (noted && !bad.length) parts.push('je potloodnotities zijn goed');
-    toast(parts.join(' · ').replace(/^(.)/, c => c.toUpperCase()), 3600);
-    if (bad.length || miss.length) { sfx('sdError'); vibrate(30); flash([...bad, ...miss]); } else sfx('sdLine');
+    const bad = []; let filled = 0;
+    for (let i = 0; i < 81; i++) if (!fixed(i) && S.val[i]) { filled++; if (S.val[i] !== S.sol[i]) bad.push(i); }
+    if (!filled) { toast('Je hebt nog geen cijfers ingevuld.'); sfx('tap'); return; }
+    S.checks = (S.checks || 0) + 1;
+    if (bad.length) {
+      chkMarks = {}; for (const i of bad) chkMarks[i] = S.val[i];
+      toast(`⚠️ ${bad.length} ${bad.length === 1 ? 'cijfer klopt' : 'cijfers kloppen'} niet`, CHK_MS);
+      sfx('sdError'); vibrate(30); clearTimeout(chkT); chkT = setTimeout(clearCheck, CHK_MS);
+    } else { chkMarks = null; toast(`✓ Alle ${filled} ingevulde ${filled === 1 ? 'cijfer klopt' : 'cijfers kloppen'}`, 2400); sfx('sdLine'); }
     save(); render();
   }
 
@@ -551,23 +545,24 @@ const Sudoku = (() => {
   function render() {
     if (!S) return;
     if (board.children.length !== 81) build();
-    const sv = sel >= 0 ? S.val[sel] : 0, showErr = opt.errors === 'direct';
+    const sv = sel >= 0 ? S.val[sel] : 0, showErr = opt.errors === 'direct', lamp = !HX && S.lamp ? S.lamp : 0;
     const hs = HX ? HX.steps[HX.k] : null, H = hs ? hs.hl || {} : null, set = k => new Set(H && H[k] || []);
     const hUnit = set('unit'), hRay = set('ray'), hSrc = set('src'), hPat = set('pat'), hNo = set('no'), hTgt = set('tgt'), hEl = new Map(), cA = new Set(hs && hs.color ? hs.color.a : []), cB = new Set(hs && hs.color ? hs.color.b : []);
     if (hs) for (const [i, d] of hs.elim || []) hEl.set(i, (hEl.get(i) || 0) | BIT(d));
     for (let i = 0; i < 81; i++) {
       const el = board.children[i], v = S.val[i], peer = sel >= 0 && i !== sel && (ROW(i) === ROW(sel) || COL(i) === COL(sel) || BOX(i) === BOX(sel));
-      let cls = 'sd-c' + (COL(i) % 3 === 2 && COL(i) < 8 ? ' br' : '') + (ROW(i) % 3 === 2 && ROW(i) < 8 ? ' bb' : '') + (fixed(i) ? ' given' : v ? ' user' : '') + (H ? (hTgt.has(i) ? ' hx-tgt' : cA.has(i) ? ' hx-blue' : cB.has(i) ? ' hx-green' : hSrc.has(i) ? ' hx-src' : hPat.has(i) ? ' hx-pat' : hEl.has(i) ? ' hx-el' : hUnit.has(i) ? ' hx-unit' : hRay.has(i) ? ' hx-ray' : '') + (hNo.has(i) ? ' hx-no' : '') : '') + (H ? '' : i === sel ? ' sel' : peer ? ' peer' : '') + (!H && v && sv && v === sv && i !== sel ? ' same' : '') + (v && !fixed(i) && ((showErr && wrong(i)) || conflict(i)) ? ' bad' : '');
+      let cls = 'sd-c' + (COL(i) % 3 === 2 && COL(i) < 8 ? ' br' : '') + (ROW(i) % 3 === 2 && ROW(i) < 8 ? ' bb' : '') + (fixed(i) ? ' given' : v ? ' user' : '') + (H ? (hTgt.has(i) ? ' hx-tgt' : cA.has(i) ? ' hx-blue' : cB.has(i) ? ' hx-green' : hSrc.has(i) ? ' hx-src' : hPat.has(i) ? ' hx-pat' : hEl.has(i) ? ' hx-el' : hUnit.has(i) ? ' hx-unit' : hRay.has(i) ? ' hx-ray' : '') + (hNo.has(i) ? ' hx-no' : '') : '') + (H ? '' : i === sel ? ' sel' : peer && !lamp ? ' peer' : '') + (!H && !lamp && v && sv && v === sv && i !== sel ? ' same' : '') + (v && !fixed(i) && ((showErr && wrong(i)) || conflict(i)) ? ' bad' : '');
       if (el.classList.contains('flash')) cls += ' flash';
-      if (!H && S.chk && v && S.chk[i] === v) cls += ' chk';
-      else if (!H && S.chkN && !v && S.notes[i] && S.chkN[i] === S.notes[i]) cls += ' chkn';
+      if (lamp) cls += v === lamp ? ' lamp' : v ? '' : PEERS[i].some(j => S.val[j] === lamp) ? ' dark' : ' lit';
+      if (!H && chkMarks && v && chkMarks[i] === v) cls += ' chk';
       if (el.className !== cls) el.className = cls;
       const cm = hs && hs.cand && !v && hs.cand0 ? hs.cand0[i] : 0, key = new Set(hs && hs.keyD || []);
-      const html = v ? String(v) : cm ? `<span class="sd-n hx">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(d => !(cm & BIT(d)) ? '<i></i>' : `<i class="${(hEl.get(i) || 0) & BIT(d) ? 'del' : hs.place && hs.place[0] === i && hs.place[1] === d ? 'ok' : (hPat.has(i) || hTgt.has(i)) && key.has(d) ? 'key' : ''}">${d}</i>`).join('')}</span>` : hs && hs.place && hs.place[0] === i ? `<span class="sd-ghost">${hs.place[1]}</span>` : S.notes[i] ? `<span class="sd-n">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(d => `<i${S.notes[i] & (1 << d) ? (sv === d ? ' class="hl"' : '') + '>' + d : '>'}</i>`).join('')}</span>` : '';
+      const html = v ? String(v) : cm ? `<span class="sd-n hx">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(d => !(cm & BIT(d)) ? '<i></i>' : `<i class="${(hEl.get(i) || 0) & BIT(d) ? 'del' : hs.place && hs.place[0] === i && hs.place[1] === d ? 'ok' : (hPat.has(i) || hTgt.has(i)) && key.has(d) ? 'key' : ''}">${d}</i>`).join('')}</span>` : hs && hs.place && hs.place[0] === i ? `<span class="sd-ghost">${hs.place[1]}</span>` : S.notes[i] ? `<span class="sd-n">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(d => `<i${S.notes[i] & (1 << d) ? (d === lamp ? ' class="lp"' : sv === d ? ' class="hl"' : '') + '>' + d : '>'}</i>`).join('')}</span>` : '';
       if (el._h !== html) { el.innerHTML = html; el._h = html; }
     }
     const left = d => 9 - S.val.reduce((n, v, i) => n + (v === d && (!showErr || v === S.sol[i]) ? 1 : 0), 0);
-    pad.querySelectorAll('button').forEach(b => { const d = +b.dataset.d, l = left(d); b.querySelector('small').textContent = l > 0 ? l : ''; b.classList.toggle('done', l <= 0); b.classList.toggle('hl', sv === d); });
+    pad.querySelectorAll('button').forEach(b => { const d = +b.dataset.d, l = left(d); b.querySelector('small').textContent = l > 0 ? l : ''; b.classList.toggle('done', l <= 0); b.classList.toggle('hl', sv === d); b.classList.toggle('lamp', lamp === d || (lampPick && !HX)); });
+    const lb = $('#sdLamp'); lb.classList.toggle('on', !!S.lamp || lampPick); lb.querySelector('b').innerHTML = S.lamp ? `🔦<em>${S.lamp}</em>` : '🔦'; lb.querySelector('small').textContent = lampPick ? 'Kies cijfer' : 'Zaklamp';
     $('#sdPencil').classList.toggle('on', opt.pencil); $('#sdPencil').querySelector('small').textContent = opt.pencil ? 'Potlood aan' : 'Potlood';
     $('#sdLvl').textContent = LEVELS[S.lvl].name; $('#sdMist').textContent = S.mistakes; $('#sdMistW').hidden = opt.errors !== 'direct';
     hudTime(true);
@@ -583,13 +578,28 @@ const Sudoku = (() => {
 
   /* ---------- input ---------- */
   board.addEventListener('pointerdown', e => { const c = e.target.closest('.sd-c'); if (!c || !S) return; if (HX) closeHint(); sel = +c.dataset.i; render(); });
-  pad.addEventListener('click', e => { const b = e.target.closest('button[data-d]'); if (b) place(+b.dataset.d); });
+  /* Zaklamp: one digit stays lit. Its cells glow, the empty cells where it can still go are light, the others dark */
+  let lampPick = false, lpT = 0, lpDone = false;
+  function setLamp(d) { if (!S) return; lampPick = false; S.lamp = S.lamp === d ? 0 : d; sfx('tap'); vibrate(12); toast(S.lamp ? `🔦 Zaklamp op de ${d}: lichte vakjes zijn de plekken waar de ${d} nog kan` : 'Zaklamp uit', 2200); save(); render(); }
+  function lampButton() {
+    if (!S || S.over) return;
+    if (HX) closeHint();
+    if (S.lamp || lampPick) { lampPick = false; S.lamp = 0; toast('Zaklamp uit', 1400); }
+    else { lampPick = true; toast('Tik op het cijfer dat je wilt blijven zien', 2400); }
+    sfx('tap'); save(); render();
+  }
+  pad.addEventListener('pointerdown', e => { const b = e.target.closest('button[data-d]'); if (!b) return; lpDone = false; clearTimeout(lpT); lpT = setTimeout(() => { lpDone = true; setLamp(+b.dataset.d); }, 500); });
+  const lpCancel = () => clearTimeout(lpT);
+  pad.addEventListener('pointerup', lpCancel); pad.addEventListener('pointercancel', lpCancel); pad.addEventListener('pointerleave', lpCancel);
+  pad.addEventListener('contextmenu', e => e.preventDefault());
+  pad.addEventListener('click', e => { const b = e.target.closest('button[data-d]'); if (!b) return; if (lpDone) { lpDone = false; return; } if (lampPick) { setLamp(+b.dataset.d); return; } place(+b.dataset.d); });
   $('#sdTools').addEventListener('click', e => {
     const b = e.target.closest('button[data-t]'); if (!b) return;
     const t = b.dataset.t;
     if (t === 'undo') doUndo(); else if (t === 'erase') erase(); else if (t === 'hint') hint();
     else if (t === 'pencil') { opt.pencil = !opt.pencil; saveOpt(); sfx('tap'); render(); }
     else if (t === 'check') check();
+    else if (t === 'lamp') lampButton();
   });
   window.addEventListener('keydown', e => {
     if (current !== 'sd' || anyModal() || !S) return;
@@ -614,13 +624,13 @@ const Sudoku = (() => {
   function enter() {
     show('sd');
     const saved = store.get('sd.save', null);
-    if (!S && saved && saved.sol) S = saved;
+    if (!S && saved && saved.sol) { S = saved; delete S.chk; delete S.chkN; }
     build(); if (S) render();
     clearInterval(timer); timer = setInterval(tick, 250);
     if (!S || S.over) { renderStart(); openModal('sdStartModal'); }
   }
   function leave() { closeHint(); clearInterval(timer); save(); closeModals(); show('menu'); refreshMenu(); }
-  window.__sd = { get S() { return S; }, get HX() { return HX; }, newGame, place, hint, check, closeHint, erase, doUndo, select: i => { sel = i; render(); }, solve, generate, grade, hintSteps, mkState, opt };
+  window.__sd = { get S() { return S; }, get HX() { return HX; }, newGame, place, hint, check, setLamp, lampButton, closeHint, erase, doUndo, select: i => { sel = i; render(); }, solve, generate, grade, hintSteps, mkState, opt };
   return { enter, leave, back: () => { if (HX) { closeHint(); return; } leave(); }, hasSave: () => !!store.get('sd.save', null) };
 })();
 $('#tileSd').addEventListener('click', () => Sudoku.enter());

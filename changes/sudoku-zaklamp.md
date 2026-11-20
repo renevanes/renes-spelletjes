@@ -1,0 +1,1 @@
+Sudoku: nieuwe **Zaklamp**. Kies een cijfer (of houd het op het toetsenbord vast) en het blijft oplichten. Lichte vakjes zijn de plekken waar het cijfer nog kan, donkere vakjes vallen af. **Controle** kijkt nu alleen naar ingevulde cijfers, en foute cijfers lichten nog maar even rood op.
