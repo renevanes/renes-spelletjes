@@ -1,11 +1,11 @@
 {
-  "versionCode": 81,
-  "versionName": "1.80",
+  "versionCode": 82,
+  "versionName": "1.81",
   "nativeLevel": 12,
-  "notes": "Sudoku: een hint legt nu stap voor stap uit **waarom** een cijfer klopt, met de techniek erbij (enige plek, tweetal, vast in \u00e9\u00e9n blok, X-vleugel, Y-vleugel en meer) en het rooster gekleurd zodat je het ziet. Alle puzzels zijn zo op te lossen, er is een nieuw niveau **Expert** en in het startscherm staat uitleg over de technieken.",
+  "notes": "Sudoku: nieuw niveau **Meester** met de moeilijkste puzzels, die je oplost met wolkenkrabbers, vliegers, kleurketens, W- en XYZ-vleugels en XY-kettingen. Ook die stappen legt de hint uit, en Expert is pittiger geworden.",
   "web": "web/index.html",
-  "webSha256": "9ac92259428560b3960b7497c406fcf689fbe3a285654b72087fd1d6a01afc61",
-  "webSig": "MEUCIQDRNx/6bwWifyDnqcXCvUtVT283HkyJ8BOJnAxnkuthdAIgFzBqlbDs75ZhVW8/00bC+98lUToFa6CLHqQ0l4xaEQY=",
+  "webSha256": "cc8fb98acf94925891a1159b20506c89cefb89cd66facfb7e61cda967e27aebd",
+  "webSig": "MEUCIQDq0U1Kur0gPlkV/z3g4D5ezBa9bEB+sCFQiEoDb7Q4kwIgRmDV6tzOgv2THI8mle6E1Rt2HITL4LVayCYi+E7+sb4=",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "157e7255acef0f79f0480b8faf45ec752ee5481ed6800a979dae8c05fceca91c"

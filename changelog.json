@@ -403,5 +403,10 @@
   "v": "1.80",
   "date": "2026-11-20",
   "notes": "Sudoku: een hint legt nu stap voor stap uit **waarom** een cijfer klopt, met de techniek erbij (enige plek, tweetal, vast in één blok, X-vleugel, Y-vleugel en meer) en het rooster gekleurd zodat je het ziet. Alle puzzels zijn zo op te lossen, er is een nieuw niveau **Expert** en in het startscherm staat uitleg over de technieken."
+ },
+ {
+  "v": "1.81",
+  "date": "2026-11-20",
+  "notes": "Sudoku: nieuw niveau **Meester** met de moeilijkste puzzels, die je oplost met wolkenkrabbers, vliegers, kleurketens, W- en XYZ-vleugels en XY-kettingen. Ook die stappen legt de hint uit, en Expert is pittiger geworden."
  }
 ]
