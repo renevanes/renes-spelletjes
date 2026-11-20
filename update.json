@@ -1,11 +1,11 @@
 {
-  "versionCode": 83,
-  "versionName": "1.82",
+  "versionCode": 84,
+  "versionName": "1.83",
   "nativeLevel": 12,
-  "notes": "Sudoku: nieuwe knop **Controle**. Die kijkt of je ingevulde cijfers kloppen en arceert foute cijfers in rood. Staat in je potloodnotities het juiste cijfer niet meer, dan krijgt dat vakje een oranje rand. De markering verdwijnt zodra je het vakje verandert.",
+  "notes": "Sudoku: nieuwe **Zaklamp**. Kies een cijfer (of houd het op het toetsenbord vast) en het blijft oplichten. Lichte vakjes zijn de plekken waar het cijfer nog kan, donkere vakjes vallen af. **Controle** kijkt nu alleen naar ingevulde cijfers, en foute cijfers lichten nog maar even rood op.",
   "web": "web/index.html",
-  "webSha256": "e7c4388b73bd87e5134805006bbb2275f6d7f7989ad82e0af27e72b1072e4cf0",
-  "webSig": "MEQCIEO1DRK0CaDS3JMYWuUlkRQQGcMaGVmZyOScMkG4y/h5AiA/1LOO6Gf5+79mOfsDTsUf3JrtTKafa6Cs3RzZXnfuxw==",
+  "webSha256": "c32e3d7bb2f161cf58b0671ef6308dba568c3a8e47c5dbb04cd3823b310335d4",
+  "webSig": "MEMCIG9vm7yqcRULGA+MGc2aztz2vYuYDkIAqn1OMDmXr3oWAh8CcR1Bk7JZFpAtQUjn5qrqINpIwl4fnXYNf7oaWZgE",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "157e7255acef0f79f0480b8faf45ec752ee5481ed6800a979dae8c05fceca91c"
