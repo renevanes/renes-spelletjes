@@ -1,0 +1,129 @@
+// Sudoku: hints that explain why (step by step, with the technique), graded puzzles per level, the expert level.
+//   node tests/sd2.mjs            (APP_HTML=… to test another file)
+import { existsSync, mkdirSync } from 'node:fs';
+import { chromium } from 'playwright';
+const APP = process.env.APP_HTML || new URL('../build/web/index.html', import.meta.url).pathname;
+const GFX = new URL('../build/gfx/', import.meta.url).pathname; mkdirSync(GFX, { recursive: true });
+const b = await chromium.launch({ executablePath: process.env.PW_CHROMIUM || (existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : undefined) });
+let fails = 0; const errs = [];
+const ok = (c, m, x = '') => { console.log((c ? 'PASS ' : 'FAIL ') + m + (x !== '' ? ' ' + x : '')); if (!c) fails++; };
+const PORT = { viewport: { width: 412, height: 915 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
+const LAND = { viewport: { width: 915, height: 412 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
+async function page(o) {
+  const p = await (await b.newContext(o)).newPage();
+  p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+  await p.addInitScript(() => { if (!sessionStorage.getItem('i')) { localStorage.clear(); localStorage.setItem('app.cfg', '{"seen":"9.99","mute":true}'); sessionStorage.setItem('i', 1); } });
+  await p.goto('file://' + APP); await p.waitForTimeout(400); return p;
+}
+const ev = (p, f, a) => p.evaluate(f, a), wait = (p, ms) => p.waitForTimeout(ms);
+async function newGame(p, lvl) {
+  await ev(p, l => { window.__sdT = performance.now(); __sd.newGame(l); }, lvl);
+  for (let k = 0; k < 400 && await ev(p, l => !__sd.S || __sd.S.lvl !== l || document.getElementById('sdBoard').classList.contains('busy'), lvl); k++) await wait(p, 25);
+  return ev(p, () => Math.round(performance.now() - window.__sdT));
+}
+const card = p => ev(p, () => { const h = document.getElementById('sdHint'); return { on: document.getElementById('sd').classList.contains('hinting'), txt: h.textContent, btns: [...h.querySelectorAll('button')].map(b => b.dataset.h) }; });
+const click = (p, h) => p.click(`#sdHint button[data-h="${h}"]`);
+// one full hint: open, read every step, apply. Returns what happened.
+async function oneHint(p) {
+  await p.click('#sdTools [data-t="hint"]'); await wait(p, 60);
+  const names = [];
+  for (let k = 0; k < 20; k++) {
+    const c = await card(p); names.push(await ev(p, () => __sd.HX && __sd.HX.steps[__sd.HX.k].name));
+    if (/undefined|NaN|\[object/.test(c.txt) || c.txt.length < 40) return { bad: 'tekst: ' + c.txt };
+    if (c.btns.includes('next')) { await click(p, 'next'); await wait(p, 30); continue; }
+    const fin = await ev(p, () => { const s = __sd.HX.steps[__sd.HX.steps.length - 1]; return s.place ? { i: s.place[0], d: s.place[1] } : null; });
+    await click(p, 'go'); await wait(p, 40);
+    if (fin) { const v = await ev(p, i => [__sd.S.val[i], __sd.S.sol[i]], fin.i); if (v[0] !== v[1]) return { bad: 'fout ingevuld' }; }
+    return { names, steps: names.length };
+  }
+  return { bad: 'te veel stappen' };
+}
+
+/* ---- 1. levels: graded puzzles, quick enough ---- */
+let p = await page(PORT);
+await p.tap('#tileSd'); await wait(p, 300);
+const lv = await ev(p, () => [...document.querySelectorAll('#sdLevels button')].map(b => b.dataset.lvl));
+ok(lv.join() === 'makkelijk,normaal,moeilijk,expert', 'vier niveaus, met Expert', lv.join());
+for (const [lvl, want] of [['makkelijk', g => g.ok && g.lvl === 1], ['normaal', g => g.ok && g.lvl <= 2], ['moeilijk', g => g.ok && g.lvl >= 2], ['expert', g => g.ok && g.lvl === 3]]) {
+  const ms = [], gs = [];
+  for (let k = 0; k < 4; k++) { ms.push(await newGame(p, lvl)); gs.push(await ev(p, () => __sd.grade(__sd.S.puz))); }
+  ok(gs.every(want), `${lvl}: elke puzzel is met uit te leggen stappen op te lossen en past bij het niveau`, JSON.stringify(gs.map(g => g.lvl + (g.ok ? '' : '!'))));
+  ok(Math.max(...ms) < 4000, `${lvl}: maken duurt kort`, ms.join('/') + ' ms');
+  ok(await ev(p, () => __sd.S.sol.every((v, i) => !__sd.S.puz[i] || __sd.S.puz[i] === v) && __sd.solve(__sd.S.puz.slice(), 2).count === 1), `${lvl}: precies één oplossing`);
+}
+
+/* ---- 2. a hard puzzle solved with nothing but hints: every step explained and right ---- */
+await newGame(p, 'expert');
+const seen = new Set(); let n = 0, multi = 0, problem = '';
+while (n < 81 && !(await ev(p, () => __sd.S.over))) { const r = await oneHint(p); if (r.bad) { problem = r.bad; break; } r.names.forEach(x => seen.add(x.replace(/ in .*| één .*/, ''))); if (r.steps > 1) multi++; n++; }
+ok(!problem && await ev(p, () => __sd.S.over && __sd.S.val.every((v, i) => v === __sd.S.sol[i])), 'expert: helemaal opgelost met alleen hints, elke stap goed', problem || `${n} hints`);
+ok(multi > 0 && [...seen].some(x => /vleugel|Zwaardvis/.test(x)), 'expert: uitleg in meerdere stappen, met een X-vleugel, Y-vleugel of zwaardvis', [...seen].join(', '));
+await wait(p, 1300); if (await ev(p, () => document.getElementById('sdEndModal').classList.contains('show'))) await p.click('#sdEndNew'); await wait(p, 200);
+
+/* ---- 3. a wrong number: the hint says so first, and can take it away ---- */
+await newGame(p, 'moeilijk');
+const e = await ev(p, () => { const S = __sd.S, i = S.puz.findIndex(v => !v); __sd.select(i); __sd.place(S.sol[i] % 9 + 1); return i; });
+await p.click('#sdTools [data-t="hint"]'); await wait(p, 60);
+let c = await card(p);
+ok(c.on && c.txt.includes('klopt niet') && c.btns.includes('go'), 'fout cijfer: de hint wijst het eerst aan', c.txt.slice(0, 80));
+await click(p, 'go'); await wait(p, 60);
+ok(await ev(p, i => __sd.S.val[i] === 0 && !document.getElementById('sd').classList.contains('hinting'), e), 'weghalen werkt');
+
+/* ---- 4. a selected cell: explain that cell when it can be done in one step ---- */
+const pick = await ev(p, () => { const S = __sd.S, st = __sd.mkState(S.val.slice(), S.elim); for (let i = 0; i < 81; i++) if (!S.val[i]) { const h = __sd.hintSteps(S.val, S.elim, i); if (h.steps.length === 1 && h.steps[0].place[0] === i) return i; } return -1; });
+await ev(p, i => __sd.select(i), pick); await p.click('#sdTools [data-t="hint"]'); await wait(p, 60);
+ok(pick >= 0 && await ev(p, i => __sd.HX.steps.at(-1).place[0] === i, pick), 'gekozen vakje: de hint gaat over dat vakje');
+await p.screenshot({ path: GFX + 'sd_hint_single.png' });
+ok(await ev(p, () => window.appBack()) && await ev(p, () => !__sd.HX && document.querySelector('.screen.active').id === 'sd'), 'terugknop sluit eerst de hint');
+
+/* ---- 5. find an advanced step and look at it (portrait and landscape) ---- */
+async function toAdvanced(p) {
+  await newGame(p, 'expert');
+  for (let k = 0; k < 81; k++) {
+    const adv = await ev(p, () => { const S = __sd.S, h = __sd.hintSteps(S.val, S.elim, null); return h.steps.some(s => s.lvl === 3); });
+    if (adv) return true;
+    await ev(p, () => { const S = __sd.S, h = __sd.hintSteps(S.val, S.elim, null); for (const s of h.steps) for (const [i, d] of s.elim || []) S.elim[i] |= 1 << d; const s = h.steps.at(-1); if (s && s.place) { __sd.select(s.place[0]); __sd.place(s.place[1]); } });
+  }
+  return false;
+}
+ok(await toAdvanced(p), 'staand: een moeilijke stap gevonden');
+await ev(p, () => __sd.select(-1)); await p.click('#sdTools [data-t="hint"]'); await wait(p, 80);
+let k3 = await ev(p, () => __sd.HX.steps.findIndex(s => s.lvl === 3));
+for (let k = 0; k < k3; k++) { await click(p, 'next'); await wait(p, 30); }
+c = await card(p);
+const look = await ev(p, () => ({ del: document.querySelectorAll('#sdBoard .sd-n.hx i.del').length, pat: document.querySelectorAll('#sdBoard .hx-pat').length, pad: getComputedStyle(document.getElementById('sdPad')).display, fit: document.getElementById('sdHint').getBoundingClientRect().bottom <= innerHeight + 1 }));
+ok(look.del > 0 && look.pat >= 3 && look.pad === 'none' && look.fit, 'staand: patroon geel, af te strepen cijfers rood, uitleg past op het scherm', JSON.stringify(look));
+ok(/Stap \d van \d/.test(c.txt), 'staand: stappen genummerd', c.txt.slice(0, 60));
+await p.screenshot({ path: GFX + 'sd_hint_adv.png' });
+if (c.btns.includes('next')) { await click(p, 'next'); await wait(p, 40); }
+await p.screenshot({ path: GFX + 'sd_hint_adv2.png' });
+// close half way: the explained eliminations are kept (they are true) and saved
+const elim0 = await ev(p, () => __sd.S.elim.reduce((a, m) => a + (m ? 1 : 0), 0));
+await click(p, 'x'); await wait(p, 60);
+const elim1 = await ev(p, () => __sd.S.elim.reduce((a, m) => a + (m ? 1 : 0), 0));
+ok(elim1 > elim0 && await ev(p, () => __sd.S.elim.every((m, i) => !(m & (1 << __sd.S.sol[i])))), 'sluiten: uitgelegde afstrepingen blijven, nooit het juiste cijfer', `${elim0} -> ${elim1}`);
+await ev(p, () => window.appBack()); await wait(p, 200); await p.tap('#tileSd'); await wait(p, 300);
+ok(await ev(p, n => __sd.S.elim.reduce((a, m) => a + (m ? 1 : 0), 0) === n, elim1), 'opgeslagen en terug: afstrepingen bewaard');
+await p.close();
+
+p = await page(LAND);
+await p.tap('#tileSd'); await wait(p, 300);
+ok(await toAdvanced(p), 'liggend: een moeilijke stap gevonden');
+await p.click('#sdTools [data-t="hint"]'); await wait(p, 80);
+k3 = await ev(p, () => __sd.HX.steps.findIndex(s => s.lvl === 3)); for (let k = 0; k < k3; k++) { await click(p, 'next'); await wait(p, 30); }
+const lk = await ev(p, () => { const h = document.getElementById('sdHint').getBoundingClientRect(), bd = document.getElementById('sdBoard').getBoundingClientRect(); return { fit: h.bottom <= innerHeight + 1 && h.right <= innerWidth + 1, side: h.left >= bd.right - 1, sw: document.documentElement.scrollWidth <= innerWidth }; });
+ok(lk.fit && lk.side && lk.sw, 'liggend: uitleg naast het bord, past', JSON.stringify(lk));
+await p.screenshot({ path: GFX + 'sd_hint_land.png' });
+await p.close();
+
+/* ---- 6. the start dialog explains the techniques ---- */
+p = await page(PORT); await p.tap('#tileSd'); await wait(p, 300);
+await p.click('.sd-tech summary'); await wait(p, 100);
+ok((await p.textContent('.sd-tech')).includes('X-vleugel') && await ev(p, () => document.querySelector('.sd-tech').open), 'startscherm: uitleg van de technieken');
+await p.screenshot({ path: GFX + 'sd_tech.png', fullPage: false });
+await p.close();
+
+ok(errs.length === 0, 'geen fouten in de console', JSON.stringify(errs.slice(0, 3)));
+await b.close();
+console.log(fails ? fails + ' mislukt' : 'ALL PASS');
+process.exit(fails ? 1 : 0);

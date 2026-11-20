@@ -21,7 +21,8 @@ g = {
   <div id="sdWrap">
     <div id="sdBoard"></div>
     <div id="sdSide">
-      <div id="sdTools"><button data-t="undo"><b>↶</b><small>Terug</small></button><button data-t="erase"><b>⌫</b><small>Wissen</small></button><button data-t="pencil" id="sdPencil"><b>✎</b><small>Uit</small></button><button data-t="hint"><b>💡</b><small>Hint</small></button></div>
+      <div id="sdTools"><button data-t="undo"><b>↶</b><small>Terug</small></button><button data-t="erase"><b>⌫</b><small>Wissen</small></button><button data-t="pencil" id="sdPencil"><b>✎</b><small>Potlood</small></button><button data-t="hint"><b>💡</b><small>Hint</small></button></div>
+      <div id="sdHint" aria-live="polite"></div>
       <div id="sdPad"></div>
     </div>
   </div>
@@ -32,6 +33,21 @@ g = {
     <h3>🔢 Sudoku</h3>
     <p class="note" style="color:var(--muted);margin-top:0">Vul elk vakje zo dat in elke rij, elke kolom en elk blok van 3×3 de cijfers 1 tot en met 9 precies één keer staan. Tik een vakje aan en kies een cijfer. Met ✎ zet je kleine potloodnotities. Elke puzzel heeft precies één oplossing.</p>
     <div class="ms-levels" id="sdLevels"></div>
+    <details class="sd-tech"><summary>Uitleg: zo los je het op</summary>
+      <p>Een vakje heet bijvoorbeeld <b>R4K7</b>: rij 4 (van boven), kolom 7 (van links). Een <b>blok</b> is een vierkant van 3×3. Vraag je een hint, dan zie je stap voor stap waarom het klopt.</p>
+      <ul>
+        <li><b>Laatste vakje</b> – in een rij, kolom of blok is nog maar één vakje leeg: daar komt het cijfer dat nog ontbreekt.</li>
+        <li><b>Enige plek</b> – kijk per cijfer: in een blok (of rij, of kolom) kan het cijfer maar op één plek, omdat de andere plekken al een rij, kolom of blok met dat cijfer hebben.</li>
+        <li><b>Enige cijfer dat past</b> – in één vakje vallen alle cijfers af behalve één.</li>
+        <li><b>Vast in één rij of kolom</b> – kan een cijfer in een blok alleen in één rij staan, dan kan het in de rest van die rij niet meer.</li>
+        <li><b>Vast in één blok</b> – kan een cijfer in een rij alleen in één blok staan, dan kan het in de rest van dat blok niet meer.</li>
+        <li><b>Tweetal / drietal</b> – twee vakjes in een rij, kolom of blok die allebei alleen 3 of 8 kunnen worden: dan krijgen die twee de 3 en de 8, en de andere vakjes niet.</li>
+        <li><b>Verborgen tweetal</b> – twee cijfers die maar op dezelfde twee plekken kunnen: die vakjes zijn voor die cijfers, andere cijfers vallen daar af.</li>
+        <li><b>X-vleugel</b> – kan een cijfer in twee rijen alleen in dezelfde twee kolommen, dan staan de twee in die kolommen al vast: in de rest van die kolommen kan het niet meer. Met drie rijen heet dat een <b>zwaardvis</b>.</li>
+        <li><b>Y-vleugel</b> – een vakje met 2 mogelijkheden (A of B) en twee “vleugels” met A of C en B of C: één van de vleugels wordt zeker C, dus een vakje dat beide vleugels ziet kan geen C zijn.</li>
+      </ul>
+      <p>Tip: zet met ✎ potloodnotities. Bij moeilijke stappen laat de hint alle mogelijke cijfers zien, met de cijfers die afvallen in het rood.</p>
+    </details>
     <div id="sdOptList"></div>
     <div class="stats" id="sdStats"></div>
     <div class="row sticky-actions"><button class="btn" id="sdStartBack">Menu</button><button class="btn" id="sdResume" hidden>Verder</button><button class="btn primary" id="sdGo">Nieuw spel ▶</button></div>
@@ -68,6 +84,18 @@ g = {
 #sdTools button{background:rgba(255,255,255,.1);border:2px solid transparent;border-radius:14px;color:var(--ink);padding:6px 0 4px;display:flex;flex-direction:column;align-items:center;gap:1px;-webkit-tap-highlight-color:transparent}
 #sdTools button b{font-size:20px;line-height:1.1} #sdTools button small{font-size:11px;color:var(--muted)}
 #sdTools button.on{border-color:var(--accent);background:rgba(242,193,78,.2)}
+#sdHint{display:none;background:#fbf7ec;color:#2b2418;border-radius:14px;padding:10px 12px 10px;box-shadow:0 4px 14px rgba(0,0,0,.35);font-size:14.5px;line-height:1.4}
+#sd.hinting #sdHint{display:block} #sd.hinting #sdPad{display:none}
+#sdHint p{margin:6px 0 8px} .sd-hh{display:flex;align-items:center;gap:8px;flex-wrap:wrap} .sd-hh b{font-size:16px;color:#1d3a6e}
+.sd-hstep{font-size:11.5px;font-weight:700;background:#1d3a6e;color:#fff;border-radius:9px;padding:1px 8px}
+.sd-hb{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap} .sd-hb button{border:0;border-radius:11px;padding:8px 14px;font-weight:700;font-size:14px;background:#e6dfcc;color:#2b2418} .sd-hb button.go{background:#2a9d6f;color:#fff}
+.sd-c.hx-unit{background:#dfeaf8} .sd-c.hx-ray{background:#f6e1dc} .sd-c.hx-src{background:#ffd9b0;box-shadow:inset 0 0 0 3px #f08a24}
+.sd-c.hx-pat{background:#ffe68a;box-shadow:inset 0 0 0 2px #e0b520} .sd-c.hx-el{background:#fde8e8} .sd-c.hx-tgt{background:#c8f2cc;box-shadow:inset 0 0 0 3px #2a9d6f}
+.sd-c.hx-no::after{content:'✕';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(211,38,58,.55);font-size:calc(var(--s) / 16);font-weight:700;pointer-events:none}
+.sd-n.hx{color:#5e6878} .sd-n i.del{color:#d3263a;background:#ffd0d0;text-decoration:line-through;font-weight:800} .sd-n i.key{color:#1d3a6e;font-weight:800} .sd-n i.ok{background:#2a9d6f;color:#fff;font-weight:800}
+.sd-ghost{color:#2a9d6f;font-weight:800;opacity:.85}
+.sd-tech{background:rgba(255,255,255,.06);border-radius:12px;padding:8px 12px;margin:8px 0;font-size:14px;line-height:1.45} .sd-tech summary{font-weight:700;cursor:pointer} .sd-tech ul{padding-left:18px;margin:6px 0} .sd-tech li{margin:4px 0}
+html.big-text #sdHint{font-size:16.5px} html.big-text .sd-hh b{font-size:18px}
 #sdPad{display:grid;grid-template-columns:repeat(9,1fr);gap:5px}
 #sdPad button{background:#f4efe1;color:#24324a;border:0;border-radius:12px;padding:8px 0 4px;display:flex;flex-direction:column;align-items:center;box-shadow:0 3px 0 #b9ae93;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 #sdPad button:active{transform:translateY(2px);box-shadow:0 1px 0 #b9ae93}
