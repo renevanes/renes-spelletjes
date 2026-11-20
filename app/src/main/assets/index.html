@@ -687,7 +687,7 @@ html.light .pin-pad button{background:rgba(0,0,0,.07)}
 .sd-c.given{color:#231f18;font-weight:700}
 .sd-c.peer{background:#ece6d4} .sd-c.same{background:#f6dd8f} .sd-c.sel{background:#ffd75e}
 .sd-c.bad{color:#d3263a} .sd-c.bad.user{background:#fde1e1} .sd-c.bad.sel{background:#ffc9c0}
-#sdBoard .sd-c.lit:not(.sel){background:#fff6cf} #sdBoard .sd-c.dark:not(.sel){background:#cfc8b6} #sdBoard .sd-c.lamp:not(.sel){background:#ffcf3f;box-shadow:inset 0 0 0 2px #e0a800}
+#sdBoard .sd-c.lamp:not(.sel){background:#ffcf3f;box-shadow:inset 0 0 0 2px #e0a800}
 .sd-n i.lp{background:#ffcf3f;color:#3a2f10;font-weight:800}
 #sdLamp b{position:relative} #sdLamp b em{position:absolute;right:-12px;top:-4px;font-style:normal;font-size:12px;font-weight:800;background:#ffcf3f;color:#3a2f10;border-radius:8px;min-width:16px;padding:0 3px;line-height:16px}
 #sdPad button.lamp{box-shadow:0 3px 0 #b9ae93,0 0 0 3px #ffcf3f inset}
@@ -3864,7 +3864,7 @@ html.big-text #wzToast{font-size:16.5px}
         <li><b>XYZ-vleugel</b> – zoals de Y-vleugel, maar het middelste vakje kan zelf ook C zijn.</li>
         <li><b>XY-ketting</b> – een rij vakjes met elk twee mogelijkheden die elkaar doorgeven: één van de uiteinden is zeker hetzelfde cijfer.</li>
       </ul>
-      <p><b>🔦 Zaklamp</b> – kies een cijfer (of houd een cijfer op het toetsenbord vast): dat cijfer blijft oplichten. Lichte vakjes zijn de plekken waar het nog kan, donkere vakjes vallen af.</p>
+      <p><b>🔦 Zaklamp</b> – kies een cijfer (of houd een cijfer op het toetsenbord vast): dat cijfer blijft overal oplichten, ook in je potloodnotities.</p>
       <p>Twijfel je? <b>☑ Controle</b> kijkt of je ingevulde cijfers kloppen: foute cijfers lichten even rood op.</p>
       <p>Tip: zet met ✎ potloodnotities. Bij moeilijke stappen laat de hint alle mogelijke cijfers zien, met de cijfers die afvallen in het rood.</p>
     </details>
@@ -37686,10 +37686,17 @@ const Sudoku = (() => {
   const cells = a => and(a.map(cN));
   const een = d => `de ${d}`;
   const combos = (arr, n) => { const out = [], cur = []; const rec = s => { if (cur.length === n) { out.push(cur.slice()); return; } for (let k = s; k < arr.length; k++) { cur.push(arr[k]); rec(k + 1); cur.pop(); } }; rec(0); return out; };
-  function mkState(vals, elim) {
-    const cand = new Array(81).fill(0);
-    for (let i = 0; i < 81; i++) if (!vals[i]) { let m = 0x3FE; for (const j of PEERS[i]) if (vals[j]) m &= ~BIT(vals[j]); cand[i] = m & ~((elim && elim[i]) || 0); }
-    return { vals, cand, gone: elim ? elim.slice() : new Array(81).fill(0) };
+  // notes (optional): the player's pencil marks. A cell with notes counts as "already worked out" (only those digits are left),
+  // but only when the right digit is still among them (sol), so a slip in the notes can never lead to a wrong hint
+  function mkState(vals, elim, notes, sol) {
+    const cand = new Array(81).fill(0), gone = elim ? elim.slice() : new Array(81).fill(0), mine = new Array(81).fill(0);
+    for (let i = 0; i < 81; i++) if (!vals[i]) {
+      let m = 0x3FE; for (const j of PEERS[i]) if (vals[j]) m &= ~BIT(vals[j]);
+      m &= ~((elim && elim[i]) || 0);
+      if (notes && notes[i] && sol && (notes[i] & BIT(sol[i]))) { mine[i] = m & ~notes[i]; m &= notes[i]; gone[i] |= mine[i]; }
+      cand[i] = m;
+    }
+    return { vals, cand, gone, mine };
   }
   function applyStep(st, s) {
     for (const [i, d] of s.elim || []) { st.cand[i] &= ~BIT(d); st.gone[i] |= BIT(d); }
@@ -37759,9 +37766,9 @@ const Sudoku = (() => {
         const ds = []; for (const j of UNITS[u]) if (st.vals[j] && !seen.has(st.vals[j])) { seen.add(st.vals[j]); ds.push(st.vals[j]); src.push(j); }
         if (ds.length) part.push(part.length ? `${uName(u)} voegt daar ${and(ds.sort((a, b) => a - b))} aan toe` : `${uName(u)} heeft al ${and(ds.sort((a, b) => a - b))}`);
       }
-      const gone = DIGS(st.gone[i]).filter(x => !seen.has(x) && x !== d);
+      const goneAll = DIGS(st.gone[i]).filter(x => !seen.has(x) && x !== d), own = goneAll.filter(x => st.mine && (st.mine[i] & BIT(x))), gone = goneAll.filter(x => !own.includes(x));
       return { name: 'Enige cijfer dat past', place: [i, d], hl: { unit: [...UNITS[rU], ...UNITS[cU], ...UNITS[bU]], src, tgt: [i] },
-        text: `Kijk naar ${cN(i)}. ${cap(part.join('; '))}.` + (gone.length ? ` Eerder ${gone.length === 1 ? 'is' : 'zijn'} hier ook ${and(gone.map(een))} weggestreept.` : '') + ` Van 1 tot en met 9 blijft alleen ${een(d)} over, dus hier moet ${een(d)}.` };
+        text: `Kijk naar ${cN(i)}. ${cap(part.join('; '))}.` + (own.length ? ` In je potlood heb je hier ${and(own.map(een))} al weggestreept.` : '') + (gone.length ? ` Eerder ${gone.length === 1 ? 'is' : 'zijn'} hier ook ${and(gone.map(een))} weggestreept.` : '') + ` Van 1 tot en met 9 blijft alleen ${een(d)} over, dus hier moet ${een(d)}.` };
     }
     return null;
   }
@@ -37988,8 +37995,8 @@ const Sudoku = (() => {
     return { ok: false, lvl, n2, n3, n4 };
   }
   // the steps of one hint: the eliminations needed and then the next number to fill in
-  function hintSteps(vals, elim, prefer) {
-    const st = mkState(vals.slice(), elim), steps = [];
+  function hintSteps(vals, elim, prefer, notes, sol) {
+    const st = mkState(vals.slice(), elim, notes, sol), steps = [];
     if (prefer != null && !vals[prefer]) { const s = hiddenSingle(st, prefer) || nakedSingle(st, prefer); if (s) { s.lvl = 1; s.cand0 = st.cand.slice(); return { steps: [s], ok: true }; } }
     for (let n = 0; n < 16; n++) {
       const s = nextStep(st); if (!s) break;
@@ -38076,10 +38083,10 @@ const Sudoku = (() => {
         text: twin != null ? `In ${cN(i)} staat een ${v}, maar ${cN(twin)} ${ROW(twin) === ROW(i) ? 'in dezelfde rij' : COL(twin) === COL(i) ? 'in dezelfde kolom' : 'in hetzelfde blok'} heeft ook al een ${v}. Haal hem weg en kijk opnieuw.` + (wrongs.length > 1 ? ` (Er staan nog ${wrongs.length - 1} andere foute cijfers.)` : '')
           : `De ${v} in ${cN(i)} past nu nog, maar klopt niet met de oplossing: later loop je ermee vast. Haal hem weg en zoek met de volgende hint een cijfer dat zeker is.` + (wrongs.length > 1 ? ` (Er staan nog ${wrongs.length - 1} andere foute cijfers.)` : '') }];
     } else {
-      const pref = sel >= 0 && !S.val[sel] ? sel : null, h = hintSteps(S.val, S.elim, pref);
+      const pref = sel >= 0 && !S.val[sel] ? sel : null, h = hintSteps(S.val, S.elim, pref, S.notes, S.sol);
       steps = h.steps;
       if (!h.ok) {           // a step beyond these techniques: say so honestly and give one number
-        const st = h.st || mkState(S.val.slice(), S.elim); let i = -1, best = 10;
+        const st = h.st || mkState(S.val.slice(), S.elim, S.notes, S.sol); let i = -1, best = 10;
         for (let k = 0; k < 81; k++) if (!S.val[k] && POP(st.cand[k]) < best) { best = POP(st.cand[k]); i = k; }
         if (i < 0) return;
         steps.push({ name: 'Een heel lastige stap', place: [i, S.sol[i]], cand0: st.cand.slice(), cand: true, hl: { tgt: [i] }, keyD: [S.sol[i]],
@@ -38154,7 +38161,7 @@ const Sudoku = (() => {
       const el = board.children[i], v = S.val[i], peer = sel >= 0 && i !== sel && (ROW(i) === ROW(sel) || COL(i) === COL(sel) || BOX(i) === BOX(sel));
       let cls = 'sd-c' + (COL(i) % 3 === 2 && COL(i) < 8 ? ' br' : '') + (ROW(i) % 3 === 2 && ROW(i) < 8 ? ' bb' : '') + (fixed(i) ? ' given' : v ? ' user' : '') + (H ? (hTgt.has(i) ? ' hx-tgt' : cA.has(i) ? ' hx-blue' : cB.has(i) ? ' hx-green' : hSrc.has(i) ? ' hx-src' : hPat.has(i) ? ' hx-pat' : hEl.has(i) ? ' hx-el' : hUnit.has(i) ? ' hx-unit' : hRay.has(i) ? ' hx-ray' : '') + (hNo.has(i) ? ' hx-no' : '') : '') + (H ? '' : i === sel ? ' sel' : peer && !lamp ? ' peer' : '') + (!H && !lamp && v && sv && v === sv && i !== sel ? ' same' : '') + (v && !fixed(i) && ((showErr && wrong(i)) || conflict(i)) ? ' bad' : '');
       if (el.classList.contains('flash')) cls += ' flash';
-      if (lamp) cls += v === lamp ? ' lamp' : v ? '' : PEERS[i].some(j => S.val[j] === lamp) ? ' dark' : ' lit';
+      if (lamp && v === lamp) cls += ' lamp';
       if (!H && chkMarks && v && chkMarks[i] === v) cls += ' chk';
       if (el.className !== cls) el.className = cls;
       const cm = hs && hs.cand && !v && hs.cand0 ? hs.cand0[i] : 0, key = new Set(hs && hs.keyD || []);
@@ -38179,9 +38186,9 @@ const Sudoku = (() => {
 
   /* ---------- input ---------- */
   board.addEventListener('pointerdown', e => { const c = e.target.closest('.sd-c'); if (!c || !S) return; if (HX) closeHint(); sel = +c.dataset.i; render(); });
-  /* Zaklamp: one digit stays lit. Its cells glow, the empty cells where it can still go are light, the others dark */
+  /* Zaklamp: one digit stays lit, in the grid and in the pencil notes */
   let lampPick = false, lpT = 0, lpDone = false;
-  function setLamp(d) { if (!S) return; lampPick = false; S.lamp = S.lamp === d ? 0 : d; sfx('tap'); vibrate(12); toast(S.lamp ? `🔦 Zaklamp op de ${d}: lichte vakjes zijn de plekken waar de ${d} nog kan` : 'Zaklamp uit', 2200); save(); render(); }
+  function setLamp(d) { if (!S) return; lampPick = false; S.lamp = S.lamp === d ? 0 : d; sfx('tap'); vibrate(12); toast(S.lamp ? `🔦 Zaklamp op de ${d}: alle ${d}'en blijven oplichten` : 'Zaklamp uit', 2000); save(); render(); }
   function lampButton() {
     if (!S || S.over) return;
     if (HX) closeHint();

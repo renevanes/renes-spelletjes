@@ -130,6 +130,42 @@ c = await card(p); ok(c.txt.length > 100, 'meester: uitleg van de meesterstap', 
 await p.screenshot({ path: GFX + 'sd_hint_meester.png' });
 await p.close();
 
+/* ---- hints use the player's own pencil notes: no explanation of what is already crossed out ---- */
+{
+  p = await page(PORT); await p.tap('#tileSd'); await wait(p, 300);
+  ok(await toAdvanced(p, 'expert', 2), 'potlood: een stand met af te strepen kandidaten gevonden');
+  const r = await ev(p, () => {
+    const S = __sd.S, h0 = __sd.hintSteps(S.val, S.elim, null, S.notes, S.sol), elimSteps = h0.steps.filter(s => !s.place).length;
+    // the player writes all candidates in pencil, already without what those steps cross out
+    const st = __sd.mkState(S.val.slice(), S.elim); for (const s of h0.steps) for (const [i, d] of s.elim || []) st.cand[i] &= ~(1 << d);
+    for (let i = 0; i < 81; i++) if (!S.val[i]) S.notes[i] = st.cand[i];
+    const h1 = __sd.hintSteps(S.val, S.elim, null, S.notes, S.sol);
+    return { n0: h0.steps.length, e0: elimSteps, n1: h1.steps.length, e1: h1.steps.filter(s => !s.place).length, same: h0.steps.filter(s => !s.place).every(a => !h1.steps.some(b => b.text === a.text)), right: h1.steps.at(-1).place && S.sol[h1.steps.at(-1).place[0]] === h1.steps.at(-1).place[1] };
+  });
+  ok(r.e0 > 0 && r.e1 < r.e0 && r.same && r.right, 'potlood: al weggestreepte kandidaten worden niet nog eens uitgelegd', JSON.stringify(r));
+  await p.click('#sdTools [data-t="hint"]'); await wait(p, 80);
+  ok(await ev(p, () => !!__sd.HX && __sd.HX.steps.length <= 2), 'potlood: hint gaat meteen naar de nieuwe stap', await ev(p, () => __sd.HX && __sd.HX.steps.map(s => s.name).join(' > ')));
+  await p.click('#sdHint button[data-h="x"]');
+  // a whole expert puzzle with full pencil notes kept up to date, and some notes that are wrong: every hint still right
+  const res = await ev(p, () => {
+    const out = { hints: 0, bad: 0 }; __sd.newGame('expert'); return out; });
+  await wait(p, 900);
+  const walk = await ev(p, () => {
+    const S = __sd.S, st0 = __sd.mkState(S.val.slice(), null); for (let i = 0; i < 81; i++) if (!S.val[i]) S.notes[i] = st0.cand[i];
+    const wrongCell = S.val.findIndex((v, i) => !v && S.notes[i] & ~(1 << S.sol[i])); S.notes[wrongCell] &= ~(1 << S.sol[wrongCell]);   // a slip: right digit missing
+    let bad = 0, n = 0;
+    while (!S.val.every(v => v) && n < 120) {
+      const h = __sd.hintSteps(S.val, S.elim, null, S.notes, S.sol); n++;
+      for (const s of h.steps) { for (const [i, d] of s.elim || []) { if (S.sol[i] === d) bad++; S.elim[i] |= 1 << d; S.notes[i] &= ~(1 << d); }
+        if (s.place) { const [i, d] = s.place; if (S.sol[i] !== d) bad++; S.val[i] = d; S.notes[i] = 0; for (let j = 0; j < 81; j++) if (j !== i && (Math.floor(j / 9) === Math.floor(i / 9) || j % 9 === i % 9 || (Math.floor(j / 27) === Math.floor(i / 27) && Math.floor(j % 9 / 3) === Math.floor(i % 9 / 3)))) S.notes[j] &= ~(1 << d); } }
+      if (!h.ok) break;
+    }
+    return { n, bad, solved: S.val.every((v, i) => v === S.sol[i]) };
+  });
+  ok(walk.solved && walk.bad === 0, 'potlood: met volledige (en één foute) notities blijft elke hint goed', JSON.stringify(walk));
+  await p.close();
+}
+
 /* ---- Controle: only filled-in numbers, wrong ones flash red for a moment ---- */
 for (const o of [PORT, LAND]) {
   const nm = o === PORT ? 'staand' : 'liggend';
@@ -172,11 +208,10 @@ for (const o of [PORT, LAND]) {
   ok((await p.textContent('#sdLamp small')).includes('Kies') && await ev(p, () => document.querySelectorAll('#sdPad button.lamp').length === 9), `${nm}: zaklamp vraagt om een cijfer`);
   const before = await ev(p, () => __sd.S.val.join(''));
   await p.tap(`#sdPad button[data-d="${d}"]`); await wait(p, 150);
-  const st = await ev(p, d => { const S = __sd.S, c = i => document.querySelector(`.sd-c[data-i="${i}"]`).className; let lampOk = true, darkOk = true, litOk = true;
-    for (let i = 0; i < 81; i++) { const v = S.val[i], cl = c(i), blocked = !v && __sd.S.val.some((x, j) => x === d && j !== i && (Math.floor(j / 9) === Math.floor(i / 9) || j % 9 === i % 9 || (Math.floor(j / 27) === Math.floor(i / 27) && Math.floor(j % 9 / 3) === Math.floor(i % 9 / 3))));
-      if (v === d && !cl.includes('lamp')) lampOk = false; if (blocked && !cl.includes('dark')) darkOk = false; if (!v && !blocked && !cl.includes('lit')) litOk = false; }
-    return { lamp: S.lamp, lampOk, darkOk, litOk, badge: document.querySelector('#sdLamp em')?.textContent }; }, d);
-  ok(st.lamp === d && st.lampOk && st.darkOk && st.litOk && st.badge === String(d), `${nm}: cijfer ${d} licht op, plekken waar het kan licht, de rest donker`, JSON.stringify(st));
+  const st = await ev(p, d => { const S = __sd.S; let lampOk = true;
+    for (let i = 0; i < 81; i++) { const cl = document.querySelector(`.sd-c[data-i="${i}"]`).className; if ((S.val[i] === d) !== cl.includes('lamp')) lampOk = false; }
+    return { lamp: S.lamp, lampOk, plain: !document.querySelector('.sd-c.lit, .sd-c.dark'), badge: document.querySelector('#sdLamp em')?.textContent }; }, d);
+  ok(st.lamp === d && st.lampOk && st.plain && st.badge === String(d), `${nm}: alleen het cijfer ${d} licht op, geen kleuren voor rijen en kolommen`, JSON.stringify(st));
   ok((await ev(p, () => __sd.S.val.join(''))) === before, `${nm}: kiezen zet geen cijfer in het rooster`);
   // stays on while selecting and placing other numbers
   await ev(p, () => { const S = __sd.S, i = S.puz.findIndex(v => !v); __sd.select(i); __sd.place(S.sol[i]); }); await wait(p, 100);

@@ -55,7 +55,7 @@ g = {
         <li><b>XYZ-vleugel</b> – zoals de Y-vleugel, maar het middelste vakje kan zelf ook C zijn.</li>
         <li><b>XY-ketting</b> – een rij vakjes met elk twee mogelijkheden die elkaar doorgeven: één van de uiteinden is zeker hetzelfde cijfer.</li>
       </ul>
-      <p><b>🔦 Zaklamp</b> – kies een cijfer (of houd een cijfer op het toetsenbord vast): dat cijfer blijft oplichten. Lichte vakjes zijn de plekken waar het nog kan, donkere vakjes vallen af.</p>
+      <p><b>🔦 Zaklamp</b> – kies een cijfer (of houd een cijfer op het toetsenbord vast): dat cijfer blijft overal oplichten, ook in je potloodnotities.</p>
       <p>Twijfel je? <b>☑ Controle</b> kijkt of je ingevulde cijfers kloppen: foute cijfers lichten even rood op.</p>
       <p>Tip: zet met ✎ potloodnotities. Bij moeilijke stappen laat de hint alle mogelijke cijfers zien, met de cijfers die afvallen in het rood.</p>
     </details>
@@ -86,7 +86,7 @@ g = {
 .sd-c.given{color:#231f18;font-weight:700}
 .sd-c.peer{background:#ece6d4} .sd-c.same{background:#f6dd8f} .sd-c.sel{background:#ffd75e}
 .sd-c.bad{color:#d3263a} .sd-c.bad.user{background:#fde1e1} .sd-c.bad.sel{background:#ffc9c0}
-#sdBoard .sd-c.lit:not(.sel){background:#fff6cf} #sdBoard .sd-c.dark:not(.sel){background:#cfc8b6} #sdBoard .sd-c.lamp:not(.sel){background:#ffcf3f;box-shadow:inset 0 0 0 2px #e0a800}
+#sdBoard .sd-c.lamp:not(.sel){background:#ffcf3f;box-shadow:inset 0 0 0 2px #e0a800}
 .sd-n i.lp{background:#ffcf3f;color:#3a2f10;font-weight:800}
 #sdLamp b{position:relative} #sdLamp b em{position:absolute;right:-12px;top:-4px;font-style:normal;font-size:12px;font-weight:800;background:#ffcf3f;color:#3a2f10;border-radius:8px;min-width:16px;padding:0 3px;line-height:16px}
 #sdPad button.lamp{box-shadow:0 3px 0 #b9ae93,0 0 0 3px #ffcf3f inset}
