@@ -408,5 +408,10 @@
   "v": "1.81",
   "date": "2026-11-20",
   "notes": "Sudoku: nieuw niveau **Meester** met de moeilijkste puzzels, die je oplost met wolkenkrabbers, vliegers, kleurketens, W- en XYZ-vleugels en XY-kettingen. Ook die stappen legt de hint uit, en Expert is pittiger geworden."
+ },
+ {
+  "v": "1.82",
+  "date": "2026-11-20",
+  "notes": "Sudoku: nieuwe knop **Controle**. Die kijkt of je ingevulde cijfers kloppen en arceert foute cijfers in rood. Staat in je potloodnotities het juiste cijfer niet meer, dan krijgt dat vakje een oranje rand. De markering verdwijnt zodra je het vakje verandert."
  }
 ]

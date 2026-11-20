@@ -1,11 +1,11 @@
 {
-  "versionCode": 82,
-  "versionName": "1.81",
+  "versionCode": 83,
+  "versionName": "1.82",
   "nativeLevel": 12,
-  "notes": "Sudoku: nieuw niveau **Meester** met de moeilijkste puzzels, die je oplost met wolkenkrabbers, vliegers, kleurketens, W- en XYZ-vleugels en XY-kettingen. Ook die stappen legt de hint uit, en Expert is pittiger geworden.",
+  "notes": "Sudoku: nieuwe knop **Controle**. Die kijkt of je ingevulde cijfers kloppen en arceert foute cijfers in rood. Staat in je potloodnotities het juiste cijfer niet meer, dan krijgt dat vakje een oranje rand. De markering verdwijnt zodra je het vakje verandert.",
   "web": "web/index.html",
-  "webSha256": "cc8fb98acf94925891a1159b20506c89cefb89cd66facfb7e61cda967e27aebd",
-  "webSig": "MEUCIQDq0U1Kur0gPlkV/z3g4D5ezBa9bEB+sCFQiEoDb7Q4kwIgRmDV6tzOgv2THI8mle6E1Rt2HITL4LVayCYi+E7+sb4=",
+  "webSha256": "e7c4388b73bd87e5134805006bbb2275f6d7f7989ad82e0af27e72b1072e4cf0",
+  "webSig": "MEQCIEO1DRK0CaDS3JMYWuUlkRQQGcMaGVmZyOScMkG4y/h5AiA/1LOO6Gf5+79mOfsDTsUf3JrtTKafa6Cs3RzZXnfuxw==",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "157e7255acef0f79f0480b8faf45ec752ee5481ed6800a979dae8c05fceca91c"

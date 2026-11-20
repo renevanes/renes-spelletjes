@@ -1,1 +1,0 @@
-Sudoku: nieuwe knop **Controle**. Die kijkt of je ingevulde cijfers kloppen en arceert foute cijfers in rood. Staat in je potloodnotities het juiste cijfer niet meer, dan krijgt dat vakje een oranje rand. De markering verdwijnt zodra je het vakje verandert.
