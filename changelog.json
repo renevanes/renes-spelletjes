@@ -418,5 +418,10 @@
   "v": "1.83",
   "date": "2026-11-20",
   "notes": "Sudoku: nieuwe **Zaklamp**. Kies een cijfer (of houd het op het toetsenbord vast) en het blijft oplichten. Lichte vakjes zijn de plekken waar het cijfer nog kan, donkere vakjes vallen af. **Controle** kijkt nu alleen naar ingevulde cijfers, en foute cijfers lichten nog maar even rood op."
+ },
+ {
+  "v": "1.84",
+  "date": "2026-11-20",
+  "notes": "Sudoku: de hint kijkt nu naar je potloodnotities. Wat je zelf al hebt weggestreept, legt hij niet nog eens uit; hij gaat meteen naar de volgende nieuwe stap. De zaklamp laat alleen nog het gekozen cijfer oplichten, zonder kleuren voor rijen en kolommen."
  }
 ]

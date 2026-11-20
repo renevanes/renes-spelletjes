@@ -1,1 +1,0 @@
-Sudoku: de hint kijkt nu naar je potloodnotities. Wat je zelf al hebt weggestreept, legt hij niet nog eens uit; hij gaat meteen naar de volgende nieuwe stap. De zaklamp laat alleen nog het gekozen cijfer oplichten, zonder kleuren voor rijen en kolommen.

@@ -1,11 +1,11 @@
 {
-  "versionCode": 84,
-  "versionName": "1.83",
+  "versionCode": 85,
+  "versionName": "1.84",
   "nativeLevel": 12,
-  "notes": "Sudoku: nieuwe **Zaklamp**. Kies een cijfer (of houd het op het toetsenbord vast) en het blijft oplichten. Lichte vakjes zijn de plekken waar het cijfer nog kan, donkere vakjes vallen af. **Controle** kijkt nu alleen naar ingevulde cijfers, en foute cijfers lichten nog maar even rood op.",
+  "notes": "Sudoku: de hint kijkt nu naar je potloodnotities. Wat je zelf al hebt weggestreept, legt hij niet nog eens uit; hij gaat meteen naar de volgende nieuwe stap. De zaklamp laat alleen nog het gekozen cijfer oplichten, zonder kleuren voor rijen en kolommen.",
   "web": "web/index.html",
-  "webSha256": "c32e3d7bb2f161cf58b0671ef6308dba568c3a8e47c5dbb04cd3823b310335d4",
-  "webSig": "MEMCIG9vm7yqcRULGA+MGc2aztz2vYuYDkIAqn1OMDmXr3oWAh8CcR1Bk7JZFpAtQUjn5qrqINpIwl4fnXYNf7oaWZgE",
+  "webSha256": "42e328cfb18a015fab75129a813ad74be83634350a1f15c72605c0750a489c65",
+  "webSig": "MEUCIFUhSYkc8R5MDhblRgsg59lzCC2eVyeCVz2brYKJxbobAiEA/aIbulqArhxYRcTSjVGwpWxeA0NeuHLc8EbArBmU4MI=",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "157e7255acef0f79f0480b8faf45ec752ee5481ed6800a979dae8c05fceca91c"
