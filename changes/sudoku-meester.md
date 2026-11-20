@@ -1,0 +1,1 @@
+Sudoku: nieuw niveau **Meester** met de moeilijkste puzzels, die je oplost met wolkenkrabbers, vliegers, kleurketens, W- en XYZ-vleugels en XY-kettingen. Ook die stappen legt de hint uit, en Expert is pittiger geworden.

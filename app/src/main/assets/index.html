@@ -702,7 +702,7 @@ html.light .pin-pad button{background:rgba(0,0,0,.07)}
 .sd-hstep{font-size:11.5px;font-weight:700;background:#1d3a6e;color:#fff;border-radius:9px;padding:1px 8px}
 .sd-hb{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap} .sd-hb button{border:0;border-radius:11px;padding:8px 14px;font-weight:700;font-size:14px;background:#e6dfcc;color:#2b2418} .sd-hb button.go{background:#2a9d6f;color:#fff}
 .sd-c.hx-unit{background:#dfeaf8} .sd-c.hx-ray{background:#f6e1dc} .sd-c.hx-src{background:#ffd9b0;box-shadow:inset 0 0 0 3px #f08a24}
-.sd-c.hx-pat{background:#ffe68a;box-shadow:inset 0 0 0 2px #e0b520} .sd-c.hx-el{background:#fde8e8} .sd-c.hx-tgt{background:#c8f2cc;box-shadow:inset 0 0 0 3px #2a9d6f}
+.sd-c.hx-pat{background:#ffe68a;box-shadow:inset 0 0 0 2px #e0b520} .sd-c.hx-blue{background:#bcd7ff;box-shadow:inset 0 0 0 2px #3a74d8} .sd-c.hx-green{background:#bdeec4;box-shadow:inset 0 0 0 2px #2a9d6f} .sd-c.hx-el{background:#fde8e8} .sd-c.hx-tgt{background:#c8f2cc;box-shadow:inset 0 0 0 3px #2a9d6f}
 .sd-c.hx-no::after{content:'✕';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(211,38,58,.55);font-size:calc(var(--s) / 16);font-weight:700;pointer-events:none}
 .sd-n.hx{color:#5e6878} .sd-n i.del{color:#d3263a;background:#ffd0d0;text-decoration:line-through;font-weight:800} .sd-n i.key{color:#1d3a6e;font-weight:800} .sd-n i.ok{background:#2a9d6f;color:#fff;font-weight:800}
 .sd-ghost{color:#2a9d6f;font-weight:800;opacity:.85}
@@ -717,6 +717,7 @@ html.big-text #sdHint{font-size:16.5px} html.big-text .sd-hh b{font-size:18px}
   #sdWrap{flex-direction:row;gap:14px;padding:8px 12px}
   #sdBoard{--s:min(calc(100vh - 80px),calc(100vw - 340px))}
   #sdSide{width:300px} #sdPad{grid-template-columns:repeat(3,1fr)} #sdPad button{padding:6px 0 2px}
+  #sdHint{padding:8px 10px;font-size:13.5px} #sdHint p{max-height:calc(100vh - 210px);overflow-y:auto;margin:4px 0 6px}
 }
 #bv{background:#0b0a22}
 #bv .topbar{background:#141133;gap:4px}
@@ -3844,6 +3845,14 @@ html.big-text #wzToast{font-size:16.5px}
         <li><b>Verborgen tweetal</b> – twee cijfers die maar op dezelfde twee plekken kunnen: die vakjes zijn voor die cijfers, andere cijfers vallen daar af.</li>
         <li><b>X-vleugel</b> – kan een cijfer in twee rijen alleen in dezelfde twee kolommen, dan staan de twee in die kolommen al vast: in de rest van die kolommen kan het niet meer. Met drie rijen heet dat een <b>zwaardvis</b>.</li>
         <li><b>Y-vleugel</b> – een vakje met 2 mogelijkheden (A of B) en twee “vleugels” met A of C en B of C: één van de vleugels wordt zeker C, dus een vakje dat beide vleugels ziet kan geen C zijn.</li>
+      </ul>
+      <p><b>Voor Meesters</b> – hier denk je in koppelingen: kan een cijfer in een rij, kolom of blok maar op twee plekken, dan is precies één van die twee het cijfer.</p>
+      <ul>
+        <li><b>Wolkenkrabber en vlieger</b> – twee van zulke koppelingen waarvan twee uiteinden elkaar zien: dan is één van de twee andere uiteinden zeker het cijfer.</li>
+        <li><b>Kleurketen</b> – volg alle koppelingen van één cijfer en kleur de vakjes om en om blauw en groen. Óf alle blauwe zijn het cijfer, óf alle groene. Een vakje dat blauw én groen ziet, valt af.</li>
+        <li><b>W-vleugel</b> – twee vakjes die allebei alleen A of B kunnen, verbonden door een koppeling op A: één van beide is dan B.</li>
+        <li><b>XYZ-vleugel</b> – zoals de Y-vleugel, maar het middelste vakje kan zelf ook C zijn.</li>
+        <li><b>XY-ketting</b> – een rij vakjes met elk twee mogelijkheden die elkaar doorgeven: één van de uiteinden is zeker hetzelfde cijfer.</li>
       </ul>
       <p>Tip: zet met ✎ potloodnotities. Bij moeilijke stappen laat de hint alle mogelijke cijfers zien, met de cijfers die afvallen in het rood.</p>
     </details>
@@ -37585,8 +37594,9 @@ $('#tileBv').addEventListener('click', () => Blokval.enter());
 const Sudoku = (() => {
   const LEVELS = { makkelijk: { clues: 40, name: 'Makkelijk', desc: 'alleen de enige plek', ok: g => g.ok && g.lvl === 1 },
     normaal: { clues: 32, name: 'Normaal', desc: 'soms een slimme stap', ok: g => g.ok && g.lvl <= 2 },
-    moeilijk: { clues: 26, name: 'Moeilijk', desc: 'tweetallen en vaste cijfers', ok: g => g.ok && g.lvl >= 2 },
-    expert: { clues: 25, name: 'Expert', desc: 'X-vleugel, Y-vleugel en meer', ok: g => g.ok && g.lvl === 3 } };
+    moeilijk: { clues: 26, name: 'Moeilijk', desc: 'tweetallen en vaste cijfers', ok: g => g.ok && (g.lvl === 2 || g.lvl === 3) },
+    expert: { clues: 17, name: 'Expert', desc: 'X-vleugel, Y-vleugel en meer', any: true, ok: g => g.ok && g.lvl >= 3 && g.n4 <= 1 },
+    meester: { clues: 17, name: 'Meester', desc: 'ketens, kleuren en vliegers', any: true, ok: g => g.ok && g.lvl === 4 && g.n4 >= 2 } };
   const D = { level: 'makkelijk', sound: true, errors: 'direct', pencil: false };
   const opt = Object.assign({}, D, store.get('sd.settings', {}));
   const saveOpt = () => store.set('sd.settings', opt);
@@ -37625,14 +37635,14 @@ const Sudoku = (() => {
   const better = (a, b) => !a || (b.good && !a.good) || (b.good === a.good && b.grade.ok && !a.grade.ok) || (b.good === a.good && b.grade.ok === a.grade.ok && b.clues < a.clues);
   function generate(level, tries = 400) {
     let best = null;
-    for (let k = 0; k < tries; k++) { const g = tryOne(level); if (better(best, g)) best = g; if (best.good && best.clues <= LEVELS[level].clues + 2) break; }
+    for (let k = 0; k < tries; k++) { const g = tryOne(level); if (better(best, g)) best = g; if (best.good && (LEVELS[level].any || best.clues <= LEVELS[level].clues + 2)) break; }
     return { puz: best.puz, sol: best.sol, grade: best.grade };
   }
   function generateAsync(level, done) {        // in small slices, so the screen keeps moving on a slow phone
     let best = null, k = 0; const t0 = performance.now();
     const run = () => {
       const end = performance.now() + 24;
-      while (performance.now() < end) { const g = tryOne(level); k++; if (better(best, g)) best = g; if ((best.good && best.clues <= LEVELS[level].clues + 2) || k >= 600 || performance.now() - t0 > 8000) return done({ puz: best.puz, sol: best.sol, grade: best.grade }); }
+      while (performance.now() < end) { const g = tryOne(level); k++; if (better(best, g)) best = g; if ((best.good && (LEVELS[level].any || best.clues <= LEVELS[level].clues + 2)) || k >= 600 || performance.now() - t0 > 8000) return done({ puz: best.puz, sol: best.sol, grade: best.grade }); }
       setTimeout(run, 0);
     };
     run();
@@ -37780,7 +37790,7 @@ const Sudoku = (() => {
         let m = 0; for (const j of cs) m |= st.cand[j]; if (POP(m) !== n) continue;
         const ds = DIGS(m), el = []; for (const j of UNITS[u]) if (!cs.includes(j) && !st.vals[j]) for (const d of ds) if (st.cand[j] & BIT(d)) el.push([j, d]);
         if (!el.length) continue;
-        return { name: n === 2 ? 'Tweetal' : 'Drietal', elim: el, cand: true, keyD: ds, hl: { unit: UNITS[u], pat: cs },
+        return { name: ['', '', 'Tweetal', 'Drietal', 'Viertal'][n], elim: el, cand: true, keyD: ds, hl: { unit: UNITS[u], pat: cs },
           text: `In ${uName(u)} kunnen ${cells(cs)} alleen ${or(ds)} worden. ${cap(NUMW[n])} vakjes en samen maar ${NUMW[n]} cijfers: ${and(ds)} komen dus precies in deze ${NUMW[n]} vakjes. Andere vakjes in ${uName(u)} kunnen geen ${or(ds)} meer worden. Weg: ${elimText(el)}.` };
       }
     }
@@ -37796,7 +37806,7 @@ const Sudoku = (() => {
         let keep = 0; for (const d of ds) keep |= BIT(d);
         const el = []; for (const j of cs) for (const d of DIGS(st.cand[j] & ~keep)) el.push([j, d]);
         if (!el.length) continue;
-        return { name: n === 2 ? 'Verborgen tweetal' : 'Verborgen drietal', elim: el, cand: true, keyD: ds, hl: { unit: UNITS[u], pat: cs },
+        return { name: 'Verborgen ' + ['', '', 'tweetal', 'drietal', 'viertal'][n], elim: el, cand: true, keyD: ds, hl: { unit: UNITS[u], pat: cs },
           text: `In ${uName(u)} kunnen ${and(ds.map(een))} alleen in ${cells(cs)}. ${cap(NUMW[n])} cijfers en maar ${NUMW[n]} vakjes: die vakjes zijn dus voor ${and(ds)}. Andere cijfers kunnen daar niet meer. Weg: ${elimText(el)}.` };
       }
     }
@@ -37814,8 +37824,8 @@ const Sudoku = (() => {
         if (!el.length) continue;
         const bl = ks.map(k => `${bw} ${k + 1}`), cl = covers.sort((a, b) => a - b).map(c => `${ow} ${c + 1}`), pat = L.flatMap(x => x.w);
         const ray = []; for (const c of covers) for (let k = 0; k < 9; k++) { const j = bw === 'rij' ? k * 9 + c : c * 9 + k; if (!pat.includes(j)) ray.push(j); }
-        return { name: n === 2 ? 'X-vleugel' : 'Zwaardvis', elim: el, cand: true, keyD: [d], hl: { unit: L.flatMap(x => bw === 'rij' ? UNITS[x.k * 3] : UNITS[x.k * 3 + 1]), pat, ray },
-          text: `Kijk naar ${een(d)}. In ${and(bl)} kan ${een(d)} alleen in ${and(cl)} (de gele vakjes). In elk van deze ${NUMW[n]} ${bw === 'rij' ? 'rijen' : 'kolommen'} moet ${een(d)} komen, en nooit twee keer in dezelfde ${ow}. Samen vullen ze dus ${n === 2 ? 'beide' : 'alle drie de'} ${ow === 'rij' ? 'rijen' : 'kolommen'}: ${and(cl)} krijgen hun ${d} uit ${and(bl)}. In de rest van ${and(cl)} kan ${een(d)} dus niet meer. Weg: ${elimText(el)}.` };
+        return { name: ['', '', 'X-vleugel', 'Zwaardvis', 'Kwal'][n], elim: el, cand: true, keyD: [d], hl: { unit: L.flatMap(x => bw === 'rij' ? UNITS[x.k * 3] : UNITS[x.k * 3 + 1]), pat, ray },
+          text: `Kijk naar ${een(d)}. In ${and(bl)} kan ${een(d)} alleen in ${and(cl)} (de gele vakjes). In elk van deze ${NUMW[n]} ${bw === 'rij' ? 'rijen' : 'kolommen'} moet ${een(d)} komen, en nooit twee keer in dezelfde ${ow}. Samen vullen ze dus ${n === 2 ? 'beide' : `alle ${NUMW[n]} de`} ${ow === 'rij' ? 'rijen' : 'kolommen'}: ${and(cl)} krijgen hun ${d} uit ${and(bl)}. In de rest van ${and(cl)} kan ${een(d)} dus niet meer. Weg: ${elimText(el)}.` };
       }
     }
     return null;
@@ -37838,17 +37848,132 @@ const Sudoku = (() => {
     }
     return null;
   }
-  const TECH = [[1, fullHouse], [1, hiddenSingle], [1, nakedSingle], [2, pointing], [2, claiming], [2, st => nakedSub(st, 2)], [2, st => hiddenSub(st, 2)], [2, st => nakedSub(st, 3)], [2, st => hiddenSub(st, 3)], [3, st => fish(st, 2)], [3, xyWing], [3, st => fish(st, 3)]];
-  function nextStep(st, maxLvl = 3) { for (const [l, f] of TECH) { if (l > maxLvl) break; const s = f(st); if (s) { s.lvl = l; return s; } } return null; }
+  /* ---------- level 4 (Meester): wings and chains ---------- */
+  const SEES = (x, y) => x !== y && (ROW(x) === ROW(y) || COL(x) === COL(y) || BOX(x) === BOX(y));
+  const seenByAll = (st, d, ends, skip) => { const el = []; for (let j = 0; j < 81; j++) if (!st.vals[j] && (st.cand[j] & BIT(d)) && !skip.includes(j) && ends.every(e => SEES(j, e))) el.push([j, d]); return el; };
+  // all units where the digit d has exactly two places: a "sterke koppeling" (one of the two must be d)
+  function strongLinks(st, d) {
+    const out = [];
+    for (let u = 0; u < 27; u++) { if (unitDigits(st, u) & BIT(d)) continue; const w = where(st, u, d); if (w.length === 2) out.push({ u, a: w[0], b: w[1] }); }
+    return out;
+  }
+  const lnk = L => `${uName(L.u)} (alleen ${cN(L.a)} of ${cN(L.b)})`;
+  // skyscraper and 2-string kite: two strong links joined by a weak link (two ends that see each other)
+  function twoLinks(st) {
+    for (let d = 1; d <= 9; d++) {
+      const L = strongLinks(st, d);
+      for (let x = 0; x < L.length; x++) for (let y = x + 1; y < L.length; y++) {
+        const A = L[x], B = L[y];
+        for (const [a1, a2] of [[A.a, A.b], [A.b, A.a]]) for (const [b1, b2] of [[B.a, B.b], [B.b, B.a]]) {
+          if (a1 === b1 || a2 === b2 || a1 === b2 || a2 === b1 || !SEES(a1, b1) || SEES(a2, b2)) continue;
+          const el = seenByAll(st, d, [a2, b2], [a1, a2, b1, b2]); if (!el.length) continue;
+          const sky = uKind(A.u) === uKind(B.u) && uKind(A.u) < 2, kite = uKind(A.u) + uKind(B.u) === 1 && BOX(a1) === BOX(b1);
+          const name = sky ? 'Wolkenkrabber' : kite ? 'Vlieger' : 'Korte ketting';
+          return { name, elim: el, cand: true, keyD: [d], hl: { pat: [a1, a2, b1, b2], unit: [...UNITS[A.u], ...UNITS[B.u]] },
+            text: `Kijk naar ${een(d)}. In ${lnk(A)} moet één van de twee ${een(d)} zijn, en in ${lnk(B)} ook. ${cN(a1)} en ${cN(b1)} zien elkaar, dus die kunnen niet allebei ${een(d)} zijn. Is ${cN(a1)} geen ${d}, dan is ${cN(a2)} het; is ${cN(b1)} geen ${d}, dan is ${cN(b2)} het. Minstens één van ${cN(a2)} en ${cN(b2)} is dus ${een(d)}. Een vakje dat ze allebei ziet, kan geen ${d} zijn. Weg: ${elimText(el)}.` };
+        }
+      }
+    }
+    return null;
+  }
+  // XYZ-wing: a pivot {a,b,c} and pincers {a,c} and {b,c}: c is in one of the three
+  function xyzWing(st) {
+    for (let p = 0; p < 81; p++) {
+      if (st.vals[p] || POP(st.cand[p]) !== 3) continue;
+      const bi = PEERS[p].filter(j => !st.vals[j] && POP(st.cand[j]) === 2 && (st.cand[j] & st.cand[p]) === st.cand[j]);
+      for (let x = 0; x < bi.length; x++) for (let y = x + 1; y < bi.length; y++) {
+        const q = bi[x], r = bi[y]; if (st.cand[q] === st.cand[r]) continue;
+        const cm = st.cand[q] & st.cand[r]; if (POP(cm) !== 1) continue;
+        const c = DIGS(cm)[0], el = seenByAll(st, c, [p, q, r], [p, q, r]); if (!el.length) continue;
+        const [a] = DIGS(st.cand[q] & ~cm), [b] = DIGS(st.cand[r] & ~cm);
+        return { name: 'XYZ-vleugel', elim: el, cand: true, keyD: [a, b, c], hl: { pat: [p, q, r] },
+          text: `${cN(p)} kan ${een(a)}, ${een(b)} of ${een(c)} worden. Wordt het ${een(a)}, dan moet ${cN(q)} (${a} of ${c}) ${een(c)} worden; wordt het ${een(b)}, dan moet ${cN(r)} (${b} of ${c}) ${een(c)} worden; anders is ${cN(p)} zelf ${een(c)}. In elk geval staat ${een(c)} in één van deze drie vakjes. Een vakje dat ze alle drie ziet, kan dus geen ${c} zijn. Weg: ${elimText(el)}.` };
+      }
+    }
+    return null;
+  }
+  // W-wing: two cells {a,b} joined by a strong link on a: one of them is b
+  function wWing(st) {
+    const bi = []; for (let i = 0; i < 81; i++) if (!st.vals[i] && POP(st.cand[i]) === 2) bi.push(i);
+    for (let x = 0; x < bi.length; x++) for (let y = x + 1; y < bi.length; y++) {
+      const p = bi[x], q = bi[y]; if (st.cand[p] !== st.cand[q] || SEES(p, q)) continue;
+      const [d1, d2] = DIGS(st.cand[p]);
+      for (const [a, b] of [[d1, d2], [d2, d1]]) for (const L of strongLinks(st, a)) {
+        for (const [e1, e2] of [[L.a, L.b], [L.b, L.a]]) {
+          if (e1 === p || e1 === q || e2 === p || e2 === q || !SEES(e1, p) || !SEES(e2, q)) continue;
+          const el = seenByAll(st, b, [p, q], [p, q]); if (!el.length) continue;
+          return { name: 'W-vleugel', elim: el, cand: true, keyD: [a, b], hl: { pat: [p, q], src: [e1, e2], unit: UNITS[L.u] },
+            text: `${cN(p)} en ${cN(q)} kunnen allebei alleen ${een(a)} of ${een(b)} worden. In ${lnk(L)} moet ${een(a)} komen. ${cN(e1)} ziet ${cN(p)} en ${cN(e2)} ziet ${cN(q)}. Zouden ${cN(p)} en ${cN(q)} allebei ${een(a)} zijn, dan kan ${een(a)} in ${uName(L.u)} nergens meer. Dus is minstens één van de twee ${een(b)}. Een vakje dat ze allebei ziet, kan geen ${b} zijn. Weg: ${elimText(el)}.` };
+        }
+      }
+    }
+    return null;
+  }
+  // coloring: follow the strong links of one digit and give the cells two colours: one colour is all d, the other none
+  function coloring(st) {
+    for (let d = 1; d <= 9; d++) {
+      const L = strongLinks(st, d), adj = new Map(); if (L.length < 3) continue;
+      for (const l of L) { for (const [x, y] of [[l.a, l.b], [l.b, l.a]]) { if (!adj.has(x)) adj.set(x, []); adj.get(x).push(y); } }
+      const col = new Map();
+      for (const s0 of adj.keys()) {
+        if (col.has(s0)) continue;
+        const comp = [s0]; col.set(s0, 0);
+        for (let k = 0; k < comp.length; k++) for (const y of adj.get(comp[k])) if (!col.has(y)) { col.set(y, 1 - col.get(comp[k])); comp.push(y); }
+        if (comp.length < 4) continue;
+        const A = comp.filter(x => col.get(x) === 0), B = comp.filter(x => col.get(x) === 1);
+        // two cells of the same colour that see each other: that colour cannot be d
+        for (const [S1, S2, nm1, nm2] of [[A, B, 'blauwe', 'groene'], [B, A, 'groene', 'blauwe']]) {
+          for (let x = 0; x < S1.length; x++) for (let y = x + 1; y < S1.length; y++) if (SEES(S1[x], S1[y])) {
+            const el = S1.map(j => [j, d]);
+            return { name: 'Kleurketen', elim: el, cand: true, keyD: [d], color: { a: A, b: B }, hl: { pat: comp },
+              text: `Kijk naar ${een(d)}. Overal waar ${een(d)} maar op twee plekken kan, is precies één van die twee ${een(d)}. Volg die koppelingen en kleur de vakjes om en om blauw en groen: dan is óf elk blauw vakje ${een(d)}, óf elk groen vakje. Maar de ${nm1} vakjes ${cN(S1[x])} en ${cN(S1[y])} zien elkaar en kunnen niet allebei ${een(d)} zijn. Dus is geen enkel ${nm1.replace(/e$/, '')} vakje ${een(d)}. Weg: ${elimText(el)}.` };
+          }
+        }
+        // a cell that sees both colours: whichever colour is right, it sees a d
+        const el = []; for (let j = 0; j < 81; j++) if (!st.vals[j] && (st.cand[j] & BIT(d)) && !col.has(j) && A.some(a => SEES(a, j)) && B.some(b => SEES(b, j))) el.push([j, d]);
+        if (el.length) {
+          const ex = el[0][0], sa = A.find(a => SEES(a, ex)), sb = B.find(b => SEES(b, ex));
+          return { name: 'Kleurketen', elim: el, cand: true, keyD: [d], color: { a: A, b: B }, hl: { pat: comp },
+            text: `Kijk naar ${een(d)}. Overal waar ${een(d)} maar op twee plekken kan, is precies één van die twee ${een(d)}. Volg die koppelingen en kleur de vakjes om en om blauw en groen: dan is óf elk blauw vakje ${een(d)}, óf elk groen vakje. Een vakje dat een blauw én een groen vakje ziet (zoals ${cN(ex)}: het ziet ${cN(sa)} en ${cN(sb)}), ziet dus altijd ${een(d)} en kan zelf geen ${d} zijn. Weg: ${elimText(el)}.` };
+        }
+      }
+    }
+    return null;
+  }
+  // XY-chain: cells with two digits, each passing a digit to the next; the first and last share a digit x
+  function xyChain(st) {
+    const bi = []; for (let i = 0; i < 81; i++) if (!st.vals[i] && POP(st.cand[i]) === 2) bi.push(i);
+    let found = null;
+    const dfs = (path, ins, outD, start, x) => {
+      if (found || path.length > 6) return;
+      const last = path[path.length - 1];
+      for (const n of bi) {
+        if (path.includes(n) || !SEES(last, n) || !(st.cand[n] & BIT(outD))) continue;
+        const nOut = DIGS(st.cand[n] & ~BIT(outD))[0], P = [...path, n], I = [...ins, outD];
+        if (nOut === x && P.length >= 3) { const el = seenByAll(st, x, [start, n], P); if (el.length) { found = { P, I, x, el }; return; } }
+        dfs(P, I, nOut, start, x);
+      }
+    };
+    for (const s of bi) for (const x of DIGS(st.cand[s])) { dfs([s], [], DIGS(st.cand[s] & ~BIT(x))[0], s, x); if (found) break; }
+    if (!found) return null;
+    const { P, I, x, el } = found;
+    const steps = P.map((c, k) => k === 0 ? `als ${cN(c)} geen ${x} is, is het ${een(I[0])}` : k < P.length - 1 ? `dan is ${cN(c)} ${een(I[k])}` : `dan is ${cN(c)} ${een(x)}`);
+    return { name: 'XY-ketting', elim: el, cand: true, keyD: [x, ...I], hl: { pat: P },
+      text: `Volg de vakjes met twee mogelijkheden: ${steps.join(', ')}. Dus: is ${cN(P[0])} geen ${x}, dan is ${cN(P[P.length - 1])} het wel. Eén van de twee uiteinden is altijd ${een(x)}. Een vakje dat ze allebei ziet, kan geen ${x} zijn. Weg: ${elimText(el)}.` };
+  }
+  const TECH = [[1, fullHouse], [1, hiddenSingle], [1, nakedSingle], [2, pointing], [2, claiming], [2, st => nakedSub(st, 2)], [2, st => hiddenSub(st, 2)], [2, st => nakedSub(st, 3)], [2, st => hiddenSub(st, 3)],
+    [3, st => fish(st, 2)], [3, xyWing], [3, st => fish(st, 3)], [3, st => nakedSub(st, 4)], [3, st => hiddenSub(st, 4)],
+    [4, twoLinks], [4, xyzWing], [4, wWing], [4, coloring], [4, xyChain], [4, st => fish(st, 4)]];
+  function nextStep(st, maxLvl = 4) { for (const [l, f] of TECH) { if (l > maxLvl) break; const s = f(st); if (s) { s.lvl = l; return s; } } return null; }
   // how hard is a puzzle for a person? { ok: solved by these techniques, lvl: hardest technique needed, n2/n3: how often }
   function grade(puz) {
-    const st = mkState(puz.slice(), null); let lvl = 1, n2 = 0, n3 = 0;
+    const st = mkState(puz.slice(), null); let lvl = 1, n2 = 0, n3 = 0, n4 = 0;
     for (let n = 0; n < 400; n++) {
-      if (st.vals.every(v => v)) return { ok: true, lvl, n2, n3 };
-      const s = nextStep(st); if (!s) return { ok: false, lvl, n2, n3 };
-      lvl = Math.max(lvl, s.lvl); if (s.lvl === 2) n2++; if (s.lvl === 3) n3++; applyStep(st, s);
+      if (st.vals.every(v => v)) return { ok: true, lvl, n2, n3, n4 };
+      const s = nextStep(st); if (!s) return { ok: false, lvl, n2, n3, n4 };
+      lvl = Math.max(lvl, s.lvl); if (s.lvl === 2) n2++; if (s.lvl >= 3) n3++; if (s.lvl === 4) n4++; applyStep(st, s);
     }
-    return { ok: false, lvl, n2, n3 };
+    return { ok: false, lvl, n2, n3, n4 };
   }
   // the steps of one hint: the eliminations needed and then the next number to fill in
   function hintSteps(vals, elim, prefer) {
@@ -37990,11 +38115,11 @@ const Sudoku = (() => {
     if (board.children.length !== 81) build();
     const sv = sel >= 0 ? S.val[sel] : 0, showErr = opt.errors === 'direct';
     const hs = HX ? HX.steps[HX.k] : null, H = hs ? hs.hl || {} : null, set = k => new Set(H && H[k] || []);
-    const hUnit = set('unit'), hRay = set('ray'), hSrc = set('src'), hPat = set('pat'), hNo = set('no'), hTgt = set('tgt'), hEl = new Map();
+    const hUnit = set('unit'), hRay = set('ray'), hSrc = set('src'), hPat = set('pat'), hNo = set('no'), hTgt = set('tgt'), hEl = new Map(), cA = new Set(hs && hs.color ? hs.color.a : []), cB = new Set(hs && hs.color ? hs.color.b : []);
     if (hs) for (const [i, d] of hs.elim || []) hEl.set(i, (hEl.get(i) || 0) | BIT(d));
     for (let i = 0; i < 81; i++) {
       const el = board.children[i], v = S.val[i], peer = sel >= 0 && i !== sel && (ROW(i) === ROW(sel) || COL(i) === COL(sel) || BOX(i) === BOX(sel));
-      let cls = 'sd-c' + (COL(i) % 3 === 2 && COL(i) < 8 ? ' br' : '') + (ROW(i) % 3 === 2 && ROW(i) < 8 ? ' bb' : '') + (fixed(i) ? ' given' : v ? ' user' : '') + (H ? (hTgt.has(i) ? ' hx-tgt' : hSrc.has(i) ? ' hx-src' : hPat.has(i) ? ' hx-pat' : hEl.has(i) ? ' hx-el' : hUnit.has(i) ? ' hx-unit' : hRay.has(i) ? ' hx-ray' : '') + (hNo.has(i) ? ' hx-no' : '') : '') + (H ? '' : i === sel ? ' sel' : peer ? ' peer' : '') + (!H && v && sv && v === sv && i !== sel ? ' same' : '') + (v && !fixed(i) && ((showErr && wrong(i)) || conflict(i)) ? ' bad' : '');
+      let cls = 'sd-c' + (COL(i) % 3 === 2 && COL(i) < 8 ? ' br' : '') + (ROW(i) % 3 === 2 && ROW(i) < 8 ? ' bb' : '') + (fixed(i) ? ' given' : v ? ' user' : '') + (H ? (hTgt.has(i) ? ' hx-tgt' : cA.has(i) ? ' hx-blue' : cB.has(i) ? ' hx-green' : hSrc.has(i) ? ' hx-src' : hPat.has(i) ? ' hx-pat' : hEl.has(i) ? ' hx-el' : hUnit.has(i) ? ' hx-unit' : hRay.has(i) ? ' hx-ray' : '') + (hNo.has(i) ? ' hx-no' : '') : '') + (H ? '' : i === sel ? ' sel' : peer ? ' peer' : '') + (!H && v && sv && v === sv && i !== sel ? ' same' : '') + (v && !fixed(i) && ((showErr && wrong(i)) || conflict(i)) ? ' bad' : '');
       if (el.classList.contains('flash')) cls += ' flash';
       if (el.className !== cls) el.className = cls;
       const cm = hs && hs.cand && !v && hs.cand0 ? hs.cand0[i] : 0, key = new Set(hs && hs.keyD || []);

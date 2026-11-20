@@ -43,8 +43,8 @@ async function oneHint(p) {
 let p = await page(PORT);
 await p.tap('#tileSd'); await wait(p, 300);
 const lv = await ev(p, () => [...document.querySelectorAll('#sdLevels button')].map(b => b.dataset.lvl));
-ok(lv.join() === 'makkelijk,normaal,moeilijk,expert', 'vier niveaus, met Expert', lv.join());
-for (const [lvl, want] of [['makkelijk', g => g.ok && g.lvl === 1], ['normaal', g => g.ok && g.lvl <= 2], ['moeilijk', g => g.ok && g.lvl >= 2], ['expert', g => g.ok && g.lvl === 3]]) {
+ok(lv.join() === 'makkelijk,normaal,moeilijk,expert,meester', 'vijf niveaus, met Expert en Meester', lv.join());
+for (const [lvl, want] of [['makkelijk', g => g.ok && g.lvl === 1], ['normaal', g => g.ok && g.lvl <= 2], ['moeilijk', g => g.ok && (g.lvl === 2 || g.lvl === 3)], ['expert', g => g.ok && g.lvl >= 3 && g.n4 <= 1], ['meester', g => g.ok && g.lvl === 4 && g.n4 >= 2]]) {
   const ms = [], gs = [];
   for (let k = 0; k < 4; k++) { ms.push(await newGame(p, lvl)); gs.push(await ev(p, () => __sd.grade(__sd.S.puz))); }
   ok(gs.every(want), `${lvl}: elke puzzel is met uit te leggen stappen op te lossen en past bij het niveau`, JSON.stringify(gs.map(g => g.lvl + (g.ok ? '' : '!'))));
@@ -59,6 +59,13 @@ while (n < 81 && !(await ev(p, () => __sd.S.over))) { const r = await oneHint(p)
 ok(!problem && await ev(p, () => __sd.S.over && __sd.S.val.every((v, i) => v === __sd.S.sol[i])), 'expert: helemaal opgelost met alleen hints, elke stap goed', problem || `${n} hints`);
 ok(multi > 0 && [...seen].some(x => /vleugel|Zwaardvis/.test(x)), 'expert: uitleg in meerdere stappen, met een X-vleugel, Y-vleugel of zwaardvis', [...seen].join(', '));
 await wait(p, 1300); if (await ev(p, () => document.getElementById('sdEndModal').classList.contains('show'))) await p.click('#sdEndNew'); await wait(p, 200);
+for (let r = 0; r < 2; r++) {
+  await newGame(p, 'meester'); const seen4 = new Set(); let n4 = 0, bad4 = '';
+  while (n4 < 81 && !(await ev(p, () => __sd.S.over))) { const r = await oneHint(p); if (r.bad) { bad4 = r.bad; break; } r.names.forEach(x => seen4.add(x)); n4++; }
+  ok(!bad4 && await ev(p, () => __sd.S.over), `meester ${r + 1}: opgelost met alleen hints, elke stap goed`, bad4 || `${n4} hints`);
+  ok([...seen4].some(x => /Wolkenkrabber|Vlieger|Korte ketting|Kleurketen|W-vleugel|XYZ-vleugel|XY-ketting|Kwal/.test(x)), `meester ${r + 1}: met een meestertechniek`, [...seen4].filter(x => !/Enige|Laatste/.test(x)).join(', '));
+  await wait(p, 1300); if (await ev(p, () => document.getElementById('sdEndModal').classList.contains('show'))) await p.click('#sdEndNew'); await wait(p, 200);
+}
 
 /* ---- 3. a wrong number: the hint says so first, and can take it away ---- */
 await newGame(p, 'moeilijk');
@@ -77,10 +84,10 @@ await p.screenshot({ path: GFX + 'sd_hint_single.png' });
 ok(await ev(p, () => window.appBack()) && await ev(p, () => !__sd.HX && document.querySelector('.screen.active').id === 'sd'), 'terugknop sluit eerst de hint');
 
 /* ---- 5. find an advanced step and look at it (portrait and landscape) ---- */
-async function toAdvanced(p) {
-  await newGame(p, 'expert');
+async function toAdvanced(p, lvl = 'expert', want = 3) {
+  await newGame(p, lvl);
   for (let k = 0; k < 81; k++) {
-    const adv = await ev(p, () => { const S = __sd.S, h = __sd.hintSteps(S.val, S.elim, null); return h.steps.some(s => s.lvl === 3); });
+    const adv = await ev(p, w => { const S = __sd.S, h = __sd.hintSteps(S.val, S.elim, null); return h.steps.some(s => s.lvl >= w); }, want);
     if (adv) return true;
     await ev(p, () => { const S = __sd.S, h = __sd.hintSteps(S.val, S.elim, null); for (const s of h.steps) for (const [i, d] of s.elim || []) S.elim[i] |= 1 << d; const s = h.steps.at(-1); if (s && s.place) { __sd.select(s.place[0]); __sd.place(s.place[1]); } });
   }
@@ -88,7 +95,7 @@ async function toAdvanced(p) {
 }
 ok(await toAdvanced(p), 'staand: een moeilijke stap gevonden');
 await ev(p, () => __sd.select(-1)); await p.click('#sdTools [data-t="hint"]'); await wait(p, 80);
-let k3 = await ev(p, () => __sd.HX.steps.findIndex(s => s.lvl === 3));
+let k3 = await ev(p, () => __sd.HX.steps.findIndex(s => s.lvl >= 3));
 for (let k = 0; k < k3; k++) { await click(p, 'next'); await wait(p, 30); }
 c = await card(p);
 const look = await ev(p, () => ({ del: document.querySelectorAll('#sdBoard .sd-n.hx i.del').length, pat: document.querySelectorAll('#sdBoard .hx-pat').length, pad: getComputedStyle(document.getElementById('sdPad')).display, fit: document.getElementById('sdHint').getBoundingClientRect().bottom <= innerHeight + 1 }));
@@ -110,10 +117,17 @@ p = await page(LAND);
 await p.tap('#tileSd'); await wait(p, 300);
 ok(await toAdvanced(p), 'liggend: een moeilijke stap gevonden');
 await p.click('#sdTools [data-t="hint"]'); await wait(p, 80);
-k3 = await ev(p, () => __sd.HX.steps.findIndex(s => s.lvl === 3)); for (let k = 0; k < k3; k++) { await click(p, 'next'); await wait(p, 30); }
+k3 = await ev(p, () => __sd.HX.steps.findIndex(s => s.lvl >= 3)); for (let k = 0; k < k3; k++) { await click(p, 'next'); await wait(p, 30); }
 const lk = await ev(p, () => { const h = document.getElementById('sdHint').getBoundingClientRect(), bd = document.getElementById('sdBoard').getBoundingClientRect(); return { fit: h.bottom <= innerHeight + 1 && h.right <= innerWidth + 1, side: h.left >= bd.right - 1, sw: document.documentElement.scrollWidth <= innerWidth }; });
 ok(lk.fit && lk.side && lk.sw, 'liggend: uitleg naast het bord, past', JSON.stringify(lk));
 await p.screenshot({ path: GFX + 'sd_hint_land.png' });
+await p.close();
+p = await page(PORT); await p.tap('#tileSd'); await wait(p, 300);
+ok(await toAdvanced(p, 'meester', 4), 'meester: een meesterstap gevonden');
+await ev(p, () => __sd.select(-1)); await p.click('#sdTools [data-t="hint"]'); await wait(p, 80);
+const k4 = await ev(p, () => __sd.HX.steps.findIndex(s => s.lvl === 4)); for (let k = 0; k < k4; k++) { await click(p, 'next'); await wait(p, 30); }
+c = await card(p); ok(c.txt.length > 100, 'meester: uitleg van de meesterstap', c.txt.slice(0, 90));
+await p.screenshot({ path: GFX + 'sd_hint_meester.png' });
 await p.close();
 
 /* ---- 6. the start dialog explains the techniques ---- */

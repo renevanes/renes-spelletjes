@@ -46,6 +46,14 @@ g = {
         <li><b>X-vleugel</b> – kan een cijfer in twee rijen alleen in dezelfde twee kolommen, dan staan de twee in die kolommen al vast: in de rest van die kolommen kan het niet meer. Met drie rijen heet dat een <b>zwaardvis</b>.</li>
         <li><b>Y-vleugel</b> – een vakje met 2 mogelijkheden (A of B) en twee “vleugels” met A of C en B of C: één van de vleugels wordt zeker C, dus een vakje dat beide vleugels ziet kan geen C zijn.</li>
       </ul>
+      <p><b>Voor Meesters</b> – hier denk je in koppelingen: kan een cijfer in een rij, kolom of blok maar op twee plekken, dan is precies één van die twee het cijfer.</p>
+      <ul>
+        <li><b>Wolkenkrabber en vlieger</b> – twee van zulke koppelingen waarvan twee uiteinden elkaar zien: dan is één van de twee andere uiteinden zeker het cijfer.</li>
+        <li><b>Kleurketen</b> – volg alle koppelingen van één cijfer en kleur de vakjes om en om blauw en groen. Óf alle blauwe zijn het cijfer, óf alle groene. Een vakje dat blauw én groen ziet, valt af.</li>
+        <li><b>W-vleugel</b> – twee vakjes die allebei alleen A of B kunnen, verbonden door een koppeling op A: één van beide is dan B.</li>
+        <li><b>XYZ-vleugel</b> – zoals de Y-vleugel, maar het middelste vakje kan zelf ook C zijn.</li>
+        <li><b>XY-ketting</b> – een rij vakjes met elk twee mogelijkheden die elkaar doorgeven: één van de uiteinden is zeker hetzelfde cijfer.</li>
+      </ul>
       <p>Tip: zet met ✎ potloodnotities. Bij moeilijke stappen laat de hint alle mogelijke cijfers zien, met de cijfers die afvallen in het rood.</p>
     </details>
     <div id="sdOptList"></div>
@@ -90,7 +98,7 @@ g = {
 .sd-hstep{font-size:11.5px;font-weight:700;background:#1d3a6e;color:#fff;border-radius:9px;padding:1px 8px}
 .sd-hb{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap} .sd-hb button{border:0;border-radius:11px;padding:8px 14px;font-weight:700;font-size:14px;background:#e6dfcc;color:#2b2418} .sd-hb button.go{background:#2a9d6f;color:#fff}
 .sd-c.hx-unit{background:#dfeaf8} .sd-c.hx-ray{background:#f6e1dc} .sd-c.hx-src{background:#ffd9b0;box-shadow:inset 0 0 0 3px #f08a24}
-.sd-c.hx-pat{background:#ffe68a;box-shadow:inset 0 0 0 2px #e0b520} .sd-c.hx-el{background:#fde8e8} .sd-c.hx-tgt{background:#c8f2cc;box-shadow:inset 0 0 0 3px #2a9d6f}
+.sd-c.hx-pat{background:#ffe68a;box-shadow:inset 0 0 0 2px #e0b520} .sd-c.hx-blue{background:#bcd7ff;box-shadow:inset 0 0 0 2px #3a74d8} .sd-c.hx-green{background:#bdeec4;box-shadow:inset 0 0 0 2px #2a9d6f} .sd-c.hx-el{background:#fde8e8} .sd-c.hx-tgt{background:#c8f2cc;box-shadow:inset 0 0 0 3px #2a9d6f}
 .sd-c.hx-no::after{content:'✕';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(211,38,58,.55);font-size:calc(var(--s) / 16);font-weight:700;pointer-events:none}
 .sd-n.hx{color:#5e6878} .sd-n i.del{color:#d3263a;background:#ffd0d0;text-decoration:line-through;font-weight:800} .sd-n i.key{color:#1d3a6e;font-weight:800} .sd-n i.ok{background:#2a9d6f;color:#fff;font-weight:800}
 .sd-ghost{color:#2a9d6f;font-weight:800;opacity:.85}
@@ -105,6 +113,7 @@ html.big-text #sdHint{font-size:16.5px} html.big-text .sd-hh b{font-size:18px}
   #sdWrap{flex-direction:row;gap:14px;padding:8px 12px}
   #sdBoard{--s:min(calc(100vh - 80px),calc(100vw - 340px))}
   #sdSide{width:300px} #sdPad{grid-template-columns:repeat(3,1fr)} #sdPad button{padding:6px 0 2px}
+  #sdHint{padding:8px 10px;font-size:13.5px} #sdHint p{max-height:calc(100vh - 210px);overflow-y:auto;margin:4px 0 6px}
 }''',
  'js': js,
  'gamesEntry': "  { id: 'sd', label: 'Sudoku', emoji: '🔢', bg: ['#4a78a8', '#1c2c3c'], enter: () => Sudoku.enter(), tile: 'tileSd' },\n",
