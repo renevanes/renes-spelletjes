@@ -1,11 +1,11 @@
 {
-  "versionCode": 80,
-  "versionName": "1.79",
+  "versionCode": 81,
+  "versionName": "1.80",
   "nativeLevel": 12,
-  "notes": "Logigram: nieuwe knop **Controleer**. Die kijkt of je ergens een verkeerde \u2713 of \u2717 hebt gezet en arceert die vakjes in rood. Verbeter je een vakje, dan verdwijnt de arcering vanzelf.",
+  "notes": "Sudoku: een hint legt nu stap voor stap uit **waarom** een cijfer klopt, met de techniek erbij (enige plek, tweetal, vast in \u00e9\u00e9n blok, X-vleugel, Y-vleugel en meer) en het rooster gekleurd zodat je het ziet. Alle puzzels zijn zo op te lossen, er is een nieuw niveau **Expert** en in het startscherm staat uitleg over de technieken.",
   "web": "web/index.html",
-  "webSha256": "affafb8ab91ab0e414cb0fbb7c239ac3042c195ea70cbe08b03ddb18017270f8",
-  "webSig": "MEUCICIMRHo4hMX9E8oOlJnxPrF89ND+JrR3f47ZwY4RQ7ejAiEAl/ZTp/hKBxLhEW6BiVR7LKTXxDxxwMqcBT1ysedIG74=",
+  "webSha256": "9ac92259428560b3960b7497c406fcf689fbe3a285654b72087fd1d6a01afc61",
+  "webSig": "MEUCIQDRNx/6bwWifyDnqcXCvUtVT283HkyJ8BOJnAxnkuthdAIgFzBqlbDs75ZhVW8/00bC+98lUToFa6CLHqQ0l4xaEQY=",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "157e7255acef0f79f0480b8faf45ec752ee5481ed6800a979dae8c05fceca91c"

@@ -1,1 +1,0 @@
-Sudoku: een hint legt nu stap voor stap uit **waarom** een cijfer klopt, met de techniek erbij (enige plek, tweetal, vast in één blok, X-vleugel, Y-vleugel en meer) en het rooster gekleurd zodat je het ziet. Alle puzzels zijn zo op te lossen, er is een nieuw niveau **Expert** en in het startscherm staat uitleg over de technieken.
