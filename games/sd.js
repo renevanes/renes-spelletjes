@@ -439,6 +439,33 @@ const Sudoku = (() => {
     S.val[u.i] = u.val; S.notes[u.i] = u.notes; sel = u.i; sfx('tap'); save(); render();
   }
   function erase() { if (!S || S.over || sel < 0 || fixed(sel)) return; if (!S.val[sel] && !S.notes[sel]) return; undo.push({ i: sel, val: S.val[sel], notes: S.notes[sel] }); S.val[sel] = 0; S.notes[sel] = 0; sfx('tap'); save(); render(); }
+  /* Controle: compare what you filled in with the solution; wrong numbers get red stripes, notes that miss the right digit an orange frame
+     (they stay marked until you change that cell) */
+  let toastT = 0;
+  function toast(t, ms = 2600) { const el = $('#sdToast'); el.textContent = t; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), ms); }
+  function check() {
+    if (!S || S.over) return;
+    if (HX) closeHint();
+    const bad = [], miss = []; let filled = 0, noted = 0;
+    for (let i = 0; i < 81; i++) {
+      if (fixed(i)) continue;
+      if (S.val[i]) { filled++; if (S.val[i] !== S.sol[i]) bad.push(i); }
+      else if (S.notes[i]) { noted++; if (!(S.notes[i] & BIT(S.sol[i]))) miss.push(i); }
+    }
+    if (!filled && !noted) { toast('Je hebt nog niets ingevuld.'); sfx('tap'); return; }
+    S.checks = (S.checks || 0) + 1; S.chk = {}; S.chkN = {};
+    for (const i of bad) S.chk[i] = S.val[i];
+    for (const i of miss) S.chkN[i] = S.notes[i];
+    const parts = [];
+    if (bad.length) parts.push(`⚠️ ${bad.length} ${bad.length === 1 ? 'cijfer klopt' : 'cijfers kloppen'} niet (rood gearceerd)`);
+    else if (filled) parts.push(`✓ Alle ${filled} ingevulde ${filled === 1 ? 'cijfer klopt' : 'cijfers kloppen'}`);
+    if (miss.length) parts.push(`bij ${miss.length} ${miss.length === 1 ? 'vakje mist' : 'vakjes mist'} het juiste cijfer in je potlood (oranje)`);
+    else if (noted && !bad.length) parts.push('je potloodnotities zijn goed');
+    toast(parts.join(' · ').replace(/^(.)/, c => c.toUpperCase()), 3600);
+    if (bad.length || miss.length) { sfx('sdError'); vibrate(30); flash([...bad, ...miss]); } else sfx('sdLine');
+    save(); render();
+  }
+
   /* hint: first wrong numbers, then the steps (with the reason why) to the next number; shown one step at a time */
   let HX = null;
   const hintBox = $('#sdHint');
@@ -503,12 +530,12 @@ const Sudoku = (() => {
     if (!S.val.every((v, i) => v === S.sol[i])) return;
     S.over = true; store.del('sd.save'); stats.won++;
     const t = Math.floor(S.time), b = stats.best[S.lvl]; S.newBest = b == null || t < b; if (S.newBest) stats.best[S.lvl] = t;
-    if (!S.hints && !S.mistakes) stats.noHelp++;
+    if (!S.hints && !S.mistakes && !S.checks) stats.noHelp++;
     saveStats(); render(); sfx('pfWin'); vibrate(30);
     flash([...Array(81).keys()]);
     setTimeout(() => {
       $('#sdEndTitle').textContent = 'Sudoku opgelost!';
-      $('#sdEndText').innerHTML = `${LEVELS[S.lvl].name} in <b>${fmt(S.time)}</b>${S.newBest ? ' · 🎉 nieuwe beste tijd' : ''}<br><small>${S.mistakes ? S.mistakes + (S.mistakes === 1 ? ' fout' : ' fouten') : 'Geen fouten'} · ${S.hints ? S.hints + (S.hints === 1 ? ' hint' : ' hints') : 'geen hints'}</small>`;
+      $('#sdEndText').innerHTML = `${LEVELS[S.lvl].name} in <b>${fmt(S.time)}</b>${S.newBest ? ' · 🎉 nieuwe beste tijd' : ''}<br><small>${S.mistakes ? S.mistakes + (S.mistakes === 1 ? ' fout' : ' fouten') : 'Geen fouten'} · ${S.hints ? S.hints + (S.hints === 1 ? ' hint' : ' hints') : 'geen hints'}${S.checks ? ` · ${S.checks}× gecontroleerd` : ''}</small>`;
       openModal('sdEndModal');
     }, 1100);
   }
@@ -532,6 +559,8 @@ const Sudoku = (() => {
       const el = board.children[i], v = S.val[i], peer = sel >= 0 && i !== sel && (ROW(i) === ROW(sel) || COL(i) === COL(sel) || BOX(i) === BOX(sel));
       let cls = 'sd-c' + (COL(i) % 3 === 2 && COL(i) < 8 ? ' br' : '') + (ROW(i) % 3 === 2 && ROW(i) < 8 ? ' bb' : '') + (fixed(i) ? ' given' : v ? ' user' : '') + (H ? (hTgt.has(i) ? ' hx-tgt' : cA.has(i) ? ' hx-blue' : cB.has(i) ? ' hx-green' : hSrc.has(i) ? ' hx-src' : hPat.has(i) ? ' hx-pat' : hEl.has(i) ? ' hx-el' : hUnit.has(i) ? ' hx-unit' : hRay.has(i) ? ' hx-ray' : '') + (hNo.has(i) ? ' hx-no' : '') : '') + (H ? '' : i === sel ? ' sel' : peer ? ' peer' : '') + (!H && v && sv && v === sv && i !== sel ? ' same' : '') + (v && !fixed(i) && ((showErr && wrong(i)) || conflict(i)) ? ' bad' : '');
       if (el.classList.contains('flash')) cls += ' flash';
+      if (!H && S.chk && v && S.chk[i] === v) cls += ' chk';
+      else if (!H && S.chkN && !v && S.notes[i] && S.chkN[i] === S.notes[i]) cls += ' chkn';
       if (el.className !== cls) el.className = cls;
       const cm = hs && hs.cand && !v && hs.cand0 ? hs.cand0[i] : 0, key = new Set(hs && hs.keyD || []);
       const html = v ? String(v) : cm ? `<span class="sd-n hx">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(d => !(cm & BIT(d)) ? '<i></i>' : `<i class="${(hEl.get(i) || 0) & BIT(d) ? 'del' : hs.place && hs.place[0] === i && hs.place[1] === d ? 'ok' : (hPat.has(i) || hTgt.has(i)) && key.has(d) ? 'key' : ''}">${d}</i>`).join('')}</span>` : hs && hs.place && hs.place[0] === i ? `<span class="sd-ghost">${hs.place[1]}</span>` : S.notes[i] ? `<span class="sd-n">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(d => `<i${S.notes[i] & (1 << d) ? (sv === d ? ' class="hl"' : '') + '>' + d : '>'}</i>`).join('')}</span>` : '';
@@ -560,6 +589,7 @@ const Sudoku = (() => {
     const t = b.dataset.t;
     if (t === 'undo') doUndo(); else if (t === 'erase') erase(); else if (t === 'hint') hint();
     else if (t === 'pencil') { opt.pencil = !opt.pencil; saveOpt(); sfx('tap'); render(); }
+    else if (t === 'check') check();
   });
   window.addEventListener('keydown', e => {
     if (current !== 'sd' || anyModal() || !S) return;
@@ -590,7 +620,7 @@ const Sudoku = (() => {
     if (!S || S.over) { renderStart(); openModal('sdStartModal'); }
   }
   function leave() { closeHint(); clearInterval(timer); save(); closeModals(); show('menu'); refreshMenu(); }
-  window.__sd = { get S() { return S; }, get HX() { return HX; }, newGame, place, hint, closeHint, erase, doUndo, select: i => { sel = i; render(); }, solve, generate, grade, hintSteps, mkState, opt };
+  window.__sd = { get S() { return S; }, get HX() { return HX; }, newGame, place, hint, check, closeHint, erase, doUndo, select: i => { sel = i; render(); }, solve, generate, grade, hintSteps, mkState, opt };
   return { enter, leave, back: () => { if (HX) { closeHint(); return; } leave(); }, hasSave: () => !!store.get('sd.save', null) };
 })();
 $('#tileSd').addEventListener('click', () => Sudoku.enter());

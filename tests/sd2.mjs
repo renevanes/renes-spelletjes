@@ -130,6 +130,36 @@ c = await card(p); ok(c.txt.length > 100, 'meester: uitleg van de meesterstap', 
 await p.screenshot({ path: GFX + 'sd_hint_meester.png' });
 await p.close();
 
+/* ---- Controle: wrong numbers striped red, notes without the right digit framed orange, until changed ---- */
+for (const o of [PORT, LAND]) {
+  const nm = o === PORT ? 'staand' : 'liggend';
+  p = await page(o); await p.tap('#tileSd'); await wait(p, 300);
+  await ev(p, () => { __sd.opt.errors = 'uit'; }); await newGame(p, 'normaal');
+  const vis = await ev(p, () => { const r = document.getElementById('sdCheck').getBoundingClientRect(); return r.width > 40 && r.right <= innerWidth && r.bottom <= innerHeight; });
+  ok(vis, `${nm}: knop Controle zichtbaar`);
+  await p.click('#sdCheck'); await wait(p, 100);
+  ok((await p.textContent('#sdToast')).includes('nog niets'), `${nm}: leeg: nog niets ingevuld`);
+  const [g1, g2, w1, n1] = await ev(p, () => { const S = __sd.S, e = []; for (let i = 0; i < 81; i++) if (!S.puz[i]) e.push(i); return e.slice(0, 4); });
+  await ev(p, ([g1, g2, w1, n1]) => { const S = __sd.S; __sd.select(g1); __sd.place(S.sol[g1]); __sd.select(g2); __sd.place(S.sol[g2]); __sd.select(w1); __sd.place(S.sol[w1] % 9 + 1);
+    __sd.opt.pencil = true; __sd.select(n1); for (const d of [1, 2, 3, 4, 5, 6, 7, 8, 9]) if (d !== S.sol[n1] && (d % 3 === 0 || d === 1)) __sd.place(d); __sd.opt.pencil = false; }, [g1, g2, w1, n1]);
+  await p.click('#sdCheck'); await wait(p, 700);
+  const r = await ev(p, ([g1, w1, n1]) => ({ w: document.querySelector(`.sd-c[data-i="${w1}"]`).className, g: document.querySelector(`.sd-c[data-i="${g1}"]`).className, n: document.querySelector(`.sd-c[data-i="${n1}"]`).className, t: document.getElementById('sdToast').textContent, c: __sd.S.checks }), [g1, w1, n1]);
+  ok(r.w.includes('chk') && !r.g.includes('chk') && r.c === 1, `${nm}: fout cijfer rood gearceerd, goede niet`, r.t);
+  ok(r.n.includes('chkn') && /1 cijfer klopt niet/.test(r.t) && /potlood/.test(r.t), `${nm}: potlood zonder het juiste cijfer oranje omrand, melding klopt`);
+  await p.screenshot({ path: GFX + `sd_check_${o === PORT ? 'p' : 'l'}.png` });
+  await ev(p, w1 => { __sd.select(w1); __sd.place(__sd.S.sol[w1]); }, w1); await wait(p, 100);
+  ok(!(await ev(p, i => document.querySelector(`.sd-c[data-i="${i}"]`).classList.contains('chk'), w1)), `${nm}: verbeterd: arcering weg`);
+  await ev(p, n1 => { __sd.select(n1); __sd.erase(); }, n1);
+  await p.click('#sdCheck'); await wait(p, 200);
+  ok((await p.textContent('#sdToast')).includes('kloppen'), `${nm}: alles goed: "Alle … cijfers kloppen"`, await p.textContent('#sdToast'));
+  if (o === PORT) {
+    const nh = await ev(p, () => __sd.S && JSON.parse(localStorage.getItem('sd.stats') || '{}').noHelp || 0);
+    await ev(p, () => { const S = __sd.S; for (let i = 0; i < 81; i++) if (S.val[i] !== S.sol[i]) { __sd.select(i); __sd.place(S.sol[i]); } }); await wait(p, 1400);
+    ok((await p.textContent('#sdEndText')).includes('gecontroleerd') && (await ev(p, () => JSON.parse(localStorage.getItem('sd.stats')).noHelp || 0)) === nh, 'eindscherm noemt de controle, telt niet als zonder hulp');
+  }
+  await p.close();
+}
+
 /* ---- 6. the start dialog explains the techniques ---- */
 p = await page(PORT); await p.tap('#tileSd'); await wait(p, 300);
 await p.click('.sd-tech summary'); await wait(p, 100);

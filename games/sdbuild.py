@@ -13,6 +13,7 @@ g = {
 ''',
  'screenHtml': '''<!-- ============ SUDOKU ============ -->
 <section id="sd" class="screen">
+  <div id="sdToast" aria-live="polite"></div>
   <div class="topbar">
     <button class="iconbtn" id="sdBack" aria-label="Terug">‹</button>
     <div class="sd-hud"><span id="sdLvl">Makkelijk</span><span>⏱ <b id="sdTime">0:00</b></span><span id="sdMistW">✗ <b id="sdMist">0</b></span></div>
@@ -21,7 +22,7 @@ g = {
   <div id="sdWrap">
     <div id="sdBoard"></div>
     <div id="sdSide">
-      <div id="sdTools"><button data-t="undo"><b>↶</b><small>Terug</small></button><button data-t="erase"><b>⌫</b><small>Wissen</small></button><button data-t="pencil" id="sdPencil"><b>✎</b><small>Potlood</small></button><button data-t="hint"><b>💡</b><small>Hint</small></button></div>
+      <div id="sdTools"><button data-t="undo"><b>↶</b><small>Terug</small></button><button data-t="erase"><b>⌫</b><small>Wissen</small></button><button data-t="pencil" id="sdPencil"><b>✎</b><small>Potlood</small></button><button data-t="check" id="sdCheck"><b>☑</b><small>Controle</small></button><button data-t="hint"><b>💡</b><small>Hint</small></button></div>
       <div id="sdHint" aria-live="polite"></div>
       <div id="sdPad"></div>
     </div>
@@ -54,6 +55,7 @@ g = {
         <li><b>XYZ-vleugel</b> – zoals de Y-vleugel, maar het middelste vakje kan zelf ook C zijn.</li>
         <li><b>XY-ketting</b> – een rij vakjes met elk twee mogelijkheden die elkaar doorgeven: één van de uiteinden is zeker hetzelfde cijfer.</li>
       </ul>
+      <p>Twijfel je? <b>☑ Controle</b> kijkt of je ingevulde cijfers kloppen (fout = rood gearceerd) en of in je potloodnotities het juiste cijfer nog staat (zo niet: oranje rand). Het blijft gemarkeerd tot je dat vakje verandert.</p>
       <p>Tip: zet met ✎ potloodnotities. Bij moeilijke stappen laat de hint alle mogelijke cijfers zien, met de cijfers die afvallen in het rood.</p>
     </details>
     <div id="sdOptList"></div>
@@ -83,12 +85,17 @@ g = {
 .sd-c.given{color:#231f18;font-weight:700}
 .sd-c.peer{background:#ece6d4} .sd-c.same{background:#f6dd8f} .sd-c.sel{background:#ffd75e}
 .sd-c.bad{color:#d3263a} .sd-c.bad.user{background:#fde1e1} .sd-c.bad.sel{background:#ffc9c0}
+#sdBoard .sd-c.chk{background:repeating-linear-gradient(45deg,#fde1e1 0 5px,#f6b9b9 5px 9px);box-shadow:inset 0 0 0 2px #d3263a;color:#c21d32}
+#sdBoard .sd-c.chkn{box-shadow:inset 0 0 0 3px #f08a24}
+#sdToast{position:absolute;left:50%;top:64px;transform:translate(-50%,-8px);opacity:0;transition:opacity .25s,transform .25s;background:rgba(18,26,38,.94);color:#fff;padding:9px 14px;border-radius:12px;font-size:14.5px;line-height:1.35;z-index:6;pointer-events:none;width:max-content;max-width:92%;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+#sdToast.show{opacity:1;transform:translate(-50%,0)}
+html.big-text #sdToast{font-size:16.5px}
 .sd-c.flash{animation:sdFlash .55s ease-out both}
 @keyframes sdFlash{0%{background:#fff3b0;transform:scale(1)}40%{background:#bff0c4;transform:scale(1.08)}100%{transform:scale(1)}}
 .sd-n{position:absolute;inset:6%;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);font-size:calc(var(--s) / 34);font-weight:600;color:#7a7364;line-height:1}
 .sd-n i{font-style:normal;display:flex;align-items:center;justify-content:center;border-radius:3px} .sd-n i.hl{background:#ffd75e;color:#3a2f10}
 #sdSide{display:flex;flex-direction:column;gap:10px;width:min(calc(100vw - 16px),560px)}
-#sdTools{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+#sdTools{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
 #sdTools button{background:rgba(255,255,255,.1);border:2px solid transparent;border-radius:14px;color:var(--ink);padding:6px 0 4px;display:flex;flex-direction:column;align-items:center;gap:1px;-webkit-tap-highlight-color:transparent}
 #sdTools button b{font-size:20px;line-height:1.1} #sdTools button small{font-size:11px;color:var(--muted)}
 #sdTools button.on{border-color:var(--accent);background:rgba(242,193,78,.2)}

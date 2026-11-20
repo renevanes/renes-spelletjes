@@ -687,12 +687,17 @@ html.light .pin-pad button{background:rgba(0,0,0,.07)}
 .sd-c.given{color:#231f18;font-weight:700}
 .sd-c.peer{background:#ece6d4} .sd-c.same{background:#f6dd8f} .sd-c.sel{background:#ffd75e}
 .sd-c.bad{color:#d3263a} .sd-c.bad.user{background:#fde1e1} .sd-c.bad.sel{background:#ffc9c0}
+#sdBoard .sd-c.chk{background:repeating-linear-gradient(45deg,#fde1e1 0 5px,#f6b9b9 5px 9px);box-shadow:inset 0 0 0 2px #d3263a;color:#c21d32}
+#sdBoard .sd-c.chkn{box-shadow:inset 0 0 0 3px #f08a24}
+#sdToast{position:absolute;left:50%;top:64px;transform:translate(-50%,-8px);opacity:0;transition:opacity .25s,transform .25s;background:rgba(18,26,38,.94);color:#fff;padding:9px 14px;border-radius:12px;font-size:14.5px;line-height:1.35;z-index:6;pointer-events:none;width:max-content;max-width:92%;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+#sdToast.show{opacity:1;transform:translate(-50%,0)}
+html.big-text #sdToast{font-size:16.5px}
 .sd-c.flash{animation:sdFlash .55s ease-out both}
 @keyframes sdFlash{0%{background:#fff3b0;transform:scale(1)}40%{background:#bff0c4;transform:scale(1.08)}100%{transform:scale(1)}}
 .sd-n{position:absolute;inset:6%;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);font-size:calc(var(--s) / 34);font-weight:600;color:#7a7364;line-height:1}
 .sd-n i{font-style:normal;display:flex;align-items:center;justify-content:center;border-radius:3px} .sd-n i.hl{background:#ffd75e;color:#3a2f10}
 #sdSide{display:flex;flex-direction:column;gap:10px;width:min(calc(100vw - 16px),560px)}
-#sdTools{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+#sdTools{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
 #sdTools button{background:rgba(255,255,255,.1);border:2px solid transparent;border-radius:14px;color:var(--ink);padding:6px 0 4px;display:flex;flex-direction:column;align-items:center;gap:1px;-webkit-tap-highlight-color:transparent}
 #sdTools button b{font-size:20px;line-height:1.1} #sdTools button small{font-size:11px;color:var(--muted)}
 #sdTools button.on{border-color:var(--accent);background:rgba(242,193,78,.2)}
@@ -3315,6 +3320,7 @@ html.big-text #wzToast{font-size:16.5px}
 
 <!-- ============ SUDOKU ============ -->
 <section id="sd" class="screen">
+  <div id="sdToast" aria-live="polite"></div>
   <div class="topbar">
     <button class="iconbtn" id="sdBack" aria-label="Terug">‹</button>
     <div class="sd-hud"><span id="sdLvl">Makkelijk</span><span>⏱ <b id="sdTime">0:00</b></span><span id="sdMistW">✗ <b id="sdMist">0</b></span></div>
@@ -3323,7 +3329,7 @@ html.big-text #wzToast{font-size:16.5px}
   <div id="sdWrap">
     <div id="sdBoard"></div>
     <div id="sdSide">
-      <div id="sdTools"><button data-t="undo"><b>↶</b><small>Terug</small></button><button data-t="erase"><b>⌫</b><small>Wissen</small></button><button data-t="pencil" id="sdPencil"><b>✎</b><small>Potlood</small></button><button data-t="hint"><b>💡</b><small>Hint</small></button></div>
+      <div id="sdTools"><button data-t="undo"><b>↶</b><small>Terug</small></button><button data-t="erase"><b>⌫</b><small>Wissen</small></button><button data-t="pencil" id="sdPencil"><b>✎</b><small>Potlood</small></button><button data-t="check" id="sdCheck"><b>☑</b><small>Controle</small></button><button data-t="hint"><b>💡</b><small>Hint</small></button></div>
       <div id="sdHint" aria-live="polite"></div>
       <div id="sdPad"></div>
     </div>
@@ -3854,6 +3860,7 @@ html.big-text #wzToast{font-size:16.5px}
         <li><b>XYZ-vleugel</b> – zoals de Y-vleugel, maar het middelste vakje kan zelf ook C zijn.</li>
         <li><b>XY-ketting</b> – een rij vakjes met elk twee mogelijkheden die elkaar doorgeven: één van de uiteinden is zeker hetzelfde cijfer.</li>
       </ul>
+      <p>Twijfel je? <b>☑ Controle</b> kijkt of je ingevulde cijfers kloppen (fout = rood gearceerd) en of in je potloodnotities het juiste cijfer nog staat (zo niet: oranje rand). Het blijft gemarkeerd tot je dat vakje verandert.</p>
       <p>Tip: zet met ✎ potloodnotities. Bij moeilijke stappen laat de hint alle mogelijke cijfers zien, met de cijfers die afvallen in het rood.</p>
     </details>
     <div id="sdOptList"></div>
@@ -38028,6 +38035,33 @@ const Sudoku = (() => {
     S.val[u.i] = u.val; S.notes[u.i] = u.notes; sel = u.i; sfx('tap'); save(); render();
   }
   function erase() { if (!S || S.over || sel < 0 || fixed(sel)) return; if (!S.val[sel] && !S.notes[sel]) return; undo.push({ i: sel, val: S.val[sel], notes: S.notes[sel] }); S.val[sel] = 0; S.notes[sel] = 0; sfx('tap'); save(); render(); }
+  /* Controle: compare what you filled in with the solution; wrong numbers get red stripes, notes that miss the right digit an orange frame
+     (they stay marked until you change that cell) */
+  let toastT = 0;
+  function toast(t, ms = 2600) { const el = $('#sdToast'); el.textContent = t; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), ms); }
+  function check() {
+    if (!S || S.over) return;
+    if (HX) closeHint();
+    const bad = [], miss = []; let filled = 0, noted = 0;
+    for (let i = 0; i < 81; i++) {
+      if (fixed(i)) continue;
+      if (S.val[i]) { filled++; if (S.val[i] !== S.sol[i]) bad.push(i); }
+      else if (S.notes[i]) { noted++; if (!(S.notes[i] & BIT(S.sol[i]))) miss.push(i); }
+    }
+    if (!filled && !noted) { toast('Je hebt nog niets ingevuld.'); sfx('tap'); return; }
+    S.checks = (S.checks || 0) + 1; S.chk = {}; S.chkN = {};
+    for (const i of bad) S.chk[i] = S.val[i];
+    for (const i of miss) S.chkN[i] = S.notes[i];
+    const parts = [];
+    if (bad.length) parts.push(`⚠️ ${bad.length} ${bad.length === 1 ? 'cijfer klopt' : 'cijfers kloppen'} niet (rood gearceerd)`);
+    else if (filled) parts.push(`✓ Alle ${filled} ingevulde ${filled === 1 ? 'cijfer klopt' : 'cijfers kloppen'}`);
+    if (miss.length) parts.push(`bij ${miss.length} ${miss.length === 1 ? 'vakje mist' : 'vakjes mist'} het juiste cijfer in je potlood (oranje)`);
+    else if (noted && !bad.length) parts.push('je potloodnotities zijn goed');
+    toast(parts.join(' · ').replace(/^(.)/, c => c.toUpperCase()), 3600);
+    if (bad.length || miss.length) { sfx('sdError'); vibrate(30); flash([...bad, ...miss]); } else sfx('sdLine');
+    save(); render();
+  }
+
   /* hint: first wrong numbers, then the steps (with the reason why) to the next number; shown one step at a time */
   let HX = null;
   const hintBox = $('#sdHint');
@@ -38092,12 +38126,12 @@ const Sudoku = (() => {
     if (!S.val.every((v, i) => v === S.sol[i])) return;
     S.over = true; store.del('sd.save'); stats.won++;
     const t = Math.floor(S.time), b = stats.best[S.lvl]; S.newBest = b == null || t < b; if (S.newBest) stats.best[S.lvl] = t;
-    if (!S.hints && !S.mistakes) stats.noHelp++;
+    if (!S.hints && !S.mistakes && !S.checks) stats.noHelp++;
     saveStats(); render(); sfx('pfWin'); vibrate(30);
     flash([...Array(81).keys()]);
     setTimeout(() => {
       $('#sdEndTitle').textContent = 'Sudoku opgelost!';
-      $('#sdEndText').innerHTML = `${LEVELS[S.lvl].name} in <b>${fmt(S.time)}</b>${S.newBest ? ' · 🎉 nieuwe beste tijd' : ''}<br><small>${S.mistakes ? S.mistakes + (S.mistakes === 1 ? ' fout' : ' fouten') : 'Geen fouten'} · ${S.hints ? S.hints + (S.hints === 1 ? ' hint' : ' hints') : 'geen hints'}</small>`;
+      $('#sdEndText').innerHTML = `${LEVELS[S.lvl].name} in <b>${fmt(S.time)}</b>${S.newBest ? ' · 🎉 nieuwe beste tijd' : ''}<br><small>${S.mistakes ? S.mistakes + (S.mistakes === 1 ? ' fout' : ' fouten') : 'Geen fouten'} · ${S.hints ? S.hints + (S.hints === 1 ? ' hint' : ' hints') : 'geen hints'}${S.checks ? ` · ${S.checks}× gecontroleerd` : ''}</small>`;
       openModal('sdEndModal');
     }, 1100);
   }
@@ -38121,6 +38155,8 @@ const Sudoku = (() => {
       const el = board.children[i], v = S.val[i], peer = sel >= 0 && i !== sel && (ROW(i) === ROW(sel) || COL(i) === COL(sel) || BOX(i) === BOX(sel));
       let cls = 'sd-c' + (COL(i) % 3 === 2 && COL(i) < 8 ? ' br' : '') + (ROW(i) % 3 === 2 && ROW(i) < 8 ? ' bb' : '') + (fixed(i) ? ' given' : v ? ' user' : '') + (H ? (hTgt.has(i) ? ' hx-tgt' : cA.has(i) ? ' hx-blue' : cB.has(i) ? ' hx-green' : hSrc.has(i) ? ' hx-src' : hPat.has(i) ? ' hx-pat' : hEl.has(i) ? ' hx-el' : hUnit.has(i) ? ' hx-unit' : hRay.has(i) ? ' hx-ray' : '') + (hNo.has(i) ? ' hx-no' : '') : '') + (H ? '' : i === sel ? ' sel' : peer ? ' peer' : '') + (!H && v && sv && v === sv && i !== sel ? ' same' : '') + (v && !fixed(i) && ((showErr && wrong(i)) || conflict(i)) ? ' bad' : '');
       if (el.classList.contains('flash')) cls += ' flash';
+      if (!H && S.chk && v && S.chk[i] === v) cls += ' chk';
+      else if (!H && S.chkN && !v && S.notes[i] && S.chkN[i] === S.notes[i]) cls += ' chkn';
       if (el.className !== cls) el.className = cls;
       const cm = hs && hs.cand && !v && hs.cand0 ? hs.cand0[i] : 0, key = new Set(hs && hs.keyD || []);
       const html = v ? String(v) : cm ? `<span class="sd-n hx">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(d => !(cm & BIT(d)) ? '<i></i>' : `<i class="${(hEl.get(i) || 0) & BIT(d) ? 'del' : hs.place && hs.place[0] === i && hs.place[1] === d ? 'ok' : (hPat.has(i) || hTgt.has(i)) && key.has(d) ? 'key' : ''}">${d}</i>`).join('')}</span>` : hs && hs.place && hs.place[0] === i ? `<span class="sd-ghost">${hs.place[1]}</span>` : S.notes[i] ? `<span class="sd-n">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(d => `<i${S.notes[i] & (1 << d) ? (sv === d ? ' class="hl"' : '') + '>' + d : '>'}</i>`).join('')}</span>` : '';
@@ -38149,6 +38185,7 @@ const Sudoku = (() => {
     const t = b.dataset.t;
     if (t === 'undo') doUndo(); else if (t === 'erase') erase(); else if (t === 'hint') hint();
     else if (t === 'pencil') { opt.pencil = !opt.pencil; saveOpt(); sfx('tap'); render(); }
+    else if (t === 'check') check();
   });
   window.addEventListener('keydown', e => {
     if (current !== 'sd' || anyModal() || !S) return;
@@ -38179,7 +38216,7 @@ const Sudoku = (() => {
     if (!S || S.over) { renderStart(); openModal('sdStartModal'); }
   }
   function leave() { closeHint(); clearInterval(timer); save(); closeModals(); show('menu'); refreshMenu(); }
-  window.__sd = { get S() { return S; }, get HX() { return HX; }, newGame, place, hint, closeHint, erase, doUndo, select: i => { sel = i; render(); }, solve, generate, grade, hintSteps, mkState, opt };
+  window.__sd = { get S() { return S; }, get HX() { return HX; }, newGame, place, hint, check, closeHint, erase, doUndo, select: i => { sel = i; render(); }, solve, generate, grade, hintSteps, mkState, opt };
   return { enter, leave, back: () => { if (HX) { closeHint(); return; } leave(); }, hasSave: () => !!store.get('sd.save', null) };
 })();
 $('#tileSd').addEventListener('click', () => Sudoku.enter());
