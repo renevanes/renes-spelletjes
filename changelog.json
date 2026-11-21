@@ -423,5 +423,10 @@
   "v": "1.84",
   "date": "2026-11-20",
   "notes": "Sudoku: de hint kijkt nu naar je potloodnotities. Wat je zelf al hebt weggestreept, legt hij niet nog eens uit; hij gaat meteen naar de volgende nieuwe stap. De zaklamp laat alleen nog het gekozen cijfer oplichten, zonder kleuren voor rijen en kolommen."
+ },
+ {
+  "v": "1.85",
+  "date": "2026-11-21",
+  "notes": "Sudoku: de zaklamp toont weer de rijen, kolommen en blokken, nu met duidelijke kleuren. Het gekozen cijfer is oranje, waar het al staat wordt het blauwgrijs, en de vakjes waar het nog kan zijn groen."
  }
 ]

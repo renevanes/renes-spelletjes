@@ -1,11 +1,11 @@
 {
-  "versionCode": 85,
-  "versionName": "1.84",
+  "versionCode": 86,
+  "versionName": "1.85",
   "nativeLevel": 12,
-  "notes": "Sudoku: de hint kijkt nu naar je potloodnotities. Wat je zelf al hebt weggestreept, legt hij niet nog eens uit; hij gaat meteen naar de volgende nieuwe stap. De zaklamp laat alleen nog het gekozen cijfer oplichten, zonder kleuren voor rijen en kolommen.",
+  "notes": "Sudoku: de zaklamp toont weer de rijen, kolommen en blokken, nu met duidelijke kleuren. Het gekozen cijfer is oranje, waar het al staat wordt het blauwgrijs, en de vakjes waar het nog kan zijn groen.",
   "web": "web/index.html",
-  "webSha256": "42e328cfb18a015fab75129a813ad74be83634350a1f15c72605c0750a489c65",
-  "webSig": "MEUCIFUhSYkc8R5MDhblRgsg59lzCC2eVyeCVz2brYKJxbobAiEA/aIbulqArhxYRcTSjVGwpWxeA0NeuHLc8EbArBmU4MI=",
+  "webSha256": "856788d36e0aae263d924e3a968e92d6e6cd9510d8507ac77d8f15e4fcd934de",
+  "webSig": "MEYCIQDCXb3r2tdILSt4YeDSqhI4NQ2azt9Rm5HV2awZz/XqfgIhAKMPxcKLuVTE1HADtLa+LVgon1nC4sgo8HJWLisAmKXR",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "157e7255acef0f79f0480b8faf45ec752ee5481ed6800a979dae8c05fceca91c"
