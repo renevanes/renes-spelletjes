@@ -560,7 +560,7 @@ const Sudoku = (() => {
       const el = board.children[i], v = S.val[i], peer = sel >= 0 && i !== sel && (ROW(i) === ROW(sel) || COL(i) === COL(sel) || BOX(i) === BOX(sel));
       let cls = 'sd-c' + (COL(i) % 3 === 2 && COL(i) < 8 ? ' br' : '') + (ROW(i) % 3 === 2 && ROW(i) < 8 ? ' bb' : '') + (fixed(i) ? ' given' : v ? ' user' : '') + (H ? (hTgt.has(i) ? ' hx-tgt' : cA.has(i) ? ' hx-blue' : cB.has(i) ? ' hx-green' : hSrc.has(i) ? ' hx-src' : hPat.has(i) ? ' hx-pat' : hEl.has(i) ? ' hx-el' : hUnit.has(i) ? ' hx-unit' : hRay.has(i) ? ' hx-ray' : '') + (hNo.has(i) ? ' hx-no' : '') : '') + (H ? '' : i === sel ? ' sel' : peer && !lamp ? ' peer' : '') + (!H && !lamp && v && sv && v === sv && i !== sel ? ' same' : '') + (v && !fixed(i) && ((showErr && wrong(i)) || conflict(i)) ? ' bad' : '');
       if (el.classList.contains('flash')) cls += ' flash';
-      if (lamp && v === lamp) cls += ' lamp';
+      if (lamp) cls += v === lamp ? ' lamp' : PEERS[i].some(j => S.val[j] === lamp) ? ' dark' : v ? '' : ' lit';
       if (!H && chkMarks && v && chkMarks[i] === v) cls += ' chk';
       if (el.className !== cls) el.className = cls;
       const cm = hs && hs.cand && !v && hs.cand0 ? hs.cand0[i] : 0, key = new Set(hs && hs.keyD || []);
@@ -585,9 +585,9 @@ const Sudoku = (() => {
 
   /* ---------- input ---------- */
   board.addEventListener('pointerdown', e => { const c = e.target.closest('.sd-c'); if (!c || !S) return; if (HX) closeHint(); sel = +c.dataset.i; render(); });
-  /* Zaklamp: one digit stays lit, in the grid and in the pencil notes */
+  /* Zaklamp: one digit stays lit (amber); rows, columns and boxes that already have it turn blue-grey, the empty cells where it can still go green */
   let lampPick = false, lpT = 0, lpDone = false;
-  function setLamp(d) { if (!S) return; lampPick = false; S.lamp = S.lamp === d ? 0 : d; sfx('tap'); vibrate(12); toast(S.lamp ? `🔦 Zaklamp op de ${d}: alle ${d}'en blijven oplichten` : 'Zaklamp uit', 2000); save(); render(); }
+  function setLamp(d) { if (!S) return; lampPick = false; S.lamp = S.lamp === d ? 0 : d; sfx('tap'); vibrate(12); toast(S.lamp ? `🔦 Zaklamp op de ${d}: groen = hier kan de ${d} nog, blauwgrijs = rij, kolom of blok heeft al een ${d}` : 'Zaklamp uit', 3200); save(); render(); }
   function lampButton() {
     if (!S || S.over) return;
     if (HX) closeHint();

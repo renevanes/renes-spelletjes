@@ -208,10 +208,17 @@ for (const o of [PORT, LAND]) {
   ok((await p.textContent('#sdLamp small')).includes('Kies') && await ev(p, () => document.querySelectorAll('#sdPad button.lamp').length === 9), `${nm}: zaklamp vraagt om een cijfer`);
   const before = await ev(p, () => __sd.S.val.join(''));
   await p.tap(`#sdPad button[data-d="${d}"]`); await wait(p, 150);
-  const st = await ev(p, d => { const S = __sd.S; let lampOk = true;
-    for (let i = 0; i < 81; i++) { const cl = document.querySelector(`.sd-c[data-i="${i}"]`).className; if ((S.val[i] === d) !== cl.includes('lamp')) lampOk = false; }
-    return { lamp: S.lamp, lampOk, plain: !document.querySelector('.sd-c.lit, .sd-c.dark'), badge: document.querySelector('#sdLamp em')?.textContent }; }, d);
-  ok(st.lamp === d && st.lampOk && st.plain && st.badge === String(d), `${nm}: alleen het cijfer ${d} licht op, geen kleuren voor rijen en kolommen`, JSON.stringify(st));
+  const st = await ev(p, d => { const S = __sd.S, c = i => document.querySelector(`.sd-c[data-i="${i}"]`); let lampOk = true, darkOk = true, litOk = true;
+    const sees = (i, j) => i !== j && (Math.floor(j / 9) === Math.floor(i / 9) || j % 9 === i % 9 || (Math.floor(j / 27) === Math.floor(i / 27) && Math.floor(j % 9 / 3) === Math.floor(i % 9 / 3)));
+    for (let i = 0; i < 81; i++) { const v = S.val[i], cl = c(i).className, cov = S.val.some((x, j) => x === d && sees(i, j));
+      if ((v === d) !== cl.includes('lamp')) lampOk = false; if (v !== d && cov !== cl.includes('dark')) darkOk = false; if ((!v && !cov) !== cl.includes('lit')) litOk = false; }
+    // the colours must clearly differ from the normal board (luminance contrast)
+    const lum = el => { let bg = getComputedStyle(el).backgroundColor; if (/rgba\(.*, 0\)$|transparent/.test(bg)) bg = getComputedStyle(document.getElementById('sdBoard')).backgroundColor; const m = bg.match(/\d+/g).map(Number); return 0.2126 * m[0] + 0.7152 * m[1] + 0.0722 * m[2]; };
+    const pick = k => [...document.querySelectorAll(`.sd-c.${k}:not(.sel)`)][0], plain = [...document.querySelectorAll('.sd-c:not(.lamp):not(.dark):not(.lit):not(.sel):not(.peer):not(.same)')][0];
+    const diff = { dark: pick('dark') && plain ? Math.round(lum(plain) - lum(pick('dark'))) : -1, lit: pick('lit') && pick('dark') ? Math.round(lum(pick('lit')) - lum(pick('dark'))) : -1 };
+    return { lamp: S.lamp, lampOk, darkOk, litOk, diff, badge: document.querySelector('#sdLamp em')?.textContent }; }, d);
+  ok(st.lamp === d && st.lampOk && st.darkOk && st.litOk && st.badge === String(d), `${nm}: cijfer ${d} oranje, rijen/kolommen/blokken met een ${d} blauwgrijs, vrije plekken groen`, JSON.stringify(st));
+  ok(st.diff.dark >= 40 && st.diff.lit >= 30, `${nm}: kleuren duidelijk verschillend van het bord en van elkaar`, JSON.stringify(st.diff));
   ok((await ev(p, () => __sd.S.val.join(''))) === before, `${nm}: kiezen zet geen cijfer in het rooster`);
   // stays on while selecting and placing other numbers
   await ev(p, () => { const S = __sd.S, i = S.puz.findIndex(v => !v); __sd.select(i); __sd.place(S.sol[i]); }); await wait(p, 100);
