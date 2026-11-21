@@ -1,11 +1,11 @@
 {
-  "versionCode": 86,
-  "versionName": "1.85",
+  "versionCode": 87,
+  "versionName": "1.86",
   "nativeLevel": 12,
-  "notes": "Sudoku: de zaklamp toont weer de rijen, kolommen en blokken, nu met duidelijke kleuren. Het gekozen cijfer is oranje, waar het al staat wordt het blauwgrijs, en de vakjes waar het nog kan zijn groen.",
+  "notes": "Sudoku: de zaklamp is nu een aparte stand. Zolang hij aan staat, kies je met een cijfer onder het veld of een cijfer in het veld alleen welk cijfer oplicht; er wordt niets ingevuld. Tik op Zaklamp (Stoppen) om weer in te vullen.",
   "web": "web/index.html",
-  "webSha256": "856788d36e0aae263d924e3a968e92d6e6cd9510d8507ac77d8f15e4fcd934de",
-  "webSig": "MEYCIQDCXb3r2tdILSt4YeDSqhI4NQ2azt9Rm5HV2awZz/XqfgIhAKMPxcKLuVTE1HADtLa+LVgon1nC4sgo8HJWLisAmKXR",
+  "webSha256": "873cce716b3ae814f51a4c968eb1c42f33707be7f92202623cb566739d093f7a",
+  "webSig": "MEQCICtn/dZPvn77eQcp45RvCa4pO9RLDyvTjhGX2LEeDqvxAiBTZtmTADNOaZI+YgnUwey/Mw8aCEfW5yNlUNuIW+n83g==",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "157e7255acef0f79f0480b8faf45ec752ee5481ed6800a979dae8c05fceca91c"

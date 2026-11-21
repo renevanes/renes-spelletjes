@@ -1,1 +1,0 @@
-Sudoku: de zaklamp is nu een aparte stand. Zolang hij aan staat, kies je met een cijfer onder het veld of een cijfer in het veld alleen welk cijfer oplicht; er wordt niets ingevuld. Tik op Zaklamp (Stoppen) om weer in te vullen.
