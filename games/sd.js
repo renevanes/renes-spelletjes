@@ -568,8 +568,8 @@ const Sudoku = (() => {
       if (el._h !== html) { el.innerHTML = html; el._h = html; }
     }
     const left = d => 9 - S.val.reduce((n, v, i) => n + (v === d && (!showErr || v === S.sol[i]) ? 1 : 0), 0);
-    pad.querySelectorAll('button').forEach(b => { const d = +b.dataset.d, l = left(d); b.querySelector('small').textContent = l > 0 ? l : ''; b.classList.toggle('done', l <= 0); b.classList.toggle('hl', sv === d); b.classList.toggle('lamp', lamp === d || (lampPick && !HX)); });
-    const lb = $('#sdLamp'); lb.classList.toggle('on', !!S.lamp || lampPick); lb.querySelector('b').innerHTML = S.lamp ? `🔦<em>${S.lamp}</em>` : '🔦'; lb.querySelector('small').textContent = lampPick ? 'Kies cijfer' : 'Zaklamp';
+    pad.querySelectorAll('button').forEach(b => { const d = +b.dataset.d, l = left(d); b.querySelector('small').textContent = l > 0 ? l : ''; b.classList.toggle('done', l <= 0); b.classList.toggle('hl', sv === d); b.classList.toggle('lamp', lamp === d); b.classList.toggle('pick', lampOn() && !HX && lamp !== d); });
+    const lb = $('#sdLamp'); lb.classList.toggle('on', !!S.lamp || lampPick); lb.querySelector('b').innerHTML = S.lamp ? `🔦<em>${S.lamp}</em>` : '🔦'; lb.querySelector('small').textContent = lampPick ? 'Kies cijfer' : S.lamp ? 'Stoppen' : 'Zaklamp'; $('#sd').classList.toggle('lamping', lampOn() && !HX);
     $('#sdPencil').classList.toggle('on', opt.pencil); $('#sdPencil').querySelector('small').textContent = opt.pencil ? 'Potlood aan' : 'Potlood';
     $('#sdLvl').textContent = LEVELS[S.lvl].name; $('#sdMist').textContent = S.mistakes; $('#sdMistW').hidden = opt.errors !== 'direct';
     hudTime(true);
@@ -584,25 +584,39 @@ const Sudoku = (() => {
   }
 
   /* ---------- input ---------- */
-  board.addEventListener('pointerdown', e => { const c = e.target.closest('.sd-c'); if (!c || !S) return; if (HX) closeHint(); sel = +c.dataset.i; render(); });
+  board.addEventListener('pointerdown', e => {
+    const c = e.target.closest('.sd-c'); if (!c || !S) return; if (HX) closeHint();
+    const i = +c.dataset.i;
+    if (lampOn()) { if (S.val[i]) setLamp(S.val[i]); else { sfx('tap'); toast('Zaklamp staat aan: tik Zaklamp om weer in te vullen', 2000); } return; }
+    sel = i; render();
+  });
   /* Zaklamp: one digit stays lit (amber); rows, columns and boxes that already have it turn blue-grey, the empty cells where it can still go green */
+  // the zaklamp is a mode: while it is on, the number buttons and the numbers on the board only choose the lamp digit, nothing is filled in
   let lampPick = false, lpT = 0, lpDone = false;
-  function setLamp(d) { if (!S) return; lampPick = false; S.lamp = S.lamp === d ? 0 : d; sfx('tap'); vibrate(12); toast(S.lamp ? `🔦 Zaklamp op de ${d}: groen = hier kan de ${d} nog, blauwgrijs = rij, kolom of blok heeft al een ${d}` : 'Zaklamp uit', 3200); save(); render(); }
+  const lampOn = () => !!(S && (S.lamp || lampPick));
+  function setLamp(d) {
+    if (!S || !d) return;
+    const was = lampOn(); lampPick = false; S.lamp = d; sel = -1;
+    sfx('tap'); vibrate(12);
+    toast(was ? `🔦 Zaklamp op de ${d}` : `🔦 Zaklamp op de ${d}. Tik een ander cijfer (hieronder of in het veld) om te wisselen, of tik Zaklamp om weer in te vullen.`, was ? 1400 : 3800);
+    save(); render();
+  }
+  function lampOff(quiet) { if (!lampOn()) return; lampPick = false; S.lamp = 0; if (!quiet) toast('Zaklamp uit: je kunt weer invullen', 1800); save(); render(); }
   function lampButton() {
     if (!S || S.over) return;
     if (HX) closeHint();
-    if (S.lamp || lampPick) { lampPick = false; S.lamp = 0; toast('Zaklamp uit', 1400); }
-    else { lampPick = true; toast('Tik op het cijfer dat je wilt blijven zien', 2400); }
-    sfx('tap'); save(); render();
+    if (lampOn()) { lampOff(); sfx('tap'); return; }
+    lampPick = true; sel = -1; toast('🔦 Tik op een cijfer, hieronder of in het veld', 2600); sfx('tap'); render();
   }
   pad.addEventListener('pointerdown', e => { const b = e.target.closest('button[data-d]'); if (!b) return; lpDone = false; clearTimeout(lpT); lpT = setTimeout(() => { lpDone = true; setLamp(+b.dataset.d); }, 500); });
   const lpCancel = () => clearTimeout(lpT);
   pad.addEventListener('pointerup', lpCancel); pad.addEventListener('pointercancel', lpCancel); pad.addEventListener('pointerleave', lpCancel);
   pad.addEventListener('contextmenu', e => e.preventDefault());
-  pad.addEventListener('click', e => { const b = e.target.closest('button[data-d]'); if (!b) return; if (lpDone) { lpDone = false; return; } if (lampPick) { setLamp(+b.dataset.d); return; } place(+b.dataset.d); });
+  pad.addEventListener('click', e => { const b = e.target.closest('button[data-d]'); if (!b) return; if (lpDone) { lpDone = false; return; } if (lampOn()) { setLamp(+b.dataset.d); return; } place(+b.dataset.d); });
   $('#sdTools').addEventListener('click', e => {
     const b = e.target.closest('button[data-t]'); if (!b) return;
     const t = b.dataset.t;
+    if (t !== 'lamp' && t !== 'check' && t !== 'hint') lampOff(true);
     if (t === 'undo') doUndo(); else if (t === 'erase') erase(); else if (t === 'hint') hint();
     else if (t === 'pencil') { opt.pencil = !opt.pencil; saveOpt(); sfx('tap'); render(); }
     else if (t === 'check') check();
@@ -611,6 +625,7 @@ const Sudoku = (() => {
   window.addEventListener('keydown', e => {
     if (current !== 'sd' || anyModal() || !S) return;
     if (HX) { if (e.key === 'Escape') closeHint(); return; }
+    if (lampOn()) { if (/^[1-9]$/.test(e.key)) setLamp(+e.key); else if (e.key === 'Escape') lampOff(); return; }
     if (/^[1-9]$/.test(e.key)) place(+e.key);
     else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') erase();
     else if (e.key === 'n' || e.key === 'p') { opt.pencil = !opt.pencil; saveOpt(); render(); }

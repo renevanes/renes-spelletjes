@@ -197,40 +197,48 @@ for (const o of [PORT, LAND]) {
   await p.close();
 }
 
-/* ---- Zaklamp: one digit stays lit ---- */
+/* ---- Zaklamp: a mode; numbers (pad or board) only choose the lamp digit, nothing is filled in ---- */
 for (const o of [PORT, LAND]) {
   const nm = o === PORT ? 'staand' : 'liggend';
   p = await page(o); await p.tap('#tileSd'); await wait(p, 300); await newGame(p, 'normaal');
   const vis = await ev(p, () => { const r = document.getElementById('sdLamp').getBoundingClientRect(); return r.width > 36 && r.right <= innerWidth && r.bottom <= innerHeight; });
   ok(vis, `${nm}: knop Zaklamp zichtbaar`);
-  const d = await ev(p, () => { const S = __sd.S, c = {}; S.puz.forEach(v => { if (v) c[v] = (c[v] || 0) + 1; }); return +Object.entries(c).sort((a, b) => b[1] - a[1])[0][0]; });
-  await p.tap('#sdLamp'); await wait(p, 100);
-  ok((await p.textContent('#sdLamp small')).includes('Kies') && await ev(p, () => document.querySelectorAll('#sdPad button.lamp').length === 9), `${nm}: zaklamp vraagt om een cijfer`);
+  const [d, d2, cellD2, empty] = await ev(p, () => { const S = __sd.S, c = {}; S.puz.forEach(v => { if (v) c[v] = (c[v] || 0) + 1; }); const ds = Object.entries(c).sort((a, b) => b[1] - a[1]).map(x => +x[0]);
+    return [ds[0], ds[1], S.puz.findIndex(v => v === ds[2]), S.puz.findIndex(v => !v)]; });
+  // a cell is selected before: the lamp must not fill it in
+  await p.tap(`.sd-c[data-i="${empty}"]`); await wait(p, 80);
   const before = await ev(p, () => __sd.S.val.join(''));
+  await p.tap('#sdLamp'); await wait(p, 100);
+  ok((await p.textContent('#sdLamp small')).includes('Kies') && await ev(p, () => document.querySelectorAll('#sdPad button.pick').length === 9), `${nm}: zaklamp vraagt om een cijfer`);
   await p.tap(`#sdPad button[data-d="${d}"]`); await wait(p, 150);
   const st = await ev(p, d => { const S = __sd.S, c = i => document.querySelector(`.sd-c[data-i="${i}"]`); let lampOk = true, darkOk = true, litOk = true;
     const sees = (i, j) => i !== j && (Math.floor(j / 9) === Math.floor(i / 9) || j % 9 === i % 9 || (Math.floor(j / 27) === Math.floor(i / 27) && Math.floor(j % 9 / 3) === Math.floor(i % 9 / 3)));
     for (let i = 0; i < 81; i++) { const v = S.val[i], cl = c(i).className, cov = S.val.some((x, j) => x === d && sees(i, j));
       if ((v === d) !== cl.includes('lamp')) lampOk = false; if (v !== d && cov !== cl.includes('dark')) darkOk = false; if ((!v && !cov) !== cl.includes('lit')) litOk = false; }
-    // the colours must clearly differ from the normal board (luminance contrast)
-    const lum = el => { let bg = getComputedStyle(el).backgroundColor; if (/rgba\(.*, 0\)$|transparent/.test(bg)) bg = getComputedStyle(document.getElementById('sdBoard')).backgroundColor; const m = bg.match(/\d+/g).map(Number); return 0.2126 * m[0] + 0.7152 * m[1] + 0.0722 * m[2]; };
-    const pick = k => [...document.querySelectorAll(`.sd-c.${k}:not(.sel)`)][0], plain = [...document.querySelectorAll('.sd-c:not(.lamp):not(.dark):not(.lit):not(.sel):not(.peer):not(.same)')][0];
-    const diff = { dark: pick('dark') && plain ? Math.round(lum(plain) - lum(pick('dark'))) : -1, lit: pick('lit') && pick('dark') ? Math.round(lum(pick('lit')) - lum(pick('dark'))) : -1 };
-    return { lamp: S.lamp, lampOk, darkOk, litOk, diff, badge: document.querySelector('#sdLamp em')?.textContent }; }, d);
-  ok(st.lamp === d && st.lampOk && st.darkOk && st.litOk && st.badge === String(d), `${nm}: cijfer ${d} oranje, rijen/kolommen/blokken met een ${d} blauwgrijs, vrije plekken groen`, JSON.stringify(st));
-  ok(st.diff.dark >= 40 && st.diff.lit >= 30, `${nm}: kleuren duidelijk verschillend van het bord en van elkaar`, JSON.stringify(st.diff));
-  ok((await ev(p, () => __sd.S.val.join(''))) === before, `${nm}: kiezen zet geen cijfer in het rooster`);
-  // stays on while selecting and placing other numbers
-  await ev(p, () => { const S = __sd.S, i = S.puz.findIndex(v => !v); __sd.select(i); __sd.place(S.sol[i]); }); await wait(p, 100);
-  ok(await ev(p, d => __sd.S.lamp === d && document.querySelectorAll('.sd-c.lamp').length >= 1, d), `${nm}: blijft aan bij selecteren en invullen`);
+    return { lamp: S.lamp, lampOk, darkOk, litOk, badge: document.querySelector('#sdLamp em')?.textContent }; }, d);
+  ok(st.lamp === d && st.lampOk && st.darkOk && st.litOk && st.badge === String(d), `${nm}: zaklamp op de ${d}`, JSON.stringify(st));
+  // another number below the board: switches the lamp, fills in nothing
+  await p.tap(`#sdPad button[data-d="${d2}"]`); await wait(p, 150);
+  ok(await ev(p, ([d2, b]) => __sd.S.lamp === d2 && __sd.S.val.join('') === b, [d2, before]), `${nm}: ander cijfer hieronder: zaklamp wisselt, niets ingevuld`);
+  // a number on the board: switches too
+  const d3 = await ev(p, i => __sd.S.val[i], cellD2);
+  await p.tap(`.sd-c[data-i="${cellD2}"]`); await wait(p, 150);
+  ok(await ev(p, ([d3, b]) => __sd.S.lamp === d3 && __sd.S.val.join('') === b, [d3, before]), `${nm}: cijfer in het veld aantikken: zaklamp op dat cijfer`);
+  // an empty cell: nothing happens, a short explanation
+  await p.tap(`.sd-c[data-i="${empty}"]`); await wait(p, 150);
+  ok(await ev(p, b => __sd.S.val.join('') === b && __sd.S.lamp > 0, before) && (await p.textContent('#sdToast')).includes('Zaklamp'), `${nm}: leeg vakje: niets ingevuld, uitleg`);
   await p.screenshot({ path: GFX + `sd_lamp_${o === PORT ? 'p' : 'l'}.png` });
-  // long press on another number: lamp switches
-  const d2 = d % 9 + 1, box = await ev(p, d2 => { const r = document.querySelector(`#sdPad button[data-d="${d2}"]`).getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, d2);
+  // off: numbers fill in again
+  await p.tap('#sdLamp'); await wait(p, 120);
+  ok(await ev(p, () => !__sd.S.lamp && !document.querySelector('.sd-c.lit, .sd-c.dark, .sd-c.lamp')), `${nm}: zaklamp uit`);
+  await p.tap(`.sd-c[data-i="${empty}"]`); await wait(p, 60);
+  const want = await ev(p, i => __sd.S.sol[i], empty); await p.tap(`#sdPad button[data-d="${want}"]`); await wait(p, 100);
+  ok(await ev(p, ([i, w]) => __sd.S.val[i] === w, [empty, want]), `${nm}: daarna weer gewoon invullen`);
+  // long press on a number: lamp on that number at once
+  const box = await ev(p, d => { const r = document.querySelector(`#sdPad button[data-d="${d}"]`).getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, d);
   const cnt = await ev(p, () => __sd.S.val.join(''));
   await p.mouse.move(box.x, box.y); await p.mouse.down(); await wait(p, 700); await p.mouse.up(); await wait(p, 150);
-  ok(await ev(p, ([d2, c]) => __sd.S.lamp === d2 && __sd.S.val.join('') === c, [d2, cnt]), `${nm}: cijfer vasthouden zet de zaklamp op dat cijfer`);
-  await p.tap('#sdLamp'); await wait(p, 100);
-  ok(await ev(p, () => !__sd.S.lamp && !document.querySelector('.sd-c.lit, .sd-c.dark')), `${nm}: zaklamp uit`);
+  ok(await ev(p, ([d, c]) => __sd.S.lamp === d && __sd.S.val.join('') === c, [d, cnt]), `${nm}: cijfer vasthouden zet de zaklamp aan`);
   await p.close();
 }
 

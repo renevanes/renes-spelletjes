@@ -55,7 +55,7 @@ g = {
         <li><b>XYZ-vleugel</b> – zoals de Y-vleugel, maar het middelste vakje kan zelf ook C zijn.</li>
         <li><b>XY-ketting</b> – een rij vakjes met elk twee mogelijkheden die elkaar doorgeven: één van de uiteinden is zeker hetzelfde cijfer.</li>
       </ul>
-      <p><b>🔦 Zaklamp</b> – kies een cijfer (of houd een cijfer op het toetsenbord vast): dat cijfer blijft oranje oplichten. Rijen, kolommen en blokken die het al hebben, worden blauwgrijs; de lege vakjes waar het nog kan, worden groen.</p>
+      <p><b>🔦 Zaklamp</b> – tik op Zaklamp en kies een cijfer, onder het veld of in het veld (of houd een cijfer onder het veld vast). Dat cijfer blijft oranje oplichten; rijen, kolommen en blokken die het al hebben, worden blauwgrijs, en de lege vakjes waar het nog kan, groen. Zolang de zaklamp aan staat, kies je met een cijfer alleen de zaklamp en vul je niets in. Tik nogmaals op Zaklamp om weer in te vullen.</p>
       <p>Twijfel je? <b>☑ Controle</b> kijkt of je ingevulde cijfers kloppen: foute cijfers lichten even rood op.</p>
       <p>Tip: zet met ✎ potloodnotities. Bij moeilijke stappen laat de hint alle mogelijke cijfers zien, met de cijfers die afvallen in het rood.</p>
     </details>
@@ -89,7 +89,8 @@ g = {
 #sdBoard .sd-c.dark:not(.sel){background:#b7c3d6;color:#1c2738} #sdBoard .sd-c.dark.user:not(.sel){color:#1f4fbf} #sdBoard .sd-c.lit:not(.sel){background:#c9f0c0;box-shadow:inset 0 0 0 1px #8fd39a} #sdBoard .sd-c.lamp:not(.sel){background:#ffb81f;box-shadow:inset 0 0 0 3px #b86e00;color:#2b1a00}
 .sd-n i.lp{background:#ffcf3f;color:#3a2f10;font-weight:800}
 #sdLamp b{position:relative} #sdLamp b em{position:absolute;right:-12px;top:-4px;font-style:normal;font-size:12px;font-weight:800;background:#ffcf3f;color:#3a2f10;border-radius:8px;min-width:16px;padding:0 3px;line-height:16px}
-#sdPad button.lamp{box-shadow:0 3px 0 #b9ae93,0 0 0 3px #ffcf3f inset}
+#sdPad button.lamp{background:#ffb81f;box-shadow:0 3px 0 #8a4b00,0 0 0 3px #8a4b00 inset} #sdPad button.pick{box-shadow:0 3px 0 #b9ae93,0 0 0 2px #ffb81f inset}
+#sd.lamping #sdPad::before{content:'🔦 Kies het zaklampcijfer';grid-column:1/-1;text-align:center;font-size:12.5px;font-weight:700;color:#ffd75e;margin-bottom:-2px}
 @keyframes sdChk{0%{opacity:.4}12%{opacity:1}80%{opacity:1}100%{opacity:.75}}
 #sdBoard .sd-c.chk{animation:sdChk 3s ease both;background:repeating-linear-gradient(45deg,#fde1e1 0 5px,#f6b9b9 5px 9px);box-shadow:inset 0 0 0 2px #d3263a;color:#c21d32}
 #sdToast{position:absolute;left:50%;top:64px;transform:translate(-50%,-8px);opacity:0;transition:opacity .25s,transform .25s;background:rgba(18,26,38,.94);color:#fff;padding:9px 14px;border-radius:12px;font-size:14.5px;line-height:1.35;z-index:6;pointer-events:none;width:max-content;max-width:92%;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.35)}
