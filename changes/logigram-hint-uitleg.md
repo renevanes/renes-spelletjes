@@ -1,0 +1,1 @@
+Logigram: hints bij een aanwijzing als "De vijf vrienden zijn …" leggen nu stap voor stap uit waarom. Ze noemen alle vijf, zeggen bij elk waarom het niet kan (een ✗ in je rooster, of iemand anders) en welke er overblijft.

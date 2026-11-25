@@ -564,9 +564,9 @@ const Logigram = (() => {
     const M = new Int8Array(T * T); for (let i = 0; i < T * T; i++) M[i] = mk[i] === YES ? YES : mk[i] ? NO : 0;
     const r = solve(P, { M, first: true, max: 3, full: true });
     if (!r.step) return null;
-    return Object.assign({ k: 'step' }, r.step, explain(P, r.step, r.M));
+    return Object.assign({ k: 'step' }, r.step, explain(P, r.step, r.M, mk));
   }
-  function explain(P, s, M) {
+  function explain(P, s, M, mk) {
     const T = T_(P), N = P.N, w = s.why, st = (x, y, v, c = true) => stmt(P, x, y, v === YES, c), conclusion = st(s.a, s.b, s.v, false);
     const okOpts = (g, oc) => { const r = []; for (let k = 0; k < N; k++) if (M[g * T + oc * N + k] !== NO) r.push(oc * N + k); return r; };
     switch (w[0]) {
@@ -579,7 +579,16 @@ const Logigram = (() => {
         if (l.length === N) return { text: `Uit aanwijzing ${w[1] + 1} volgt: ${conclusion}.`, refs: [], clue: w[1] };
         return { text: `Bij ${ref(P, other)} is alleen nog ${joinOr(l.map(g => nm(P, g)))} mogelijk. Met aanwijzing ${w[1] + 1} volgt dan: ${conclusion}.`, refs: l.map(g => [other, g]), clue: w[1] };
       }
-      case 'lc': return { text: `Volgens aanwijzing ${w[1] + 1} is elk ${GROUP[P.grp].sg} precies één van de genoemden. Voor ${ref(P, w[2])} blijft alleen ${ref(P, w[2] === s.a ? s.b : s.a)} over. Daarom geldt: ${conclusion}.`, refs: [], clue: w[1] };
+      case 'lc': {
+        // a list clue that names everybody: z must be one of the named; all but one are ruled out
+        const k = P.clues[w[1]], z = w[2], y = z === s.a ? s.b : s.a, G = GROUP[P.grp], zc = catOf(P, z);
+        const why = L => {
+          if (catOf(P, L) === zc) return `${ref(P, L)} (${zc === 0 ? 'dat is iemand anders' : `niemand heeft twee ${P.cats[zc].pl}`})`;
+          return `${ref(P, L)} (${mk && mk[z * T + L] ? '✗ in je rooster' : 'dat volgt al uit de aanwijzingen'})`;
+        };
+        const others = k.xs.filter(L => L !== y), refs = others.filter(L => catOf(P, L) !== zc).map(L => [z, L]);
+        return { text: `Aanwijzing ${w[1] + 1} noemt alle ${NUMW[k.xs.length]} ${G.pl}: ${joinEn(k.xs.map(L => ref(P, L)))}. ${P.grp === 'c' ? 'Elk kind' : 'Elke vriend'} is dus precies één van deze ${NUMW[k.xs.length]}, ook ${ref(P, z)}. Maar ${ref(P, z)} is ${joinEn(others.map(L => 'niet ' + why(L)))}. Dan blijft er maar één over: ${ref(P, y)}. Daarom geldt: ${conclusion}.`, refs, clue: w[1] };
+      }
       case 'ey': return { text: `${st(w[1], w[2], YES)}. Daarom geldt: ${conclusion}.`, refs: [[w[1], w[2]]], clue: -1 };
       case 'el': {
         const x = w[1], y = x === s.a ? s.b : s.a, c = P.cats[w[2]];
