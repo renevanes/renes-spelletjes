@@ -438,5 +438,10 @@
   "v": "1.87",
   "date": "2026-11-25",
   "notes": "Logigram: nieuwe knop **Lijnen**. Die verbindt de ✓'s die bij elkaar horen: zijwaarts bij dezelfde naam, op en neer bij hetzelfde ding. Elke groep die al vastligt, krijgt een eigen kleur, zodat je direct ziet wat al aan elkaar vastzit."
+ },
+ {
+  "v": "1.88",
+  "date": "2026-11-25",
+  "notes": "Logigram: hints bij een aanwijzing als \"De vijf vrienden zijn …\" leggen nu stap voor stap uit waarom. Ze noemen alle vijf, zeggen bij elk waarom het niet kan (een ✗ in je rooster, of iemand anders) en welke er overblijft."
  }
 ]

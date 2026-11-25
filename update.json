@@ -1,11 +1,11 @@
 {
-  "versionCode": 88,
-  "versionName": "1.87",
+  "versionCode": 89,
+  "versionName": "1.88",
   "nativeLevel": 12,
-  "notes": "Logigram: nieuwe knop **Lijnen**. Die verbindt de \u2713's die bij elkaar horen: zijwaarts bij dezelfde naam, op en neer bij hetzelfde ding. Elke groep die al vastligt, krijgt een eigen kleur, zodat je direct ziet wat al aan elkaar vastzit.",
+  "notes": "Logigram: hints bij een aanwijzing als \"De vijf vrienden zijn \u2026\" leggen nu stap voor stap uit waarom. Ze noemen alle vijf, zeggen bij elk waarom het niet kan (een \u2717 in je rooster, of iemand anders) en welke er overblijft.",
   "web": "web/index.html",
-  "webSha256": "777b6570a5f0745fd4e129fd66479959ec3096257ace0f61ce3bf41e6647631c",
-  "webSig": "MEUCIFjtqtYV4ZxWOHTQnKA2KP+3YP+JypbFchl7m8gQoLetAiEAr9gtjVGXnP3BKhBKXM8XWfjhoigKXEmMo3wp8wxR9xo=",
+  "webSha256": "4902fef7aeab7adaa025a301400947f6947a4ae1f65449917c8e46a96aaaac7c",
+  "webSig": "MEUCIGXowOpjIpY6hC0Wzyb8R5X6fd1572WlKekkXxShc2TcAiEA9k3H/WC7peWIPnjkMAgehqNBoEptKYKC6SDVithr4NY=",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "157e7255acef0f79f0480b8faf45ec752ee5481ed6800a979dae8c05fceca91c"
