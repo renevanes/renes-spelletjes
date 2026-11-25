@@ -1,11 +1,11 @@
 {
-  "versionCode": 87,
-  "versionName": "1.86",
+  "versionCode": 88,
+  "versionName": "1.87",
   "nativeLevel": 12,
-  "notes": "Sudoku: de zaklamp is nu een aparte stand. Zolang hij aan staat, kies je met een cijfer onder het veld of een cijfer in het veld alleen welk cijfer oplicht; er wordt niets ingevuld. Tik op Zaklamp (Stoppen) om weer in te vullen.",
+  "notes": "Logigram: nieuwe knop **Lijnen**. Die verbindt de \u2713's die bij elkaar horen: zijwaarts bij dezelfde naam, op en neer bij hetzelfde ding. Elke groep die al vastligt, krijgt een eigen kleur, zodat je direct ziet wat al aan elkaar vastzit.",
   "web": "web/index.html",
-  "webSha256": "873cce716b3ae814f51a4c968eb1c42f33707be7f92202623cb566739d093f7a",
-  "webSig": "MEQCICtn/dZPvn77eQcp45RvCa4pO9RLDyvTjhGX2LEeDqvxAiBTZtmTADNOaZI+YgnUwey/Mw8aCEfW5yNlUNuIW+n83g==",
+  "webSha256": "777b6570a5f0745fd4e129fd66479959ec3096257ace0f61ce3bf41e6647631c",
+  "webSig": "MEUCIFjtqtYV4ZxWOHTQnKA2KP+3YP+JypbFchl7m8gQoLetAiEAr9gtjVGXnP3BKhBKXM8XWfjhoigKXEmMo3wp8wxR9xo=",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "157e7255acef0f79f0480b8faf45ec752ee5481ed6800a979dae8c05fceca91c"

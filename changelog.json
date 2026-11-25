@@ -433,5 +433,10 @@
   "v": "1.86",
   "date": "2026-11-21",
   "notes": "Sudoku: de zaklamp is nu een aparte stand. Zolang hij aan staat, kies je met een cijfer onder het veld of een cijfer in het veld alleen welk cijfer oplicht; er wordt niets ingevuld. Tik op Zaklamp (Stoppen) om weer in te vullen."
+ },
+ {
+  "v": "1.87",
+  "date": "2026-11-25",
+  "notes": "Logigram: nieuwe knop **Lijnen**. Die verbindt de ✓'s die bij elkaar horen: zijwaarts bij dezelfde naam, op en neer bij hetzelfde ding. Elke groep die al vastligt, krijgt een eigen kleur, zodat je direct ziet wat al aan elkaar vastzit."
  }
 ]

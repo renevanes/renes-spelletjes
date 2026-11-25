@@ -1,1 +1,0 @@
-Logigram: nieuwe knop **Lijnen**. Die verbindt de ✓'s die bij elkaar horen: zijwaarts bij dezelfde naam, op en neer bij hetzelfde ding. Elke groep die al vastligt, krijgt een eigen kleur, zodat je direct ziet wat al aan elkaar vastzit.
