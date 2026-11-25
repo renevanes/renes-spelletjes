@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync } from 'node:fs';
 // Logigram browser test on the real UI with real touch input (Playwright + CDP touch events).
 //   node games/lg1.mjs [path-to-index.html]      (default build/work/lgtest/index.html, or APP_HTML)
-//   PART = all | main | save | land | big | back | daily | opts | perf | check   (comma separated)
+//   PART = all | main | save | land | big | back | daily | opts | perf | check | lines   (comma separated)
 import { chromium } from 'playwright';
 import path from 'path'; import { fileURLToPath } from 'url';
 const here = path.dirname(fileURLToPath(import.meta.url)), GFX = path.join(here, '..', 'build', 'gfx'); mkdirSync(GFX, { recursive: true });
@@ -377,6 +377,37 @@ if (want('check')) {
     ok(`${nm}: opgelost, eindscherm noemt de controles`, (await vis(p, 'lgEndModal')) && (await ev(p, () => document.getElementById('lgEndText').textContent)).includes('gecontroleerd'));
     ok(`${nm}: telt niet als "zonder hint"`, (await ev(p, () => __lg.stats().noHint)) === nh);
     ok(`${nm}: knop Controleer uit na oplossen`, await ev(p, () => document.getElementById('lgCheck').disabled));
+    await p.close();
+  }
+}
+
+/* ================= Lijnen: the ✓'s that belong together are joined ================= */
+if (want('lines')) {
+  for (const o of [PORT, LAND]) {
+    const nm = o === PORT ? 'staand' : 'liggend', p = await page(o);
+    await openGame(p); await newPuzzle(p, 'normaal');
+    const btn = await ev(p, () => { const r = document.getElementById('lgLines').getBoundingClientRect(); return r.width > 30 && r.right <= innerWidth && r.bottom <= innerHeight; });
+    ok(`${nm}: knop Lijnen zichtbaar`, btn);
+    // one person: ✓ with an item of every other kind (a row of ✓'s), and the ✓'s between those items (columns)
+    const plan = await ev(p, () => { const P = __lg.S.P, N = P.N, ent0 = P.ent[0], g = []; for (let i = 0; i < P.K * N; i++) if (P.ent[i] === ent0) g.push(i); return g; });
+    const pairs = []; for (let x = 0; x < plan.length; x++) for (let y = x + 1; y < plan.length; y++) pairs.push([plan[x], plan[y]]);
+    for (const [a, bb] of pairs) await tapCell(p, a, bb, 700);
+    ok(`${nm}: ✓'s gezet`, (await ev(p, n => __lg.S.mk.filter(v => v === 2).length / 2, 0)) >= pairs.length);
+    ok(`${nm}: zonder knop geen lijnen`, (await ev(p, () => __lg.lines().segs)) === 0);
+    await tapEl(p, '#lgLines'); await wait(p, 250);
+    const L = await ev(p, () => ({ ...__lg.lines(), on: document.getElementById('lgLines').classList.contains('on'), opt: __lg.opt.lines }));
+    ok(`${nm}: lijnen tussen de ✓'s, één groep`, L.on && L.opt && L.segs >= 2 && L.groups === 1, JSON.stringify(L));
+    // a second person: a second colour
+    const plan2 = await ev(p, () => { const P = __lg.S.P, N = P.N, e = P.ent[1], g = []; for (let i = 0; i < P.K * N; i++) if (P.ent[i] === e) g.push(i); return g; });
+    await tapCell(p, plan2[0], plan2[1], 700); await tapCell(p, plan2[0], plan2[2], 700); await wait(p, 200);
+    ok(`${nm}: tweede persoon: tweede groep met eigen kleur`, (await ev(p, () => __lg.lines().groups)) === 2);
+    await p.screenshot({ path: path.join(GFX, `lg_lines_${o === PORT ? 'p' : 'l'}.png`) });
+    // remembered, and off again
+    await p.reload(); await wait(p, 600); await openGame(p); await wait(p, 400);
+    ok(`${nm}: knop blijft aan na opnieuw openen`, await ev(p, () => __lg.opt.lines === true && __lg.lines().segs > 0));
+    await tapEl(p, '#lgLines'); await wait(p, 200);
+    ok(`${nm}: uit: geen lijnen meer`, (await ev(p, () => __lg.lines().segs)) === 0 || !(await ev(p, () => __lg.opt.lines)));
+    ok(`${nm}: rooster blijft kloppen`, (await ev(p, () => __lg.check())) === '');
     await p.close();
   }
 }

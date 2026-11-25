@@ -1,7 +1,7 @@
   /* ================= ui.js: screens, the grid (canvas with pan and pinch-zoom), clues, hints, timer, save/resume ================= */
   const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const LV = LEVELS;
-  const opt = Object.assign({ sound: true, tap: 'xv', auto: true, err: false, lvl: 'makkelijk', pen: YES }, store.get('lg.settings', {}));
+  const opt = Object.assign({ sound: true, tap: 'xv', auto: true, err: false, lvl: 'makkelijk', pen: YES, lines: false }, store.get('lg.settings', {}));
   Sfx.gate('lg', () => opt.music !== false); if (opt.music === undefined) opt.music = opt.sound !== false;
   const saveOpt = () => store.set('lg.settings', opt);
   let stats = Object.assign({ played: 0, won: 0, wonBy: {}, best: {}, hints: 0, noHint: 0, hardNoHint: 0, expert: 0, dailyWon: 0, daily: {}, time: 0 }, store.get('lg.stats', {}));
@@ -161,6 +161,39 @@
     }
     g.restore();
   }
+  /* Lijnen: connect the ✓'s that belong together. ✓'s of the same name (row) are joined sideways, ✓'s of the same item (column)
+     up and down; every group of things that are already tied together gets its own colour and a ring around its ✓'s */
+  const PAL = ['#e4572e', '#2e7dd7', '#8e44ad', '#12a07f', '#d48a00', '#c2185b'];
+  let LN = { segs: 0, groups: 0 };
+  function drawLines() {
+    const P = S.P, T = P.K * P.N, mk = S.mk, par = new Map(), root = x => { while (par.get(x) !== x) x = par.get(x); return x; };
+    const yes = [];
+    for (const [a, b] of Core.pairs(P)) if (mk[a * T + b] === YES) {
+      yes.push([a, b]); for (const x of [a, b]) if (!par.has(x)) par.set(x, x);
+      const ra = root(a), rb = root(b); if (ra !== rb) par.set(ra, rb);
+    }
+    LN = { segs: 0, groups: 0 };
+    if (yes.length < 2) return;
+    const rows = new Map(), cols = new Map(), size = new Map();
+    for (const [a] of yes) size.set(root(a), (size.get(root(a)) || 0) + 1);
+    for (const [a, b] of yes) {
+      const q = blockOf(a, b), r = cellRect(a, b), c = { x: r.x + r.s / 2, y: r.y + r.s / 2, g: root(a) };
+      if (!rows.has(q.a)) rows.set(q.a, []); rows.get(q.a).push(c);
+      if (!cols.has(q.b)) cols.set(q.b, []); cols.get(q.b).push(c);
+    }
+    const groups = [...size.keys()].filter(k => size.get(k) > 1).sort((x, y) => x - y), colr = k => PAL[groups.indexOf(k) % PAL.length];
+    const rad = V.cs * .36;
+    g.save(); g.lineCap = 'round'; g.lineWidth = Math.max(2.5, V.cs * .1); g.globalAlpha = .8;
+    const seg = (p, q) => { const dx = q.x - p.x, dy = q.y - p.y, L = Math.hypot(dx, dy); if (L < rad * 2.2) return; const ux = dx / L, uy = dy / L; g.beginPath(); g.moveTo(p.x + ux * rad, p.y + uy * rad); g.lineTo(q.x - ux * rad, q.y - uy * rad); g.stroke(); LN.segs++; };
+    for (const [list, key] of [[rows, 'x'], [cols, 'y']]) for (const L of list.values()) {
+      if (L.length < 2) continue;
+      L.sort((p, q) => p[key] - q[key]); g.strokeStyle = colr(L[0].g);
+      for (let k = 1; k < L.length; k++) seg(L[k - 1], L[k]);
+    }
+    g.globalAlpha = 1; g.lineWidth = Math.max(2, V.cs * .07);
+    for (const [a, b] of yes) { const k = root(a); if (size.get(k) < 2) continue; const r = cellRect(a, b); g.strokeStyle = colr(k); g.beginPath(); g.arc(r.x + r.s / 2, r.y + r.s / 2, rad, 0, 7); g.stroke(); }
+    g.restore(); LN.groups = groups.length;
+  }
   const DS = { n: 0, ms: 0, max: 0 };
   function draw() {
     raf = 0;
@@ -201,6 +234,7 @@
       for (let i = 1; i < N; i++) { g.moveTo(bx + i * cs + .5, by); g.lineTo(bx + i * cs + .5, by + N * cs); g.moveTo(bx, by + i * cs + .5); g.lineTo(bx + N * cs, by + i * cs + .5); }
       g.stroke(); g.strokeStyle = C.block; g.lineWidth = 2; g.strokeRect(bx, by, N * cs, N * cs);
     }
+    if (opt.lines) drawLines();
     g.restore();
     // ---- column headers (they follow the grid sideways and stay on top) ----
     const lf = Math.round(Math.min(Lay.fs, Math.max(8, cs * .58)));
@@ -369,7 +403,7 @@
     if (tab === 's') renderSum();
     $('#lgUndo').disabled = !S.undo.length || S.done; $('#lgRedo').disabled = !S.redo.length || S.done;
     const pen = $('#lgPen'); pen.hidden = opt.tap !== 'kies'; pen.innerHTML = `<b>${opt.pen === YES ? '✓' : '✗'}</b><small>Teken</small>`; pen.classList.toggle('yes', opt.pen === YES);
-    $('#lgHintB').disabled = !!S.done; $('#lgCheck').disabled = !!S.done;
+    $('#lgHintB').disabled = !!S.done; $('#lgCheck').disabled = !!S.done; $('#lgLines').classList.toggle('on', !!opt.lines);
   }
   function itemHtml(P, gi) { const it = Core.itemOf(P, gi); return (it.sw ? `<i class="lg-sw" style="background:${it.sw}"></i>` : it.em ? `<span class="lg-em">${it.em}</span>` : '') + esc(it.sh); }
   function renderSum() {
@@ -394,6 +428,7 @@
     const k = b.dataset.b;
     if (k === 'undo') undo(); else if (k === 'redo') redo(); else if (k === 'hint') doHint(); else if (k === 'check') doCheck();
     else if (k === 'pen') { opt.pen = opt.pen === YES ? NO : YES; saveOpt(); sfx('lgTap'); renderSide(); }
+    else if (k === 'lines') { opt.lines = !opt.lines; saveOpt(); sfx('lgTap'); renderSide(); need(); toast(opt.lines ? 'Lijnen aan: ✓\'s die bij elkaar horen, zijn verbonden' : 'Lijnen uit', 1600); }
     else if (k === 'fit') { const toFit = !(V.cs <= Lay.fitAll + .5); V.fit = toFit; V.cs = toFit ? Lay.fitAll : Lay.cs0; V.ox = 0; V.oy = 0; clampPan(); $('#lgFit').classList.toggle('on', toFit && Lay.fitAll < Lay.cs0 - .5); sfx('lgTap'); need(); }
   });
   $('#lgTipGo').addEventListener('click', () => applyHint());
@@ -457,6 +492,7 @@
     <li>Tik op een vakje om ✗, ✓ of leeg te zetten. <b>Lang drukken</b> zet meteen een ✓. Bij een ✓ worden de andere vakjes in die rij en kolom van het blokje vanzelf weggestreept.</li>
     <li>Lees de aanwijzingen goed en tik op een aanwijzing om hem door te strepen als je hem gebruikt hebt. Weet je iets via een ✓ in een ander blokje? Neem het over!</li>
     <li>Elke puzzel heeft precies één oplossing. Je hoeft nooit te gokken: goed nadenken is genoeg.</li>
+    <li><b>🔗 Lijnen</b> verbindt de ✓'s die bij elkaar horen: zijwaarts bij dezelfde naam, op en neer bij hetzelfde ding. Elke groep die al vastligt, krijgt een eigen kleur.</li>
     <li>Twijfel je of alles klopt? <b>☑ Controleer</b> vergelijkt wat je hebt ingevuld met de oplossing en arceert foute ✓ en ✗ in rood. Verbeter je het vakje, dan verdwijnt de arcering.</li>
     <li>Vast? <b>💡 Hint</b> laat de volgende stap zien en vertelt waarom. Bij <b>Overzicht</b> zie je wat je al gevonden hebt.</li>
     <li>Schuif met één vinger over het rooster en knijp met twee vingers om in of uit te zoomen. Tik op een naam boven of naast het rooster om hem helemaal te lezen.</li></ul></details>`;
@@ -545,7 +581,7 @@
   window.__lg = {
     get S() { return S; }, get V() { return V; }, get Lay() { return Lay; }, get hint() { return hintS; }, opt, stats: () => stats, Core,
     startNew, openStart, openMenu, leave, save, load, doMark, doHint, doCheck, applyHint, undo, redo, restart, reveal, hit, setZoom, check,
-    cellXY(a, b) { const r = cellRect(a, b), q = cv.getBoundingClientRect(); return { x: q.left + r.x + r.s / 2, y: q.top + r.y + r.s / 2, s: r.s, vis: r.x >= base().x + Lay.leftW - 1 && r.y >= base().y + Lay.topH - 1 && r.x + r.s <= V.W + 1 && r.y + r.s <= V.H + 1 }; },
+    lines: () => LN, cellXY(a, b) { const r = cellRect(a, b), q = cv.getBoundingClientRect(); return { x: q.left + r.x + r.s / 2, y: q.top + r.y + r.s / 2, s: r.s, vis: r.x >= base().x + Lay.leftW - 1 && r.y >= base().y + Lay.topH - 1 && r.x + r.s <= V.W + 1 && r.y + r.s <= V.H + 1 }; },
     running: () => raf !== 0, drawStats: reset => { const r = { n: DS.n, avg: DS.n ? DS.ms / DS.n : 0, max: DS.max }; if (reset) { DS.n = 0; DS.ms = 0; DS.max = 0; } return r; }, busy: () => busy, genMs: () => lastGen, timerOn: () => !!timer,
   };
   return { enter, leave, hasSave: () => !!store.get('lg.save', null) };
