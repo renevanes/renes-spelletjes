@@ -1,11 +1,11 @@
 {
-  "versionCode": 90,
-  "versionName": "1.89",
+  "versionCode": 91,
+  "versionName": "1.90",
   "nativeLevel": 12,
-  "notes": "Logigram: hints zijn leerzamer. Eerst krijg je een tip waar je moet kijken, zonder het antwoord. Met \"Leg uit\" zie je daarna de hele redenering, met de naam van de techniek en een tip om het volgende keer zelf te zien.",
+  "notes": "Logigram: de knop Lijnen tekent nu ook hoeklijnen. Staat een ding zowel boven als links in het rooster, dan verbindt een gestippelde lijn met een hoek die twee plekken door het lege deel rechtsonder. Zo zie je een hele groep als \u00e9\u00e9n keten.",
   "web": "web/index.html",
-  "webSha256": "cdfa3155a4446bf28fbd36ce81883ddfb763e651654084237bdf181a79697a14",
-  "webSig": "MEQCIAfnSr+nvLwNstIGZe7kkTEgD9OJpPJM5NQAx933hmf4AiAVoDtZAYsAFKFy5qbYjwNVq0TJOjvI84u3aElPg0nyLw==",
+  "webSha256": "419589c7e20d4ce11af88fe0418b2c5f4c84de7174cf2f152c4108e6595df725",
+  "webSig": "MEUCIAV1UXvsQPAFIdQE1e8uHcp0/GQoGxQvc30z3X6WTVZsAiEA0ACcLhOf1WJuFcpAJKr3FkpfpovQ1X8uaeL1YxoMxiA=",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "157e7255acef0f79f0480b8faf45ec752ee5481ed6800a979dae8c05fceca91c"

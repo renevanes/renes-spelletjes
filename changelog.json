@@ -448,5 +448,10 @@
   "v": "1.89",
   "date": "2026-11-25",
   "notes": "Logigram: hints zijn leerzamer. Eerst krijg je een tip waar je moet kijken, zonder het antwoord. Met \"Leg uit\" zie je daarna de hele redenering, met de naam van de techniek en een tip om het volgende keer zelf te zien."
+ },
+ {
+  "v": "1.90",
+  "date": "2026-11-25",
+  "notes": "Logigram: de knop Lijnen tekent nu ook hoeklijnen. Staat een ding zowel boven als links in het rooster, dan verbindt een gestippelde lijn met een hoek die twee plekken door het lege deel rechtsonder. Zo zie je een hele groep als één keten."
  }
 ]
