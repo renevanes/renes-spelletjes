@@ -1,11 +1,11 @@
 {
-  "versionCode": 89,
-  "versionName": "1.88",
+  "versionCode": 90,
+  "versionName": "1.89",
   "nativeLevel": 12,
-  "notes": "Logigram: hints bij een aanwijzing als \"De vijf vrienden zijn \u2026\" leggen nu stap voor stap uit waarom. Ze noemen alle vijf, zeggen bij elk waarom het niet kan (een \u2717 in je rooster, of iemand anders) en welke er overblijft.",
+  "notes": "Logigram: hints zijn leerzamer. Eerst krijg je een tip waar je moet kijken, zonder het antwoord. Met \"Leg uit\" zie je daarna de hele redenering, met de naam van de techniek en een tip om het volgende keer zelf te zien.",
   "web": "web/index.html",
-  "webSha256": "4902fef7aeab7adaa025a301400947f6947a4ae1f65449917c8e46a96aaaac7c",
-  "webSig": "MEUCIGXowOpjIpY6hC0Wzyb8R5X6fd1572WlKekkXxShc2TcAiEA9k3H/WC7peWIPnjkMAgehqNBoEptKYKC6SDVithr4NY=",
+  "webSha256": "cdfa3155a4446bf28fbd36ce81883ddfb763e651654084237bdf181a79697a14",
+  "webSig": "MEQCIAfnSr+nvLwNstIGZe7kkTEgD9OJpPJM5NQAx933hmf4AiAVoDtZAYsAFKFy5qbYjwNVq0TJOjvI84u3aElPg0nyLw==",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "157e7255acef0f79f0480b8faf45ec752ee5481ed6800a979dae8c05fceca91c"

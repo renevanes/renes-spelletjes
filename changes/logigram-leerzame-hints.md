@@ -1,1 +1,0 @@
-Logigram: hints zijn leerzamer. Eerst krijg je een tip waar je moet kijken, zonder het antwoord. Met "Leg uit" zie je daarna de hele redenering, met de naam van de techniek en een tip om het volgende keer zelf te zien.

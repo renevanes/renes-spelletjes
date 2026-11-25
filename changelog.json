@@ -443,5 +443,10 @@
   "v": "1.88",
   "date": "2026-11-25",
   "notes": "Logigram: hints bij een aanwijzing als \"De vijf vrienden zijn …\" leggen nu stap voor stap uit waarom. Ze noemen alle vijf, zeggen bij elk waarom het niet kan (een ✗ in je rooster, of iemand anders) en welke er overblijft."
+ },
+ {
+  "v": "1.89",
+  "date": "2026-11-25",
+  "notes": "Logigram: hints zijn leerzamer. Eerst krijg je een tip waar je moet kijken, zonder het antwoord. Met \"Leg uit\" zie je daarna de hele redenering, met de naam van de techniek en een tip om het volgende keer zelf te zien."
  }
 ]
