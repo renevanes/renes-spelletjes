@@ -12,7 +12,8 @@
 @keyframes lgPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.12);opacity:.65}}
 #lgTip{position:absolute;left:6px;right:6px;bottom:calc(6px + env(safe-area-inset-bottom));z-index:20;background:#fffcf2;color:#2a2219;border-radius:16px;padding:10px 12px 8px;box-shadow:0 -4px 22px rgba(0,0,0,.45);transform:translateY(14px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .15s,transform .15s,visibility .15s}
 #lgTip.show{opacity:1;visibility:visible;transform:none;pointer-events:auto}
-#lgTip p{margin:0 0 8px;font-size:14.5px;line-height:1.42}
+#lgTip p{margin:0 0 8px;font-size:14.5px;line-height:1.42;max-height:42vh;overflow-y:auto}
+.lg-tipname{display:block;color:#1d5c3f;font-size:15px;margin-bottom:3px}
 .lg-tipb{display:flex;gap:8px;justify-content:flex-end}
 .lg-tipb button{padding:8px 14px;border-radius:11px;background:rgba(0,0,0,.08);color:#2a2219;font-weight:700;font-size:14px}
 .lg-tipb button.go{background:#2a9d6f;color:#fff}

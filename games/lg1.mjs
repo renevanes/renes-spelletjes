@@ -101,14 +101,17 @@ if (want('main')) {
   ok('Passend: alles in beeld', await ev(p, () => Math.abs(__lg.V.cs - __lg.Lay.fitAll) < .6), await ev(p, () => [__lg.V.cs, __lg.Lay.fitAll].join()));
   await tapEl(p, '#lgFit'); await wait(p, 100);
   ok('nog eens Passend: weer de gewone maat', await ev(p, () => Math.abs(__lg.V.cs - __lg.Lay.cs0) < .6));
-  // hint: the next step with the clue that proves it
+  // hint in two steps: first a tip (no answer shown), then the full reasoning, then fill it in
   await tapEl(p, '#lgHintB'); await wait(p, 300);
-  const h = await ev(p, () => ({ show: document.getElementById('lgTip').classList.contains('show'), txt: document.getElementById('lgTipText').textContent, hints: __lg.S.hints, a: __lg.hint && __lg.hint.a, b: __lg.hint && __lg.hint.b, v: __lg.hint && __lg.hint.v, k: __lg.hint && __lg.hint.k, pulse: getComputedStyle(document.getElementById('lgPulse')).display }));
-  ok('hint: uitleg in beeld', h.show && /aanwijzing|Daarom|blijft/.test(h.txt) && h.pulse === 'block', h.txt);
+  const h = await ev(p, () => ({ show: document.getElementById('lgTip').classList.contains('show'), txt: document.getElementById('lgTipText').textContent, go: document.getElementById('lgTipGo').textContent, hints: __lg.S.hints, a: __lg.hint && __lg.hint.a, b: __lg.hint && __lg.hint.b, v: __lg.hint && __lg.hint.v, stage: __lg.hint && __lg.hint.stage, pulse: getComputedStyle(document.getElementById('lgPulse')).display }));
+  ok('hint stap 1: eerst een tip, zonder antwoord', h.show && h.stage === 1 && h.txt.includes('🔎') && h.go === 'Leg uit' && h.pulse !== 'block', h.txt);
   ok('hint telt mee', h.hints === 1);
   ok('staand: hint-uitleg onder het rooster, rooster blijft vrij', await ev(p, () => document.getElementById('lgTip').getBoundingClientRect().top >= document.getElementById('lgBox').getBoundingClientRect().bottom - 1));
+  await tapEl(p, '#lgTipGo'); await wait(p, 250);
+  const h2 = await ev(p, () => ({ txt: document.getElementById('lgTipText').textContent, go: document.getElementById('lgTipGo').textContent, stage: __lg.hint && __lg.hint.stage, pulse: getComputedStyle(document.getElementById('lgPulse')).display }));
+  ok('hint stap 2 (Leg uit): de hele redenering, vakje in beeld', h2.stage === 2 && h2.txt.includes('💡') && /aanwijzing|Daarom|blijft|volgt|dus/.test(h2.txt) && /Zet/.test(h2.go) && h2.pulse === 'block', h2.txt);
   await tapEl(p, '#lgHintB'); await wait(p, 150);
-  ok('dezelfde hint nog eens telt niet dubbel', (await ev(p, () => __lg.S.hints)) === 1);
+  ok('dezelfde hint nog eens telt niet dubbel', (await ev(p, () => __lg.S.hints)) === 1 && await ev(p, () => __lg.hint && __lg.hint.stage === 2));
   await tapEl(p, '#lgTipGo'); await wait(p, 150);
   ok('hint invullen zet het goede teken', (await mark(p, h.a, h.b)) === h.v && await ev(p, ([a, b]) => (__lg.S.P.ent[a] === __lg.S.P.ent[b]) === (__lg.S.mk[a * __lg.S.P.K * __lg.S.P.N + b] === 2), [h.a, h.b]) && !(await vis(p, 'lgTip')));
   await p.screenshot({ path: path.join(GFX, 'lg_play_p.png') });

@@ -464,41 +464,67 @@
     if (!r.step) return null;
     return Object.assign({ k: 'step' }, r.step, explain(P, r.step, r.M, mk));
   }
+  /* every hint has three parts: a name (the technique), a tip (where to look, without the answer) and the full reasoning */
   function explain(P, s, M, mk) {
     const T = T_(P), N = P.N, w = s.why, st = (x, y, v, c = true) => stmt(P, x, y, v === YES, c), conclusion = st(s.a, s.b, s.v, false);
     const okOpts = (g, oc) => { const r = []; for (let k = 0; k < N; k++) if (M[g * T + oc * N + k] !== NO) r.push(oc * N + k); return r; };
+    const G = GROUP[P.grp], q = ci => `„${P.clues[ci].txt.replace(/\.$/, '')}”`, A = n => `aanwijzing ${n + 1}`;
+    const plOf = c => c === 0 ? 'namen' : P.cats[c].pl, sgOf = c => c === 0 ? 'naam' : P.cats[c].label.toLowerCase();
+    const inRoster = (x, y) => mk && mk[x * T + y] ? 'dat staat al in je rooster' : 'dat volgt al uit de aanwijzingen';
     switch (w[0]) {
-      case 'c': return { text: `Uit aanwijzing ${w[1] + 1} volgt: ${conclusion}.`, refs: [], clue: w[1] };
-      case 'cw': return { text: `${st(w[2], w[3], w[4])}. Met aanwijzing ${w[1] + 1} volgt dan: ${conclusion}.`, refs: [[w[2], w[3]]], clue: w[1] };
+      case 'c': {
+        const k = P.clues[w[1]];
+        const why = k.t === 'or' && catOf(P, k.bs[0]) === catOf(P, k.bs[1]) ? ` De aanwijzing laat voor ${ref(P, k.a)} maar twee ${plOf(catOf(P, k.bs[0]))} over, dus alle andere vallen af.`
+          : k.t === 'or' ? ` Precies één van de twee is waar, dus het gaat om twee verschillende personen.`
+          : k.t === 'cmp' || k.t === 'dif' ? ` Een vergelijking gaat altijd over twee verschillende personen.`
+          : k.t === 'list' ? ` De genoemden zijn allemaal verschillende personen.`
+          : k.t === 'pair' ? ` ${cap(joinEn(k.xs.map(x => ref(P, x))))} hebben samen ${joinEn(k.ys.map(y => nm(P, y)))}. Zij hebben dus geen andere ${plOf(catOf(P, k.ys[0]))}, en niemand anders heeft ${joinOr(k.ys.map(y => nm(P, y)))}.` : '';
+        const tip = k.t === 'cmp' || k.t === 'dif' || k.t === 'list' || (k.t === 'or' && catOf(P, k.bs[0]) !== catOf(P, k.bs[1])) ? `Lees ${A(w[1])}: welke twee kunnen daardoor niet dezelfde persoon zijn?`
+          : k.t === 'pair' ? `Lees ${A(w[1])}: wat betekent dat voor de anderen, en voor wat die twee verder hebben?`
+          : k.t === 'or' ? `Lees ${A(w[1])}: welke ${plOf(catOf(P, k.bs[0]))} vallen daardoor af?`
+          : `Lees ${A(w[1])} nog eens goed: daar staat iets in dat je direct in het rooster kunt zetten.`;
+        return { name: 'Rechtstreeks uit een aanwijzing', tip,
+          text: `${cap(A(w[1]))}: ${q(w[1])}.${why} Daaruit volgt: ${conclusion}. Tip: zet zulke aanwijzingen meteen in het rooster en streep ze dan door.`, refs: [], clue: w[1] };
+      }
+      case 'cw': return { name: 'Aanwijzing + wat je al weet', tip: `Combineer ${A(w[1])} met wat je al weet over ${ref(P, w[2])}.`,
+        text: `${st(w[2], w[3], w[4])} (${inRoster(w[2], w[3])}). ${cap(A(w[1]))} zegt ${q(w[1])}. Samen volgt daaruit: ${conclusion}. Tip: kijk bij een "of"-aanwijzing steeds of je één van de twee kanten al weet.`, refs: [[w[2], w[3]]], clue: w[1] };
       case 'co': {
-        const k = P.clues[w[1]], other = w[2], oc = k.o;
-        if (catOf(P, other) === oc) return { text: `Uit aanwijzing ${w[1] + 1} volgt: ${conclusion}.`, refs: [], clue: w[1] };
-        const l = []; for (let j = 0; j < N; j++) if (M[other * T + oc * N + j] !== NO) l.push(oc * N + j);
-        if (l.length === N) return { text: `Uit aanwijzing ${w[1] + 1} volgt: ${conclusion}.`, refs: [], clue: w[1] };
-        return { text: `Bij ${ref(P, other)} is alleen nog ${joinOr(l.map(g => nm(P, g)))} mogelijk. Met aanwijzing ${w[1] + 1} volgt dan: ${conclusion}.`, refs: l.map(g => [other, g]), clue: w[1] };
+        const k = P.clues[w[1]], other = w[2], oc = k.o, l = []; for (let j = 0; j < N; j++) if (M[other * T + oc * N + j] !== NO) l.push(oc * N + j);
+        const tip = `${cap(A(w[1]))} vergelijkt ${ref(P, k.a)} en ${ref(P, k.b)}. Kijk welke ${P.cats[oc].pl} voor elk van de twee nog kunnen, en welke daardoor onmogelijk worden.`;
+        if (catOf(P, other) === oc || l.length === N) return { name: 'Vergelijken', tip, text: `${cap(A(w[1]))} zegt ${q(w[1])}. Daardoor kan dit niet: ${conclusion}. Tip: bij "ouder/jonger" of "meer/minder" vallen de uiterste waarden vaak als eerste af.`, refs: [], clue: w[1] };
+        return { name: 'Vergelijken', tip,
+          text: `Bij ${ref(P, other)} kan nog alleen ${joinOr(l.map(g => nm(P, g)))}. ${cap(A(w[1]))} zegt ${q(w[1])}. Dan past het niet meer: ${conclusion}. Tip: schrijf bij een vergelijking voor beide personen op wat nog kan en schuif ze tegen elkaar.`, refs: l.map(g => [other, g]), clue: w[1] };
       }
       case 'lc': {
         // a list clue that names everybody: z must be one of the named; all but one are ruled out
-        const k = P.clues[w[1]], z = w[2], y = z === s.a ? s.b : s.a, G = GROUP[P.grp], zc = catOf(P, z);
+        const k = P.clues[w[1]], z = w[2], y = z === s.a ? s.b : s.a, zc = catOf(P, z);
         const why = L => {
           if (catOf(P, L) === zc) return `${ref(P, L)} (${zc === 0 ? 'dat is iemand anders' : `niemand heeft twee ${P.cats[zc].pl}`})`;
           return `${ref(P, L)} (${mk && mk[z * T + L] ? '✗ in je rooster' : 'dat volgt al uit de aanwijzingen'})`;
         };
         const others = k.xs.filter(L => L !== y), refs = others.filter(L => catOf(P, L) !== zc).map(L => [z, L]);
-        return { text: `Aanwijzing ${w[1] + 1} noemt alle ${NUMW[k.xs.length]} ${G.pl}: ${joinEn(k.xs.map(L => ref(P, L)))}. ${P.grp === 'c' ? 'Elk kind' : 'Elke vriend'} is dus precies één van deze ${NUMW[k.xs.length]}, ook ${ref(P, z)}. Maar ${ref(P, z)} is ${joinEn(others.map(L => 'niet ' + why(L)))}. Dan blijft er maar één over: ${ref(P, y)}. Daarom geldt: ${conclusion}.`, refs, clue: w[1] };
+        return { name: 'Lijst met iedereen', tip: `${cap(A(w[1]))} noemt alle ${NUMW[k.xs.length]} ${G.pl}. Ieder van hen is dus één van de genoemden. Ga de ${plOf(zc)} langs die er niet in staan: bij welke kan nog maar één van de genoemden?`,
+          text: `${cap(A(w[1]))} noemt alle ${NUMW[k.xs.length]} ${G.pl}: ${joinEn(k.xs.map(L => ref(P, L)))}. ${P.grp === 'c' ? 'Elk kind' : 'Elke vriend'} is dus precies één van deze ${NUMW[k.xs.length]}, ook ${ref(P, z)}. Maar ${ref(P, z)} is ${joinEn(others.map(L => 'niet ' + why(L)))}. Dan blijft er maar één over: ${ref(P, y)}. Daarom geldt: ${conclusion}. Tip: zie zo'n lijst als alle ${G.pl} op een rij. Tel bij elk ding dat er niet in staat, hoeveel genoemden nog kunnen; blijft er één over, dan heb je een ✓.`, refs, clue: w[1] };
       }
-      case 'ey': return { text: `${st(w[1], w[2], YES)}. Daarom geldt: ${conclusion}.`, refs: [[w[1], w[2]]], clue: -1 };
+      case 'ey': {
+        const c = P.cats[catOf(P, w[2])];
+        return { name: 'Eén ✓ per rij', tip: `Kijk bij ${ref(P, w[1])} naar de ${c.pl}: daar staat al een ✓.`,
+          text: `${st(w[1], w[2], YES)}. Iedereen heeft maar één van de ${c.pl}, dus alle andere ${c.pl} vallen af: ${conclusion}. Tip: zet je een ✓, streep dan meteen de rest van die rij en kolom in het blokje weg.`, refs: [[w[1], w[2]]], clue: -1 };
+      }
       case 'el': {
         const x = w[1], y = x === s.a ? s.b : s.a, c = P.cats[w[2]];
-        return { text: `Bij ${nm(P, x)} blijft alleen ${nm(P, y)} over: alle andere ${c.pl} vallen af. Daarom geldt: ${conclusion}.`, refs: [], clue: -1 };
+        return { name: 'Laatste vakje', tip: `Kijk bij ${ref(P, x)} naar de ${c.pl}: hoeveel zijn er nog over?`,
+          text: `Bij ${ref(P, x)} zijn alle ${c.pl} behalve ${nm(P, y)} al weggestreept. In elke rij van een blokje hoort precies één ✓, dus die moet hier: ${conclusion}.`, refs: [], clue: -1 };
       }
-      case 'tr': return { text: `${st(w[1], w[2], YES)} en ${st(w[2], w[3], M[w[2] * T + w[3]], false)}. Daarom geldt: ${conclusion}.`, refs: [[w[1], w[2]], [w[2], w[3]]], clue: -1 };
+      case 'tr': return { name: '✓ overnemen', tip: `${cap(ref(P, w[1]))} en ${ref(P, w[2])} zijn dezelfde persoon (✓). Wat weet je al over de één dat ook voor de ander geldt?`,
+        text: `${st(w[1], w[2], YES)} en ${st(w[2], w[3], M[w[2] * T + w[3]], false)}. Een ✓ betekent: dezelfde persoon. Alles wat je van de één weet, geldt dus ook voor de ander: ${conclusion}. Tip: kijk na elke ✓ in de andere blokjes wat je kunt overnemen.`, refs: [[w[1], w[2]], [w[2], w[3]]], clue: -1 };
       case 'cr': {
         const [x, y, cz] = w.slice(1), ox = okOpts(x, cz), oy = okOpts(y, cz);
-        return { text: `Bij de ${P.cats[cz].pl} blijft voor ${ref(P, x)} alleen ${joinOr(ox.map(g => nm(P, g)))} over en voor ${ref(P, y)} alleen ${joinOr(oy.map(g => nm(P, g)))}. Daarom geldt: ${conclusion}.`, refs: [...ox.map(g => [x, g]), ...oy.map(g => [y, g])], clue: -1 };
+        return { name: 'Niets gemeenschappelijk', tip: `Vergelijk wat bij de ${P.cats[cz].pl} nog mogelijk is voor ${ref(P, x)} en voor ${ref(P, y)}.`,
+          text: `Bij de ${P.cats[cz].pl} kan voor ${ref(P, x)} alleen nog ${joinOr(ox.map(g => nm(P, g)))}, en voor ${ref(P, y)} alleen nog ${joinOr(oy.map(g => nm(P, g)))}. Daar zit niets hetzelfde tussen, dus het kunnen geen dezelfde persoon zijn: ${conclusion}.`, refs: [...ox.map(g => [x, g]), ...oy.map(g => [y, g])], clue: -1 };
       }
     }
-    return { text: conclusion + '.', refs: [], clue: -1 };
+    return { name: 'Volgende stap', tip: 'Kijk nog eens naar de aanwijzingen en je rooster.', text: conclusion + '.', refs: [], clue: -1 };
   }
 
   const Core = { NO, YES, AUTO, LEVELS, LVL_KEYS, CLUE_LVL, rng, hashStr, dailyFor, buildBase, generate, genIter, solve, holds, clueText, stmt, ref, nm, pred, catOf, itemOf, inv,

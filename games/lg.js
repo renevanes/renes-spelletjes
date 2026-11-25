@@ -566,41 +566,67 @@ const Logigram = (() => {
     if (!r.step) return null;
     return Object.assign({ k: 'step' }, r.step, explain(P, r.step, r.M, mk));
   }
+  /* every hint has three parts: a name (the technique), a tip (where to look, without the answer) and the full reasoning */
   function explain(P, s, M, mk) {
     const T = T_(P), N = P.N, w = s.why, st = (x, y, v, c = true) => stmt(P, x, y, v === YES, c), conclusion = st(s.a, s.b, s.v, false);
     const okOpts = (g, oc) => { const r = []; for (let k = 0; k < N; k++) if (M[g * T + oc * N + k] !== NO) r.push(oc * N + k); return r; };
+    const G = GROUP[P.grp], q = ci => `„${P.clues[ci].txt.replace(/\.$/, '')}”`, A = n => `aanwijzing ${n + 1}`;
+    const plOf = c => c === 0 ? 'namen' : P.cats[c].pl, sgOf = c => c === 0 ? 'naam' : P.cats[c].label.toLowerCase();
+    const inRoster = (x, y) => mk && mk[x * T + y] ? 'dat staat al in je rooster' : 'dat volgt al uit de aanwijzingen';
     switch (w[0]) {
-      case 'c': return { text: `Uit aanwijzing ${w[1] + 1} volgt: ${conclusion}.`, refs: [], clue: w[1] };
-      case 'cw': return { text: `${st(w[2], w[3], w[4])}. Met aanwijzing ${w[1] + 1} volgt dan: ${conclusion}.`, refs: [[w[2], w[3]]], clue: w[1] };
+      case 'c': {
+        const k = P.clues[w[1]];
+        const why = k.t === 'or' && catOf(P, k.bs[0]) === catOf(P, k.bs[1]) ? ` De aanwijzing laat voor ${ref(P, k.a)} maar twee ${plOf(catOf(P, k.bs[0]))} over, dus alle andere vallen af.`
+          : k.t === 'or' ? ` Precies één van de twee is waar, dus het gaat om twee verschillende personen.`
+          : k.t === 'cmp' || k.t === 'dif' ? ` Een vergelijking gaat altijd over twee verschillende personen.`
+          : k.t === 'list' ? ` De genoemden zijn allemaal verschillende personen.`
+          : k.t === 'pair' ? ` ${cap(joinEn(k.xs.map(x => ref(P, x))))} hebben samen ${joinEn(k.ys.map(y => nm(P, y)))}. Zij hebben dus geen andere ${plOf(catOf(P, k.ys[0]))}, en niemand anders heeft ${joinOr(k.ys.map(y => nm(P, y)))}.` : '';
+        const tip = k.t === 'cmp' || k.t === 'dif' || k.t === 'list' || (k.t === 'or' && catOf(P, k.bs[0]) !== catOf(P, k.bs[1])) ? `Lees ${A(w[1])}: welke twee kunnen daardoor niet dezelfde persoon zijn?`
+          : k.t === 'pair' ? `Lees ${A(w[1])}: wat betekent dat voor de anderen, en voor wat die twee verder hebben?`
+          : k.t === 'or' ? `Lees ${A(w[1])}: welke ${plOf(catOf(P, k.bs[0]))} vallen daardoor af?`
+          : `Lees ${A(w[1])} nog eens goed: daar staat iets in dat je direct in het rooster kunt zetten.`;
+        return { name: 'Rechtstreeks uit een aanwijzing', tip,
+          text: `${cap(A(w[1]))}: ${q(w[1])}.${why} Daaruit volgt: ${conclusion}. Tip: zet zulke aanwijzingen meteen in het rooster en streep ze dan door.`, refs: [], clue: w[1] };
+      }
+      case 'cw': return { name: 'Aanwijzing + wat je al weet', tip: `Combineer ${A(w[1])} met wat je al weet over ${ref(P, w[2])}.`,
+        text: `${st(w[2], w[3], w[4])} (${inRoster(w[2], w[3])}). ${cap(A(w[1]))} zegt ${q(w[1])}. Samen volgt daaruit: ${conclusion}. Tip: kijk bij een "of"-aanwijzing steeds of je één van de twee kanten al weet.`, refs: [[w[2], w[3]]], clue: w[1] };
       case 'co': {
-        const k = P.clues[w[1]], other = w[2], oc = k.o;
-        if (catOf(P, other) === oc) return { text: `Uit aanwijzing ${w[1] + 1} volgt: ${conclusion}.`, refs: [], clue: w[1] };
-        const l = []; for (let j = 0; j < N; j++) if (M[other * T + oc * N + j] !== NO) l.push(oc * N + j);
-        if (l.length === N) return { text: `Uit aanwijzing ${w[1] + 1} volgt: ${conclusion}.`, refs: [], clue: w[1] };
-        return { text: `Bij ${ref(P, other)} is alleen nog ${joinOr(l.map(g => nm(P, g)))} mogelijk. Met aanwijzing ${w[1] + 1} volgt dan: ${conclusion}.`, refs: l.map(g => [other, g]), clue: w[1] };
+        const k = P.clues[w[1]], other = w[2], oc = k.o, l = []; for (let j = 0; j < N; j++) if (M[other * T + oc * N + j] !== NO) l.push(oc * N + j);
+        const tip = `${cap(A(w[1]))} vergelijkt ${ref(P, k.a)} en ${ref(P, k.b)}. Kijk welke ${P.cats[oc].pl} voor elk van de twee nog kunnen, en welke daardoor onmogelijk worden.`;
+        if (catOf(P, other) === oc || l.length === N) return { name: 'Vergelijken', tip, text: `${cap(A(w[1]))} zegt ${q(w[1])}. Daardoor kan dit niet: ${conclusion}. Tip: bij "ouder/jonger" of "meer/minder" vallen de uiterste waarden vaak als eerste af.`, refs: [], clue: w[1] };
+        return { name: 'Vergelijken', tip,
+          text: `Bij ${ref(P, other)} kan nog alleen ${joinOr(l.map(g => nm(P, g)))}. ${cap(A(w[1]))} zegt ${q(w[1])}. Dan past het niet meer: ${conclusion}. Tip: schrijf bij een vergelijking voor beide personen op wat nog kan en schuif ze tegen elkaar.`, refs: l.map(g => [other, g]), clue: w[1] };
       }
       case 'lc': {
         // a list clue that names everybody: z must be one of the named; all but one are ruled out
-        const k = P.clues[w[1]], z = w[2], y = z === s.a ? s.b : s.a, G = GROUP[P.grp], zc = catOf(P, z);
+        const k = P.clues[w[1]], z = w[2], y = z === s.a ? s.b : s.a, zc = catOf(P, z);
         const why = L => {
           if (catOf(P, L) === zc) return `${ref(P, L)} (${zc === 0 ? 'dat is iemand anders' : `niemand heeft twee ${P.cats[zc].pl}`})`;
           return `${ref(P, L)} (${mk && mk[z * T + L] ? '✗ in je rooster' : 'dat volgt al uit de aanwijzingen'})`;
         };
         const others = k.xs.filter(L => L !== y), refs = others.filter(L => catOf(P, L) !== zc).map(L => [z, L]);
-        return { text: `Aanwijzing ${w[1] + 1} noemt alle ${NUMW[k.xs.length]} ${G.pl}: ${joinEn(k.xs.map(L => ref(P, L)))}. ${P.grp === 'c' ? 'Elk kind' : 'Elke vriend'} is dus precies één van deze ${NUMW[k.xs.length]}, ook ${ref(P, z)}. Maar ${ref(P, z)} is ${joinEn(others.map(L => 'niet ' + why(L)))}. Dan blijft er maar één over: ${ref(P, y)}. Daarom geldt: ${conclusion}.`, refs, clue: w[1] };
+        return { name: 'Lijst met iedereen', tip: `${cap(A(w[1]))} noemt alle ${NUMW[k.xs.length]} ${G.pl}. Ieder van hen is dus één van de genoemden. Ga de ${plOf(zc)} langs die er niet in staan: bij welke kan nog maar één van de genoemden?`,
+          text: `${cap(A(w[1]))} noemt alle ${NUMW[k.xs.length]} ${G.pl}: ${joinEn(k.xs.map(L => ref(P, L)))}. ${P.grp === 'c' ? 'Elk kind' : 'Elke vriend'} is dus precies één van deze ${NUMW[k.xs.length]}, ook ${ref(P, z)}. Maar ${ref(P, z)} is ${joinEn(others.map(L => 'niet ' + why(L)))}. Dan blijft er maar één over: ${ref(P, y)}. Daarom geldt: ${conclusion}. Tip: zie zo'n lijst als alle ${G.pl} op een rij. Tel bij elk ding dat er niet in staat, hoeveel genoemden nog kunnen; blijft er één over, dan heb je een ✓.`, refs, clue: w[1] };
       }
-      case 'ey': return { text: `${st(w[1], w[2], YES)}. Daarom geldt: ${conclusion}.`, refs: [[w[1], w[2]]], clue: -1 };
+      case 'ey': {
+        const c = P.cats[catOf(P, w[2])];
+        return { name: 'Eén ✓ per rij', tip: `Kijk bij ${ref(P, w[1])} naar de ${c.pl}: daar staat al een ✓.`,
+          text: `${st(w[1], w[2], YES)}. Iedereen heeft maar één van de ${c.pl}, dus alle andere ${c.pl} vallen af: ${conclusion}. Tip: zet je een ✓, streep dan meteen de rest van die rij en kolom in het blokje weg.`, refs: [[w[1], w[2]]], clue: -1 };
+      }
       case 'el': {
         const x = w[1], y = x === s.a ? s.b : s.a, c = P.cats[w[2]];
-        return { text: `Bij ${nm(P, x)} blijft alleen ${nm(P, y)} over: alle andere ${c.pl} vallen af. Daarom geldt: ${conclusion}.`, refs: [], clue: -1 };
+        return { name: 'Laatste vakje', tip: `Kijk bij ${ref(P, x)} naar de ${c.pl}: hoeveel zijn er nog over?`,
+          text: `Bij ${ref(P, x)} zijn alle ${c.pl} behalve ${nm(P, y)} al weggestreept. In elke rij van een blokje hoort precies één ✓, dus die moet hier: ${conclusion}.`, refs: [], clue: -1 };
       }
-      case 'tr': return { text: `${st(w[1], w[2], YES)} en ${st(w[2], w[3], M[w[2] * T + w[3]], false)}. Daarom geldt: ${conclusion}.`, refs: [[w[1], w[2]], [w[2], w[3]]], clue: -1 };
+      case 'tr': return { name: '✓ overnemen', tip: `${cap(ref(P, w[1]))} en ${ref(P, w[2])} zijn dezelfde persoon (✓). Wat weet je al over de één dat ook voor de ander geldt?`,
+        text: `${st(w[1], w[2], YES)} en ${st(w[2], w[3], M[w[2] * T + w[3]], false)}. Een ✓ betekent: dezelfde persoon. Alles wat je van de één weet, geldt dus ook voor de ander: ${conclusion}. Tip: kijk na elke ✓ in de andere blokjes wat je kunt overnemen.`, refs: [[w[1], w[2]], [w[2], w[3]]], clue: -1 };
       case 'cr': {
         const [x, y, cz] = w.slice(1), ox = okOpts(x, cz), oy = okOpts(y, cz);
-        return { text: `Bij de ${P.cats[cz].pl} blijft voor ${ref(P, x)} alleen ${joinOr(ox.map(g => nm(P, g)))} over en voor ${ref(P, y)} alleen ${joinOr(oy.map(g => nm(P, g)))}. Daarom geldt: ${conclusion}.`, refs: [...ox.map(g => [x, g]), ...oy.map(g => [y, g])], clue: -1 };
+        return { name: 'Niets gemeenschappelijk', tip: `Vergelijk wat bij de ${P.cats[cz].pl} nog mogelijk is voor ${ref(P, x)} en voor ${ref(P, y)}.`,
+          text: `Bij de ${P.cats[cz].pl} kan voor ${ref(P, x)} alleen nog ${joinOr(ox.map(g => nm(P, g)))}, en voor ${ref(P, y)} alleen nog ${joinOr(oy.map(g => nm(P, g)))}. Daar zit niets hetzelfde tussen, dus het kunnen geen dezelfde persoon zijn: ${conclusion}.`, refs: [...ox.map(g => [x, g]), ...oy.map(g => [y, g])], clue: -1 };
       }
     }
-    return { text: conclusion + '.', refs: [], clue: -1 };
+    return { name: 'Volgende stap', tip: 'Kijk nog eens naar de aanwijzingen en je rooster.', text: conclusion + '.', refs: [], clue: -1 };
   }
 
   const Core = { NO, YES, AUTO, LEVELS, LVL_KEYS, CLUE_LVL, rng, hashStr, dailyFor, buildBase, generate, genIter, solve, holds, clueText, stmt, ref, nm, pred, catOf, itemOf, inv,
@@ -813,8 +839,8 @@ const Logigram = (() => {
     g.setTransform(V.dpr, 0, 0, V.dpr, 0, 0); g.clearRect(0, 0, V.W, V.H);
     g.fillStyle = 'rgba(0,0,0,.16)'; rr(B.x - 2, B.y + 1, cardW + 4, cardH + 6, 14); g.fill(); g.fillStyle = 'rgba(0,0,0,.2)'; rr(B.x, B.y + 2, cardW, cardH + 2, 12); g.fill();
     g.fillStyle = C.paper; rr(B.x, B.y, cardW, cardH, 12); g.fill();
-    const selRow = sel ? blockOf(sel.a, sel.b) : null, hb = hintS ? blockOf(hintS.a, hintS.b) : null;
-    const refSet = new Set((hintS && hintS.refs || []).map(([p, q]) => { const z = blockOf(p, q); return z.a * T + z.b; }));
+    const hs2 = hintS && hintS.stage === 2 ? hintS : null, selRow = sel ? blockOf(sel.a, sel.b) : null, hb = hs2 ? blockOf(hs2.a, hs2.b) : null;
+    const refSet = new Set((hs2 && hs2.refs || []).map(([p, q]) => { const z = blockOf(p, q); return z.a * T + z.b; }));
     let animating = false;
     // ---- cells ----
     g.save(); g.beginPath(); g.rect(x0, y0, cardW - Lay.leftW, cardH - Lay.topH); g.clip();
@@ -877,7 +903,7 @@ const Logigram = (() => {
     g.strokeStyle = C.block; g.lineWidth = 2; g.beginPath(); g.moveTo(x0, B.y + 6); g.lineTo(x0, B.y + cardH - 6); g.moveTo(B.x + 6, y0); g.lineTo(B.x + cardW - 6, y0); g.stroke();
     g.font = `${Math.min(Lay.leftW, Lay.topH) * .38}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.globalAlpha = .55; g.fillText('🔎', B.x + Lay.leftW / 2, B.y + Lay.topH / 2); g.globalAlpha = 1;
     // hint pulse ring (a CSS animation on top: no canvas loop needed)
-    if (hintS) { const r = cellRect(hintS.a, hintS.b); pulse.style.cssText = `display:block;left:${r.x - 3}px;top:${r.y - 3}px;width:${r.s + 6}px;height:${r.s + 6}px`; pulse.classList.toggle('off', r.x < x0 - 1 || r.y < y0 - 1 || r.x > V.W || r.y > V.H); }
+    if (hs2) { const r = cellRect(hs2.a, hs2.b); pulse.style.cssText = `display:block;left:${r.x - 3}px;top:${r.y - 3}px;width:${r.s + 6}px;height:${r.s + 6}px`; pulse.classList.toggle('off', r.x < x0 - 1 || r.y < y0 - 1 || r.x > V.W || r.y > V.H); }
     else pulse.style.display = 'none';
     if (animating || t < animEnd) raf = requestAnimationFrame(draw);
     const dt = now() - t0; DS.n++; DS.ms += dt; DS.max = Math.max(DS.max, dt);
@@ -953,12 +979,17 @@ const Logigram = (() => {
     const h = Core.hint(S.P, S.mk); if (!h) return;
     const same = hintS && hintS.a === h.a && hintS.b === h.b && hintS.k === h.k;
     if (!same) { S.hints++; stats.hints++; saveStats(); }
-    hintS = h; sel = null;
-    $('#lgTipText').innerHTML = (h.k === 'err' ? '⚠️ ' : '💡 ') + esc(h.text);
-    $('#lgTipGo').textContent = h.k === 'err' ? 'Weghalen' : h.v === YES ? 'Zet ✓' : 'Zet ✗';
+    // two steps: first a tip (where to look, without the answer), then on "Leg uit" (or Hint again) the full reasoning
+    h.stage = h.k === 'err' || !h.tip ? 2 : same && hintS.stage >= 1 ? 2 : 1;
+    hintS = h; sel = null; showTip();
+  }
+  function showTip() {
+    const h = hintS; if (!h) return;
+    $('#lgTipText').innerHTML = h.k === 'err' ? '⚠️ ' + esc(h.text) : h.stage === 1 ? `<b class="lg-tipname">🔎 ${esc(h.name)}</b>${esc(h.tip)}` : `<b class="lg-tipname">💡 ${esc(h.name)}</b>${esc(h.text)}`;
+    $('#lgTipGo').textContent = h.k === 'err' ? 'Weghalen' : h.stage === 1 ? 'Leg uit' : h.v === YES ? 'Zet ✓' : 'Zet ✗';
     $('#lgTip').classList.add('show'); scr.classList.add('tipping'); if (scr.classList.contains('lg-col')) { scr.classList.remove('lg-col'); setTimeout(() => { layout(true); need(); }, 30); }
     if (h.clue >= 0 && tab !== 'c') setTab('c');
-    reveal(h.a, h.b); renderSide();
+    if (h.stage === 2) reveal(h.a, h.b); renderSide();
     if (h.clue >= 0) { const li = $(`#lgClues li[data-i="${h.clue}"]`); if (li) { const pn = $('#lgPanel'); pn.scrollTop = Math.max(0, li.offsetTop - pn.offsetTop - 4); } }
     sfx('lgHint'); need(); saveSoon();
   }
@@ -1039,7 +1070,7 @@ const Logigram = (() => {
     else if (k === 'lines') { opt.lines = !opt.lines; saveOpt(); sfx('lgTap'); renderSide(); need(); toast(opt.lines ? 'Lijnen aan: ✓\'s die bij elkaar horen, zijn verbonden' : 'Lijnen uit', 1600); }
     else if (k === 'fit') { const toFit = !(V.cs <= Lay.fitAll + .5); V.fit = toFit; V.cs = toFit ? Lay.fitAll : Lay.cs0; V.ox = 0; V.oy = 0; clampPan(); $('#lgFit').classList.toggle('on', toFit && Lay.fitAll < Lay.cs0 - .5); sfx('lgTap'); need(); }
   });
-  $('#lgTipGo').addEventListener('click', () => applyHint());
+  $('#lgTipGo').addEventListener('click', () => { if (hintS && hintS.stage === 1) { hintS.stage = 2; sfx('lgTap'); showTip(); saveSoon(); } else applyHint(); });
   $('#lgTipX').addEventListener('click', () => { sfx('lgTap'); hideHint(); });
 
   /* ---------- the clock: only while you are really playing ---------- */

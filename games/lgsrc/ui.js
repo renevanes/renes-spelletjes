@@ -205,8 +205,8 @@
     g.setTransform(V.dpr, 0, 0, V.dpr, 0, 0); g.clearRect(0, 0, V.W, V.H);
     g.fillStyle = 'rgba(0,0,0,.16)'; rr(B.x - 2, B.y + 1, cardW + 4, cardH + 6, 14); g.fill(); g.fillStyle = 'rgba(0,0,0,.2)'; rr(B.x, B.y + 2, cardW, cardH + 2, 12); g.fill();
     g.fillStyle = C.paper; rr(B.x, B.y, cardW, cardH, 12); g.fill();
-    const selRow = sel ? blockOf(sel.a, sel.b) : null, hb = hintS ? blockOf(hintS.a, hintS.b) : null;
-    const refSet = new Set((hintS && hintS.refs || []).map(([p, q]) => { const z = blockOf(p, q); return z.a * T + z.b; }));
+    const hs2 = hintS && hintS.stage === 2 ? hintS : null, selRow = sel ? blockOf(sel.a, sel.b) : null, hb = hs2 ? blockOf(hs2.a, hs2.b) : null;
+    const refSet = new Set((hs2 && hs2.refs || []).map(([p, q]) => { const z = blockOf(p, q); return z.a * T + z.b; }));
     let animating = false;
     // ---- cells ----
     g.save(); g.beginPath(); g.rect(x0, y0, cardW - Lay.leftW, cardH - Lay.topH); g.clip();
@@ -269,7 +269,7 @@
     g.strokeStyle = C.block; g.lineWidth = 2; g.beginPath(); g.moveTo(x0, B.y + 6); g.lineTo(x0, B.y + cardH - 6); g.moveTo(B.x + 6, y0); g.lineTo(B.x + cardW - 6, y0); g.stroke();
     g.font = `${Math.min(Lay.leftW, Lay.topH) * .38}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.globalAlpha = .55; g.fillText('🔎', B.x + Lay.leftW / 2, B.y + Lay.topH / 2); g.globalAlpha = 1;
     // hint pulse ring (a CSS animation on top: no canvas loop needed)
-    if (hintS) { const r = cellRect(hintS.a, hintS.b); pulse.style.cssText = `display:block;left:${r.x - 3}px;top:${r.y - 3}px;width:${r.s + 6}px;height:${r.s + 6}px`; pulse.classList.toggle('off', r.x < x0 - 1 || r.y < y0 - 1 || r.x > V.W || r.y > V.H); }
+    if (hs2) { const r = cellRect(hs2.a, hs2.b); pulse.style.cssText = `display:block;left:${r.x - 3}px;top:${r.y - 3}px;width:${r.s + 6}px;height:${r.s + 6}px`; pulse.classList.toggle('off', r.x < x0 - 1 || r.y < y0 - 1 || r.x > V.W || r.y > V.H); }
     else pulse.style.display = 'none';
     if (animating || t < animEnd) raf = requestAnimationFrame(draw);
     const dt = now() - t0; DS.n++; DS.ms += dt; DS.max = Math.max(DS.max, dt);
@@ -345,12 +345,17 @@
     const h = Core.hint(S.P, S.mk); if (!h) return;
     const same = hintS && hintS.a === h.a && hintS.b === h.b && hintS.k === h.k;
     if (!same) { S.hints++; stats.hints++; saveStats(); }
-    hintS = h; sel = null;
-    $('#lgTipText').innerHTML = (h.k === 'err' ? '⚠️ ' : '💡 ') + esc(h.text);
-    $('#lgTipGo').textContent = h.k === 'err' ? 'Weghalen' : h.v === YES ? 'Zet ✓' : 'Zet ✗';
+    // two steps: first a tip (where to look, without the answer), then on "Leg uit" (or Hint again) the full reasoning
+    h.stage = h.k === 'err' || !h.tip ? 2 : same && hintS.stage >= 1 ? 2 : 1;
+    hintS = h; sel = null; showTip();
+  }
+  function showTip() {
+    const h = hintS; if (!h) return;
+    $('#lgTipText').innerHTML = h.k === 'err' ? '⚠️ ' + esc(h.text) : h.stage === 1 ? `<b class="lg-tipname">🔎 ${esc(h.name)}</b>${esc(h.tip)}` : `<b class="lg-tipname">💡 ${esc(h.name)}</b>${esc(h.text)}`;
+    $('#lgTipGo').textContent = h.k === 'err' ? 'Weghalen' : h.stage === 1 ? 'Leg uit' : h.v === YES ? 'Zet ✓' : 'Zet ✗';
     $('#lgTip').classList.add('show'); scr.classList.add('tipping'); if (scr.classList.contains('lg-col')) { scr.classList.remove('lg-col'); setTimeout(() => { layout(true); need(); }, 30); }
     if (h.clue >= 0 && tab !== 'c') setTab('c');
-    reveal(h.a, h.b); renderSide();
+    if (h.stage === 2) reveal(h.a, h.b); renderSide();
     if (h.clue >= 0) { const li = $(`#lgClues li[data-i="${h.clue}"]`); if (li) { const pn = $('#lgPanel'); pn.scrollTop = Math.max(0, li.offsetTop - pn.offsetTop - 4); } }
     sfx('lgHint'); need(); saveSoon();
   }
@@ -431,7 +436,7 @@
     else if (k === 'lines') { opt.lines = !opt.lines; saveOpt(); sfx('lgTap'); renderSide(); need(); toast(opt.lines ? 'Lijnen aan: ✓\'s die bij elkaar horen, zijn verbonden' : 'Lijnen uit', 1600); }
     else if (k === 'fit') { const toFit = !(V.cs <= Lay.fitAll + .5); V.fit = toFit; V.cs = toFit ? Lay.fitAll : Lay.cs0; V.ox = 0; V.oy = 0; clampPan(); $('#lgFit').classList.toggle('on', toFit && Lay.fitAll < Lay.cs0 - .5); sfx('lgTap'); need(); }
   });
-  $('#lgTipGo').addEventListener('click', () => applyHint());
+  $('#lgTipGo').addEventListener('click', () => { if (hintS && hintS.stage === 1) { hintS.stage = 2; sfx('lgTap'); showTip(); saveSoon(); } else applyHint(); });
   $('#lgTipX').addEventListener('click', () => { sfx('lgTap'); hideHint(); });
 
   /* ---------- the clock: only while you are really playing ---------- */
