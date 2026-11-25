@@ -400,6 +400,7 @@ if (want('lines')) {
     await tapEl(p, '#lgLines'); await wait(p, 250);
     const L = await ev(p, () => ({ ...__lg.lines(), on: document.getElementById('lgLines').classList.contains('on'), opt: __lg.opt.lines }));
     ok(`${nm}: lijnen tussen de ✓'s, één groep`, L.on && L.opt && L.segs >= 2 && L.groups === 1, JSON.stringify(L));
+    ok(`${nm}: hoeklijnen tussen een ding boven en hetzelfde ding links`, L.corners >= 1, JSON.stringify(L));
     // a second person: a second colour
     const plan2 = await ev(p, () => { const P = __lg.S.P, N = P.N, e = P.ent[1], g = []; for (let i = 0; i < P.K * N; i++) if (P.ent[i] === e) g.push(i); return g; });
     await tapCell(p, plan2[0], plan2[1], 700); await tapCell(p, plan2[0], plan2[2], 700); await wait(p, 200);

@@ -15286,7 +15286,7 @@ const Logigram = (() => {
   /* Lijnen: connect the ✓'s that belong together. ✓'s of the same name (row) are joined sideways, ✓'s of the same item (column)
      up and down; every group of things that are already tied together gets its own colour and a ring around its ✓'s */
   const PAL = ['#e4572e', '#2e7dd7', '#8e44ad', '#12a07f', '#d48a00', '#c2185b'];
-  let LN = { segs: 0, groups: 0 };
+  let LN = { segs: 0, groups: 0, corners: 0 };
   function drawLines() {
     const P = S.P, T = P.K * P.N, mk = S.mk, par = new Map(), root = x => { while (par.get(x) !== x) x = par.get(x); return x; };
     const yes = [];
@@ -15294,7 +15294,7 @@ const Logigram = (() => {
       yes.push([a, b]); for (const x of [a, b]) if (!par.has(x)) par.set(x, x);
       const ra = root(a), rb = root(b); if (ra !== rb) par.set(ra, rb);
     }
-    LN = { segs: 0, groups: 0 };
+    LN = { segs: 0, groups: 0, corners: 0 };
     if (yes.length < 2) return;
     const rows = new Map(), cols = new Map(), size = new Map();
     for (const [a] of yes) size.set(root(a), (size.get(root(a)) || 0) + 1);
@@ -15311,6 +15311,16 @@ const Logigram = (() => {
       if (L.length < 2) continue;
       L.sort((p, q) => p[key] - q[key]); g.strokeStyle = colr(L[0].g);
       for (let k = 1; k < L.length; k++) seg(L[k - 1], L[k]);
+    }
+    // hoeklijnen: a thing that is both a column (top) and a row (left) gets an L-shaped line through the empty corner of the grid
+    for (const [it, R] of rows) {
+      const Cl = cols.get(it); if (!Cl || !Cl.length || !R.length) continue;
+      const rr = R.reduce((m, c) => c.x > m.x ? c : m), cc = Cl.reduce((m, c) => c.y > m.y ? c : m), corner = { x: cc.x, y: rr.y };
+      if (corner.x <= rr.x || corner.y <= cc.y) continue;
+      const r0 = Math.min(V.cs * .6, (corner.x - rr.x) / 2, (corner.y - cc.y) / 2);
+      g.strokeStyle = colr(rr.g); g.setLineDash([V.cs * .22, V.cs * .14]);
+      g.beginPath(); g.moveTo(rr.x + rad, rr.y); g.arcTo(corner.x, corner.y, corner.x, cc.y, r0); g.lineTo(cc.x, cc.y + rad); g.stroke(); g.setLineDash([]);
+      LN.corners++;
     }
     g.globalAlpha = 1; g.lineWidth = Math.max(2, V.cs * .07);
     for (const [a, b] of yes) { const k = root(a); if (size.get(k) < 2) continue; const r = cellRect(a, b); g.strokeStyle = colr(k); g.beginPath(); g.arc(r.x + r.s / 2, r.y + r.s / 2, rad, 0, 7); g.stroke(); }
@@ -15619,7 +15629,7 @@ const Logigram = (() => {
     <li>Tik op een vakje om ✗, ✓ of leeg te zetten. <b>Lang drukken</b> zet meteen een ✓. Bij een ✓ worden de andere vakjes in die rij en kolom van het blokje vanzelf weggestreept.</li>
     <li>Lees de aanwijzingen goed en tik op een aanwijzing om hem door te strepen als je hem gebruikt hebt. Weet je iets via een ✓ in een ander blokje? Neem het over!</li>
     <li>Elke puzzel heeft precies één oplossing. Je hoeft nooit te gokken: goed nadenken is genoeg.</li>
-    <li><b>🔗 Lijnen</b> verbindt de ✓'s die bij elkaar horen: zijwaarts bij dezelfde naam, op en neer bij hetzelfde ding. Elke groep die al vastligt, krijgt een eigen kleur.</li>
+    <li><b>🔗 Lijnen</b> verbindt de ✓'s die bij elkaar horen: zijwaarts bij dezelfde naam, op en neer bij hetzelfde ding. Staat een ding zowel boven als links in het rooster, dan verbindt een gestippelde hoeklijn door het lege deel die twee plekken. Elke groep die al vastligt, krijgt een eigen kleur.</li>
     <li>Twijfel je of alles klopt? <b>☑ Controleer</b> vergelijkt wat je hebt ingevuld met de oplossing en arceert foute ✓ en ✗ in rood. Verbeter je het vakje, dan verdwijnt de arcering.</li>
     <li>Vast? <b>💡 Hint</b> laat de volgende stap zien en vertelt waarom. Bij <b>Overzicht</b> zie je wat je al gevonden hebt.</li>
     <li>Schuif met één vinger over het rooster en knijp met twee vingers om in of uit te zoomen. Tik op een naam boven of naast het rooster om hem helemaal te lezen.</li></ul></details>`;

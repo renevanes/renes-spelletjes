@@ -1,0 +1,1 @@
+Logigram: de knop Lijnen tekent nu ook hoeklijnen. Staat een ding zowel boven als links in het rooster, dan verbindt een gestippelde lijn met een hoek die twee plekken door het lege deel rechtsonder. Zo zie je een hele groep als één keten.
