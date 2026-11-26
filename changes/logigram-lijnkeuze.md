@@ -1,1 +1,0 @@
-Logigram: de knop 🔗 Lijnen opent nu een keuzepaneel. Kies zelf welke lijnen je ziet: zijwaarts, op en neer, hoeklijnen, lijntjes naar de namen en titels van de rijen en kolommen, en gestippelde lijnen waar al een ✓ uit volgt. Ook kleur per groep en ringen zijn aan of uit te zetten.

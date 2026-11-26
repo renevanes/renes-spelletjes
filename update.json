@@ -1,11 +1,11 @@
 {
-  "versionCode": 91,
-  "versionName": "1.90",
+  "versionCode": 92,
+  "versionName": "1.91",
   "nativeLevel": 12,
-  "notes": "Logigram: de knop Lijnen tekent nu ook hoeklijnen. Staat een ding zowel boven als links in het rooster, dan verbindt een gestippelde lijn met een hoek die twee plekken door het lege deel rechtsonder. Zo zie je een hele groep als \u00e9\u00e9n keten.",
+  "notes": "Logigram: de knop \ud83d\udd17 Lijnen opent nu een keuzepaneel. Kies zelf welke lijnen je ziet: zijwaarts, op en neer, hoeklijnen, lijntjes naar de namen en titels van de rijen en kolommen, en gestippelde lijnen waar al een \u2713 uit volgt. Ook kleur per groep en ringen zijn aan of uit te zetten.",
   "web": "web/index.html",
-  "webSha256": "419589c7e20d4ce11af88fe0418b2c5f4c84de7174cf2f152c4108e6595df725",
-  "webSig": "MEUCIAV1UXvsQPAFIdQE1e8uHcp0/GQoGxQvc30z3X6WTVZsAiEA0ACcLhOf1WJuFcpAJKr3FkpfpovQ1X8uaeL1YxoMxiA=",
+  "webSha256": "ab27b737b25b4f6c3dce7c7e31e3334bf0be7e042f95d91c1f082200c9ed50b9",
+  "webSig": "MEQCIBLmtOqshD29w30VAB+/6T5OkAR0oFf4l6kw/2YQEPYgAiAaU/oaVVuCwbMW3HRIEezF33GsTrhlnwq7pFZruWAhDQ==",
   "apk": "apk/Renes-spelletjes.apk",
   "feedbackUrl": "",
   "nativeHash": "157e7255acef0f79f0480b8faf45ec752ee5481ed6800a979dae8c05fceca91c"

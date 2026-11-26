@@ -453,5 +453,10 @@
   "v": "1.90",
   "date": "2026-11-25",
   "notes": "Logigram: de knop Lijnen tekent nu ook hoeklijnen. Staat een ding zowel boven als links in het rooster, dan verbindt een gestippelde lijn met een hoek die twee plekken door het lege deel rechtsonder. Zo zie je een hele groep als één keten."
+ },
+ {
+  "v": "1.91",
+  "date": "2026-11-26",
+  "notes": "Logigram: de knop 🔗 Lijnen opent nu een keuzepaneel. Kies zelf welke lijnen je ziet: zijwaarts, op en neer, hoeklijnen, lijntjes naar de namen en titels van de rijen en kolommen, en gestippelde lijnen waar al een ✓ uit volgt. Ook kleur per groep en ringen zijn aan of uit te zetten."
  }
 ]
