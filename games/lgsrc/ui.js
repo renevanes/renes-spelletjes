@@ -164,45 +164,82 @@
   /* Lijnen: connect the ✓'s that belong together. ✓'s of the same name (row) are joined sideways, ✓'s of the same item (column)
      up and down; every group of things that are already tied together gets its own colour and a ring around its ✓'s */
   const PAL = ['#e4572e', '#2e7dd7', '#8e44ad', '#12a07f', '#d48a00', '#c2185b'];
-  let LN = { segs: 0, groups: 0, corners: 0 };
+  let LN = { segs: 0, groups: 0, corners: 0, titles: 0, implied: 0 };
+  // which kinds of lines the player wants (Lijnen panel)
+  const LTYPES = [['rows', 'Zijwaarts', 'tussen ✓\'s bij dezelfde naam (rij)'], ['cols', 'Op en neer', 'tussen ✓\'s bij hetzelfde ding (kolom)'], ['corner', 'Hoeklijnen', 'hetzelfde ding boven en links verbonden'],
+    ['titles', 'Naar de titels', 'van elke ✓ naar de naam links en het ding boven'], ['implied', 'Volgt al', 'vakjes waar volgens je ✓\'s ook een ✓ hoort'], ['colors', 'Kleur per groep', 'elke groep een eigen kleur'], ['rings', 'Ringen', 'ring om de ✓\'s van een groep']];
+  const LDEF = { rows: true, cols: true, corner: true, titles: false, implied: false, colors: true, rings: true };
+  const lset = () => Object.assign({}, LDEF, opt.lset || {});
   function drawLines() {
-    const P = S.P, T = P.K * P.N, mk = S.mk, par = new Map(), root = x => { while (par.get(x) !== x) x = par.get(x); return x; };
+    const P = S.P, T = P.K * P.N, mk = S.mk, L = lset(), par = new Map(), root = x => { while (par.get(x) !== x) x = par.get(x); return x; };
     const yes = [];
     for (const [a, b] of Core.pairs(P)) if (mk[a * T + b] === YES) {
       yes.push([a, b]); for (const x of [a, b]) if (!par.has(x)) par.set(x, x);
       const ra = root(a), rb = root(b); if (ra !== rb) par.set(ra, rb);
     }
-    LN = { segs: 0, groups: 0, corners: 0 };
-    if (yes.length < 2) return;
+    LN = { segs: 0, groups: 0, corners: 0, titles: 0, implied: 0 };
+    if (!yes.length) return;
+    // implied: two things in the same group (tied together by ✓'s) but in different kinds, with no ✓ between them yet
+    const imp = [];
+    if (L.implied) { const mem = [...par.keys()]; for (const x of mem) for (const y of mem) if (x < y && Core.catOf(P, x) !== Core.catOf(P, y) && root(x) === root(y) && mk[x * T + y] !== YES) imp.push([x, y]); }
     const rows = new Map(), cols = new Map(), size = new Map();
     for (const [a] of yes) size.set(root(a), (size.get(root(a)) || 0) + 1);
-    for (const [a, b] of yes) {
-      const q = blockOf(a, b), r = cellRect(a, b), c = { x: r.x + r.s / 2, y: r.y + r.s / 2, g: root(a) };
+    const pts = [...yes.map(p => [...p, false]), ...imp.map(p => [...p, true])];
+    for (const [a, b, im] of pts) {
+      const q = blockOf(a, b), r = cellRect(a, b), c = { x: r.x + r.s / 2, y: r.y + r.s / 2, g: root(a), im };
       if (!rows.has(q.a)) rows.set(q.a, []); rows.get(q.a).push(c);
       if (!cols.has(q.b)) cols.set(q.b, []); cols.get(q.b).push(c);
     }
-    const groups = [...size.keys()].filter(k => size.get(k) > 1).sort((x, y) => x - y), colr = k => PAL[groups.indexOf(k) % PAL.length];
-    const rad = V.cs * .36;
+    const groups = [...size.keys()].filter(k => size.get(k) > 1 || imp.length).sort((x, y) => x - y);
+    const colr = k => L.colors ? PAL[Math.max(0, groups.indexOf(k)) % PAL.length] : '#2e7dd7';
+    const rad = V.cs * .36, dash = [V.cs * .2, V.cs * .14];
     g.save(); g.lineCap = 'round'; g.lineWidth = Math.max(2.5, V.cs * .1); g.globalAlpha = .8;
-    const seg = (p, q) => { const dx = q.x - p.x, dy = q.y - p.y, L = Math.hypot(dx, dy); if (L < rad * 2.2) return; const ux = dx / L, uy = dy / L; g.beginPath(); g.moveTo(p.x + ux * rad, p.y + uy * rad); g.lineTo(q.x - ux * rad, q.y - uy * rad); g.stroke(); LN.segs++; };
-    for (const [list, key] of [[rows, 'x'], [cols, 'y']]) for (const L of list.values()) {
-      if (L.length < 2) continue;
-      L.sort((p, q) => p[key] - q[key]); g.strokeStyle = colr(L[0].g);
-      for (let k = 1; k < L.length; k++) seg(L[k - 1], L[k]);
+    const seg = (p, q) => { const dx = q.x - p.x, dy = q.y - p.y, Ln = Math.hypot(dx, dy); if (Ln < rad * 2.2) return; const ux = dx / Ln, uy = dy / Ln; g.setLineDash(p.im || q.im ? dash : []); g.beginPath(); g.moveTo(p.x + ux * rad, p.y + uy * rad); g.lineTo(q.x - ux * rad, q.y - uy * rad); g.stroke(); g.setLineDash([]); LN.segs++; };
+    for (const [list, key, on] of [[rows, 'x', L.rows], [cols, 'y', L.cols]]) if (on) for (const Lst of list.values()) {
+      if (Lst.length < 2) continue;
+      Lst.sort((p, q) => p[key] - q[key]); g.strokeStyle = colr(Lst[0].g);
+      for (let k = 1; k < Lst.length; k++) seg(Lst[k - 1], Lst[k]);
     }
     // hoeklijnen: a thing that is both a column (top) and a row (left) gets an L-shaped line through the empty corner of the grid
-    for (const [it, R] of rows) {
+    if (L.corner) for (const [it, R] of rows) {
       const Cl = cols.get(it); if (!Cl || !Cl.length || !R.length) continue;
       const rr = R.reduce((m, c) => c.x > m.x ? c : m), cc = Cl.reduce((m, c) => c.y > m.y ? c : m), corner = { x: cc.x, y: rr.y };
       if (corner.x <= rr.x || corner.y <= cc.y) continue;
       const r0 = Math.min(V.cs * .6, (corner.x - rr.x) / 2, (corner.y - cc.y) / 2);
-      g.strokeStyle = colr(rr.g); g.setLineDash([V.cs * .22, V.cs * .14]);
+      g.strokeStyle = colr(rr.g); g.setLineDash(dash);
       g.beginPath(); g.moveTo(rr.x + rad, rr.y); g.arcTo(corner.x, corner.y, corner.x, cc.y, r0); g.lineTo(cc.x, cc.y + rad); g.stroke(); g.setLineDash([]);
       LN.corners++;
     }
+    // naar de titels: from every ✓ a thin dotted line to the name on the left and to the thing at the top
+    if (L.titles) {
+      const B = base(), xl = B.x + Lay.leftW, yt = B.y + Lay.topH;
+      g.lineWidth = Math.max(1.5, V.cs * .06); g.setLineDash([2, V.cs * .12]); g.globalAlpha = .9;
+      for (const [a, b] of yes) {
+        const r = cellRect(a, b), cx = r.x + r.s / 2, cy = r.y + r.s / 2; g.strokeStyle = colr(root(a));
+        g.beginPath(); g.moveTo(cx - rad, cy); g.lineTo(xl, cy); g.moveTo(cx, cy - rad); g.lineTo(cx, yt); g.stroke();
+        g.setLineDash([]); g.fillStyle = colr(root(a)); for (const [px, py] of [[xl + 3, cy], [cx, yt + 3]]) { g.beginPath(); g.arc(px, py, Math.max(2.5, V.cs * .08), 0, 7); g.fill(); } g.setLineDash([2, V.cs * .12]);
+        LN.titles++;
+      }
+      g.setLineDash([]); g.globalAlpha = .8;
+    }
     g.globalAlpha = 1; g.lineWidth = Math.max(2, V.cs * .07);
-    for (const [a, b] of yes) { const k = root(a); if (size.get(k) < 2) continue; const r = cellRect(a, b); g.strokeStyle = colr(k); g.beginPath(); g.arc(r.x + r.s / 2, r.y + r.s / 2, rad, 0, 7); g.stroke(); }
+    if (L.rings) for (const [a, b] of yes) { const k = root(a); if (size.get(k) < 2 && !L.titles) continue; const r = cellRect(a, b); g.strokeStyle = colr(k); g.beginPath(); g.arc(r.x + r.s / 2, r.y + r.s / 2, rad, 0, 7); g.stroke(); }
+    // implied cells: a dashed ring where a ✓ belongs
+    g.setLineDash(dash);
+    for (const [a, b] of imp) { const r = cellRect(a, b); g.strokeStyle = colr(root(a)); g.beginPath(); g.arc(r.x + r.s / 2, r.y + r.s / 2, rad, 0, 7); g.stroke(); LN.implied++; }
+    g.setLineDash([]);
     g.restore(); LN.groups = groups.length;
+  }
+  // the Lijnen panel: a main switch and one chip per kind of line; the grid changes right away
+  function renderLinePanel() {
+    const el = $('#lgLinePanel'), L = lset();
+    el.innerHTML = `<div class="lg-lph"><b>🔗 Lijnen</b><button data-l="on" class="lg-sw ${opt.lines ? 'on' : ''}" aria-pressed="${!!opt.lines}">${opt.lines ? 'Aan' : 'Uit'}</button><button data-l="x" class="lg-lpx" aria-label="Sluiten">✕</button></div>`
+      + `<div class="lg-lpo${opt.lines ? '' : ' off'}">${LTYPES.map(([k, t, d]) => `<button data-l="${k}" class="${L[k] ? 'on' : ''}" aria-pressed="${!!L[k]}"><b>${L[k] ? '✓' : ''}</b><span>${t}<small>${d}</small></span></button>`).join('')}</div>`;
+  }
+  function toggleLinePanel(force) {
+    const el = $('#lgLinePanel'), open = force != null ? force : el.hidden;
+    if (open && !opt.lines) { opt.lines = true; saveOpt(); }
+    el.hidden = !open; if (open) renderLinePanel(); renderSide(); need();
   }
   const DS = { n: 0, ms: 0, max: 0 };
   function draw() {
@@ -443,8 +480,15 @@
     const k = b.dataset.b;
     if (k === 'undo') undo(); else if (k === 'redo') redo(); else if (k === 'hint') doHint(); else if (k === 'check') doCheck();
     else if (k === 'pen') { opt.pen = opt.pen === YES ? NO : YES; saveOpt(); sfx('lgTap'); renderSide(); }
-    else if (k === 'lines') { opt.lines = !opt.lines; saveOpt(); sfx('lgTap'); renderSide(); need(); toast(opt.lines ? 'Lijnen aan: ✓\'s die bij elkaar horen, zijn verbonden' : 'Lijnen uit', 1600); }
+    else if (k === 'lines') { sfx('lgTap'); toggleLinePanel(); }
     else if (k === 'fit') { const toFit = !(V.cs <= Lay.fitAll + .5); V.fit = toFit; V.cs = toFit ? Lay.fitAll : Lay.cs0; V.ox = 0; V.oy = 0; clampPan(); $('#lgFit').classList.toggle('on', toFit && Lay.fitAll < Lay.cs0 - .5); sfx('lgTap'); need(); }
+  });
+  $('#lgLinePanel').addEventListener('click', e => {
+    const b = e.target.closest('button[data-l]'); if (!b) return; const k = b.dataset.l; sfx('lgTap');
+    if (k === 'x') { toggleLinePanel(false); return; }
+    if (k === 'on') opt.lines = !opt.lines;
+    else { const L = lset(); L[k] = !L[k]; opt.lset = L; if (!opt.lines) opt.lines = true; }
+    saveOpt(); renderLinePanel(); renderSide(); need();
   });
   $('#lgTipGo').addEventListener('click', () => { if (hintS && hintS.stage === 1) { hintS.stage = 2; sfx('lgTap'); showTip(); saveSoon(); } else applyHint(); });
   $('#lgTipX').addEventListener('click', () => { sfx('lgTap'); hideHint(); });
@@ -596,7 +640,7 @@
   window.__lg = {
     get S() { return S; }, get V() { return V; }, get Lay() { return Lay; }, get hint() { return hintS; }, opt, stats: () => stats, Core,
     startNew, openStart, openMenu, leave, save, load, doMark, doHint, doCheck, applyHint, undo, redo, restart, reveal, hit, setZoom, check,
-    lines: () => LN, cellXY(a, b) { const r = cellRect(a, b), q = cv.getBoundingClientRect(); return { x: q.left + r.x + r.s / 2, y: q.top + r.y + r.s / 2, s: r.s, vis: r.x >= base().x + Lay.leftW - 1 && r.y >= base().y + Lay.topH - 1 && r.x + r.s <= V.W + 1 && r.y + r.s <= V.H + 1 }; },
+    lines: () => LN, linePanel: toggleLinePanel, cellXY(a, b) { const r = cellRect(a, b), q = cv.getBoundingClientRect(); return { x: q.left + r.x + r.s / 2, y: q.top + r.y + r.s / 2, s: r.s, vis: r.x >= base().x + Lay.leftW - 1 && r.y >= base().y + Lay.topH - 1 && r.x + r.s <= V.W + 1 && r.y + r.s <= V.H + 1 }; },
     running: () => raf !== 0, drawStats: reset => { const r = { n: DS.n, avg: DS.n ? DS.ms / DS.n : 0, max: DS.max }; if (reset) { DS.n = 0; DS.ms = 0; DS.max = 0; } return r; }, busy: () => busy, genMs: () => lastGen, timerOn: () => !!timer,
   };
   return { enter, leave, hasSave: () => !!store.get('lg.save', null) };

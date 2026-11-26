@@ -15,9 +15,10 @@ const PORT = { viewport: { width: 412, height: 915 }, deviceScaleFactor: 2, isMo
 async function page(o = PORT, cfg = '{"seen":"9.99","mute":true}') {
   const ctx = await b.newContext(o), p = await ctx.newPage();
   p.on('pageerror', e => errs.push(e.stack || e.message)); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
-  await p.addInitScript(c => { if (!sessionStorage.getItem('init')) { localStorage.clear(); localStorage.setItem('app.cfg', c); sessionStorage.setItem('init', 1); } }, cfg);
+  await p.addInitScript(c => { if (!localStorage.getItem('__lgtest')) { localStorage.setItem('app.cfg', c); localStorage.setItem('__lgtest', '1'); } }, cfg);
   await p.goto(target); await p.waitForTimeout(500);
   p.cdp = await ctx.newCDPSession(p); p.tp = new Map(); p.ctx = ctx;
+  p.close = () => ctx.close(); // close the whole context: open contexts pile up and slow the later parts down
   return p;
 }
 const ev = (p, f, a) => p.evaluate(f, a), wait = (p, ms) => p.waitForTimeout(ms);
@@ -173,7 +174,7 @@ if (want('save')) {
   ok('verder: tijd loopt door vanaf de opgeslagen tijd', Math.abs(back.t - snap.t) < 1.5, `${snap.t.toFixed(1)} / ${back.t.toFixed(1)}`);
   // a fresh app start (reload): the saved game comes back
   await ev(p, () => window.appBack()); await wait(p, 200);
-  await p.reload(); await wait(p, 600);
+  await wait(p, 1500); await p.reload(); await wait(p, 600);
   ok('na herstart: tegel toont "Doorgaan"', await ev(p, () => document.getElementById('tileLg').classList.contains('has-save')));
   await openGame(p); await wait(p, 400);
   const re = await ev(p, () => ({ mk: __lg.S.mk.join(''), clues: __lg.S.P.clues.map(k => k.txt).join('|'), undo: __lg.S.undo.length, struck: __lg.S.struck.slice(), check: __lg.check() }));
@@ -363,11 +364,11 @@ if (want('check')) {
     ok(`${nm}: verbeterd: arcering weg`, (await mark(p, sa, other)) !== 2 && (await red(sa, other)) < .01);
     // keep a wrong mark, save and reload: the hatching comes back
     await tapCell(p, sa, other); await wait(p, 100); if ((await mark(p, sa, other)) !== 2) await tapCell(p, sa, other, 700);
-    await tapEl(p, '#lgCheck'); await wait(p, 300); await ev(p, () => window.appBack()); await wait(p, 300);
+    await tapEl(p, '#lgCheck'); await wait(p, 300); await ev(p, () => __lg.save()); await wait(p, 300);
     const n0 = await ev(p, () => __lg.S.chk.size);
-    await p.reload(); await wait(p, 600); await openGame(p);
+    await wait(p, 1500); await p.reload(); await wait(p, 600); await openGame(p);
     if (await vis(p, 'lgStartModal')) { await tapEl(p, '#lgCont button, #lgCont'); await wait(p, 400); }
-    ok(`${nm}: na herladen nog gearceerd`, (await ev(p, () => __lg.S && __lg.S.chk.size)) === n0 && (await red(sa, other)) > .04);
+    ok(`${nm}: na herladen nog gearceerd`, (await ev(p, () => __lg.S && __lg.S.chk.size)) === n0 && (await red(sa, other)) > .04, JSON.stringify(await ev(p, ([sa, o]) => ({ S: !!__lg.S, n: __lg.S && __lg.S.chk.size, sv: !!localStorage.getItem('lg.save'), keys: Object.keys(localStorage).length, cell: __lg.S && __lg.cellXY(sa, o) }), [sa, other])) + ' n0=' + n0);
     // all right: "Alles klopt"
     await tapCell(p, sa, other); await wait(p, 100); if ((await mark(p, sa, other)) === 2) await tapCell(p, sa, other);
     if ((await mark(p, sa, other)) !== 0 && (await mark(p, sa, other)) !== 1) await tapCell(p, sa, other);
@@ -398,19 +399,26 @@ if (want('lines')) {
     ok(`${nm}: ✓'s gezet`, (await ev(p, n => __lg.S.mk.filter(v => v === 2).length / 2, 0)) >= pairs.length);
     ok(`${nm}: zonder knop geen lijnen`, (await ev(p, () => __lg.lines().segs)) === 0);
     await tapEl(p, '#lgLines'); await wait(p, 250);
-    const L = await ev(p, () => ({ ...__lg.lines(), on: document.getElementById('lgLines').classList.contains('on'), opt: __lg.opt.lines }));
-    ok(`${nm}: lijnen tussen de ✓'s, één groep`, L.on && L.opt && L.segs >= 2 && L.groups === 1, JSON.stringify(L));
+    const L = await ev(p, () => ({ ...__lg.lines(), on: document.getElementById('lgLines').classList.contains('on'), opt: __lg.opt.lines, panel: !document.getElementById('lgLinePanel').hidden, chips: document.querySelectorAll('#lgLinePanel .lg-lpo button').length }));
+    ok(`${nm}: knop opent het keuzepaneel en zet lijnen aan`, L.panel && L.chips === 7 && L.on && L.opt, JSON.stringify(L));
+    ok(`${nm}: lijnen tussen de ✓'s, één groep`, L.segs >= 2 && L.groups === 1, JSON.stringify(L));
     ok(`${nm}: hoeklijnen tussen een ding boven en hetzelfde ding links`, L.corners >= 1, JSON.stringify(L));
-    // a second person: a second colour
     const plan2 = await ev(p, () => { const P = __lg.S.P, N = P.N, e = P.ent[1], g = []; for (let i = 0; i < P.K * N; i++) if (P.ent[i] === e) g.push(i); return g; });
     await tapCell(p, plan2[0], plan2[1], 700); await tapCell(p, plan2[0], plan2[2], 700); await wait(p, 200);
     ok(`${nm}: tweede persoon: tweede groep met eigen kleur`, (await ev(p, () => __lg.lines().groups)) === 2);
+    const chip = async k => { await tapEl(p, `#lgLinePanel button[data-l="${k}"]`); await wait(p, 200); return ev(p, () => __lg.lines()); };
+    let c = await chip('titles'); ok(`${nm}: Naar de titels: lijntjes naar namen en dingen`, c.titles >= 8, JSON.stringify(c));
+    c = await chip('implied'); ok(`${nm}: Volgt al: gestippeld waar ook een ✓ hoort`, c.implied >= 1, JSON.stringify(c));
     await p.screenshot({ path: path.join(GFX, `lg_lines_${o === PORT ? 'p' : 'l'}.png`) });
-    // remembered, and off again
-    await p.reload(); await wait(p, 600); await openGame(p); await wait(p, 400);
-    ok(`${nm}: knop blijft aan na opnieuw openen`, await ev(p, () => __lg.opt.lines === true && __lg.lines().segs > 0));
-    await tapEl(p, '#lgLines'); await wait(p, 200);
-    ok(`${nm}: uit: geen lijnen meer`, (await ev(p, () => __lg.lines().segs)) === 0 || !(await ev(p, () => __lg.opt.lines)));
+    const s0 = c.segs; c = await chip('rows'); c = await chip('cols');
+    ok(`${nm}: Zijwaarts en Op en neer uit: minder lijnen`, c.segs < s0, `${s0} -> ${c.segs}`);
+    c = await chip('corner'); ok(`${nm}: Hoeklijnen uit`, c.corners === 0);
+    // remembered
+    await wait(p, 300); await wait(p, 1500); await p.reload(); await wait(p, 600); await openGame(p); await wait(p, 400);
+    ok(`${nm}: keuzes blijven bewaard`, await ev(p, () => __lg.opt.lines === true && __lg.opt.lset && __lg.opt.lset.titles === true && __lg.opt.lset.rows === false), JSON.stringify(await ev(p, () => ({ o: __lg.opt, st: localStorage.getItem('lg.settings'), scr: document.querySelector('.screen.active').id, S: !!__lg.S }))));
+    await ev(p, () => __lg.linePanel(true)); await wait(p, 150); await tapEl(p, '#lgLinePanel button[data-l="on"]'); await wait(p, 200);
+    ok(`${nm}: hoofdschakelaar uit: geen lijnen meer`, await ev(p, () => !__lg.opt.lines && __lg.lines().segs === 0 || !__lg.opt.lines));
+    ok(`${nm}: paneel dicht met ✕`, await (async () => { await tapEl(p, '#lgLinePanel button[data-l="x"]'); await wait(p, 150); return ev(p, () => document.getElementById('lgLinePanel').hidden); })());
     ok(`${nm}: rooster blijft kloppen`, (await ev(p, () => __lg.check())) === '');
     await p.close();
   }

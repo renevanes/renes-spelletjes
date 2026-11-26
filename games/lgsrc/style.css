@@ -85,3 +85,15 @@ html.big-text #lgTip p{font-size:16.5px}html.big-text #lgSum table{font-size:15p
 #lgMenuModal .opt{text-align:left}
 #lg button:focus:not(:focus-visible),#lgStartModal button:focus:not(:focus-visible),#lgMenuModal button:focus:not(:focus-visible),#lgEndModal button:focus:not(:focus-visible){outline:none}
 #lg.tipping #lgClues{padding-bottom:150px}
+
+#lgLinePanel{background:rgba(255,255,255,.07);border-radius:14px;padding:8px 10px;margin:2px 0 0}
+#lgLinePanel[hidden]{display:none}
+.lg-lph{display:flex;align-items:center;gap:8px}.lg-lph b{font-size:15px;flex:1}
+.lg-sw{display:inline-flex;align-items:center;justify-content:center;min-width:64px;height:30px;padding:0 14px;border:0;border-radius:15px;font-size:14px;line-height:1;font-weight:800;background:rgba(255,255,255,.14);color:var(--ink)}.lg-sw.on{background:#2a9d6f;color:#fff}
+.lg-lpx{display:inline-flex;align-items:center;justify-content:center;border:0;padding:0;width:30px;height:30px;border-radius:15px;background:rgba(255,255,255,.12);color:var(--ink)}
+.lg-lpo{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}.lg-lpo.off{opacity:.45}
+.lg-lpo button{display:flex;gap:7px;align-items:flex-start;text-align:left;background:rgba(0,0,0,.18);border:2px solid transparent;border-radius:11px;padding:6px 8px;color:var(--ink)}
+.lg-lpo button b{flex:none;width:18px;height:18px;border-radius:5px;border:2px solid rgba(255,255,255,.45);font-size:12px;line-height:14px;text-align:center}
+.lg-lpo button.on{border-color:var(--accent)}.lg-lpo button.on b{background:var(--accent);border-color:var(--accent);color:#2b2100}
+.lg-lpo button span{font-size:13px;font-weight:700;line-height:1.2}.lg-lpo button small{display:block;font-size:11px;font-weight:500;color:var(--muted);margin-top:1px}
+html.big-text .lg-lpo button span{font-size:15px}html.big-text .lg-lpo button small{font-size:12.5px}
