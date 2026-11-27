@@ -1,1 +1,0 @@
-Logigram: in het lijnenpaneel zet je nu ook losse groepen, rijen en kolommen aan of uit. Met "Losse lijnen kiezen" tik je in het rooster op een lijn, een ✓ of een naam om die lijnen te verbergen of terug te zetten. Het paneel scrolt nu, zodat je alle opties kunt bereiken.
