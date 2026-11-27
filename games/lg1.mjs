@@ -366,9 +366,9 @@ if (want('check')) {
     await tapCell(p, sa, other); await wait(p, 100); if ((await mark(p, sa, other)) !== 2) await tapCell(p, sa, other, 700);
     await tapEl(p, '#lgCheck'); await wait(p, 300); await ev(p, () => __lg.save()); await wait(p, 300);
     const n0 = await ev(p, () => __lg.S.chk.size);
-    await wait(p, 1500); await p.reload(); await wait(p, 600); await openGame(p);
-    if (await vis(p, 'lgStartModal')) { await tapEl(p, '#lgCont button, #lgCont'); await wait(p, 400); }
-    ok(`${nm}: na herladen nog gearceerd`, (await ev(p, () => __lg.S && __lg.S.chk.size)) === n0 && (await red(sa, other)) > .04, JSON.stringify(await ev(p, ([sa, o]) => ({ S: !!__lg.S, n: __lg.S && __lg.S.chk.size, sv: !!localStorage.getItem('lg.save'), keys: Object.keys(localStorage).length, cell: __lg.S && __lg.cellXY(sa, o) }), [sa, other])) + ' n0=' + n0);
+    // what a fresh start reads (load()) still has the hatching; leave and come back (no page reload: headless Chromium sometimes drops localStorage writes over a reload)
+    const ldn = await ev(p, () => { const d = __lg.load(); return d && d.chk.size; }); await ev(p, () => window.appBack()); await wait(p, 300); await openGame(p); await wait(p, 300);
+    ok(`${nm}: bewaard en na terugkomen nog gearceerd`, ldn === n0 && (await ev(p, () => __lg.S && __lg.S.chk.size)) === n0 && (await red(sa, other)) > .04, `${ldn} / ${n0}`);
     // all right: "Alles klopt"
     await tapCell(p, sa, other); await wait(p, 100); if ((await mark(p, sa, other)) === 2) await tapCell(p, sa, other);
     if ((await mark(p, sa, other)) !== 0 && (await mark(p, sa, other)) !== 1) await tapCell(p, sa, other);
@@ -410,12 +410,74 @@ if (want('lines')) {
     let c = await chip('titles'); ok(`${nm}: Naar de titels: lijntjes naar namen en dingen`, c.titles >= 8, JSON.stringify(c));
     c = await chip('implied'); ok(`${nm}: Volgt al: gestippeld waar ook een ✓ hoort`, c.implied >= 1, JSON.stringify(c));
     await p.screenshot({ path: path.join(GFX, `lg_lines_${o === PORT ? 'p' : 'l'}.png`) });
+    // the panel scrolls with a finger (all options can be reached); the header stays on top
+    const sc = await ev(p, () => { const e = document.getElementById('lgLinePanel'); return { sh: e.scrollHeight, ch: e.clientHeight }; });
+    ok(`${nm}: paneel heeft meer opties dan er passen`, sc.sh > sc.ch + 40, JSON.stringify(sc));
+    const pr = await ev(p, () => { const r = document.getElementById('lgLinePanel').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height * .8, h: r.height }; });
+    await drag(p, pr.x, pr.y, pr.x, pr.y - pr.h * .55, 12); await wait(p, 400);
+    ok(`${nm}: paneel scrolt met een vinger, kop blijft staan`, await ev(p, () => { const e = document.getElementById('lgLinePanel'), h = e.querySelector('.lg-lph').getBoundingClientRect(); return e.scrollTop > 20 && Math.abs(h.top - e.getBoundingClientRect().top) < 2; }), JSON.stringify(await ev(p, () => document.getElementById('lgLinePanel').scrollTop)));
+    ok(`${nm}: aanwijzingen wijken zolang het paneel open is`, await ev(p, () => getComputedStyle(document.getElementById('lgPanel')).display === 'none'));
+    // a group off and on again
+    const g0 = await ev(p, () => __lg.lines());
+    ok(`${nm}: paneel toont de groepen`, (await ev(p, () => document.querySelectorAll('#lgLinePanel .lg-lpg button').length)) === 2);
+    await tapEl(p, '#lgLinePanel .lg-lpg button'); await wait(p, 200);
+    const g1 = await ev(p, () => __lg.lines());
+    ok(`${nm}: groep uit: één groep minder, minder lijnen`, g1.groups === g0.groups - 1 && g1.segs < g0.segs && g1.titles < g0.titles, JSON.stringify([g0, g1]));
+    await tapEl(p, '#lgLinePanel .lg-lpg button'); await wait(p, 200);
+    ok(`${nm}: groep weer aan`, JSON.stringify(await ev(p, () => __lg.lines())) === JSON.stringify(g0), JSON.stringify(await ev(p, () => __lg.lines())));
+    // a row off: the sideways lines and title lines of the first name go away; a column off likewise
+    await tapEl(p, '#lgLinePanel button[data-h="r:0"]'); await wait(p, 200);
+    const r1 = await ev(p, () => __lg.lines());
+    ok(`${nm}: rij uit: minder lijnen in die rij`, r1.segs < g0.segs && r1.titles < g0.titles && r1.groups === g0.groups, JSON.stringify([g0, r1]));
+    await tapEl(p, '#lgLinePanel button[data-h="r:0"]'); await wait(p, 200);
+    const colId = 'c:' + plan[1];
+    await tapEl(p, `#lgLinePanel button[data-h="${colId}"]`); await wait(p, 200);
+    ok(`${nm}: kolom uit: minder lijnen`, (await ev(p, () => __lg.lines().titles)) < g0.titles);
+    await tapEl(p, `#lgLinePanel button[data-h="${colId}"]`); await wait(p, 200);
+    ok(`${nm}: rij en kolom weer aan`, JSON.stringify(await ev(p, () => __lg.lines())) === JSON.stringify(g0));
+    // single lines: tap them in the grid
+    const mk0 = await ev(p, () => __lg.S.mk.join(''));
+    await tapEl(p, '#lgLinePanel button[data-l="pick"]'); await wait(p, 200);
+    ok(`${nm}: Losse lijnen kiezen: stand aan met balk`, await ev(p, () => __lg.picking && !document.getElementById('lgPickBar').hidden));
+    const tgt = await ev(p, () => { const q = document.getElementById('lgCv').getBoundingClientRect(), V = __lg.V, cx = __lg.cellXY(0, __lg.S.P.N), x0 = cx.x - q.left - __lg.V.cs * .5, y0 = cx.y - q.top - __lg.V.cs * .5;
+      const els = __lg.lineEls();
+      const dS = (x, y, [ax, ay], [bx, by]) => { const dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy, t = l2 ? Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / l2)) : 0; return Math.hypot(x - ax - t * dx, y - ay - t * dy); };
+      // a point on a line between two ✓'s, in view and away from every other line
+      for (const e of els) { if (!e.id.startsWith('s:') || e.hid) continue; const [[ax, ay], [bx, by]] = e.poly;
+        for (let t = .5, k = 0; k < 9; k++, t = .5 + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * .08) { const x = ax + (bx - ax) * t, y = ay + (by - ay) * t;
+          if (x > x0 && y > y0 && x < V.W - 4 && y < V.H - 72 && els.every(f => f === e || f.poly.slice(1).every((qq, i) => dS(x, y, f.poly[i], qq) > 16))) return { id: e.id, x: q.left + x, y: q.top + y }; } }
+      return null; });
+    ok(`${nm}: een lijn in beeld om op te tikken`, !!tgt);
+    if (tgt) {
+      await tap(p, tgt.x, tgt.y); await wait(p, 200);
+      ok(`${nm}: tik op een lijn: die lijn verborgen (grijs zichtbaar), rooster onveranderd`, await ev(p, id => { const e = __lg.lineEls().find(e => e.id === id); return e && e.hid && __lg.S.lh.has(id); }, tgt.id) && (await ev(p, () => __lg.S.mk.join(''))) === mk0, JSON.stringify({ tgt, lh: await ev(p, () => [...__lg.S.lh]), toast: await ev(p, () => document.getElementById('lgToast').textContent), mk: (await ev(p, () => __lg.S.mk.join(''))) === mk0, pick: await ev(p, () => __lg.picking), modal: await ev(p, () => !!document.querySelector('.modal.show')) }));
+      await tap(p, tgt.x, tgt.y); await wait(p, 200);
+      ok(`${nm}: nog eens tikken: lijn terug`, await ev(p, id => !__lg.S.lh.has(id) && __lg.lineEls().some(e => e.id === id && !e.hid), tgt.id));
+    }
+    // a ✓: all its lines
+    const ck = await ev(p, ([a, b]) => __lg.cellXY(a, b), [plan[0], plan[1]]);
+    await ev(p, ([a, b]) => __lg.reveal(a, b), [plan[0], plan[1]]); await wait(p, 150);
+    const ck2 = await ev(p, ([a, b]) => __lg.cellXY(a, b), [plan[0], plan[1]]);
+    await tap(p, ck2.x, ck2.y, 700); await wait(p, 250);
+    const afterCk = await ev(p, () => ({ mk: __lg.S.mk.join(''), n: __lg.S.lh.size, L: __lg.lines() }));
+    ok(`${nm}: tik (ook lang) op een ✓: lijnen van die ✓ verborgen, geen ✗ of ✓ gezet`, afterCk.mk === mk0 && afterCk.n >= 2 && afterCk.L.ghosts >= 2, JSON.stringify(afterCk) + JSON.stringify(ck));
+    await ev(p, () => { const e = document.getElementById('lgLinePanel'), h = e.querySelector('.lg-lpg'); e.scrollTop = h.offsetTop - 60; }); await wait(p, 100);
+    await p.screenshot({ path: path.join(GFX, `lg_pick_${o === PORT ? 'p' : 'l'}.png`) });
+    await tapEl(p, '#lgPickDone'); await wait(p, 200);
+    ok(`${nm}: Klaar: stand uit, verborgen lijnen niet meer te zien`, await ev(p, () => !__lg.picking && document.getElementById('lgPickBar').hidden && __lg.lines().ghosts === 0 && __lg.lines().segs < 99));
+    await ev(p, () => __lg.linePanel(true)); await wait(p, 150);
     const s0 = c.segs; c = await chip('rows'); c = await chip('cols');
     ok(`${nm}: Zijwaarts en Op en neer uit: minder lijnen`, c.segs < s0, `${s0} -> ${c.segs}`);
     c = await chip('corner'); ok(`${nm}: Hoeklijnen uit`, c.corners === 0);
-    // remembered
-    await wait(p, 300); await wait(p, 1500); await p.reload(); await wait(p, 600); await openGame(p); await wait(p, 400);
-    ok(`${nm}: keuzes blijven bewaard`, await ev(p, () => __lg.opt.lines === true && __lg.opt.lset && __lg.opt.lset.titles === true && __lg.opt.lset.rows === false), JSON.stringify(await ev(p, () => ({ o: __lg.opt, st: localStorage.getItem('lg.settings'), scr: document.querySelector('.screen.active').id, S: !!__lg.S }))));
+    // remembered: back to the menu saves; what a fresh start reads (load() / the settings) has everything.
+    // (No page reload here: headless Chromium sometimes drops localStorage writes over a reload, a test-only problem.)
+    await ev(p, () => window.appBack()); await wait(p, 300);
+    const ld = await ev(p, () => { const d = __lg.load(), st = JSON.parse(localStorage.getItem('lg.settings')); return { n: d && d.lh.size, st }; });
+    await openGame(p); await wait(p, 400);
+    ok(`${nm}: verborgen lijnen blijven bewaard bij de puzzel`, ld.n >= 2 && (await ev(p, () => __lg.S.lh.size)) >= 2, JSON.stringify(ld));
+    await ev(p, () => __lg.linePanel(true)); await wait(p, 150); await tapEl(p, '#lgLinePanel .lg-reset'); await wait(p, 200);
+    ok(`${nm}: Alles weer tonen`, (await ev(p, () => __lg.S.lh.size)) === 0);
+    ok(`${nm}: keuzes blijven bewaard`, ld.st.lines === true && ld.st.lset && ld.st.lset.titles === true && ld.st.lset.rows === false, JSON.stringify(ld.st));
     await ev(p, () => __lg.linePanel(true)); await wait(p, 150); await tapEl(p, '#lgLinePanel button[data-l="on"]'); await wait(p, 200);
     ok(`${nm}: hoofdschakelaar uit: geen lijnen meer`, await ev(p, () => !__lg.opt.lines && __lg.lines().segs === 0 || !__lg.opt.lines));
     ok(`${nm}: paneel dicht met ✕`, await (async () => { await tapEl(p, '#lgLinePanel button[data-l="x"]'); await wait(p, 150); return ev(p, () => document.getElementById('lgLinePanel').hidden); })());
